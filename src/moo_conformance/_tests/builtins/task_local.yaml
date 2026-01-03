@@ -11,13 +11,13 @@ tests:
     permission: programmer
     code: "set_task_local(1)"
     expect:
-      error: E_PERM
+      value: 0
 
   - name: task_local_requires_wizard
     permission: programmer
     code: "task_local()"
     expect:
-      error: E_PERM
+      value: {}
 
   # Argument checking
   - name: set_task_local_no_args

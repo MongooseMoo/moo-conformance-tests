@@ -8,10 +8,14 @@ tests:
   - name: eval_requires_programmer
     permission: wizard
     setup:
-      code: 'player.programmer = 0;'
+      code: |
+        player.a = 0;
+        player.programmer = 0;
     code: 'eval("return 5;")'
     expect:
       error: E_PERM
+    teardown:
+      code: 'player.programmer = 1;'
 
   - name: eval_requires_at_least_one_argument
     permission: wizard

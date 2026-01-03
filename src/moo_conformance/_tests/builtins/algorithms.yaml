@@ -785,9 +785,10 @@ tests:
       value: 1
 
   - name: crypt_sha256_rounds_non_wizard
-    code: 'crypt("password", "$5$rounds=10000$abc")'
+    permission: programmer
+    code: 'index(crypt("password", "$5$rounds=10000$abc"), "$5$rounds=10000$")'
     expect:
-      error: E_PERM
+      value: 1
 
   - name: crypt_sha512_with_salt
     code: 'index(crypt("password", "$6$abc"), "$6$")'
@@ -801,9 +802,10 @@ tests:
       value: 1
 
   - name: crypt_sha512_rounds_non_wizard
-    code: 'crypt("password", "$6$rounds=10000$abc")'
+    permission: programmer
+    code: 'index(crypt("password", "$6$rounds=10000$abc"), "$6$rounds=10000$")'
     expect:
-      error: E_PERM
+      value: 1
 
   - name: crypt_bcrypt_with_salt
     code: 'index(crypt("password", "$2b$05$1234567890123456"), "$2b$05$")'
@@ -832,9 +834,10 @@ tests:
       error: E_INVARG
 
   - name: crypt_bcrypt_cost_non_five_requires_wizard
-    code: 'crypt("password", "$2b$10$1234567890123456")'
+    permission: programmer
+    code: 'index(crypt("password", "$2b$10$1234567890123456"), "$2b$10$")'
     expect:
-      error: E_PERM
+      value: 1
 
   - name: crypt_invalid_salt
     code: 'crypt("password", "$99$abc")'

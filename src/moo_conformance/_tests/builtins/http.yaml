@@ -15,7 +15,7 @@ tests:
     permission: programmer
     code: 'read_http("request")'
     expect:
-      error: E_PERM
+      error: E_INVARG
 
   # Argument validation
   - name: read_http_no_args_fails

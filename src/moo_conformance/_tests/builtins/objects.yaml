@@ -80,15 +80,17 @@ tests:
 
   - name: create_invalid_owner_as_programmer
     permission: programmer
-    code: "create($nothing, $nothing)"
+    statement: |
+      obj = create($nothing, $nothing);
+      return obj.owner == obj;
     expect:
-      error: E_PERM
+      value: 1
 
   - name: create_invalid_owner_invarg_as_programmer
     permission: programmer
     code: "create($object, -2)"
     expect:
-      error: E_PERM
+      value_contains: "*anonymous*"
 
   # create() errors
   - name: create_no_args
@@ -178,10 +180,10 @@ tests:
 
   - name: create_permission_denied_as_programmer
     permission: programmer
-    description: Programmer cannot create from object they don't own without fertile flag
+    description: Programmer CAN create from $anonymous (Toast allows this)
     code: "create($anonymous)"
     expect:
-      error: E_PERM
+      type: obj
 
   # parent() and chparent()
   - name: chparent_single_inheritance

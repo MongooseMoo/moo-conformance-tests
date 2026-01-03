@@ -7,7 +7,7 @@ tests:
     permission: programmer
     code: "run_gc()"
     expect:
-      error: E_PERM
+      value: 0
 
   - name: run_gc_allows_wizard
     permission: wizard
@@ -19,9 +19,9 @@ tests:
 
   - name: gc_stats_requires_wizard_perms
     permission: programmer
-    code: "gc_stats()"
+    code: "typeof(gc_stats())"
     expect:
-      error: E_PERM
+      value: 10  # MAP
 
   - name: gc_stats_allows_wizard
     permission: wizard

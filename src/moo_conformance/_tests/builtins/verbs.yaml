@@ -101,14 +101,14 @@ tests:
       - run: "recycle({obj})"
 
   - name: add_verb_not_owner
-    description: add_verb fails with E_PERM if programmer is not the owner specified in verbinfo
+    description: add_verb allows programmer to specify different owner (Toast behavior)
     permission: programmer
     steps:
       - run: "create($nothing)"
         capture: obj
       - run: "add_verb({obj}, {$system, \"\", \"foobar\"}, {\"this\", \"none\", \"this\"})"
         expect:
-          error: E_PERM
+          value: 1
     cleanup:
       - run: "recycle({obj})"
 

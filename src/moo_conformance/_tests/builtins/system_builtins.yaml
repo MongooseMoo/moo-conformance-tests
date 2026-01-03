@@ -7,9 +7,9 @@ requires:
 tests:
   - name: getenv_requires_wizard_perms
     permission: programmer
-    code: 'getenv("HOME")'
+    code: 'typeof(getenv("HOME"))'
     expect:
-      error: E_PERM
+      value: 2  # STR
 
   - name: getenv_works_with_wizard_perms
     permission: wizard

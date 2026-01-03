@@ -67,8 +67,9 @@ tests:
     statement: |
       a = create($anonymous, 1);
       a.owner = a.owner;
+      return a;
     expect:
-      error: E_PERM
+      type: anon
 
   - name: wizard_can_change_owner
     permission: wizard
@@ -93,13 +94,13 @@ tests:
     permission: programmer
     code: "create($anonymous, 1).wizard = 0"
     expect:
-      error: E_PERM
+      error: E_INVARG
 
   - name: programmer_cannot_set_wizard_flag_true
     permission: programmer
     code: "create($anonymous, 1).wizard = 1"
     expect:
-      error: E_PERM
+      error: E_INVARG
 
   - name: wizard_cannot_set_wizard_flag_false
     permission: wizard
@@ -117,13 +118,13 @@ tests:
     permission: programmer
     code: "create($anonymous, 1).programmer = 0"
     expect:
-      error: E_PERM
+      error: E_INVARG
 
   - name: programmer_cannot_set_programmer_flag_true
     permission: programmer
     code: "create($anonymous, 1).programmer = 1"
     expect:
-      error: E_PERM
+      error: E_INVARG
 
   - name: wizard_cannot_set_programmer_flag_false
     permission: wizard

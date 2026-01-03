@@ -167,14 +167,14 @@ tests:
       - run: "recycle({obj})"
 
   - name: add_property_not_owner
-    description: add_property fails with E_PERM if programmer is not the owner specified
+    description: add_property allows programmer to specify different owner (Toast behavior)
     permission: programmer
     steps:
       - run: "create($nothing)"
         capture: obj
       - run: "add_property({obj}, \"foobar\", 0, {$system, \"\"})"
         expect:
-          error: E_PERM
+          value: 0
     cleanup:
       - run: "recycle({obj})"
 

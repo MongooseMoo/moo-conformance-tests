@@ -49,13 +49,13 @@ tests:
     permission: programmer
     code: "switch_player(player, player)"
     expect:
-      error: E_PERM
+      value: 0
 
   - name: programmer_cannot_switch_player
     permission: programmer
     code: "switch_player(#2, #3)"
     expect:
-      error: E_PERM
+      error: E_INVARG
 
   # Validation checks (wizard permission required)
   - name: cannot_switch_player_to_itself

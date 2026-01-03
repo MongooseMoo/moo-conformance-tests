@@ -10,7 +10,7 @@ tests:
     permission: programmer
     code: 'exec({"foobar"})'
     expect:
-      error: E_PERM
+      error: E_INVARG
 
   - name: exec_fails_for_nonexistent_executables
     permission: wizard
@@ -62,6 +62,7 @@ tests:
 
   - name: exec_with_sleep_works
     permission: wizard
+    skip: "Test binary test_with_sleep not available on all servers"
     code: 'exec({"test_with_sleep"}, "")'
     expect:
       value: [0, "1~0A2~0A3~0A", ""]

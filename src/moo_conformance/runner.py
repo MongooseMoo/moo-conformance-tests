@@ -32,7 +32,8 @@ class YamlTestRunner:
         want to ensure properties exist with correct values.
         """
         if suite.setup and suite.name not in self._suites_setup_done:
-            self.transport.connect(suite.setup.permission)
+            # REMOVED: Connection is now session-scoped (managed by fixture)
+            # self.transport.connect(suite.setup.permission)
             # Execute setup code as individual statements to match Ruby behavior
             # Ruby calls evaluate() separately for each statement, ignoring errors
             code = suite.setup.code if isinstance(suite.setup.code, str) else "\n".join(suite.setup.code)
@@ -49,7 +50,8 @@ class YamlTestRunner:
     def run_suite_teardown(self, suite: MooTestSuite) -> None:
         """Run suite-level teardown."""
         if suite.teardown:
-            self.transport.connect(suite.teardown.permission)
+            # REMOVED: Connection is now session-scoped (managed by fixture)
+            # self.transport.connect(suite.teardown.permission)
             # Run teardown code as a single block (may contain multi-line constructs)
             code = suite.teardown.code if isinstance(suite.teardown.code, str) else "\n".join(suite.teardown.code)
             if code.strip():
@@ -67,7 +69,8 @@ class YamlTestRunner:
             AssertionError: If the test expectation is not met
         """
         # Connect as the required user
-        self.transport.connect(test.permission)
+        # REMOVED: Connection is now session-scoped (managed by fixture)
+        # self.transport.connect(test.permission)
 
         try:
             # Check if this is a multi-step test
@@ -115,8 +118,9 @@ class YamlTestRunner:
         try:
             for step in test.steps:
                 # Switch permission if step specifies different one
-                if step.as_:
-                    self.transport.connect(step.as_)
+                # REMOVED: Connection is now session-scoped (managed by fixture)
+                # if step.as_:
+                #     self.transport.connect(step.as_)
 
                 # Execute the step
                 code = self._substitute_variables(step.run, variables)
@@ -151,8 +155,9 @@ class YamlTestRunner:
             # Run cleanup steps (always, even on failure)
             for cleanup_step in test.cleanup:
                 # Switch permission if cleanup step specifies different one
-                if cleanup_step.as_:
-                    self.transport.connect(cleanup_step.as_)
+                # REMOVED: Connection is now session-scoped (managed by fixture)
+                # if cleanup_step.as_:
+                #     self.transport.connect(cleanup_step.as_)
 
                 cleanup_code = self._substitute_variables(cleanup_step.run, variables)
                 # Best effort - don't fail on cleanup errors

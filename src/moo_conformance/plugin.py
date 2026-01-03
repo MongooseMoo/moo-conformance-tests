@@ -87,6 +87,7 @@ def transport(request) -> Iterator[MooTransport]:
     host = request.config.getoption("--moo-host")
     port = request.config.getoption("--moo-port")
     t = SocketTransport(host, port)
+    t.connect("wizard")  # Connect ONCE at session start
 
     yield t
 

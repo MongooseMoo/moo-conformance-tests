@@ -111,7 +111,7 @@ class SocketTransport(MooTransport):
     def connect(self, user: str = "programmer") -> None:
         """Connect to MOO server and authenticate."""
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.settimeout(10)  # 10 second timeout to avoid hanging forever
+        self.sock.settimeout(3)  # 3 second timeout to avoid hanging forever
         self.sock.connect((self.host, self.port))
         self.current_user = user
 
@@ -154,7 +154,7 @@ class SocketTransport(MooTransport):
         # Wait for login to complete by looking for "*** Connected ***" marker
         # Use a longer timeout since login can take time
         old_timeout = self.sock.gettimeout()
-        self.sock.settimeout(5.0)  # 5 second timeout for login
+        self.sock.settimeout(2.0)  # 2 second timeout for login
 
         buffer = b""
         connected = False
@@ -174,7 +174,7 @@ class SocketTransport(MooTransport):
 
                     # Once connected, drain remaining output with shorter timeout
                     if connected:
-                        self.sock.settimeout(0.5)
+                        self.sock.settimeout(0.1)
 
                 except socket.timeout:
                     # Timeout - either login failed or we've drained all output

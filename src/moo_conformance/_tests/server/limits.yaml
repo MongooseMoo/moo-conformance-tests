@@ -51,12 +51,11 @@ tests:
 
   - name: setadd_checks_list_max_value_bytes_exceeds
     permission: wizard
-    skip: "Test math incorrect: pad=32 bytes (2 elements) but adding 1 element only adds 16 bytes, so size+16 never exceeds size+32"
     statement: |
       n = 90;
       $server_options.max_list_value_bytes = 1000000;
       load_server_options();
-      pad = value_bytes({1, 2}) - value_bytes({});
+      pad = value_bytes({1}) - value_bytes({});
       x = {};
       for i in [1..n]
         x = setadd(x, i);
@@ -96,12 +95,11 @@ tests:
 
   - name: listinsert_checks_list_max_value_bytes
     permission: wizard
-    skip: "Test math incorrect: pad=32 bytes (2 elements) but adding 1 element only adds 16 bytes, so size+16 never exceeds size+32"
     statement: |
       n = 90;
       $server_options.max_list_value_bytes = 1000000;
       load_server_options();
-      pad = value_bytes({1, 2}) - value_bytes({});
+      pad = value_bytes({1}) - value_bytes({});
       x = {};
       for i in [1..n]
         x = listinsert(x, i);
@@ -141,12 +139,11 @@ tests:
 
   - name: listappend_checks_list_max_value_bytes
     permission: wizard
-    skip: "Test math incorrect: pad=32 bytes (2 elements) but adding 1 element only adds 16 bytes, so size+16 never exceeds size+32"
     statement: |
       n = 90;
       $server_options.max_list_value_bytes = 1000000;
       load_server_options();
-      pad = value_bytes({1, 2}) - value_bytes({});
+      pad = value_bytes({1}) - value_bytes({});
       x = {};
       for i in [1..n]
         x = listappend(x, i);
@@ -186,12 +183,11 @@ tests:
 
   - name: listset_fails_if_value_too_large
     permission: wizard
-    skip: "Test math incorrect: pad=80 bytes but adding 1 iteration only adds 64 bytes, so size+64 never exceeds size+80"
     statement: |
       n = 90;
       $server_options.max_list_value_bytes = 1000000;
       load_server_options();
-      pad = value_bytes({{}, {}, 3}) - value_bytes({});
+      pad = value_bytes({{}}) - value_bytes({});
       x = {};
       for i in [1..n]
         x = listset({0}, {x}, 1);

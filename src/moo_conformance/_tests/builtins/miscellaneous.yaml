@@ -81,56 +81,50 @@ tests:
       value: 0
 
   # isa() with objects created by create() builtin
-  # NOTE: These tests have invalid code - set_property_info expects {owner, perms} list
-  # not a single object. Skipped pending proper test rewrite.
   - name: isa_with_create_no_opt
     permission: programmer
-    skip: "Test code invalid - set_property_info expects list not object"
     statement: |
       o = create($nothing);
       add_property(o, "b", 0, {player, ""});
       add_property(o, "c", 0, {player, ""});
-      set_property_info(o, "b", create($nothing));
-      set_property_info(o, "c", create(property_info(o, "b")[1], 0));
-      return isa(property_info(o, "c")[1], property_info(o, "b")[1]);
+      o.b = create($nothing);
+      o.c = create(o.b, 0);
+      return isa(o.c, o.b);
     expect:
       value: 1
 
   - name: isa_with_create_opt_1
     permission: programmer
-    skip: "Test code invalid - set_property_info expects list not object"
     statement: |
       o = create($nothing);
       add_property(o, "b", 0, {player, ""});
       add_property(o, "c", 0, {player, ""});
-      set_property_info(o, "b", create($nothing));
-      set_property_info(o, "c", create(property_info(o, "b")[1], 1));
-      return isa(property_info(o, "c")[1], property_info(o, "b")[1]);
+      o.b = create($nothing);
+      o.c = create(o.b, 1);
+      return isa(o.c, o.b);
     expect:
       value: 1
 
   - name: isa_with_create_reverse_no_opt
     permission: programmer
-    skip: "Test code invalid - set_property_info expects list not object"
     statement: |
       o = create($nothing);
       add_property(o, "b", 0, {player, ""});
       add_property(o, "c", 0, {player, ""});
-      set_property_info(o, "b", create($nothing));
-      set_property_info(o, "c", create(property_info(o, "b")[1], 0));
-      return isa(property_info(o, "b")[1], property_info(o, "c")[1]);
+      o.b = create($nothing);
+      o.c = create(o.b, 0);
+      return isa(o.b, o.c);
     expect:
       value: 0
 
   - name: isa_with_create_reverse_opt_1
     permission: programmer
-    skip: "Test code invalid - set_property_info expects list not object"
     statement: |
       o = create($nothing);
       add_property(o, "b", 0, {player, ""});
       add_property(o, "c", 0, {player, ""});
-      set_property_info(o, "b", create($nothing));
-      set_property_info(o, "c", create(property_info(o, "b")[1], 1));
-      return isa(property_info(o, "b")[1], property_info(o, "c")[1]);
+      o.b = create($nothing);
+      o.c = create(o.b, 1);
+      return isa(o.b, o.c);
     expect:
       value: 0

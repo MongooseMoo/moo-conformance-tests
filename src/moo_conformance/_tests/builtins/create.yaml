@@ -83,7 +83,6 @@ tests:
   # Second argument as anonymous flag
   - name: second_arg_as_int_accepts_anonymous_flag
     permission: wizard
-    skip: "Transport layer returns *anonymous* as string instead of anon type"
     code: "create($nothing, 1)"
     expect:
       type: anon
@@ -126,7 +125,6 @@ tests:
   # Third argument as anonymous flag
   - name: third_arg_as_int_accepts_anonymous_flag
     permission: wizard
-    skip: "Transport layer returns *anonymous* as string instead of anon type"
     code: "create($nothing, #1, 1)"
     expect:
       type: anon
@@ -169,7 +167,6 @@ tests:
   # Fourth argument as anonymous flag
   - name: fourth_arg_as_int_accepts_anonymous_flag
     permission: wizard
-    skip: "Transport layer returns *anonymous* as string instead of anon type"
     code: "create($nothing, #1, {}, 1)"
     expect:
       type: anon

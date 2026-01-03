@@ -4,11 +4,13 @@ This guide explains how to convert Ruby test files from the toaststunt test suit
 
 ## Source Files
 
-Ruby test files are located at:
+Ruby test files are located in your toaststunt source:
 ```
-/c/Users/Q/src/toaststunt/test/tests/test_*.rb
-/c/Users/Q/src/toaststunt/test/tests/basic/*/test.in  (expression tests)
+<toaststunt>/test/tests/test_*.rb
+<toaststunt>/test/tests/basic/*/test.in  (expression tests)
 ```
+
+Get toaststunt from: https://github.com/lisdude/toaststunt
 
 ## Quick Reference
 

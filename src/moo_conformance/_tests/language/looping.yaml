@@ -1,0 +1,323 @@
+name: looping
+description: Loop constructs (for, while, break, continue)
+
+tests:
+  # test_that_for_loops_work_with_strings
+  - name: for_loop_string_single_var
+    statement: |
+      x = {};
+      for i in ("12345")
+        x = {@x, i};
+      endfor
+      return x;
+    expect:
+      value: ["1", "2", "3", "4", "5"]
+
+  - name: for_loop_string_two_vars
+    statement: |
+      x = {};
+      for i, j in ("12345")
+        x = {@x, {i, j}};
+      endfor
+      return x;
+    expect:
+      value: [["1", 1], ["2", 2], ["3", 3], ["4", 4], ["5", 5]]
+
+  # test_that_for_loops_work_with_maps
+  - name: for_loop_map_values
+    statement: |
+      x = {};
+      for v in (["one" -> 1, "two" -> "two", "three" -> 3.0])
+        x = {@x, v};
+      endfor
+      return x;
+    expect:
+      value: [1, 3.0, "two"]
+
+  - name: for_loop_map_values_and_keys
+    statement: |
+      x = {};
+      for v, k in (["one" -> 1, "two" -> "two", "three" -> 3.0])
+        x = {@x, {v, k}};
+      endfor
+      return x;
+    expect:
+      value: [[1, "one"], [3.0, "three"], ["two", "two"]]
+
+  # test_that_for_loops_support_two_variables
+  - name: for_loop_list_two_vars
+    statement: |
+      x = {};
+      for i, j in ({"1", "2", "3", "4", "5"})
+        x = {@x, {i, j}};
+      endfor
+      return x;
+    expect:
+      value: [["1", 1], ["2", 2], ["3", 3], ["4", 4], ["5", 5]]
+
+  # test_that_valid_for_loops_compile
+  - name: for_loop_break_with_value
+    statement: |
+      x = {};
+      for i in ({1, 2, 3, 4, 5})
+        if (i > 2)
+          break i;
+        endif
+        x = {@x, i};
+      endfor
+      return x;
+    expect:
+      value: [1, 2]
+
+  - name: for_loop_continue_with_value
+    statement: |
+      x = {};
+      for i in ({1, 2, 3, 4, 5})
+        if (i < 3)
+          continue i;
+        endif
+        x = {@x, i};
+      endfor
+      return x;
+    expect:
+      value: [3, 4, 5]
+
+  - name: for_loop_two_vars_break_first_var
+    statement: |
+      x = {};
+      for i, j in ({"1", "2", "3", "4", "5"})
+        if (j > 2)
+          break i;
+        endif
+        x = {@x, i};
+      endfor
+      return x;
+    expect:
+      value: ["1", "2"]
+
+  - name: for_loop_two_vars_continue_first_var
+    statement: |
+      x = {};
+      for i, j in ({"1", "2", "3", "4", "5"})
+        if (j < 3)
+          continue i;
+        endif
+        x = {@x, i};
+      endfor
+      return x;
+    expect:
+      value: ["3", "4", "5"]
+
+  - name: for_loop_two_vars_break_second_var
+    statement: |
+      x = {};
+      for i, j in ({"1", "2", "3", "4", "5"})
+        if (j > 2)
+          break j;
+        endif
+        x = {@x, i};
+      endfor
+      return x;
+    expect:
+      value: ["1", "2"]
+
+  - name: for_loop_two_vars_continue_second_var
+    statement: |
+      x = {};
+      for i, j in ({"1", "2", "3", "4", "5"})
+        if (j < 3)
+          continue j;
+        endif
+        x = {@x, i};
+      endfor
+      return x;
+    expect:
+      value: ["3", "4", "5"]
+
+  - name: for_loop_duplicate_var_names_break
+    description: Legal but probably not what you want - both vars have same name
+    statement: |
+      x = {};
+      for i, i in ({"1", "2", "3", "4", "5"})
+        if (i > 2)
+          break i;
+        endif
+        x = {@x, i};
+      endfor
+      return x;
+    expect:
+      value: [1, 2]
+
+  - name: for_loop_duplicate_var_names_continue
+    description: Legal but probably not what you want - both vars have same name
+    statement: |
+      x = {};
+      for i, i in ({"1", "2", "3", "4", "5"})
+        if (i < 3)
+          continue i;
+        endif
+        x = {@x, i};
+      endfor
+      return x;
+    expect:
+      value: [3, 4, 5]
+
+  # test_that_invalid_for_loops_do_not_compile
+  - name: for_loop_no_variables
+    skip: "Test harness doesn't handle eval() parse error format for match expectations"
+    statement: |
+      x = {};
+      for in ({"1", "2", "3", "4", "5"})
+      endfor
+      return x;
+    expect:
+      match: "syntax error"
+
+  - name: for_loop_three_variables
+    skip: "Test harness doesn't handle eval() parse error format for match expectations"
+    statement: |
+      x = {};
+      for i, j, k in ({"1", "2", "3", "4", "5"})
+      endfor
+      return x;
+    expect:
+      match: "syntax error"
+
+  - name: for_loop_continue_invalid_name_single_var
+    skip: "Barn parser doesn't validate loop names in continue/break - needs fix"
+    statement: |
+      x = {};
+      for i in ({"1", "2", "3", "4", "5"})
+        continue x;
+      endfor
+      return x;
+    expect:
+      match: "Invalid loop name"
+
+  - name: for_loop_continue_invalid_name_two_vars
+    skip: "Barn parser doesn't validate loop names in continue/break - needs fix"
+    statement: |
+      x = {};
+      for i, j in ({"1", "2", "3", "4", "5"})
+        continue x;
+      endfor
+      return x;
+    expect:
+      match: "Invalid loop name"
+
+  # test_that_for_loops_cannot_loop_over_non_sequences
+  - name: for_loop_integer_error
+    statement: "for x in (5); endfor"
+    expect:
+      error: E_TYPE
+
+  - name: for_loop_float_error
+    statement: "for x in (5.0); endfor"
+    expect:
+      error: E_TYPE
+
+  - name: for_loop_object_error
+    statement: "for x in (#5); endfor"
+    expect:
+      error: E_TYPE
+
+  - name: for_loop_error_value_error
+    statement: "for x in (E_PERM); endfor"
+    expect:
+      error: E_TYPE
+
+  # test_that_for_loops_decompile
+  - name: decompile_for_loop_duplicate_vars_break
+    permission: wizard
+    description: Test that for loops with duplicate variable names decompile correctly
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "test"}, {"this", "none", "this"});
+      set_verb_code(o, "test", {"for i, i in ({})", "  break i;", "endfor"});
+      vc = verb_code(o, "test");
+      recycle(o);
+      return vc;
+    expect:
+      value: ["for i, i in ({})", "  break i;", "endfor"]
+
+  - name: decompile_for_loop_two_vars_break_first
+    permission: wizard
+    description: Test that for loops with two variables and break on first decompile correctly
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "test"}, {"this", "none", "this"});
+      set_verb_code(o, "test", {"for i, j in ({})", "  break i;", "endfor"});
+      vc = verb_code(o, "test");
+      recycle(o);
+      return vc;
+    expect:
+      value: ["for i, j in ({})", "  break i;", "endfor"]
+
+  - name: decompile_for_loop_two_vars_break_second
+    permission: wizard
+    description: Test that for loops with two variables and break on second decompile correctly
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "test"}, {"this", "none", "this"});
+      set_verb_code(o, "test", {"for i, j in ({})", "  break j;", "endfor"});
+      vc = verb_code(o, "test");
+      recycle(o);
+      return vc;
+    expect:
+      value: ["for i, j in ({})", "  break j;", "endfor"]
+
+  - name: decompile_for_loop_break_and_continue
+    permission: wizard
+    description: Test that for loops with both break and continue decompile correctly
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "test"}, {"this", "none", "this"});
+      set_verb_code(o, "test", {"for i, j in ({})", "  break j;", "  continue i;", "endfor"});
+      vc = verb_code(o, "test");
+      recycle(o);
+      return vc;
+    expect:
+      value: ["for i, j in ({})", "  break j;", "  continue i;", "endfor"]
+
+  - name: decompile_for_loop_string
+    permission: wizard
+    description: Test that for loops over strings decompile correctly
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "test"}, {"this", "none", "this"});
+      set_verb_code(o, "test", {"for i, j in (\"foobar\")", "  break j;", "  continue i;", "endfor"});
+      vc = verb_code(o, "test");
+      recycle(o);
+      return vc;
+    expect:
+      value: ["for i, j in (\"foobar\")", "  break j;", "  continue i;", "endfor"]
+
+  - name: decompile_for_loop_map
+    permission: wizard
+    description: Test that for loops over maps decompile correctly
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "test"}, {"this", "none", "this"});
+      set_verb_code(o, "test", {"for v, k in ([\"one\" -> 1, \"two\" -> \"two\", \"three\" -> 3.0])", "  break k;", "  continue v;", "endfor"});
+      vc = verb_code(o, "test");
+      recycle(o);
+      return vc;
+    expect:
+      value: ["for v, k in ([\"one\" -> 1, \"two\" -> \"two\", \"three\" -> 3.0])", "  break k;", "  continue v;", "endfor"]
+
+  # test_that_for_loop_edge_cases_do_not_leak_memory
+  - name: for_loop_empty_map_no_leak
+    statement: |
+      for i in ([])
+      endfor
+      return 0;
+    expect:
+      value: 0
+
+  - name: for_loop_empty_map_two_vars_no_leak
+    statement: |
+      for v, k in ([])
+      endfor
+      return 0;
+    expect:
+      value: 0

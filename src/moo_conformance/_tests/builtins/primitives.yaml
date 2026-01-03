@@ -1,0 +1,330 @@
+name: primitives
+description: Primitive value prototypes and method dispatch
+
+# These tests verify that primitive values (integers, floats, strings, errors, lists, maps)
+# can have prototype objects that handle method calls on those values.
+# For example, if $system.list_proto exists, then {1,2,3}:foo() will call
+# the foo verb on the list prototype object.
+
+setup:
+  permission: wizard
+  code: |
+    for task in (queued_tasks())
+      kill_task(task[1]);
+    endfor
+
+tests:
+  # Test that without prototypes, calling methods on primitives raises E_TYPE
+  # Note: toastcore.db has int_proto, str_proto, list_proto, map_proto
+  # So these tests only pass for types without prototypes
+
+  - name: integer_without_prototype
+    permission: programmer
+    code: "123:foo()"
+    expect:
+      error: E_TYPE
+
+  - name: float_without_prototype
+    permission: programmer
+    code: "1.23:foo()"
+    expect:
+      error: E_TYPE
+
+  - name: string_without_prototype
+    permission: programmer
+    code: '"abc":foo()'
+    expect:
+      error: E_TYPE
+
+  - name: error_without_prototype
+    permission: programmer
+    code: "E_NONE:foo()"
+    expect:
+      error: E_TYPE
+
+  - name: list_without_prototype
+    permission: programmer
+    code: "{}:foo()"
+    expect:
+      error: E_TYPE
+
+  - name: map_without_prototype
+    permission: programmer
+    code: "[]:foo()"
+    expect:
+      error: E_TYPE
+
+  # Test that with prototypes but no verb, calling methods raises E_VERBNF
+  - name: integer_prototype_no_verb
+    permission: wizard
+    setup:
+      code: |
+        `recycle(#0.int_proto) ! ANY => 0';
+        `delete_property(#0, "int_proto") ! ANY => 0';
+        test_proto = create($nothing);
+        add_property(#0, "int_proto", test_proto, {player, ""});
+    teardown:
+      code: "`recycle(#0.int_proto) ! ANY => 0'; `delete_property(#0, \"int_proto\") ! ANY => 0';"
+    code: "123:foo()"
+    expect:
+      error: E_VERBNF
+
+  - name: integer_prototype_with_verb
+    permission: wizard
+    setup:
+      code: |
+        `recycle(#0.int_proto) ! ANY => 0';
+        `delete_property(#0, "int_proto") ! ANY => 0';
+        test_proto = create($nothing);
+        add_property(#0, "int_proto", test_proto, {player, ""});
+        add_verb(test_proto, {player, "xd", "foo"}, {"this", "none", "this"});
+    teardown:
+      code: "`recycle(#0.int_proto) ! ANY => 0'; `delete_property(#0, \"int_proto\") ! ANY => 0';"
+    code: "123:foo()"
+    expect:
+      value: 0
+
+  - name: float_prototype_no_verb
+    permission: wizard
+    setup:
+      code: |
+        `recycle(#0.float_proto) ! ANY => 0';
+        `delete_property(#0, "float_proto") ! ANY => 0';
+        test_proto = create($nothing);
+        add_property(#0, "float_proto", test_proto, {player, ""});
+    teardown:
+      code: "`recycle(#0.float_proto) ! ANY => 0'; `delete_property(#0, \"float_proto\") ! ANY => 0';"
+    code: "1.23:foo()"
+    expect:
+      error: E_VERBNF
+
+  - name: float_prototype_with_verb
+    permission: wizard
+    setup:
+      code: |
+        `recycle(#0.float_proto) ! ANY => 0';
+        `delete_property(#0, "float_proto") ! ANY => 0';
+        test_proto = create($nothing);
+        add_property(#0, "float_proto", test_proto, {player, ""});
+        add_verb(test_proto, {player, "xd", "foo"}, {"this", "none", "this"});
+    teardown:
+      code: "`recycle(#0.float_proto) ! ANY => 0'; `delete_property(#0, \"float_proto\") ! ANY => 0';"
+    code: "1.23:foo()"
+    expect:
+      value: 0
+
+  - name: string_prototype_no_verb
+    permission: wizard
+    setup:
+      code: |
+        `recycle(#0.str_proto) ! ANY => 0';
+        `delete_property(#0, "str_proto") ! ANY => 0';
+        test_proto = create($nothing);
+        add_property(#0, "str_proto", test_proto, {player, ""});
+    teardown:
+      code: "`recycle(#0.str_proto) ! ANY => 0'; `delete_property(#0, \"str_proto\") ! ANY => 0';"
+    code: '"abc":foo()'
+    expect:
+      error: E_VERBNF
+
+  - name: string_prototype_with_verb
+    permission: wizard
+    setup:
+      code: |
+        `recycle(#0.str_proto) ! ANY => 0';
+        `delete_property(#0, "str_proto") ! ANY => 0';
+        test_proto = create($nothing);
+        add_property(#0, "str_proto", test_proto, {player, ""});
+        add_verb(test_proto, {player, "xd", "foo"}, {"this", "none", "this"});
+    teardown:
+      code: "`recycle(#0.str_proto) ! ANY => 0'; `delete_property(#0, \"str_proto\") ! ANY => 0';"
+    code: '"abc":foo()'
+    expect:
+      value: 0
+
+  - name: error_prototype_no_verb
+    permission: wizard
+    setup:
+      code: |
+        `recycle(#0.err_proto) ! ANY => 0';
+        `delete_property(#0, "err_proto") ! ANY => 0';
+        test_proto = create($nothing);
+        add_property(#0, "err_proto", test_proto, {player, ""});
+    teardown:
+      code: "`recycle(#0.err_proto) ! ANY => 0'; `delete_property(#0, \"err_proto\") ! ANY => 0';"
+    code: "E_NONE:foo()"
+    expect:
+      error: E_VERBNF
+
+  - name: error_prototype_with_verb
+    permission: wizard
+    setup:
+      code: |
+        `recycle(#0.err_proto) ! ANY => 0';
+        `delete_property(#0, "err_proto") ! ANY => 0';
+        test_proto = create($nothing);
+        add_property(#0, "err_proto", test_proto, {player, ""});
+        add_verb(test_proto, {player, "xd", "foo"}, {"this", "none", "this"});
+    teardown:
+      code: "`recycle(#0.err_proto) ! ANY => 0'; `delete_property(#0, \"err_proto\") ! ANY => 0';"
+    code: "E_NONE:foo()"
+    expect:
+      value: 0
+
+  - name: list_prototype_no_verb
+    permission: wizard
+    setup:
+      code: |
+        `recycle(#0.list_proto) ! ANY => 0';
+        `delete_property(#0, "list_proto") ! ANY => 0';
+        test_proto = create($nothing);
+        add_property(#0, "list_proto", test_proto, {player, ""});
+    teardown:
+      code: "`recycle(#0.list_proto) ! ANY => 0'; `delete_property(#0, \"list_proto\") ! ANY => 0';"
+    code: "{}:foo()"
+    expect:
+      error: E_VERBNF
+
+  - name: list_prototype_with_verb
+    permission: wizard
+    setup:
+      code: |
+        `recycle(#0.list_proto) ! ANY => 0';
+        `delete_property(#0, "list_proto") ! ANY => 0';
+        test_proto = create($nothing);
+        add_property(#0, "list_proto", test_proto, {player, ""});
+        add_verb(test_proto, {player, "xd", "foo"}, {"this", "none", "this"});
+    teardown:
+      code: "`recycle(#0.list_proto) ! ANY => 0'; `delete_property(#0, \"list_proto\") ! ANY => 0';"
+    code: "{}:foo()"
+    expect:
+      value: 0
+
+  - name: map_prototype_no_verb
+    permission: wizard
+    setup:
+      code: |
+        `recycle(#0.map_proto) ! ANY => 0';
+        `delete_property(#0, "map_proto") ! ANY => 0';
+        test_proto = create($nothing);
+        add_property(#0, "map_proto", test_proto, {player, ""});
+    teardown:
+      code: "`recycle(#0.map_proto) ! ANY => 0'; `delete_property(#0, \"map_proto\") ! ANY => 0';"
+    code: "[]:foo()"
+    expect:
+      error: E_VERBNF
+
+  - name: map_prototype_with_verb
+    permission: wizard
+    setup:
+      code: |
+        `recycle(#0.map_proto) ! ANY => 0';
+        `delete_property(#0, "map_proto") ! ANY => 0';
+        test_proto = create($nothing);
+        add_property(#0, "map_proto", test_proto, {player, ""});
+        add_verb(test_proto, {player, "xd", "foo"}, {"this", "none", "this"});
+    teardown:
+      code: "`recycle(#0.map_proto) ! ANY => 0'; `delete_property(#0, \"map_proto\") ! ANY => 0';"
+    code: "[]:foo()"
+    expect:
+      value: 0
+
+  # Test that queued_tasks() 'this' field shows prototype object when calling via primitive
+  # Note: toast returns the prototype object, not the primitive value itself
+  - name: queued_tasks_includes_this_map
+    permission: wizard
+    setup:
+      code: |
+        `recycle(#0.map_proto) ! ANY => 0';
+        `delete_property(#0, "map_proto") ! ANY => 0';
+        test_map_proto = create($nothing);
+        add_property(#0, "map_proto", test_map_proto, {player, ""});
+        add_verb(test_map_proto, {player, "xd", "suspend"}, {"this", "none", "this"});
+        set_verb_code(test_map_proto, "suspend", {"fork t (0)", "  return suspend();", "endfork", "return t;"});
+    teardown:
+      code: "`recycle(#0.map_proto) ! ANY => 0'; `delete_property(#0, \"map_proto\") ! ANY => 0';"
+    statement: |
+      t = ["one" -> 1, "two" -> 2]:suspend();
+      q = queued_tasks();
+      kill_task(t);
+      return typeof(q[1][5]);
+    expect:
+      value: 1
+
+  # Test that callers() 'this' field is #-1 for primitive prototype calls
+  # Note: The 'this' variable INSIDE the verb is the primitive, but callers() shows #-1
+  # because primitives don't have object IDs. This matches ToastStunt behavior.
+  - name: callers_this_is_nothing_for_primitives
+    permission: wizard
+    setup:
+      code: |
+        `recycle(#0.list_proto) ! ANY => 0';
+        `delete_property(#0, "list_proto") ! ANY => 0';
+        test_list_proto = create($nothing);
+        add_property(#0, "list_proto", test_list_proto, {player, ""});
+        add_verb(test_list_proto, {player, "xd", "foo"}, {"this", "none", "this"});
+        add_verb(test_list_proto, {player, "xd", "bar"}, {"this", "none", "this"});
+        set_verb_code(test_list_proto, "foo", {"return this:bar();"});
+        set_verb_code(test_list_proto, "bar", {"return callers();"});
+    teardown:
+      code: "`recycle(#0.list_proto) ! ANY => 0'; `delete_property(#0, \"list_proto\") ! ANY => 0';"
+    statement: |
+      c = {1, 2, "three", 4.0}:foo();
+      return typeof(c[1][1]);
+    expect:
+      # TYPE_OBJ = 1 (c[1][1] is #-1, the 'nothing' object)
+      value: 1
+
+  # Test that inheritance works with prototypes
+  - name: inheritance_with_prototypes
+    permission: wizard
+    setup:
+      code: |
+        `recycle(#0.list_proto) ! ANY => 0';
+        `delete_property(#0, "list_proto") ! ANY => 0';
+        `recycle(#0.map_proto) ! ANY => 0';
+        `delete_property(#0, "map_proto") ! ANY => 0';
+        test_base = create($nothing);
+        test_list_proto = create(test_base);
+        test_map_proto = create(test_base);
+        add_property(#0, "list_proto", test_list_proto, {player, ""});
+        add_property(#0, "map_proto", test_map_proto, {player, ""});
+        add_verb(test_base, {player, "xd", "length"}, {"this", "none", "this"});
+        set_verb_code(test_base, "length", {"return length(this);"});
+    teardown:
+      code: "`recycle(#0.list_proto) ! ANY => 0'; `delete_property(#0, \"list_proto\") ! ANY => 0'; `recycle(#0.map_proto) ! ANY => 0'; `delete_property(#0, \"map_proto\") ! ANY => 0';"
+    statement: |
+      map_len = ["one" -> 1, "two" -> 2]:length();
+      list_len = {1, 2, "three", 4.0}:length();
+      return {map_len, list_len};
+    expect:
+      value: [2, 4]
+
+  # Test that pass() works with prototypes
+  - name: pass_works_with_prototypes
+    permission: wizard
+    setup:
+      code: |
+        `recycle(#0.list_proto) ! ANY => 0';
+        `delete_property(#0, "list_proto") ! ANY => 0';
+        `recycle(#0.map_proto) ! ANY => 0';
+        `delete_property(#0, "map_proto") ! ANY => 0';
+        test_base = create($nothing);
+        test_list_proto = create(test_base);
+        test_map_proto = create(test_base);
+        add_property(#0, "list_proto", test_list_proto, {player, ""});
+        add_property(#0, "map_proto", test_map_proto, {player, ""});
+        add_verb(test_base, {player, "xd", "length"}, {"this", "none", "this"});
+        set_verb_code(test_base, "length", {"return length(this);"});
+        add_verb(test_list_proto, {player, "xd", "length"}, {"this", "none", "this"});
+        set_verb_code(test_list_proto, "length", {"return tostr(pass());"});
+        add_verb(test_map_proto, {player, "xd", "length"}, {"this", "none", "this"});
+        set_verb_code(test_map_proto, "length", {"return tostr(pass());"});
+    teardown:
+      code: "`recycle(#0.list_proto) ! ANY => 0'; `delete_property(#0, \"list_proto\") ! ANY => 0'; `recycle(#0.map_proto) ! ANY => 0'; `delete_property(#0, \"map_proto\") ! ANY => 0';"
+    statement: |
+      map_len = ["one" -> 1, "two" -> 2]:length();
+      list_len = {1, 2, "three", 4.0}:length();
+      return {map_len, list_len};
+    expect:
+      value: ["2", "4"]

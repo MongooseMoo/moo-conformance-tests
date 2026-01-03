@@ -1,0 +1,683 @@
+name: limits
+description: Test various in-MOO limits on values (max_string_concat, max_list_value_bytes, max_map_value_bytes)
+
+requires:
+  builtins: [setadd, listinsert, listappend, listset, setremove, listdelete, decode_binary, mapdelete, tostr, toliteral, strsub, encode_binary, substitute, encode_base64, random_bytes, value_bytes, load_server_options]
+
+setup:
+  permission: wizard
+  code: |
+    add_property($server_options, "max_concat_catchable", 1, {player, "r"});
+    add_property($server_options, "max_string_concat", 1000000, {player, "r"});
+    add_property($server_options, "max_list_value_bytes", 1000000, {player, "r"});
+    add_property($server_options, "max_map_value_bytes", 1000000, {player, "r"});
+    add_property($server_options, "fg_seconds", 123, {player, "r"});
+    add_property($server_options, "fg_ticks", 2147483647, {player, "r"});
+    load_server_options();
+
+teardown:
+  permission: wizard
+  code: |
+    delete_property($server_options, "max_concat_catchable");
+    delete_property($server_options, "max_string_concat");
+    delete_property($server_options, "max_list_value_bytes");
+    delete_property($server_options, "max_map_value_bytes");
+    delete_property($server_options, "fg_seconds");
+    delete_property($server_options, "fg_ticks");
+    load_server_options();
+
+tests:
+  - name: setadd_checks_list_max_value_bytes_small
+    permission: wizard
+    statement: |
+      n = 90;
+      $server_options.max_list_value_bytes = 1000000;
+      load_server_options();
+      pad = value_bytes({1, 2}) - value_bytes({});
+      x = {};
+      for i in [1..n]
+        x = setadd(x, i);
+      endfor
+      size = value_bytes(x);
+      $server_options.max_list_value_bytes = size + pad;
+      load_server_options();
+      x = {};
+      for i in [1..n]
+        x = setadd(x, i);
+      endfor
+      return value_bytes(x);
+    expect:
+      type: int
+
+  - name: setadd_checks_list_max_value_bytes_exceeds
+    permission: wizard
+    skip: "Test math incorrect: pad=32 bytes (2 elements) but adding 1 element only adds 16 bytes, so size+16 never exceeds size+32"
+    statement: |
+      n = 90;
+      $server_options.max_list_value_bytes = 1000000;
+      load_server_options();
+      pad = value_bytes({1, 2}) - value_bytes({});
+      x = {};
+      for i in [1..n]
+        x = setadd(x, i);
+      endfor
+      size = value_bytes(x);
+      $server_options.max_list_value_bytes = size + pad;
+      load_server_options();
+      x = {};
+      for i in [1..(n + 1)]
+        x = setadd(x, i);
+      endfor
+      return value_bytes(x);
+    expect:
+      error: E_QUOTA
+
+  - name: setadd_fails_if_value_too_large
+    permission: wizard
+    statement: |
+      n = 5;
+      $server_options.max_list_value_bytes = 1000000;
+      load_server_options();
+      pad = value_bytes({1, 2}) - value_bytes({});
+      x = {};
+      for i in [1..n]
+        x = setadd({}, {x, x});
+      endfor
+      size = value_bytes(x);
+      $server_options.max_list_value_bytes = size + pad;
+      load_server_options();
+      x = {};
+      for i in [1..(n + 1)]
+        x = setadd({}, {x, x});
+      endfor
+      return value_bytes(x);
+    expect:
+      error: E_QUOTA
+
+  - name: listinsert_checks_list_max_value_bytes
+    permission: wizard
+    skip: "Test math incorrect: pad=32 bytes (2 elements) but adding 1 element only adds 16 bytes, so size+16 never exceeds size+32"
+    statement: |
+      n = 90;
+      $server_options.max_list_value_bytes = 1000000;
+      load_server_options();
+      pad = value_bytes({1, 2}) - value_bytes({});
+      x = {};
+      for i in [1..n]
+        x = listinsert(x, i);
+      endfor
+      size = value_bytes(x);
+      $server_options.max_list_value_bytes = size + pad;
+      load_server_options();
+      x = {};
+      for i in [1..(n + 1)]
+        x = listinsert(x, i);
+      endfor
+      return value_bytes(x);
+    expect:
+      error: E_QUOTA
+
+  - name: listinsert_fails_if_value_too_large
+    permission: wizard
+    statement: |
+      n = 5;
+      $server_options.max_list_value_bytes = 1000000;
+      load_server_options();
+      pad = value_bytes({1, 2}) - value_bytes({});
+      x = {};
+      for i in [1..n]
+        x = listinsert({}, {x, x});
+      endfor
+      size = value_bytes(x);
+      $server_options.max_list_value_bytes = size + pad;
+      load_server_options();
+      x = {};
+      for i in [1..(n + 1)]
+        x = listinsert({}, {x, x});
+      endfor
+      return value_bytes(x);
+    expect:
+      error: E_QUOTA
+
+  - name: listappend_checks_list_max_value_bytes
+    permission: wizard
+    skip: "Test math incorrect: pad=32 bytes (2 elements) but adding 1 element only adds 16 bytes, so size+16 never exceeds size+32"
+    statement: |
+      n = 90;
+      $server_options.max_list_value_bytes = 1000000;
+      load_server_options();
+      pad = value_bytes({1, 2}) - value_bytes({});
+      x = {};
+      for i in [1..n]
+        x = listappend(x, i);
+      endfor
+      size = value_bytes(x);
+      $server_options.max_list_value_bytes = size + pad;
+      load_server_options();
+      x = {};
+      for i in [1..(n + 1)]
+        x = listappend(x, i);
+      endfor
+      return value_bytes(x);
+    expect:
+      error: E_QUOTA
+
+  - name: listappend_fails_if_value_too_large
+    permission: wizard
+    statement: |
+      n = 5;
+      $server_options.max_list_value_bytes = 1000000;
+      load_server_options();
+      pad = value_bytes({1, 2}) - value_bytes({});
+      x = {};
+      for i in [1..n]
+        x = listappend({}, {x, x});
+      endfor
+      size = value_bytes(x);
+      $server_options.max_list_value_bytes = size + pad;
+      load_server_options();
+      x = {};
+      for i in [1..(n + 1)]
+        x = listappend({}, {x, x});
+      endfor
+      return value_bytes(x);
+    expect:
+      error: E_QUOTA
+
+  - name: listset_fails_if_value_too_large
+    permission: wizard
+    skip: "Test math incorrect: pad=80 bytes but adding 1 iteration only adds 64 bytes, so size+64 never exceeds size+80"
+    statement: |
+      n = 90;
+      $server_options.max_list_value_bytes = 1000000;
+      load_server_options();
+      pad = value_bytes({{}, {}, 3}) - value_bytes({});
+      x = {};
+      for i in [1..n]
+        x = listset({0}, {x}, 1);
+      endfor
+      size = value_bytes(x);
+      $server_options.max_list_value_bytes = size + pad;
+      load_server_options();
+      x = {};
+      for i in [1..(n + 1)]
+        x = listset({0}, {x}, 1);
+      endfor
+      return value_bytes(x);
+    expect:
+      error: E_QUOTA
+
+  - name: setremove_fails_if_result_too_large
+    permission: wizard
+    statement: |
+      a = create($nothing);
+      add_property(a, "foo", 0, {a, ""});
+      x = {};
+      for i in [1..1000]
+        x = {@x, i};
+      endfor
+      a.foo = x;
+      $server_options.max_list_value_bytes = 1000;
+      load_server_options();
+      result = setremove(a.foo, 1);
+      recycle(a);
+      return result;
+    expect:
+      error: E_QUOTA
+
+  - name: listdelete_fails_if_result_too_large
+    permission: wizard
+    statement: |
+      a = create($nothing);
+      add_property(a, "foo", 0, {a, ""});
+      x = {};
+      for i in [1..1000]
+        x = {@x, i};
+      endfor
+      a.foo = x;
+      $server_options.max_list_value_bytes = 1000;
+      load_server_options();
+      result = listdelete(a.foo, 1);
+      recycle(a);
+      return result;
+    expect:
+      error: E_QUOTA
+
+  - name: appending_to_list_checks_max_value_bytes
+    permission: wizard
+    statement: |
+      n = 90;
+      $server_options.max_list_value_bytes = 1000000;
+      load_server_options();
+      x = {};
+      for i in [1..n]
+        x = {@x, i};
+      endfor
+      size = value_bytes(x);
+      $server_options.max_list_value_bytes = size + 1;
+      load_server_options();
+      x = {};
+      for i in [1..(n + 1)]
+        x = {@x, i};
+      endfor
+      return value_bytes(x);
+    expect:
+      error: E_QUOTA
+
+  - name: prepending_to_list_checks_max_value_bytes
+    permission: wizard
+    statement: |
+      n = 90;
+      $server_options.max_list_value_bytes = 1000000;
+      load_server_options();
+      x = {};
+      for i in [1..n]
+        x = {i, @x};
+      endfor
+      size = value_bytes(x);
+      $server_options.max_list_value_bytes = size + 1;
+      load_server_options();
+      x = {};
+      for i in [1..(n + 1)]
+        x = {i, @x};
+      endfor
+      return value_bytes(x);
+    expect:
+      error: E_QUOTA
+
+  - name: indexset_on_list_checks_max_value_bytes
+    permission: wizard
+    statement: |
+      n = 90;
+      $server_options.max_list_value_bytes = 1000000;
+      load_server_options();
+      x = {0};
+      for i in [1..n]
+        x[1] = {x};
+      endfor
+      size = value_bytes(x);
+      $server_options.max_list_value_bytes = size + 1;
+      load_server_options();
+      x = {0};
+      for i in [1..(n + 1)]
+        x[1] = {x};
+      endfor
+      return value_bytes(x);
+    expect:
+      error: E_QUOTA
+
+  - name: rangeset_on_list_checks_max_value_bytes
+    permission: wizard
+    statement: |
+      n = 90;
+      $server_options.max_list_value_bytes = 1000000;
+      load_server_options();
+      x = {0};
+      for i in [1..n]
+        x[1..1] = {x};
+      endfor
+      size = value_bytes(x);
+      $server_options.max_list_value_bytes = size + 1;
+      load_server_options();
+      x = {0};
+      for i in [1..(n + 1)]
+        x[1..1] = {x};
+      endfor
+      return value_bytes(x);
+    expect:
+      error: E_QUOTA
+
+  - name: assigning_list_fails_if_value_too_large
+    permission: wizard
+    statement: |
+      n = 5;
+      $server_options.max_list_value_bytes = 1000000;
+      load_server_options();
+      x = {};
+      for i in [1..n]
+        x = {x, x};
+      endfor
+      size = value_bytes(x);
+      $server_options.max_list_value_bytes = size + 1;
+      load_server_options();
+      x = {};
+      for i in [1..(n + 1)]
+        x = {x, x};
+      endfor
+      return value_bytes(x);
+    expect:
+      error: E_QUOTA
+
+  - name: decode_binary_checks_list_max_value_bytes
+    permission: wizard
+    statement: |
+      a = create($nothing);
+      add_property(a, "foo", 0, {a, ""});
+      x = "x";
+      for i in [1..12]
+        x = tostr(x, x);
+      endfor
+      a.foo = x;
+      $server_options.max_list_value_bytes = 1000000;
+      load_server_options();
+      pad = value_bytes({1, 2}) - value_bytes({});
+      size = value_bytes(decode_binary(a.foo));
+      $server_options.max_list_value_bytes = size + pad;
+      load_server_options();
+      x = a.foo;
+      x[2..4] = "~00~0D~0A";
+      result = decode_binary(x);
+      recycle(a);
+      return result;
+    expect:
+      error: E_QUOTA
+
+  - name: mapdelete_fails_if_result_too_large
+    permission: wizard
+    statement: |
+      a = create($nothing);
+      add_property(a, "foo", 0, {a, ""});
+      x = [];
+      for i in [1..1000]
+        x[i] = i;
+      endfor
+      a.foo = x;
+      $server_options.max_map_value_bytes = 1000;
+      load_server_options();
+      result = mapdelete(a.foo, 1);
+      recycle(a);
+      return result;
+    expect:
+      error: E_QUOTA
+
+  - name: indexset_on_map_checks_max_value_bytes
+    permission: wizard
+    statement: |
+      n = 90;
+      $server_options.max_map_value_bytes = 1000000;
+      load_server_options();
+      x = [];
+      for i in [1..n]
+        x[1] = {x};
+      endfor
+      size = value_bytes(x);
+      $server_options.max_map_value_bytes = size + 1;
+      load_server_options();
+      x = [];
+      for i in [1..(n + 1)]
+        x[1] = {x};
+      endfor
+      return value_bytes(x);
+    expect:
+      error: E_QUOTA
+
+  - name: rangeset_on_map_checks_max_value_bytes
+    permission: wizard
+    statement: |
+      n = 90;
+      $server_options.max_map_value_bytes = 1000000;
+      load_server_options();
+      x = [1 -> 1];
+      for i in [1..n]
+        x[1..1] = [1 -> x];
+      endfor
+      size = value_bytes(x);
+      $server_options.max_map_value_bytes = size + 1;
+      load_server_options();
+      x = [1 -> 1];
+      for i in [1..(n + 1)]
+        x[1..1] = [1 -> x];
+      endfor
+      return value_bytes(x);
+    expect:
+      error: E_QUOTA
+
+  - name: list_literal_checks_max_value_bytes
+    permission: wizard
+    statement: |
+      $server_options.max_list_value_bytes = 2000;
+      load_server_options();
+      s = "return {";
+      for i in [0..1000]
+        if (i > 0)
+          s = s + ",";
+        endif
+        s = s + tostr(i);
+      endfor
+      s = s + "};";
+      return eval(s);
+    expect:
+      error: E_QUOTA
+
+  - name: map_literal_checks_max_value_bytes
+    permission: wizard
+    statement: |
+      $server_options.max_map_value_bytes = 2000;
+      load_server_options();
+      s = "return [";
+      for i in [0..1000]
+        if (i > 0)
+          s = s + ",";
+        endif
+        s = s + tostr(i) + "->" + tostr(i);
+      endfor
+      s = s + "];";
+      return eval(s);
+    expect:
+      error: E_QUOTA
+
+  - name: string_concat_limit
+    permission: wizard
+    statement: |
+      $server_options.max_string_concat = 3210;
+      load_server_options();
+      x = "";
+      for i in [1..3210]
+        x = x + " ";
+      endfor
+      return length(x);
+    expect:
+      value: 3210
+
+  - name: string_concat_exceeds_limit
+    permission: wizard
+    statement: |
+      $server_options.max_string_concat = 3210;
+      load_server_options();
+      x = "";
+      for i in [1..3211]
+        x = x + " ";
+      endfor
+      return length(x);
+    expect:
+      error: E_QUOTA
+
+  - name: tostr_limit
+    permission: wizard
+    skip: "Ruby test also fails - tostr() has higher overhead than + operator so 3210 iterations exceeds limit. See test_that_string_limits_work in test_limits.rb."
+    statement: |
+      $server_options.max_string_concat = 3210;
+      load_server_options();
+      x = "";
+      for i in [1..3210]
+        x = tostr(" ", x);
+      endfor
+      return length(x);
+    expect:
+      value: 3210
+
+  - name: tostr_exceeds_limit
+    permission: wizard
+    statement: |
+      $server_options.max_string_concat = 3210;
+      load_server_options();
+      x = "";
+      for i in [1..3211]
+        x = tostr(" ", x);
+      endfor
+      return length(x);
+    expect:
+      error: E_QUOTA
+
+  - name: toliteral_limit
+    permission: wizard
+    statement: |
+      $server_options.max_string_concat = 3210;
+      load_server_options();
+      x = "";
+      for i in [1..10]
+        x = toliteral(x);
+      endfor
+      return length(x);
+    expect:
+      value: 2046
+
+  - name: toliteral_exceeds_limit
+    permission: wizard
+    statement: |
+      $server_options.max_string_concat = 3210;
+      load_server_options();
+      x = "";
+      for i in [1..11]
+        x = toliteral(x);
+      endfor
+      return length(x);
+    expect:
+      error: E_QUOTA
+
+  - name: strsub_limit
+    permission: wizard
+    statement: |
+      $server_options.max_string_concat = 3210;
+      load_server_options();
+      x = " ";
+      for i in [1..11]
+        x = strsub(x, " ", "  ");
+      endfor
+      return length(x);
+    expect:
+      value: 2048
+
+  - name: strsub_exceeds_limit
+    permission: wizard
+    statement: |
+      $server_options.max_string_concat = 3210;
+      load_server_options();
+      x = " ";
+      for i in [1..12]
+        x = strsub(x, " ", "  ");
+      endfor
+      return length(x);
+    expect:
+      error: E_QUOTA
+
+  - name: encode_binary_limit
+    permission: wizard
+    statement: |
+      $server_options.max_string_concat = 3210;
+      load_server_options();
+      x = "~";
+      for i in [1..1604]
+        x = encode_binary(x);
+      endfor
+      return length(x);
+    expect:
+      value: 3209
+
+  - name: encode_binary_exceeds_limit
+    permission: wizard
+    statement: |
+      $server_options.max_string_concat = 3210;
+      load_server_options();
+      x = "~";
+      for i in [1..1605]
+        x = encode_binary(x);
+      endfor
+      return length(x);
+    expect:
+      error: E_QUOTA
+
+  - name: substitute_limit
+    permission: wizard
+    statement: |
+      $server_options.max_string_concat = 3210;
+      load_server_options();
+      x = "%1";
+      for i in [1..10]
+        x = substitute(x, {1, 4, {{1, 4}, {0, -1}, {0, -1}, {0, -1}, {0, -1}, {0, -1}, {0, -1}, {0, -1}, {0, -1}}, "%1%1"});
+      endfor
+      return length(x);
+    expect:
+      value: 2048
+
+  - name: substitute_exceeds_limit
+    permission: wizard
+    statement: |
+      $server_options.max_string_concat = 3210;
+      load_server_options();
+      x = "%1";
+      for i in [1..11]
+        x = substitute(x, {1, 4, {{1, 4}, {0, -1}, {0, -1}, {0, -1}, {0, -1}, {0, -1}, {0, -1}, {0, -1}, {0, -1}}, "%1%1"});
+      endfor
+      return length(x);
+    expect:
+      error: E_QUOTA
+
+  - name: encode_base64_limit
+    permission: wizard
+    statement: |
+      $server_options.max_string_concat = 3210;
+      load_server_options();
+      x = "!";
+      for i in [1..21]
+        x = encode_base64(x);
+      endfor
+      return length(x);
+    expect:
+      value: 2616
+
+  - name: encode_base64_exceeds_limit
+    permission: wizard
+    statement: |
+      $server_options.max_string_concat = 3210;
+      load_server_options();
+      x = "!";
+      for i in [1..22]
+        x = encode_base64(x);
+      endfor
+      return length(x);
+    expect:
+      error: E_QUOTA
+
+  - name: random_bytes_within_limit
+    permission: wizard
+    statement: |
+      $server_options.max_string_concat = 3210;
+      load_server_options();
+      x = 1001;
+      return length(random_bytes(x)) > 1;
+    expect:
+      value: 1
+
+  - name: random_bytes_exceeds_limit
+    permission: wizard
+    statement: |
+      $server_options.max_string_concat = 3210;
+      load_server_options();
+      x = 3211;
+      return length(random_bytes(x)) > 1;
+    expect:
+      error: E_QUOTA
+
+  - name: quota_errors_do_not_leak_memory
+    permission: wizard
+    statement: |
+      $server_options.max_string_concat = 3210;
+      load_server_options();
+      x = [];
+      for i in [1..1605]
+        x[tostr(random())] = {tostr(random())};
+      endfor
+      return toliteral(x);
+    expect:
+      error: E_QUOTA

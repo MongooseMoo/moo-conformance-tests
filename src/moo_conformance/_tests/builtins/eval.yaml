@@ -1,0 +1,56 @@
+name: eval
+description: Tests for eval() builtin
+
+requires:
+  builtins: [eval]
+
+tests:
+  - name: eval_requires_programmer
+    permission: wizard
+    setup:
+      code: 'player.programmer = 0;'
+    code: 'eval("return 5;")'
+    expect:
+      error: E_PERM
+
+  - name: eval_requires_at_least_one_argument
+    permission: wizard
+    code: "eval()"
+    expect:
+      error: E_ARGS
+
+  - name: eval_requires_string_arguments_int
+    permission: wizard
+    code: "eval(1)"
+    expect:
+      error: E_TYPE
+
+  - name: eval_requires_string_arguments_two_ints
+    permission: wizard
+    code: "eval(1, 2)"
+    expect:
+      error: E_TYPE
+
+  - name: eval_requires_string_arguments_map
+    permission: wizard
+    code: "eval({})"
+    expect:
+      error: E_TYPE
+
+  - name: eval_requires_string_arguments_list
+    permission: wizard
+    code: "eval([])"
+    expect:
+      error: E_TYPE
+
+  - name: eval_evaluates_multiple_strings
+    permission: wizard
+    code: 'eval("x = 0;", "for i in [1..5]", "x = x + i;", "endfor", "return x;")'
+    expect:
+      value: [1, 15]
+
+  - name: eval_evaluates_single_string
+    permission: wizard
+    code: 'eval("return 5;")'
+    expect:
+      value: [1, 5]

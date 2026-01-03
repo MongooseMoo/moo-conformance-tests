@@ -1,0 +1,55 @@
+name: steps_basic
+description: Tests for multi-step test execution with variable capture
+
+tests:
+  - name: basic_step_execution
+    steps:
+      - run: "1 + 1"
+        expect:
+          value: 2
+
+  - name: capture_and_substitute
+    steps:
+      - run: "2 + 2"
+        capture: x
+      - run: "{x} + 1"
+        expect:
+          value: 5
+
+  - name: cleanup_runs_with_captured_vars
+    permission: wizard
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "valid({obj})"
+        expect:
+          value: 1
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: multi_permission_steps
+    steps:
+      - run: "create($nothing)"
+        as: wizard
+        capture: obj
+      - run: "valid({obj})"
+        as: programmer
+        expect:
+          value: 1
+    cleanup:
+      - run: "recycle({obj})"
+        as: wizard
+
+  # This test runs because 'length' builtin exists (not missing)
+  - name: skip_if_builtin_missing_but_exists
+    skip_if: "missing builtin.length"
+    code: "length({1, 2, 3})"
+    expect:
+      value: 3
+
+  # This test is skipped because 64bit feature is present
+  - name: skip_if_has_64bit_feature
+    skip_if: "feature.64bit"
+    code: "this_would_fail_if_run()"
+    expect:
+      value: 999

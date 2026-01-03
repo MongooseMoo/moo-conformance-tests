@@ -1,0 +1,691 @@
+name: json
+description: JSON generation and parsing builtins (generate_json, parse_json)
+
+tests:
+  # Default mode - simple values - generate
+  - name: generate_json_int
+    code: "generate_json(1)"
+    expect:
+      value: "1"
+
+  - name: generate_json_float
+    code: "generate_json(1.1)"
+    expect:
+      value: "1.1"
+
+  - name: generate_json_string
+    code: 'generate_json("1.2")'
+    expect:
+      value: '"1.2"'
+
+  - name: generate_json_obj
+    code: "generate_json(#13)"
+    expect:
+      value: '"#13"'
+
+  - name: generate_json_error
+    code: "generate_json(E_PERM)"
+    expect:
+      value: '"E_PERM"'
+
+  - name: generate_json_empty_list
+    code: "generate_json({})"
+    expect:
+      value: "[]"
+
+  - name: generate_json_empty_map
+    code: "generate_json([])"
+    expect:
+      value: "{}"
+
+  # Default mode - simple values - parse
+  - name: parse_json_int
+    code: 'parse_json("1")'
+    expect:
+      value: 1
+
+  - name: parse_json_float
+    code: 'parse_json("1.1")'
+    expect:
+      value: 1.1
+
+  - name: parse_json_string
+    code: 'parse_json("\"1.2\"")'
+    expect:
+      value: "1.2"
+
+  - name: parse_json_empty_list
+    code: 'parse_json("[]")'
+    expect:
+      value: []
+
+  - name: parse_json_empty_map
+    code: 'parse_json("{}")'
+    expect:
+      value: {}
+
+  # Default mode - parse errors
+  - name: parse_json_object_fails
+    code: 'parse_json("#13")'
+    expect:
+      error: E_INVARG
+
+  - name: parse_json_error_fails
+    code: 'parse_json("E_PERM")'
+    expect:
+      error: E_INVARG
+
+  # Common-subset mode - simple values - generate
+  - name: generate_json_int_common
+    code: 'generate_json(1, "common-subset")'
+    expect:
+      value: "1"
+
+  - name: generate_json_float_common
+    code: 'generate_json(1.1, "common-subset")'
+    expect:
+      value: "1.1"
+
+  - name: generate_json_string_common
+    code: 'generate_json("1.2", "common-subset")'
+    expect:
+      value: '"1.2"'
+
+  - name: generate_json_obj_common
+    code: 'generate_json(#13, "common-subset")'
+    expect:
+      value: '"#13"'
+
+  - name: generate_json_error_common
+    code: 'generate_json(E_PERM, "common-subset")'
+    expect:
+      value: '"E_PERM"'
+
+  - name: generate_json_empty_list_common
+    code: 'generate_json({}, "common-subset")'
+    expect:
+      value: "[]"
+
+  - name: generate_json_empty_map_common
+    code: 'generate_json([], "common-subset")'
+    expect:
+      value: "{}"
+
+  # Common-subset mode - simple values - parse
+  - name: parse_json_int_common
+    code: 'parse_json("1", "common-subset")'
+    expect:
+      value: 1
+
+  - name: parse_json_float_common
+    code: 'parse_json("1.1", "common-subset")'
+    expect:
+      value: 1.1
+
+  - name: parse_json_string_common
+    code: 'parse_json("\"1.2\"", "common-subset")'
+    expect:
+      value: "1.2"
+
+  - name: parse_json_empty_list_common
+    code: 'parse_json("[]", "common-subset")'
+    expect:
+      value: []
+
+  - name: parse_json_empty_map_common
+    code: 'parse_json("{}", "common-subset")'
+    expect:
+      value: {}
+
+  # Common-subset mode - parse errors
+  - name: parse_json_object_fails_common
+    code: 'parse_json("#13", "common-subset")'
+    expect:
+      error: E_INVARG
+
+  - name: parse_json_error_fails_common
+    code: 'parse_json("E_PERM", "common-subset")'
+    expect:
+      error: E_INVARG
+
+  # Embedded-types mode - simple values - generate
+  - name: generate_json_int_embedded
+    code: 'generate_json(1, "embedded-types")'
+    expect:
+      value: "1"
+
+  - name: generate_json_float_embedded
+    code: 'generate_json(1.1, "embedded-types")'
+    expect:
+      value: "1.1"
+
+  - name: generate_json_string_embedded
+    code: 'generate_json("1.2", "embedded-types")'
+    expect:
+      value: '"1.2"'
+
+  - name: generate_json_obj_embedded
+    code: 'generate_json(#13, "embedded-types")'
+    expect:
+      value: '"#13|obj"'
+
+  - name: generate_json_error_embedded
+    code: 'generate_json(E_PERM, "embedded-types")'
+    expect:
+      value: '"E_PERM|err"'
+
+  - name: generate_json_empty_list_embedded
+    code: 'generate_json({}, "embedded-types")'
+    expect:
+      value: "[]"
+
+  - name: generate_json_empty_map_embedded
+    code: 'generate_json([], "embedded-types")'
+    expect:
+      value: "{}"
+
+  # Embedded-types mode - simple values - parse
+  - name: parse_json_int_embedded
+    code: 'parse_json("1", "embedded-types")'
+    expect:
+      value: 1
+
+  - name: parse_json_float_embedded
+    code: 'parse_json("1.1", "embedded-types")'
+    expect:
+      value: 1.1
+
+  - name: parse_json_string_embedded
+    code: 'parse_json("\"1.2\"", "embedded-types")'
+    expect:
+      value: "1.2"
+
+  - name: parse_json_empty_list_embedded
+    code: 'parse_json("[]", "embedded-types")'
+    expect:
+      value: []
+
+  - name: parse_json_empty_map_embedded
+    code: 'parse_json("{}", "embedded-types")'
+    expect:
+      value: {}
+
+  # Embedded-types mode - parse errors
+  - name: parse_json_object_fails_embedded
+    code: 'parse_json("#13", "embedded-types")'
+    expect:
+      error: E_INVARG
+
+  - name: parse_json_error_fails_embedded
+    code: 'parse_json("E_PERM", "embedded-types")'
+    expect:
+      error: E_INVARG
+
+  # Embedded-types mode - parse with type info
+  - name: parse_json_int_with_type
+    code: 'parse_json("\"1|int\"", "embedded-types")'
+    expect:
+      value: 1
+
+  - name: parse_json_float_with_type
+    code: 'parse_json("\"1.1|float\"", "embedded-types")'
+    expect:
+      value: 1.1
+
+  - name: parse_json_string_with_type
+    code: 'parse_json("\"1.2|str\"", "embedded-types")'
+    expect:
+      value: "1.2"
+
+  - name: parse_json_obj_with_type
+    code: 'parse_json("\"#13|obj\"", "embedded-types")'
+    expect:
+      value: 13
+
+  - name: parse_json_error_with_type
+    code: 'parse_json("\"E_PERM|err\"", "embedded-types")'
+    expect:
+      value: E_PERM
+
+  # Type info does not work in common-subset mode
+  - name: parse_json_int_type_literal_common
+    code: 'parse_json("\"1|int\"", "common-subset")'
+    expect:
+      value: "1|int"
+
+  - name: parse_json_float_type_literal_common
+    code: 'parse_json("\"1.1|float\"", "common-subset")'
+    expect:
+      value: "1.1|float"
+
+  - name: parse_json_string_type_literal_common
+    code: 'parse_json("\"1.2|str\"", "common-subset")'
+    expect:
+      value: "1.2|str"
+
+  - name: parse_json_obj_type_literal_common
+    code: 'parse_json("\"#13|obj\"", "common-subset")'
+    expect:
+      value: "#13|obj"
+
+  - name: parse_json_error_type_literal_common
+    code: 'parse_json("\"E_PERM|err\"", "common-subset")'
+    expect:
+      value: "E_PERM|err"
+
+  # Complex values - default mode - generate
+  - name: generate_json_complex_list
+    code: 'generate_json({1, 1.1, "1.2", #13, E_ARGS, {2, 2.2, #-1, "foo"}, [E_PERM -> E_PERM]})'
+    expect:
+      value: '[1,1.1,"1.2","#13","E_ARGS",[2,2.2,"#-1","foo"],{"E_PERM":"E_PERM"}]'
+
+  - name: generate_json_complex_map
+    code: 'generate_json([11 -> 11, #13 -> {1, 2, 3, E_QUOTA}, 33.3 -> 33.3, "foo" -> "bar"])'
+    expect:
+      value: '{"11":11,"#13":[1,2,3,"E_QUOTA"],"33.3":33.3,"foo":"bar"}'
+
+  # Complex values - common-subset mode - generate
+  - name: generate_json_complex_list_common
+    code: 'generate_json({1, 1.1, "1.2", #13, E_ARGS, {2, 2.2, #-1, "foo"}, [E_PERM -> E_PERM]}, "common-subset")'
+    expect:
+      value: '[1,1.1,"1.2","#13","E_ARGS",[2,2.2,"#-1","foo"],{"E_PERM":"E_PERM"}]'
+
+  - name: generate_json_complex_map_common
+    code: 'generate_json([11 -> 11, 33.3 -> 33.3, #13 -> {1, 2, 3, E_QUOTA}, "foo" -> "bar"], "common-subset")'
+    expect:
+      value: '{"11":11,"#13":[1,2,3,"E_QUOTA"],"33.3":33.3,"foo":"bar"}'
+
+  # Complex values - embedded-types mode - generate
+  - name: generate_json_complex_list_embedded
+    code: 'generate_json({1, 1.1, "1.2", #13, E_ARGS, {2, 2.2, #-1, "foo"}, [E_PERM -> E_PERM]}, "embedded-types")'
+    expect:
+      value: '[1,1.1,"1.2","#13|obj","E_ARGS|err",[2,2.2,"#-1|obj","foo"],{"E_PERM|err":"E_PERM|err"}]'
+
+  - name: generate_json_complex_map_embedded
+    code: 'generate_json([11 -> 11, #13 -> {1, 2, 3, E_QUOTA}, "foo" -> "bar", 33.3 -> 33.3], "embedded-types")'
+    expect:
+      value: '{"11|int":11,"#13|obj":[1,2,3,"E_QUOTA|err"],"33.3|float":33.3,"foo":"bar"}'
+
+  # Complex values - default mode - parse
+  - name: parse_json_complex_list
+    code: 'parse_json("[1, 1.1, \"1.2\", \"#13\", \"E_ARGS\", [2, 2.2, \"foo\"], {\"1\": \"1\"}]")'
+    expect:
+      value: [1, 1.1, "1.2", "#13", "E_ARGS", [2, 2.2, "foo"], {"1": "1"}]
+
+  - name: parse_json_complex_map
+    code: 'parse_json("{\"11\": 11, \"33.3\": 33.3, \"#13\": [1, 2, 3, \"E_QUOTA\"], \"foo\": \"bar\"}")'
+    expect:
+      value: {"11": 11, "33.3": 33.3, "#13": [1, 2, 3, "E_QUOTA"], "foo": "bar"}
+
+  # Complex values - common-subset mode - parse
+  - name: parse_json_complex_list_common
+    code: 'parse_json("[1, 1.1, \"1.2\", \"#13\", \"E_ARGS\", [2, 2.2, \"foo\"], {\"1\": \"1\"}]", "common-subset")'
+    expect:
+      value: [1, 1.1, "1.2", "#13", "E_ARGS", [2, 2.2, "foo"], {"1": "1"}]
+
+  - name: parse_json_complex_map_common
+    code: 'parse_json("{\"11\": 11, \"33.3\": 33.3, \"#13\": [1, 2, 3, \"E_QUOTA\"], \"foo\": \"bar\"}", "common-subset")'
+    expect:
+      value: {"11": 11, "33.3": 33.3, "#13": [1, 2, 3, "E_QUOTA"], "foo": "bar"}
+
+  # Complex values - embedded-types mode - parse
+  - name: parse_json_complex_list_embedded
+    code: 'parse_json("[1, 1.1, \"1.2\", \"#13|obj\", \"E_ARGS|err\", [2, 2.2, \"foo\"], {\"1|int\": \"1\"}]", "embedded-types")'
+    expect:
+      value: [1, 1.1, "1.2", 13, E_ARGS, [2, 2.2, "foo"], {1: "1"}]
+
+  - name: parse_json_complex_map_embedded
+    code: 'parse_json("{\"11.1|float\": 11, \"33.3\": 33.3, \"#13|obj\": [1, 2, 3, \"E_QUOTA|err\"], \"foo\": \"bar\"}", "embedded-types")'
+
+  # Parse failures
+  - name: parse_json_invalid_identifier
+    code: 'parse_json("[1, 1.1, \"1.2\", blah]")'
+    expect:
+      error: E_INVARG
+
+  - name: parse_json_unquoted_key
+    code: 'parse_json("{11: 11, \"33.3\": 33.3, \"foo\": \"bar\"}")'
+    expect:
+      error: E_INVARG
+
+  - name: parse_json_incomplete_list
+    code: 'parse_json("[")'
+    expect:
+      error: E_INVARG
+
+  - name: parse_json_incomplete_map
+    code: 'parse_json("{")'
+    expect:
+      error: E_INVARG
+
+  - name: parse_json_incomplete_string
+    code: 'parse_json("\"")'
+    expect:
+      error: E_INVARG
+
+  - name: parse_json_invalid_suffix
+    code: 'parse_json("[12abc]")'
+    expect:
+      error: E_INVARG
+
+  - name: parse_json_double_dots
+    code: 'parse_json("1..2")'
+    expect:
+      error: E_INVARG
+
+  - name: parse_json_only_dots
+    code: 'parse_json("..")'
+    expect:
+      error: E_INVARG
+
+  - name: parse_json_garbage
+    code: 'parse_json("@$*&#*")'
+    expect:
+      error: E_INVARG
+
+  - name: parse_json_mismatched_brackets
+    code: 'parse_json("[{[{[")'
+    expect:
+      error: E_INVARG
+
+  # Things that work but probably shouldn't
+  - name: parse_json_trailing_chars_int
+    code: 'parse_json("12abc")'
+    expect:
+      value: 12
+
+  - name: parse_json_trailing_chars_float
+    code: 'parse_json("1.2abc")'
+    expect:
+      value: 1.2
+
+  # Number size boundaries
+  - name: parse_json_medium_int
+    code: 'parse_json("1234567890")'
+    expect:
+      value: 1234567890
+
+  - name: parse_json_small_int
+    code: 'parse_json("123456789")'
+    expect:
+      value: 123456789
+
+  - name: parse_json_large_to_float
+    code: 'parse_json("123456789012")'
+    expect:
+      value: 123456789012.0
+
+  - name: parse_json_large_to_float_2
+    code: 'parse_json("12345678901")'
+    expect:
+      value: 12345678901.0
+
+  - name: parse_json_very_large_scientific
+    code: 'parse_json("123456789012345678901234567890")'
+
+  - name: parse_json_large_scientific
+    code: 'parse_json("12345678901234567890")'
+
+  - name: parse_json_max_int
+    code: 'parse_json("2147483647")'
+    expect:
+      value: 2147483647
+
+  - name: parse_json_max_int_plus_one
+    code: 'parse_json("2147483648")'
+    expect:
+      value: 2147483648.0
+
+  - name: parse_json_min_int
+    code: 'parse_json("-2147483648")'
+    expect:
+      value: -2147483648
+
+  - name: parse_json_min_int_minus_one
+    code: 'parse_json("-2147483649")'
+    expect:
+      value: -2147483649.0
+
+  # Type parsing edge cases
+  - name: parse_json_empty_string_embedded
+    code: 'parse_json("\"\"", "embedded-types")'
+    expect:
+      value: ""
+
+  - name: parse_json_pipe_only
+    code: 'parse_json("\"|\"", "embedded-types")'
+    expect:
+      value: "|"
+
+  - name: parse_json_pipe_x
+    code: 'parse_json("\"|x\"", "embedded-types")'
+    expect:
+      value: "|x"
+
+  - name: parse_json_pipe_partial_int
+    code: 'parse_json("\"|in\"", "embedded-types")'
+    expect:
+      value: "|in"
+
+  - name: parse_json_pipe_int_suffix
+    code: 'parse_json("\"|intx\"", "embedded-types")'
+    expect:
+      value: "|intx"
+
+  - name: parse_json_bare_int_type
+    code: 'parse_json("\"|int\"", "embedded-types")'
+    expect:
+      value: 0
+
+  - name: parse_json_bare_float_type
+    code: 'parse_json("\"|float\"", "embedded-types")'
+    expect:
+      value: 0.0
+
+  - name: parse_json_bare_str_type
+    code: 'parse_json("\"|str\"", "embedded-types")'
+    expect:
+      value: ""
+
+  - name: parse_json_bare_obj_type
+    code: 'parse_json("\"|obj\"", "embedded-types")'
+    expect:
+      value: 0
+
+  - name: parse_json_bare_err_type
+    code: 'parse_json("\"|err\"", "embedded-types")'
+    expect:
+      value: E_NONE
+
+  # Invalid mode arguments
+  - name: generate_json_mode_int
+    code: "generate_json(1, 1)"
+    expect:
+      error: E_TYPE
+
+  - name: generate_json_mode_float
+    code: "generate_json(1, 1.23)"
+    expect:
+      error: E_TYPE
+
+  - name: generate_json_mode_invalid
+    code: 'generate_json(1, "foo-bar")'
+    expect:
+      error: E_INVARG
+
+  - name: generate_json_mode_obj
+    code: "generate_json(1, #-1)"
+    expect:
+      error: E_TYPE
+
+  - name: generate_json_mode_error
+    code: "generate_json(1, E_PERM)"
+    expect:
+      error: E_TYPE
+
+  - name: generate_json_mode_list
+    code: "generate_json(1, {})"
+    expect:
+      error: E_TYPE
+
+  - name: generate_json_mode_map
+    code: "generate_json(1, [])"
+    expect:
+      error: E_TYPE
+
+  # Type checking for parse_json argument
+  - name: parse_json_arg_int
+    code: "parse_json(1)"
+    expect:
+      error: E_TYPE
+
+  - name: parse_json_arg_float
+    code: "parse_json(1.1)"
+    expect:
+      error: E_TYPE
+
+  - name: parse_json_arg_error
+    code: "parse_json(E_ARGS)"
+    expect:
+      error: E_TYPE
+
+  - name: parse_json_arg_obj
+    code: "parse_json(#-1)"
+    expect:
+      error: E_TYPE
+
+  - name: parse_json_arg_list
+    code: "parse_json({})"
+    expect:
+      error: E_TYPE
+
+  - name: parse_json_arg_map
+    code: "parse_json([])"
+    expect:
+      error: E_TYPE
+
+  # Binary string escaping - generate
+  - name: generate_json_escape_quote
+    code: 'generate_json(["foo" -> "bar\"baz"])'
+    expect:
+      value: '{"foo":"bar\"baz"}'
+
+  - name: generate_json_escape_backslash
+    code: 'generate_json(["foo" -> "bar\\baz"])'
+    expect:
+      value: '{"foo":"bar\\baz"}'
+
+  - name: generate_json_escape_slash_1
+    code: 'generate_json(["foo" -> "bar/baz"])'
+    expect:
+      value: '{"foo":"bar/baz"}'
+
+  - name: generate_json_escape_slash_2
+    code: 'generate_json(["foo" -> "bar/baz"])'
+    expect:
+      value: '{"foo":"bar/baz"}'
+
+  - name: generate_json_escape_backspace
+    code: 'generate_json(["foo" -> "bar~08baz"])'
+    expect:
+      value: '{"foo":"bar\bbaz"}'
+
+  - name: generate_json_escape_formfeed
+    code: 'generate_json(["foo" -> "bar~0Cbaz"])'
+    expect:
+      value: '{"foo":"bar\fbaz"}'
+
+  - name: generate_json_escape_newline
+    code: 'generate_json(["foo" -> "bar~0Abaz"])'
+    expect:
+      value: '{"foo":"bar\nbaz"}'
+
+  - name: generate_json_escape_carriage
+    code: 'generate_json(["foo" -> "bar~0Dbaz"])'
+    expect:
+      value: '{"foo":"bar\rbaz"}'
+
+  - name: generate_json_escape_tab
+    code: 'generate_json(["foo" -> "bar~09baz"])'
+    expect:
+      value: '{"foo":"bar\u0009baz"}'
+
+  # Binary string escaping - parse
+  - name: parse_json_escape_quote
+    code: 'parse_json("{\"foo\":\"bar\\\"baz\"}")'
+    expect:
+      value: {"foo": "bar\"baz"}
+
+  - name: parse_json_escape_backslash
+    code: 'parse_json("{\"foo\":\"bar\\\\baz\"}")'
+    expect:
+      value: {"foo": "bar\\baz"}
+
+  # Unicode escapes
+  - name: parse_json_unicode_control
+    code: 'parse_json("[\"\\u000A\",\"\\u000D\",\"\\u001b\",\"\\u007f\"]")'
+    expect:
+      value: ["~0A", "~0D", "~1B", "~7F"]
+
+  - name: parse_json_unicode_2byte
+    code: 'parse_json("[\"\\u0080\",\"\\u00f8\",\"\\u0200\",\"\\u07ff\"]")'
+    expect:
+      value: ["~C2~80", "~C3~B8", "~C8~80", "~DF~BF"]
+
+  - name: parse_json_unicode_3byte
+    code: 'parse_json("[\"\\u0800\",\"\\uffff\"]")'
+    expect:
+      value: ["~E0~A0~80", "~EF~BF~BF"]
+
+  - name: parse_json_unicode_surrogate
+    code: 'parse_json("[\"\\ud800\\udc00\",\"\\ud834\\udd1e\"]")'
+    expect:
+      value: ["~F0~90~80~80", "~F0~9D~84~9E"]
+
+  - name: generate_json_unicode_control
+    code: 'generate_json({"~00", "~01", "~1B", "~1F", "~20", "~7F"})'
+    expect:
+      value: "[\"\\u0000\",\"\\u0001\",\"\\u001B\",\"\\u001F\",\"~20\",\"~7F\"]"
+
+  # Round-tripping
+  - name: roundtrip_escape_quote
+    statement: |
+      x = ["foo" -> "bar\"baz"];
+      return x == parse_json(generate_json(x));
+    expect:
+      value: 1
+
+  - name: roundtrip_escape_backslash
+    statement: |
+      x = ["foo" -> "bar\\baz"];
+      return x == parse_json(generate_json(x));
+    expect:
+      value: 1
+
+  # Anonymous objects
+  - name: generate_json_anon_obj
+    permission: programmer
+    statement: |
+      return generate_json(create($nothing, 1));
+    expect:
+      error: E_INVARG
+
+  - name: generate_json_anon_obj_common
+    permission: programmer
+    statement: |
+      return generate_json(create($nothing, 1), "common-subset");
+    expect:
+      error: E_INVARG
+
+  - name: generate_json_anon_obj_embedded
+    permission: programmer
+    statement: |
+      return generate_json(create($nothing, 1), "embedded-types");
+    expect:
+      error: E_INVARG
+
+  # Float representation
+  - name: generate_json_float_format
+    code: "generate_json(1.0)"
+    expect:
+      value: "1.0"

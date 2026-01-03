@@ -1,0 +1,429 @@
+name: moocode_parsing
+description: MOO code parsing tests for operators and syntax
+
+tests:
+  - name: expression_exception_syntax
+    code: "`args ! ANY => 0'"
+    expect:
+      value: []
+
+  - name: greater_than
+    code: "3 > 2"
+    expect:
+      value: 1
+
+  - name: greater_than_or_equal
+    code: "3 >= 2"
+    expect:
+      value: 1
+
+  - name: less_than
+    code: "2 < 3"
+    expect:
+      value: 1
+
+  - name: less_than_or_equal
+    code: "2 <= 3"
+    expect:
+      value: 1
+
+  - name: logical_and
+    code: "2 && 3"
+    expect:
+      value: 3
+
+  - name: logical_or
+    code: "2 || 3"
+    expect:
+      value: 2
+
+  - name: caret_collection_first
+    code: "{1, 2, 3}[^]"
+    expect:
+      value: 1
+
+  - name: caret_collection_range_spaced
+    code: "{1, 2, 3}[^ .. ^ + 1]"
+    expect:
+      value: [1, 2]
+
+  - name: caret_collection_range_unspaced
+    code: "{1, 2, 3}[^..^ + 1]"
+    expect:
+      value: [1, 2]
+
+  - name: dollar_collection_last
+    code: "{1, 2, 3}[$]"
+    expect:
+      value: 3
+
+  - name: dollar_collection_range_spaced
+    code: "{1, 2, 3}[-1 + $ .. $]"
+    expect:
+      value: [2, 3]
+
+  - name: dollar_collection_range_unspaced
+    code: "{1, 2, 3}[-1 + $..$]"
+    expect:
+      value: [2, 3]
+
+  - name: bitwise_and
+    code: "1 &. 2"
+    expect:
+      value: 0
+
+  - name: bitwise_and_disassemble
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "and"}, {"this", "none", "this"});
+      set_verb_code(o, "and", {"1 &. 2;"});
+      result = disassemble(o, "and");
+      recycle(o);
+      return result;
+    expect:
+      match: "BITAND"
+
+  - name: bitwise_and_decompile
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "and"}, {"this", "none", "this"});
+      set_verb_code(o, "and", {"1 &. 2;"});
+      result = verb_code(o, "and");
+      recycle(o);
+      return result;
+    expect:
+      value: ["1 &. 2;"]
+
+  - name: bitwise_or
+    code: "1 |. 2"
+    expect:
+      value: 3
+
+  - name: bitwise_or_disassemble
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "or"}, {"this", "none", "this"});
+      set_verb_code(o, "or", {"1 |. 2;"});
+      result = disassemble(o, "or");
+      recycle(o);
+      return result;
+    expect:
+      match: "BITOR"
+
+  - name: bitwise_or_decompile
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "or"}, {"this", "none", "this"});
+      set_verb_code(o, "or", {"1 |. 2;"});
+      result = verb_code(o, "or");
+      recycle(o);
+      return result;
+    expect:
+      value: ["1 |. 2;"]
+
+  - name: bitwise_xor
+    code: "1 ^. 3"
+    expect:
+      value: 2
+
+  - name: bitwise_xor_disassemble
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "xor"}, {"this", "none", "this"});
+      set_verb_code(o, "xor", {"1 ^. 2;"});
+      result = disassemble(o, "xor");
+      recycle(o);
+      return result;
+    expect:
+      match: "BITXOR"
+
+  - name: bitwise_xor_decompile
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "xor"}, {"this", "none", "this"});
+      set_verb_code(o, "xor", {"1 ^. 2;"});
+      result = verb_code(o, "xor");
+      recycle(o);
+      return result;
+    expect:
+      value: ["1 ^. 2;"]
+
+  - name: bitwise_complement
+    code: "~0"
+    expect:
+      value: -1
+
+  - name: bitwise_complement_disassemble
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "complement"}, {"this", "none", "this"});
+      set_verb_code(o, "complement", {"~123;"});
+      result = disassemble(o, "complement");
+      recycle(o);
+      return result;
+    expect:
+      match: "COMPLEMENT"
+
+  - name: bitwise_complement_decompile
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "complement"}, {"this", "none", "this"});
+      set_verb_code(o, "complement", {"~123;"});
+      result = verb_code(o, "complement");
+      recycle(o);
+      return result;
+    expect:
+      value: ["~123;"]
+
+  - name: bit_shift_left
+    code: "1 << 2"
+    expect:
+      value: 4
+
+  - name: bit_shift_left_disassemble
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "shift_left"}, {"this", "none", "this"});
+      set_verb_code(o, "shift_left", {"1 << 2;"});
+      result = disassemble(o, "shift_left");
+      recycle(o);
+      return result;
+    expect:
+      match: "BITSHL"
+
+  - name: bit_shift_left_decompile
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "shift_left"}, {"this", "none", "this"});
+      set_verb_code(o, "shift_left", {"1 << 2;"});
+      result = verb_code(o, "shift_left");
+      recycle(o);
+      return result;
+    expect:
+      value: ["1 << 2;"]
+
+  - name: bit_shift_right
+    code: "8 >> 2"
+    expect:
+      value: 2
+
+  - name: bit_shift_right_disassemble
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "shift_right"}, {"this", "none", "this"});
+      set_verb_code(o, "shift_right", {"1 >> 2;"});
+      result = disassemble(o, "shift_right");
+      recycle(o);
+      return result;
+    expect:
+      match: "BITSHR"
+
+  - name: bit_shift_right_decompile
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "shift_right"}, {"this", "none", "this"});
+      set_verb_code(o, "shift_right", {"1 >> 2;"});
+      result = verb_code(o, "shift_right");
+      recycle(o);
+      return result;
+    expect:
+      value: ["1 >> 2;"]
+
+  # 32-bit shift edge cases
+  - name: shift_left_negative_bits_32bit
+    skip_if: "feature.64bit"
+    code: "0 << -1"
+    expect:
+      error: E_INVARG
+
+  - name: shift_left_overflow_32bit
+    skip_if: "feature.64bit"
+    code: "0 << 33"
+    expect:
+      error: E_INVARG
+
+  - name: shift_left_zero_32bit
+    skip_if: "feature.64bit"
+    code: "1 << 0"
+    expect:
+      value: 1
+
+  - name: shift_left_max_32bit
+    skip_if: "feature.64bit"
+    code: "1 << 31"
+    expect:
+      value: -2147483648
+
+  - name: shift_left_all_bits_32bit
+    skip_if: "feature.64bit"
+    code: "~0 << 31"
+    expect:
+      value: -2147483648
+
+  - name: shift_left_to_zero_32bit
+    skip_if: "feature.64bit"
+    code: "1 << 32"
+    expect:
+      value: 0
+
+  - name: shift_right_negative_bits_32bit
+    skip_if: "feature.64bit"
+    code: "0 >> -1"
+    expect:
+      error: E_INVARG
+
+  - name: shift_right_overflow_32bit
+    skip_if: "feature.64bit"
+    code: "0 >> 33"
+    expect:
+      error: E_INVARG
+
+  - name: shift_right_zero_32bit
+    skip_if: "feature.64bit"
+    code: "-2147483648 >> 0"
+    expect:
+      value: -2147483648
+
+  - name: shift_right_max_32bit
+    skip_if: "feature.64bit"
+    code: "-2147483648 >> 31"
+    expect:
+      value: 1
+
+  - name: shift_right_all_bits_32bit
+    skip_if: "feature.64bit"
+    code: "~0 >> 31"
+    expect:
+      value: 1
+
+  - name: shift_right_to_zero_32bit
+    skip_if: "feature.64bit"
+    code: "-2147483648 >> 32"
+    expect:
+      value: 0
+
+  # 64-bit shift edge cases
+  - name: shift_left_negative_bits_64bit
+    skip_if: "not feature.64bit"
+    code: "0 << -1"
+    expect:
+      error: E_INVARG
+
+  - name: shift_left_overflow_64bit
+    skip_if: "not feature.64bit"
+    code: "0 << 65"
+    expect:
+      error: E_INVARG
+
+  - name: shift_left_zero_64bit
+    skip_if: "not feature.64bit"
+    code: "1 << 0"
+    expect:
+      value: 1
+
+  - name: shift_left_max_64bit
+    skip_if: "not feature.64bit"
+    code: "1 << 63"
+    expect:
+      value: -9223372036854775808
+
+  - name: shift_left_all_bits_64bit
+    skip_if: "not feature.64bit"
+    code: "~0 << 63"
+    expect:
+      value: -9223372036854775808
+
+  - name: shift_left_to_zero_64bit
+    skip_if: "not feature.64bit"
+    code: "1 << 64"
+    expect:
+      value: 0
+
+  - name: shift_right_negative_bits_64bit
+    skip_if: "not feature.64bit"
+    code: "0 >> -1"
+    expect:
+      error: E_INVARG
+
+  - name: shift_right_overflow_64bit
+    skip_if: "not feature.64bit"
+    code: "0 >> 65"
+    expect:
+      error: E_INVARG
+
+  - name: shift_right_zero_64bit
+    skip_if: "not feature.64bit"
+    code: "-9223372036854775807 >> 0"
+    expect:
+      value: -9223372036854775807
+
+  - name: shift_right_max_64bit
+    skip_if: "not feature.64bit"
+    code: "-9223372036854775807 >> 63"
+    expect:
+      value: 1
+
+  - name: shift_right_all_bits_64bit
+    skip_if: "not feature.64bit"
+    code: "~0 >> 63"
+    expect:
+      value: 1
+
+  - name: shift_right_to_zero_64bit
+    skip_if: "not feature.64bit"
+    code: "-9223372036854775807 >> 64"
+    expect:
+      value: 0
+
+  # Shift round-trip tests (32-bit)
+  - name: shift_roundtrip_1_32bit
+    skip_if: "feature.64bit"
+    code: "(-2147483648 >> 1) << 1"
+    expect:
+      value: -2147483648
+
+  - name: shift_roundtrip_2_32bit
+    skip_if: "feature.64bit"
+    code: "(1 << 1) >> 1"
+    expect:
+      value: 1
+
+  # Operator precedence
+  - name: precedence_shift_combined
+    code: "1 << 3 >> 2"
+    expect:
+      value: 2
+
+  - name: precedence_complement_shift_32bit
+    skip_if: "feature.64bit"
+    code: "~0 >> 1"
+    expect:
+      value: 2147483647
+
+  - name: precedence_complement_shift_64bit
+    skip_if: "not feature.64bit"
+    code: "~0 >> 1"
+    expect:
+      value: 9223372036854775807
+
+  - name: precedence_shift_and
+    code: "1 << 1 &. 2"
+    expect:
+      value: 2
+
+  - name: precedence_shift_and_right
+    code: "4 >> 2 &. 1"
+    expect:
+      value: 1

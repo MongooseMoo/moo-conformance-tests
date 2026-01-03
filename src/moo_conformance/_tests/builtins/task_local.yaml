@@ -1,0 +1,189 @@
+name: task_local
+description: Tests for task_local() and set_task_local() builtins
+
+requires:
+  builtins: [task_local, set_task_local, task_id, suspend, fork, resume, kill_task]
+  features: [tasks]
+
+tests:
+  # Permission tests
+  - name: set_task_local_requires_wizard
+    permission: programmer
+    code: "set_task_local(1)"
+    expect:
+      error: E_PERM
+
+  - name: task_local_requires_wizard
+    permission: programmer
+    code: "task_local()"
+    expect:
+      error: E_PERM
+
+  # Argument checking
+  - name: set_task_local_no_args
+    permission: wizard
+    code: "set_task_local()"
+    expect:
+      error: E_ARGS
+
+  - name: set_task_local_too_many_args
+    permission: wizard
+    code: "set_task_local(1, 2, 3)"
+    expect:
+      error: E_ARGS
+
+  - name: set_task_local_one_arg
+    permission: wizard
+    code: 'set_task_local("1")'
+    expect:
+      value: 0
+
+  - name: task_local_takes_no_args
+    permission: wizard
+    code: "task_local({})"
+    expect:
+      error: E_ARGS
+
+  - name: task_local_no_args
+    permission: wizard
+    code: "task_local()"
+    expect:
+      value: {}
+
+  # Basic functionality
+  - name: simple_eval_case
+    permission: wizard
+    statement: |
+      set_task_local({"foo", "bar", 1, 2, 3});
+      return task_local();
+    expect:
+      value: ["foo", "bar", 1, 2, 3]
+
+  # Error handling
+  - name: eval_case_with_error
+    permission: wizard
+    statement: |
+      set_task_local({"foo", "bar", 1, 2, 3});
+      1 / 0;
+      return task_local();
+    expect:
+      error: E_DIV
+
+  # These tests require full server support (suspend/fork/resume/verb calls)
+  # and cannot be easily translated to simple eval tests
+
+  - name: eval_case_with_suspend
+    permission: wizard
+    statement: |
+      set_task_local({"foo", "bar", 2, 3, 4});
+      suspend(1);
+      return task_local();
+    expect:
+      value: ["foo", "bar", 2, 3, 4]
+
+  - name: fork_and_suspend_case
+    permission: wizard
+    skip: "Requires async resume() to pass value to parent task - architectural limitation in synchronous eval"
+    statement: |
+      set_task_local({1, 2});
+      id = task_id();
+      fork (1)
+        set_task_local({"foo", "bar", 3, 4, 5});
+        suspend(1);
+        resume(id, task_local());
+      endfork
+      return {task_local(), suspend()};
+    expect:
+      value: [[1, 2], ["foo", "bar", 3, 4, 5]]
+
+  - name: suspend_case_with_error
+    permission: wizard
+    statement: |
+      set_task_local({"foo", "bar", 2, 3, 4});
+      suspend(1);
+      1 / 0;
+      return task_local();
+    expect:
+      error: E_DIV
+
+  - name: fork_suspend_case_with_error
+    permission: wizard
+    statement: |
+      set_task_local({1, 2});
+      id = task_id();
+      fork (1)
+        set_task_local({"foo", "bar", 3, 4, 5});
+        suspend(1);
+        resume(id, task_local());
+      endfork
+      suspend();
+      1 / 0;
+      return {task_local()};
+    expect:
+      error: E_DIV
+
+  # Verb call tests - require dynamic verb creation and calling
+  # These tests reference #-1 which requires dynamic object/verb creation
+  # The YAML test framework doesn't support this - would need multi-step setup
+  - name: command_verb
+    permission: wizard
+    skip: "Requires dynamic verb creation on #-1 - YAML test harness limitation"
+    verb: "#-1:foo"
+    argstr: "#-1 to the #-1"
+    expect:
+      notifications: ["> {\"#-1 to the #-1\"}"]
+
+  - name: server_verb
+    permission: wizard
+    skip: "Requires dynamic verb creation on #-1 - YAML test harness limitation"
+    statement: |
+      set_task_local({1, {2, {3}}});
+      recycle(#-1);
+    expect:
+      notifications: ["> {1, {2, {3}}}"]
+
+  - name: across_verb_calls
+    permission: wizard
+    skip: "Requires dynamic verb creation on #-1 - YAML test harness limitation"
+    statement: |
+      #-1:foo(1.234);
+      return #-1:bar();
+    expect:
+      value: 1.234
+
+  - name: across_verb_calls_with_intermediate
+    permission: wizard
+    skip: "Requires dynamic verb creation on #-1 - YAML test harness limitation"
+    code: "#-1:baz(23.456)"
+    expect:
+      value: 23.456
+
+  - name: suspend_between_verb_calls
+    permission: wizard
+    skip: "Requires dynamic verb creation on #-1 - YAML test harness limitation"
+    code: "#-1:baz(2.5)"
+    expect:
+      value: 97.65625
+
+  - name: read_between_verb_calls
+    permission: wizard
+    skip: "Requires dynamic verb creation on #-1 - YAML test harness limitation"
+    code: "#-1:baz(2.5)"
+    expect:
+      value: 97.65625
+
+  # Memory leak regression tests (non-functional)
+  - name: nonfunctional_fork_suspend
+    permission: wizard
+    statement: |
+      fork (0)
+        suspend(0);
+      endfork
+    expect:
+      value: 0
+
+  - name: nonfunctional_kill_task
+    permission: wizard
+    code: "kill_task(task_id())"
+    expect:
+      error: E_INTRPT

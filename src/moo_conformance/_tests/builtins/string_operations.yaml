@@ -1,0 +1,208 @@
+name: string_operations
+description: String operation builtins (index, rindex, strtr)
+
+tests:
+  - name: index_not_found
+    code: 'index("foobar", "x")'
+    expect:
+      value: 0
+
+  - name: index_finds_first_occurrence
+    code: 'index("foobar", "o")'
+    expect:
+      value: 2
+
+  - name: index_case_sensitive_no_match
+    code: 'index("foobar", "O", 1)'
+    expect:
+      value: 0
+
+  - name: index_case_insensitive_match
+    code: 'index("foobar", "O", 0)'
+    expect:
+      value: 2
+
+  - name: index_with_offset_3
+    code: 'index("foobar", "o", 0, 3)'
+    expect:
+      value: 0
+
+  - name: index_with_offset_1
+    code: 'index("foobar", "o", 0, 1)'
+    expect:
+      value: 1
+
+  - name: index_with_offset_0
+    code: 'index("foobar", "o", 0, 0)'
+    expect:
+      value: 2
+
+  - name: index_negative_offset_invalid
+    code: 'index("foobar", "o", 0, -1)'
+    expect:
+      error: E_INVARG
+
+  - name: index_offset_larger_than_string
+    code: 'index("foobar", "o", 0, 10)'
+    expect:
+      value: 0
+
+  - name: rindex_not_found
+    code: 'rindex("foobar", "x")'
+    expect:
+      value: 0
+
+  - name: rindex_finds_last_occurrence
+    code: 'rindex("foobar", "o")'
+    expect:
+      value: 3
+
+  - name: rindex_case_sensitive_no_match
+    code: 'rindex("foobar", "O", 1)'
+    expect:
+      value: 0
+
+  - name: rindex_case_insensitive_match
+    code: 'rindex("foobar", "O", 0)'
+    expect:
+      value: 3
+
+  - name: rindex_with_offset_neg_4
+    code: 'rindex("foobar", "o", 0, -4)'
+    expect:
+      value: 2
+
+  - name: rindex_with_offset_neg_3
+    code: 'rindex("foobar", "o", 0, -3)'
+    expect:
+      value: 3
+
+  - name: rindex_with_offset_0
+    code: 'rindex("foobar", "o", 0, 0)'
+    expect:
+      value: 3
+
+  - name: rindex_positive_offset_invalid
+    code: 'rindex("foobar", "o", 0, 1)'
+    expect:
+      error: E_INVARG
+
+  - name: rindex_offset_larger_than_string
+    code: 'rindex("foobar", "o", 0, -10)'
+    expect:
+      value: 0
+
+  - name: strtr_swap_characters
+    code: 'strtr("foobar", "ob", "bo")'
+    expect:
+      value: "fbboar"
+
+  - name: strtr_replace_character
+    code: 'strtr("foobar", "o", "i")'
+    expect:
+      value: "fiibar"
+
+  - name: strtr_empty_from_to
+    code: 'strtr("foobar", "", "")'
+    expect:
+      value: "foobar"
+
+  - name: strtr_from_shorter_than_to
+    code: 'strtr("foobar", "o", "bo")'
+    expect:
+      value: "fbbbar"
+
+  - name: strtr_from_longer_than_to
+    code: 'strtr("foobar", "ob", "b")'
+    expect:
+      value: "fbbar"
+
+  - name: strtr_empty_source
+    code: 'strtr("", "x", "y")'
+    expect:
+      value: ""
+
+  - name: strtr_no_matches
+    code: 'strtr("foobar", "x", "y")'
+    expect:
+      value: "foobar"
+
+  - name: strtr_with_numbers_case_insensitive
+    code: 'strtr("12345", "135", "0aB")'
+    expect:
+      value: "02a4B"
+
+  - name: strtr_with_numbers_case_sensitive
+    code: 'strtr("12345", "135", "0aB", 1)'
+    expect:
+      value: "02a4B"
+
+  - name: strtr_with_symbols_case_insensitive
+    code: 'strtr("!@#$%", "!#%", "0aB")'
+    expect:
+      value: "0@a$B"
+
+  - name: strtr_with_symbols_case_sensitive
+    code: 'strtr("!@#$%", "!#%", "0aB", 1)'
+    expect:
+      value: "0@a$B"
+
+  - name: strtr_case_insensitive_preserves_case_lowercase
+    code: 'strtr("FoObar", "o", "x", 0)'
+    expect:
+      value: "FxXbar"
+
+  - name: strtr_case_insensitive_preserves_case_uppercase
+    code: 'strtr("FoObar", "O", "X", 0)'
+    expect:
+      value: "FxXbar"
+
+  - name: strtr_case_sensitive_lowercase
+    code: 'strtr("FoObar", "o", "x", 1)'
+    expect:
+      value: "FxObar"
+
+  - name: strtr_case_sensitive_uppercase
+    code: 'strtr("FoObar", "O", "X", 1)'
+    expect:
+      value: "FoXbar"
+
+  - name: strtr_complex_case_insensitive_1
+    code: 'strtr("5xX", "135x", "0aBB", 0)'
+    expect:
+      value: "BbB"
+
+  - name: strtr_complex_case_sensitive_1
+    code: 'strtr("5xX", "135x", "0aBB", 1)'
+    expect:
+      value: "BBX"
+
+  - name: strtr_complex_case_insensitive_2
+    code: 'strtr("xXxX", "xXxX", "1234", 0)'
+    expect:
+      value: "4444"
+
+  - name: strtr_complex_case_sensitive_2
+    code: 'strtr("xXxX", "xXxX", "1234", 1)'
+    expect:
+      value: "3434"
+
+  - name: strtr_complex_case_insensitive_3
+    code: 'strtr("xX", "x", "1", 0)'
+    expect:
+      value: "11"
+
+  - name: strtr_complex_case_sensitive_3
+    code: 'strtr("xX", "x", "1", 1)'
+    expect:
+      value: "1X"
+
+  - name: strtr_complex_case_insensitive_4
+    code: 'strtr("1", "1", "X", 0)'
+    expect:
+      value: "X"
+
+  - name: strtr_complex_case_sensitive_4
+    code: 'strtr("1", "1", "X", 1)'
+    expect:
+      value: "X"

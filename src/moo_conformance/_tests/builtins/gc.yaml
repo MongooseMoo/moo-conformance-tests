@@ -1,0 +1,226 @@
+name: gc
+description: Tests for garbage collection builtins (run_gc, gc_stats)
+
+tests:
+  # Permission tests
+  - name: run_gc_requires_wizard_perms
+    permission: programmer
+    code: "run_gc()"
+    expect:
+      error: E_PERM
+
+  - name: run_gc_allows_wizard
+    permission: wizard
+    statement: |
+      x = run_gc();
+      return typeof(x) != E_PERM;
+    expect:
+      value: 1
+
+  - name: gc_stats_requires_wizard_perms
+    permission: programmer
+    code: "gc_stats()"
+    expect:
+      error: E_PERM
+
+  - name: gc_stats_allows_wizard
+    permission: wizard
+    statement: |
+      x = gc_stats();
+      return typeof(x) != E_PERM;
+    expect:
+      value: 1
+
+  # GC stats structure tests
+  - name: gc_stats_returns_map
+    permission: wizard
+    statement: |
+      x = gc_stats();
+      return typeof(x) == MAP;
+    expect:
+      value: 1
+
+  - name: gc_stats_has_purple_key
+    permission: wizard
+    statement: |
+      x = gc_stats();
+      return maphaskey(x, "purple");
+    expect:
+      value: 1
+
+  - name: gc_stats_has_black_key
+    permission: wizard
+    statement: |
+      x = gc_stats();
+      return maphaskey(x, "black");
+    expect:
+      value: 1
+
+  - name: gc_stats_purple_is_int
+    permission: wizard
+    statement: |
+      x = gc_stats();
+      return typeof(x["purple"]) == INT;
+    expect:
+      value: 1
+
+  - name: gc_stats_black_is_int
+    permission: wizard
+    statement: |
+      x = gc_stats();
+      return typeof(x["black"]) == INT;
+    expect:
+      value: 1
+
+  # Nested structure tests - these verify GC behavior with nested data structures
+  - name: nested_list_no_possible_root
+    permission: wizard
+    statement: |
+      {1, {2, {3}, 4}, 5};
+      gc = gc_stats();
+      return gc["purple"] == 0 && gc["black"] == 0;
+    expect:
+      value: 1
+
+  - name: nested_map_no_possible_root
+    permission: wizard
+    statement: |
+      [1 -> [4 -> [5 -> 6], 7 -> 8], 2 -> 3];
+      gc = gc_stats();
+      return gc["purple"] == 0 && gc["black"] == 0;
+    expect:
+      value: 1
+
+  # Anonymous object tests - skip these as they test GC internals
+  # - nested_list_with_anonymous_creates_possible_root
+  # - nested_map_with_anonymous_creates_possible_root
+
+  # Basic GC safety tests
+  - name: run_gc_doesnt_crash_with_anonymous
+    permission: wizard
+    statement: |
+      create($nothing, 1);
+      run_gc();
+      return 1;
+    expect:
+      value: 1
+
+  # Cyclic reference tests - verify GC handles cycles without crashing
+  - name: single_cyclic_self_reference_basic
+    permission: wizard
+    statement: |
+      o = create($nothing, 1);
+      add_property(o, "next", o, {player, ""});
+      run_gc();
+      return valid(o);
+    expect:
+      value: 1
+
+  - name: single_cyclic_self_reference_with_recycle
+    permission: wizard
+    statement: |
+      o = create($nothing, 1);
+      add_property(o, "next", o, {player, ""});
+      recycle(o);
+      run_gc();
+      return 1;
+    expect:
+      value: 1
+
+  - name: dual_cyclic_self_references
+    permission: wizard
+    statement: |
+      o = create($nothing, 1);
+      add_property(o, "x", o, {player, ""});
+      add_property(o, "y", o, {player, ""});
+      run_gc();
+      return valid(o);
+    expect:
+      value: 1
+
+  - name: dual_cyclic_self_references_with_recycle
+    permission: wizard
+    statement: |
+      o = create($nothing, 1);
+      add_property(o, "x", o, {player, ""});
+      add_property(o, "y", o, {player, ""});
+      recycle(o);
+      run_gc();
+      return 1;
+    expect:
+      value: 1
+
+  - name: cyclic_references_through_list
+    permission: wizard
+    statement: |
+      o = create($nothing, 1);
+      x = {o, o, o};
+      add_property(o, "next", x, {player, ""});
+      run_gc();
+      return valid(o);
+    expect:
+      value: 1
+
+  - name: cyclic_references_through_list_with_recycle
+    permission: wizard
+    statement: |
+      o = create($nothing, 1);
+      x = {o, o, o};
+      add_property(o, "next", x, {player, ""});
+      recycle(o);
+      run_gc();
+      return 1;
+    expect:
+      value: 1
+
+  - name: cyclic_references_through_map
+    permission: wizard
+    statement: |
+      o = create($nothing, 1);
+      x = [1 -> o, 2 -> o, 3 -> o];
+      add_property(o, "next", x, {player, ""});
+      run_gc();
+      return valid(o);
+    expect:
+      value: 1
+
+  - name: cyclic_references_through_map_with_recycle
+    permission: wizard
+    statement: |
+      o = create($nothing, 1);
+      x = [1 -> o, 2 -> o, 3 -> o];
+      add_property(o, "next", x, {player, ""});
+      recycle(o);
+      run_gc();
+      return 1;
+    expect:
+      value: 1
+
+  # Empty list/map tests - ensure they don't create GC roots
+  - name: empty_list_is_green
+    permission: wizard
+    statement: |
+      o = create($nothing, 1);
+      add_property(o, "list", {}, {player, ""});
+      run_gc();
+      recycle(o);
+      run_gc();
+      x = {};
+      gc = gc_stats();
+      return gc["purple"] == 0;
+    expect:
+      value: 1
+
+  - name: empty_map_is_green
+    permission: wizard
+    statement: |
+      o = create($nothing, 1);
+      add_property(o, "map", [], {player, ""});
+      run_gc();
+      recycle(o);
+      run_gc();
+      x = [];
+      gc = gc_stats();
+      return gc["purple"] == 0;
+    expect:
+      value: 1

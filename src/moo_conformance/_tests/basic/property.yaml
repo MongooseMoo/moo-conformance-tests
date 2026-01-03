@@ -1,0 +1,105 @@
+name: property
+description: Basic property operations
+
+tests:
+  - name: add_property_temp
+    permission: wizard
+    code: 'eval("add_property(#0, \"temp\", 0, { #3, \"rwc\" }); return 0;")'
+    expect:
+      value: [1, 0]
+
+  - name: add_property_temp0
+    permission: wizard
+    code: 'eval("add_property(#0, \"temp0\", 0, { #3, \"rwc\" }); return 0;")'
+    expect:
+      value: [1, 0]
+
+  - name: create_child_of_root
+    permission: wizard
+    code: 'eval("$temp = create(#1); return parent($temp);")'
+    expect:
+      value: [1, "#1"]
+
+  - name: create_grandchild
+    permission: wizard
+    code: 'eval("$temp0 = create($temp); return parent($temp0) == $temp;")'
+    expect:
+      value: [1, 1]
+
+  - name: add_property_test_on_temp
+    permission: wizard
+    code: 'eval("add_property($temp, \"test\", 1, { #3, \"rwc\" }); return 0;")'
+    expect:
+      value: [1, 0]
+
+  - name: read_inherited_property_value
+    permission: wizard
+    code: "$temp.test"
+    expect:
+      value: 1
+
+  - name: is_clear_property_on_child
+    permission: wizard
+    code: 'is_clear_property($temp0, "test")'
+    expect:
+      value: 1
+
+  - name: set_property_on_child
+    permission: wizard
+    code: 'eval("$temp0.test = 2; return $temp0.test;")'
+    expect:
+      value: [1, 2]
+
+  - name: is_clear_property_after_set
+    permission: wizard
+    code: 'is_clear_property($temp0, "test")'
+    expect:
+      value: 0
+
+  - name: read_overridden_property
+    permission: wizard
+    code: "$temp0.test"
+    expect:
+      value: 2
+
+  - name: properties_on_parent
+    permission: wizard
+    code: "properties($temp)"
+    expect:
+      value: ["test"]
+
+  - name: properties_on_child
+    permission: wizard
+    code: "properties($temp0)"
+    expect:
+      value: []
+
+  - name: clear_property_on_child
+    permission: wizard
+    code: 'eval("clear_property($temp0, \"test\"); return 0;")'
+    expect:
+      value: [1, 0]
+
+  - name: is_clear_property_after_clear
+    permission: wizard
+    code: 'is_clear_property($temp0, "test")'
+    expect:
+      value: 1
+
+  - name: read_property_after_clear
+    permission: wizard
+    code: "$temp0.test"
+    expect:
+      value: 1
+
+  - name: delete_property_temp
+    permission: wizard
+    code: 'eval("delete_property(#0, \"temp\"); return 0;")'
+    expect:
+      value: [1, 0]
+
+  - name: delete_property_temp0
+    permission: wizard
+    code: 'eval("delete_property(#0, \"temp0\"); return 0;")'
+    expect:
+      value: [1, 0]

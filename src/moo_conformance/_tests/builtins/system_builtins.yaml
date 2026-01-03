@@ -1,0 +1,48 @@
+name: system_builtins
+description: Tests for system builtins (getenv)
+
+requires:
+  builtins: [getenv]
+
+tests:
+  - name: getenv_requires_wizard_perms
+    permission: programmer
+    code: 'getenv("HOME")'
+    expect:
+      error: E_PERM
+
+  - name: getenv_works_with_wizard_perms
+    permission: wizard
+    code: 'getenv("HOME")'
+    expect:
+      type: str
+
+  - name: getenv_no_args
+    permission: wizard
+    statement: "getenv();"
+    expect:
+      error: E_ARGS
+
+  - name: getenv_int_arg
+    permission: wizard
+    code: "getenv(1)"
+    expect:
+      error: E_TYPE
+
+  - name: getenv_float_arg
+    permission: wizard
+    code: "getenv(1.1)"
+    expect:
+      error: E_TYPE
+
+  - name: getenv_returns_string_for_existing_var
+    permission: wizard
+    code: 'typeof(getenv("HOME"))'
+    expect:
+      value: 2  # STR type
+
+  - name: getenv_returns_zero_for_nonexistent_var
+    permission: wizard
+    code: 'getenv("XYZZY_NONEXISTENT_VAR_12345")'
+    expect:
+      value: 0

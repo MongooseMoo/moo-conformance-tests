@@ -1,0 +1,58 @@
+name: limits_dynamic
+description: Dynamic limit tests using multi-step execution (ported from Ruby)
+
+# Suite setup: create $server_options properties
+setup:
+  permission: wizard
+  code: |
+    add_property($server_options, "max_list_value_bytes", 1000000, {player, "r"});
+    load_server_options();
+
+teardown:
+  permission: wizard
+  code: |
+    delete_property($server_options, "max_list_value_bytes");
+    load_server_options();
+
+tests:
+  - name: setadd_checks_list_max_value_bytes
+    description: Ported from test_limits.rb - verifies setadd respects max_list_value_bytes
+    skip: "Requires $server_options limit enforcement (not implemented in cow_py VM)"
+    steps:
+      # Compute the overhead of a 2-element list vs empty list
+      - run: "value_bytes({1, 2}) - value_bytes({})"
+        capture: pad
+        as: wizard
+
+      # Compute size of a 100-element list
+      - run: |
+          x = {};
+          for i in [1..100];
+            x = setadd(x, i);
+          endfor
+          return value_bytes(x);
+        capture: size
+
+      # Set limit to exactly fit 100 elements
+      - run: "$server_options.max_list_value_bytes = {pad} + {size}; load_server_options();"
+        as: wizard
+
+      # Verify 100 elements works (returns an integer - the byte count)
+      - run: |
+          x = {};
+          for i in [1..100];
+            x = setadd(x, i);
+          endfor
+          return value_bytes(x);
+        expect:
+          type: int
+
+      # Verify 101 elements exceeds quota
+      - run: |
+          x = {};
+          for i in [1..101];
+            x = setadd(x, i);
+          endfor
+          return value_bytes(x);
+        expect:
+          error: E_QUOTA

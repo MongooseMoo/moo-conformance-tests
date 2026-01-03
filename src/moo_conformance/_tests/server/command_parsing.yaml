@@ -1,0 +1,129 @@
+name: command_parsing
+description: Tests for command parsing and the "huh" mechanism
+
+# These tests verify how the server handles unknown commands when
+# $server_options.player_huh is enabled. When this option is true,
+# the server calls player:huh() for unrecognized commands. When false,
+# it calls location:huh() instead.
+
+requires:
+  builtins: [add_property, delete_property, add_verb, set_verb_code, move, notify]
+  features: [command_dispatch, server_options]
+
+teardown:
+  permission: wizard
+  code: |
+    delete_property($server_options, "player_huh");
+
+tests:
+  # Test 1: Without player_huh, location gets :huh verb called
+  - name: huh_calls_location_verb_without_player_huh_option
+    skip: "Requires command dispatch - need transport.send_command() to send raw commands"
+    permission: programmer
+    statement: |
+      /* This test would:
+       * 1. Add :huh verb to player that notifies "Huh?"
+       * 2. Move player to #-1 (nowhere)
+       * 3. Send command "zip" (unrecognized)
+       * 4. Expect it to NOT trigger player:huh (no player_huh option)
+       *
+       * Expected: Some default error, not "Huh?"
+       */
+      return 0;
+    expect:
+      value: 0
+
+  # Test 2: With player_huh=1, player's :huh verb is called
+  - name: huh_calls_player_verb_with_player_huh_enabled
+    skip: "Requires command dispatch - need transport.send_command() to send raw commands"
+    permission: wizard
+    statement: |
+      /* This test would:
+       * 1. Set $server_options.player_huh = 1
+       * 2. Add :huh verb to player that notifies "Huh?"
+       * 3. Move player to #-1 (nowhere)
+       * 4. Send command "zap" (unrecognized)
+       * 5. Expect notification "Huh?" from player:huh
+       *
+       * Expected: "Huh?" notification
+       */
+      return 0;
+    expect:
+      value: 0
+
+  # Test 3: Disable player_huh again, back to location behavior
+  - name: huh_calls_location_verb_with_player_huh_disabled
+    skip: "Requires command dispatch - need transport.send_command() to send raw commands"
+    permission: wizard
+    statement: |
+      /* This test would:
+       * 1. Set $server_options.player_huh = 0
+       * 2. Add :huh verb to player that notifies "Huh?"
+       * 3. Move player to #-1 (nowhere)
+       * 4. Send command "zop" (unrecognized)
+       * 5. Expect it to NOT trigger player:huh (option disabled)
+       *
+       * Expected: Some default error, not "Huh?"
+       */
+      return 0;
+    expect:
+      value: 0
+
+  # Test 4: Location :huh is called without player_huh
+  - name: location_huh_works_without_player_huh_option
+    skip: "Requires command dispatch - need transport.send_command() to send raw commands"
+    permission: programmer
+    statement: |
+      /* This test would:
+       * 1. Create object o
+       * 2. Add o:accept verb (returns 1)
+       * 3. Add o:huh verb that notifies "Huh?"
+       * 4. Move player into object o
+       * 5. Send command "zip" (unrecognized)
+       * 6. Expect notification "Huh?" from o:huh (location)
+       *
+       * Expected: "Huh?" notification
+       */
+      return 0;
+    expect:
+      value: 0
+
+  # Test 5: Location :huh NOT called when player_huh=1
+  - name: location_huh_disabled_with_player_huh_enabled
+    skip: "Requires command dispatch - need transport.send_command() to send raw commands"
+    permission: wizard
+    statement: |
+      /* This test would:
+       * 1. Set $server_options.player_huh = 1
+       * 2. Create object o
+       * 3. Add o:accept verb (returns 1)
+       * 4. Add o:huh verb that notifies "Huh?"
+       * 5. Move player into object o
+       * 6. Send command "zap" (unrecognized)
+       * 7. Expect NO "Huh?" notification (player:huh used instead)
+       *
+       * Expected: No "Huh?" notification from location
+       */
+      return 0;
+    expect:
+      value: 0
+
+  # Test 6: Location :huh works when player_huh=0
+  - name: location_huh_works_with_player_huh_disabled
+    skip: "Requires command dispatch - need transport.send_command() to send raw commands"
+    permission: wizard
+    statement: |
+      /* This test would:
+       * 1. Set $server_options.player_huh = 0
+       * 2. Create object o
+       * 3. Add o:accept verb (returns 1)
+       * 4. Add o:huh verb that notifies "Huh?"
+       * 5. Move player into object o
+       * 6. Send command "zop" (unrecognized)
+       * 7. Expect notification "Huh?" from o:huh (location)
+       *
+       * Expected: "Huh?" notification
+       */
+      return 0;
+    expect:
+      value: 0

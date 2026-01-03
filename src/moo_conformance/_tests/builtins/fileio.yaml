@@ -1,0 +1,453 @@
+name: fileio
+description: |
+  Tests for MOO file I/O builtins - file_open, file_close, file_read/write, file operations
+
+  NOTE: File I/O builtins are NOT available in toaststunt's Test.db (requires server config).
+  These tests are converted from test_fileio.rb but currently cannot be validated against
+  the reference implementation without a server that has file I/O enabled.
+
+  All tests are marked with skip so they don't run by default. Remove skip to test against
+  a server with file I/O enabled.
+
+requires:
+  builtins: [file_version, file_open, file_close, file_readline, file_readlines, file_writeline, file_read, file_write, file_tell, file_seek, file_eof, file_size, file_mode, file_last_access, file_last_modify, file_last_change, file_stat, file_rename, file_remove, file_mkdir, file_rmdir, file_list, file_type, file_chmod, file_name, file_openmode]
+
+tests:
+  # Permission tests - all file operations require wizard
+  - name: file_open_requires_wizard
+    permission: programmer
+    code: "file_open('', '')"
+    expect:
+      error: E_PERM
+    skip: "File I/O not available in Test.db"
+
+  - name: file_close_requires_wizard
+    permission: programmer
+    code: "file_close(0)"
+    expect:
+      error: E_PERM
+    skip: "File I/O not available in Test.db"
+
+  - name: file_name_requires_wizard
+    permission: programmer
+    code: "file_name(0)"
+    expect:
+      error: E_PERM
+    skip: "File I/O not available in Test.db"
+
+  - name: file_openmode_requires_wizard
+    permission: programmer
+    code: "file_openmode(0)"
+    expect:
+      error: E_PERM
+    skip: "File I/O not available in Test.db"
+
+  - name: file_readline_requires_wizard
+    permission: programmer
+    code: "file_readline(0)"
+    expect:
+      error: E_PERM
+    skip: "File I/O not available in Test.db"
+
+  - name: file_readlines_requires_wizard
+    permission: programmer
+    code: "file_readlines(0, 1, 2)"
+    expect:
+      error: E_PERM
+    skip: "File I/O not available in Test.db"
+
+  - name: file_writeline_requires_wizard
+    permission: programmer
+    code: "file_writeline(0, '')"
+    expect:
+      error: E_PERM
+    skip: "File I/O not available in Test.db"
+
+  - name: file_read_requires_wizard
+    permission: programmer
+    code: "file_read(0, 1)"
+    expect:
+      error: E_PERM
+    skip: "File I/O not available in Test.db"
+
+  - name: file_write_requires_wizard
+    permission: programmer
+    code: "file_write(0, '')"
+    expect:
+      error: E_PERM
+    skip: "File I/O not available in Test.db"
+
+  - name: file_tell_requires_wizard
+    permission: programmer
+    code: "file_tell(0)"
+    expect:
+      error: E_PERM
+    skip: "File I/O not available in Test.db"
+
+  - name: file_seek_requires_wizard
+    permission: programmer
+    code: "file_seek(0, 1, '')"
+    expect:
+      error: E_PERM
+    skip: "File I/O not available in Test.db"
+
+  - name: file_eof_requires_wizard
+    permission: programmer
+    code: "file_eof(0)"
+    expect:
+      error: E_PERM
+    skip: "File I/O not available in Test.db"
+
+  - name: file_size_str_requires_wizard
+    permission: programmer
+    code: "file_size('')"
+    expect:
+      error: E_PERM
+    skip: "File I/O not available in Test.db"
+
+  - name: file_size_int_requires_wizard
+    permission: programmer
+    code: "file_size(0)"
+    expect:
+      error: E_PERM
+    skip: "File I/O not available in Test.db"
+
+  - name: file_mode_str_requires_wizard
+    permission: programmer
+    code: "file_mode('')"
+    expect:
+      error: E_PERM
+    skip: "File I/O not available in Test.db"
+
+  - name: file_mode_int_requires_wizard
+    permission: programmer
+    code: "file_mode(0)"
+    expect:
+      error: E_PERM
+    skip: "File I/O not available in Test.db"
+
+  - name: file_last_access_str_requires_wizard
+    permission: programmer
+    code: "file_last_access('')"
+    expect:
+      error: E_PERM
+    skip: "File I/O not available in Test.db"
+
+  - name: file_last_access_int_requires_wizard
+    permission: programmer
+    code: "file_last_access(0)"
+    expect:
+      error: E_PERM
+    skip: "File I/O not available in Test.db"
+
+  - name: file_last_modify_str_requires_wizard
+    permission: programmer
+    code: "file_last_modify('')"
+    expect:
+      error: E_PERM
+    skip: "File I/O not available in Test.db"
+
+  - name: file_last_modify_int_requires_wizard
+    permission: programmer
+    code: "file_last_modify(0)"
+    expect:
+      error: E_PERM
+    skip: "File I/O not available in Test.db"
+
+  - name: file_last_change_str_requires_wizard
+    permission: programmer
+    code: "file_last_change('')"
+    expect:
+      error: E_PERM
+    skip: "File I/O not available in Test.db"
+
+  - name: file_last_change_int_requires_wizard
+    permission: programmer
+    code: "file_last_change(0)"
+    expect:
+      error: E_PERM
+    skip: "File I/O not available in Test.db"
+
+  - name: file_stat_str_requires_wizard
+    permission: programmer
+    code: "file_stat('')"
+    expect:
+      error: E_PERM
+    skip: "File I/O not available in Test.db"
+
+  - name: file_stat_int_requires_wizard
+    permission: programmer
+    code: "file_stat(0)"
+    expect:
+      error: E_PERM
+    skip: "File I/O not available in Test.db"
+
+  - name: file_rename_requires_wizard
+    permission: programmer
+    code: "file_rename('', '')"
+    expect:
+      error: E_PERM
+    skip: "File I/O not available in Test.db"
+
+  - name: file_remove_requires_wizard
+    permission: programmer
+    code: "file_remove('')"
+    expect:
+      error: E_PERM
+    skip: "File I/O not available in Test.db"
+
+  - name: file_mkdir_requires_wizard
+    permission: programmer
+    code: "file_mkdir('')"
+    expect:
+      error: E_PERM
+    skip: "File I/O not available in Test.db"
+
+  - name: file_rmdir_requires_wizard
+    permission: programmer
+    code: "file_rmdir('')"
+    expect:
+      error: E_PERM
+    skip: "File I/O not available in Test.db"
+
+  - name: file_list_requires_wizard
+    permission: programmer
+    code: "file_list('')"
+    expect:
+      error: E_PERM
+    skip: "File I/O not available in Test.db"
+
+  - name: file_list_detailed_requires_wizard
+    permission: programmer
+    code: "file_list('', 1)"
+    expect:
+      error: E_PERM
+    skip: "File I/O not available in Test.db"
+
+  - name: file_type_requires_wizard
+    permission: programmer
+    code: "file_type('')"
+    expect:
+      error: E_PERM
+    skip: "File I/O not available in Test.db"
+
+  - name: file_chmod_requires_wizard
+    permission: programmer
+    code: "file_chmod('', '')"
+    expect:
+      error: E_PERM
+    skip: "File I/O not available in Test.db"
+
+  # file_version does NOT require wizard
+  - name: file_version_public
+    permission: programmer
+    statement: |
+      result = file_version();
+      return typeof(result) == STR;
+    expect:
+      value: 1
+    skip: "File I/O not available in Test.db"
+
+  # Text file operations
+  - name: text_file_write_read
+    permission: wizard
+    statement: |
+      fh = file_open('test_fileio.tmp', 'w-tn');
+      file_writeline(fh, "one two three four five");
+      file_close(fh);
+      fh = file_open('test_fileio.tmp', 'r-tn');
+      line = file_readline(fh);
+      file_close(fh);
+      sz = file_size('test_fileio.tmp');
+      file_remove('test_fileio.tmp');
+      return {line, sz};
+    expect:
+      value: ["one two three four five", 24]
+    skip: "File I/O not available in Test.db"
+
+  # Binary file operations
+  - name: binary_file_write_read
+    permission: wizard
+    statement: |
+      fh = file_open('test_fileio.tmp', 'w-bn');
+      file_write(fh, '~A7~CE~F7~8E~0C~D2~16~C9~F6~F2~01~19');
+      file_close(fh);
+      fh = file_open('test_fileio.tmp', 'r-bn');
+      data = file_read(fh, 12);
+      file_close(fh);
+      sz = file_size('test_fileio.tmp');
+      file_remove('test_fileio.tmp');
+      return {data, sz};
+    expect:
+      value: ['~A7~CE~F7~8E~0C~D2~16~C9~F6~F2~01~19', 12]
+    skip: "File I/O not available in Test.db"
+
+  # Reading binary data in text mode filters non-text bytes
+  - name: binary_in_text_mode_with_newline
+    permission: wizard
+    statement: |
+      fh = file_open('test_fileio.tmp', 'w-bn');
+      file_write(fh, 'abc~A7~CE~F7~8E~00~D2~16~C9~F6~F2~01~19123~0A');
+      file_close(fh);
+      fh = file_open('test_fileio.tmp', 'r-tn');
+      line = file_readline(fh);
+      file_close(fh);
+      file_remove('test_fileio.tmp');
+      return line;
+    expect:
+      value: "abc123"
+    skip: "File I/O not available in Test.db"
+
+  - name: binary_in_text_mode_without_newline
+    permission: wizard
+    statement: |
+      fh = file_open('test_fileio.tmp', 'w-bn');
+      file_write(fh, 'abc~A7~CE~F7~8E~00~D2~16~C9~F6~F2~01~19123');
+      file_close(fh);
+      fh = file_open('test_fileio.tmp', 'r-tn');
+      line = file_readline(fh);
+      file_close(fh);
+      file_remove('test_fileio.tmp');
+      return line;
+    expect:
+      value: "abc123"
+    skip: "File I/O not available in Test.db"
+
+  # file_readlines tests
+  - name: readlines_invalid_start_line
+    permission: wizard
+    statement: |
+      fh = file_open('test_fileio.tmp', 'w-tn');
+      file_writeline(fh, 'one');
+      file_writeline(fh, 'two');
+      file_writeline(fh, 'three');
+      file_close(fh);
+      fh = file_open('test_fileio.tmp', 'r-tn');
+      result = file_readlines(fh, 0, 4);
+      file_close(fh);
+      file_remove('test_fileio.tmp');
+      return result;
+    expect:
+      error: E_INVARG
+    skip: "File I/O not available in Test.db"
+
+  - name: readlines_invalid_end_before_start
+    permission: wizard
+    statement: |
+      fh = file_open('test_fileio.tmp', 'w-tn');
+      file_writeline(fh, 'one');
+      file_writeline(fh, 'two');
+      file_writeline(fh, 'three');
+      file_close(fh);
+      fh = file_open('test_fileio.tmp', 'r-tn');
+      result = file_readlines(fh, 5, 1);
+      file_close(fh);
+      file_remove('test_fileio.tmp');
+      return result;
+    expect:
+      error: E_INVARG
+    skip: "File I/O not available in Test.db"
+
+  - name: readlines_multiple_lines
+    permission: wizard
+    statement: |
+      fh = file_open('test_fileio.tmp', 'w-tn');
+      file_writeline(fh, 'one');
+      file_writeline(fh, 'two');
+      file_writeline(fh, 'three');
+      file_writeline(fh, 'four');
+      file_writeline(fh, 'five');
+      file_close(fh);
+      fh = file_open('test_fileio.tmp', 'r-tn');
+      lines = file_readlines(fh, 1, 500);
+      file_close(fh);
+      file_remove('test_fileio.tmp');
+      return lines;
+    expect:
+      value: ["one", "two", "three", "four", "five"]
+    skip: "File I/O not available in Test.db"
+
+  - name: readlines_blank_lines
+    permission: wizard
+    statement: |
+      fh = file_open('test_fileio.tmp', 'w-tn');
+      file_writeline(fh, '');
+      file_writeline(fh, '');
+      file_writeline(fh, '');
+      file_writeline(fh, '');
+      file_writeline(fh, '');
+      file_close(fh);
+      fh = file_open('test_fileio.tmp', 'r-tn');
+      lines = file_readlines(fh, 1, 500);
+      file_close(fh);
+      file_remove('test_fileio.tmp');
+      return lines;
+    expect:
+      value: ["", "", "", "", ""]
+    skip: "File I/O not available in Test.db"
+
+  - name: readlines_on_write_output
+    permission: wizard
+    statement: |
+      fh = file_open('test_fileio.tmp', 'w-tn');
+      file_write(fh, 'one');
+      file_write(fh, 'two');
+      file_write(fh, 'three');
+      file_write(fh, 'four');
+      file_write(fh, 'five');
+      file_close(fh);
+      fh = file_open('test_fileio.tmp', 'r-tn');
+      lines = file_readlines(fh, 1, 5);
+      file_close(fh);
+      file_remove('test_fileio.tmp');
+      return lines;
+    expect:
+      value: "onetwothreefourfive"
+    skip: "File I/O not available in Test.db"
+
+  # Text in binary mode preserves newlines
+  - name: text_in_binary_mode
+    permission: wizard
+    statement: |
+      fh = file_open('test_fileio.tmp', 'w-tn');
+      file_writeline(fh, "one two three four five");
+      file_close(fh);
+      fh = file_open('test_fileio.tmp', 'r-bn');
+      line = file_read(fh, 24);
+      file_close(fh);
+      file_remove('test_fileio.tmp');
+      return line;
+    expect:
+      value: "one two three four five~0A"
+    skip: "File I/O not available in Test.db"
+
+  # Reading empty files produces E_FILE
+  - name: empty_file_text_mode
+    permission: wizard
+    statement: |
+      fh = file_open('test_fileio.tmp', 'w-tn');
+      file_close(fh);
+      fh = file_open('test_fileio.tmp', 'r-tn');
+      result = file_readline(fh);
+      eof = file_eof(fh);
+      file_close(fh);
+      file_remove('test_fileio.tmp');
+      return {result, eof};
+    expect:
+      value: [{"ERROR": "E_FILE"}, 1]
+    skip: "File I/O not available in Test.db"
+
+  - name: empty_file_binary_mode
+    permission: wizard
+    statement: |
+      fh = file_open('test_fileio.tmp', 'w-bn');
+      file_close(fh);
+      fh = file_open('test_fileio.tmp', 'r-bn');
+      result = file_read(fh, 100);
+      eof = file_eof(fh);
+      file_close(fh);
+      file_remove('test_fileio.tmp');
+      return {result, eof};
+    expect:
+      value: [{"ERROR": "E_FILE"}, 1]
+    skip: "File I/O not available in Test.db"

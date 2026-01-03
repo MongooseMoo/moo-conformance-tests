@@ -1,0 +1,20 @@
+name: caller_perms
+description: Tests for caller_perms() builtin
+
+requires:
+  builtins: [caller_perms, create, recycle, add_verb, set_verb_code]
+
+tests:
+  - name: caller_perms_top_level_eval
+    description: caller_perms() returns player when called at top level (eval)
+    permission: wizard
+    code: "caller_perms() == player"
+    expect:
+      value: 1
+
+  - name: caller_perms_returns_player_type
+    description: caller_perms() returns an object number
+    permission: wizard
+    code: "typeof(caller_perms())"
+    expect:
+      value: 1  # OBJ type

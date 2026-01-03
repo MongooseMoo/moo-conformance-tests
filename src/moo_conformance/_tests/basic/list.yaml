@@ -1,0 +1,48 @@
+name: list
+description: Basic list operations
+
+tests:
+  - name: length_of_list
+    code: "length({1, 2, 3})"
+    expect:
+      value: 3
+
+  - name: listappend_to_end
+    code: "listappend({1, 2}, 3)"
+    expect:
+      value: [1, 2, 3]
+
+  - name: listappend_at_position
+    code: "listappend({1, 2}, 3, 1)"
+    expect:
+      value: [1, 3, 2]
+
+  - name: listinsert_at_position_2
+    code: "listinsert({1, 2}, 3, 2)"
+    expect:
+      value: [1, 3, 2]
+
+  - name: listinsert_at_position_1
+    code: "listinsert({1, 2}, 3, 1)"
+    expect:
+      value: [3, 1, 2]
+
+  - name: listdelete_at_position_2
+    code: "listdelete({1, 2, 3}, 2)"
+    expect:
+      value: [1, 3]
+
+  - name: listset_at_position_2
+    code: "listset({1, 2, 3}, 4, 2)"
+    expect:
+      value: [1, 4, 3]
+
+  - name: setadd_new_element
+    code: "setadd({1, 2}, 3)"
+    expect:
+      value: [1, 2, 3]
+
+  - name: setadd_existing_element
+    code: "setadd({1, 2}, 2)"
+    expect:
+      value: [1, 2]

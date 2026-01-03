@@ -1,0 +1,67 @@
+name: equality
+description: Equality comparisons between values
+
+tests:
+  # Equality tests - same types
+  - name: int_equality
+    code: "10 == 5 + 5"
+    expect:
+      value: 1
+
+  - name: float_equality
+    code: "10.0 == 5.0 + 5.0"
+    expect:
+      value: 1
+
+  - name: string_equality
+    code: '"10" == "1" + "0"'
+    expect:
+      value: 1
+
+  - name: object_equality
+    code: "#10 == #10"
+    expect:
+      value: 1
+
+  - name: error_equality
+    code: "E_NONE == E_NONE"
+    expect:
+      value: 1
+
+  - name: list_equality_with_splicing
+    statement: |
+      x = {1, 2.0};
+      y = {#3, "four"};
+      return {1, 2.0, #3, "four"} == {@x, @y};
+    expect:
+      value: 1
+
+  - name: map_equality
+    statement: |
+      x = [];
+      x[1] = 2.0;
+      x[#3] = "four";
+      return [1 -> 2.0, #3 -> "four"] == x;
+    expect:
+      value: 1
+
+  # Inequality tests - different types
+  - name: int_float_inequality
+    code: "1 == 1.0"
+    expect:
+      value: 0
+
+  - name: float_object_inequality
+    code: "1.0 == #1"
+    expect:
+      value: 0
+
+  - name: object_string_inequality
+    code: '#1 == "1"'
+    expect:
+      value: 0
+
+  - name: map_list_inequality
+    code: "[] == {}"
+    expect:
+      value: 0

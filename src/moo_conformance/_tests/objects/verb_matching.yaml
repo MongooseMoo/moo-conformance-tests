@@ -1,0 +1,50 @@
+name: verb_matching
+description: Tests for verb name matching including wildcards
+
+requires:
+  builtins: [create, recycle, add_verb, set_verb_code]
+
+tests:
+  # NOTE: Wildcard * matching in verb names doesn't work as expected
+  # These tests return E_VERBNF against toaststunt oracle
+  - name: wildcard_verb_prefix_matching
+    description: Verb with * wildcard matches abbreviated calls
+    permission: wizard
+    skip: "Verb wildcard matching doesn't work - E_VERBNF in toaststunt"
+    statement: |
+      obj = create($nothing);
+      add_verb(obj, {player, "rxd", "test_func*tion"}, {"this", "none", "this"});
+      set_verb_code(obj, "test_func*tion", {"return 42;"});
+      result = obj:test_func();
+      recycle(obj);
+      return result;
+    expect:
+      value: 42
+
+  - name: wildcard_verb_full_name_matching
+    description: Verb with * wildcard matches full name too
+    permission: wizard
+    skip: "Verb wildcard matching doesn't work - E_VERBNF in toaststunt"
+    statement: |
+      obj = create($nothing);
+      add_verb(obj, {player, "rxd", "test_func*tion"}, {"this", "none", "this"});
+      set_verb_code(obj, "test_func*tion", {"return 99;"});
+      result = obj:test_function();
+      recycle(obj);
+      return result;
+    expect:
+      value: 99
+
+  - name: wildcard_verb_partial_suffix_matching
+    description: Verb with * wildcard matches partial suffix
+    permission: wizard
+    skip: "Verb wildcard matching doesn't work - E_VERBNF in toaststunt"
+    statement: |
+      obj = create($nothing);
+      add_verb(obj, {player, "rxd", "test_func*tion"}, {"this", "none", "this"});
+      set_verb_code(obj, "test_func*tion", {"return 77;"});
+      result = obj:test_functi();
+      recycle(obj);
+      return result;
+    expect:
+      value: 77

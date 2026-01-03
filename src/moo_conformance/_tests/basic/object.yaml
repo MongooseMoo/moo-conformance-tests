@@ -1,0 +1,79 @@
+name: object
+description: Basic object operations
+
+tests:
+  - name: parent_of_newly_created_object
+    permission: wizard
+    code: "parent(create(#2))"
+    expect:
+      value: "#2"
+
+  - name: name_of_newly_created_object
+    permission: wizard
+    code: "create(#2).name"
+    expect:
+      value: ""
+
+  - name: location_of_newly_created_object
+    permission: wizard
+    code: "create(#2).location"
+    expect:
+      value: "#-1"
+
+  - name: contents_of_newly_created_object
+    permission: wizard
+    code: "create(#2).contents"
+    expect:
+      value: []
+
+  - name: programmer_flag_of_newly_created_object
+    permission: wizard
+    code: "create(#2).programmer"
+    expect:
+      value: 0
+
+  - name: wizard_flag_of_newly_created_object
+    permission: wizard
+    code: "create(#2).wizard"
+    expect:
+      value: 0
+
+  - name: r_flag_of_newly_created_object
+    permission: wizard
+    code: "create(#2).r"
+    expect:
+      value: 0
+
+  - name: w_flag_of_newly_created_object
+    permission: wizard
+    code: "create(#2).w"
+    expect:
+      value: 0
+
+  - name: f_flag_of_newly_created_object
+    permission: wizard
+    code: "create(#2).f"
+    expect:
+      value: 0
+
+  - name: is_player_of_newly_created_object
+    permission: wizard
+    code: "is_player(create(#2))"
+    expect:
+      value: 0
+
+  - name: valid_nothing
+    code: "valid(#-1)"
+    expect:
+      value: 0
+
+  - name: valid_system_object
+    code: "valid(#0)"
+    expect:
+      value: 1
+
+  - name: children_of_system_object
+    skip: "Database-dependent - #0 children vary by db"
+    code: "children(#0)"
+    expect:
+      value: []

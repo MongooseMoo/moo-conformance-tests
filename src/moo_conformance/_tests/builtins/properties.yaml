@@ -1,0 +1,707 @@
+name: property_builtins
+description: Tests for property manipulation builtins - property_info, add_property, delete_property, etc.
+
+requires:
+  builtins: [property_info, add_property, delete_property, clear_property, set_property_info, properties, is_clear_property, create, recycle, valid]
+
+tests:
+  # Smoke tests - validate workflow before bulk conversion
+
+  - name: property_info_basic
+    description: property_info returns {owner, perms} for defined property
+    permission: programmer
+    statement: |
+      info = property_info(#0, "nothing");
+      return {length(info) == 2, typeof(info[1]) == OBJ, typeof(info[2]) == STR};
+    expect:
+      value: [1, 1, 1]
+
+  - name: add_property_basic
+    description: add_property creates new property that can be read/written
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_property({obj}, \"test\", 42, {player, \"rw\"})"
+        expect:
+          value: 0
+      - run: "{obj}.test"
+        expect:
+          value: 42
+      - run: "{obj}.test = 99"
+        expect:
+          value: 99
+      - run: "{obj}.test"
+        expect:
+          value: 99
+    cleanup:
+      - run: "recycle({obj})"
+
+  ## add_property tests
+
+  - name: add_property_works
+    description: add_property creates property that can be set and retrieved
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_property({obj}, \"foobar\", 0, {player, \"\"})"
+      - run: "{obj}.foobar = \"abc\""
+        expect:
+          value: "abc"
+      - run: "{obj}.foobar"
+        expect:
+          value: "abc"
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: add_property_invalid_owner
+    description: add_property fails with E_INVARG if owner is not valid
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_property({obj}, \"foobar\", 0, {$nothing, \"\"})"
+        expect:
+          error: E_INVARG
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: add_property_invalid_perms
+    description: add_property fails with E_INVARG if perms are garbage
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_property({obj}, \"foobar\", 0, {player, \"abc\"})"
+        expect:
+          error: E_INVARG
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: add_property_recycled_object
+    description: add_property fails with E_INVARG if object is not valid
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "recycle({obj})"
+      - run: "add_property({obj}, \"foobar\", 0, {player, \"\"})"
+        expect:
+          error: E_INVARG
+
+  - name: add_property_builtin_name
+    description: add_property fails with E_INVARG if property name is built-in
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_property({obj}, \"name\", 0, {player, \"\"})"
+        expect:
+          error: E_INVARG
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: add_property_defined_on_ancestor
+    description: add_property fails with E_INVARG if property already defined on ancestor
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: parent
+      - run: "add_property({parent}, \"foobar\", 123, {player, \"\"})"
+      - run: "create({parent})"
+        capture: child
+      - run: "add_property({child}, \"foobar\", 0, {player, \"\"})"
+        expect:
+          error: E_INVARG
+    cleanup:
+      - run: "recycle({child})"
+      - run: "recycle({parent})"
+
+  - name: add_property_defined_on_descendant
+    description: add_property fails with E_INVARG if property already defined on descendant
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: parent
+      - run: "create({parent})"
+        capture: child
+      - run: "add_property({child}, \"foobar\", 0, {player, \"rw\"})"
+      - run: "add_property({parent}, \"foobar\", 0, {player, \"\"})"
+        expect:
+          error: E_INVARG
+    cleanup:
+      - run: "recycle({child})"
+      - run: "recycle({parent})"
+
+  - name: add_property_no_write_permission
+    description: add_property fails with E_PERM if programmer does not have write permission (owner still can)
+    permission: programmer
+    skip: "Owners can always add properties regardless of .w flag - need non-owner test"
+
+  - name: add_property_with_write_permission
+    description: add_property succeeds if programmer has write permission
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "{obj}.w = 1"
+      - run: "add_property({obj}, \"foobar\", 0, {player, \"\"})"
+      - run: "typeof(add_property({obj}, \"foobar\", 0, {player, \"\"}))"
+        expect:
+          error: E_INVARG  # Already added, so should fail but not with E_PERM
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: add_property_wizard_bypasses_write
+    description: add_property succeeds if programmer is wizard even without write permission
+    permission: wizard
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "{obj}.w = 0"
+      - run: "add_property({obj}, \"foobar\", 0, {player, \"\"})"
+        expect:
+          value: 0
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: add_property_not_owner
+    description: add_property fails with E_PERM if programmer is not the owner specified
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_property({obj}, \"foobar\", 0, {$system, \"\"})"
+        expect:
+          error: E_PERM
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: add_property_is_owner
+    description: add_property succeeds if programmer is the owner specified
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_property({obj}, \"foobar\", 0, {player, \"\"})"
+        expect:
+          value: 0
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: add_property_wizard_sets_owner
+    description: add_property succeeds if wizard sets different owner
+    permission: wizard
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_property({obj}, \"foobar\", 0, {$system, \"\"})"
+        expect:
+          value: 0
+    cleanup:
+      - run: "recycle({obj})"
+
+  ## delete_property tests
+
+  - name: delete_property_works
+    description: delete_property removes a property
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_property({obj}, \"foobar\", 0, {player, \"\"})"
+      - run: "delete_property({obj}, \"foobar\")"
+        expect:
+          value: 0
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: delete_property_recycled_object
+    description: delete_property fails with E_INVARG if object is not valid
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "recycle({obj})"
+      - run: "delete_property({obj}, \"foobar\")"
+        expect:
+          error: E_INVARG
+
+  - name: delete_property_not_found
+    description: delete_property fails with E_PROPNF if property does not exist
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "delete_property({obj}, \"foobar\")"
+        expect:
+          error: E_PROPNF
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: delete_property_builtin
+    description: delete_property fails with E_PROPNF if property is built-in
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "delete_property({obj}, \"name\")"
+        expect:
+          error: E_PROPNF
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: delete_property_no_write_permission
+    description: delete_property fails with E_PERM if programmer does not have write permission (owner still can)
+    permission: programmer
+    skip: "Owners can always delete properties regardless of .w flag - need non-owner test"
+
+  - name: delete_property_with_write_permission
+    description: delete_property succeeds if programmer has write permission
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_property({obj}, \"foobar\", 0, {player, \"\"})"
+      - run: "{obj}.w = 1"
+      - run: "delete_property({obj}, \"foobar\")"
+        expect:
+          value: 0
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: delete_property_wizard_bypasses_write
+    description: delete_property succeeds if programmer is wizard even without write permission
+    permission: wizard
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_property({obj}, \"foobar\", 0, {player, \"\"})"
+      - run: "{obj}.w = 0"
+      - run: "delete_property({obj}, \"foobar\")"
+        expect:
+          value: 0
+    cleanup:
+      - run: "recycle({obj})"
+
+  ## is_clear_property tests
+
+  - name: is_clear_property_works
+    description: is_clear_property returns 1 for clear property, 0 after setting
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: parent
+      - run: "add_property({parent}, \"foobar\", 123, {player, \"\"})"
+      - run: "create({parent})"
+        capture: child
+      - run: "is_clear_property({child}, \"foobar\")"
+        expect:
+          value: 1
+      - run: "{child}.foobar = \"hello\""
+      - run: "is_clear_property({child}, \"foobar\")"
+        expect:
+          value: 0
+    cleanup:
+      - run: "recycle({child})"
+      - run: "recycle({parent})"
+
+  - name: is_clear_property_recycled_object
+    description: is_clear_property fails with E_INVARG if object is not valid
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "recycle({obj})"
+      - run: "is_clear_property({obj}, \"foobar\")"
+        expect:
+          error: E_INVARG
+
+  - name: is_clear_property_not_found
+    description: is_clear_property fails with E_PROPNF if property does not exist
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "is_clear_property({obj}, \"foobar\")"
+        expect:
+          error: E_PROPNF
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: is_clear_property_builtin
+    description: is_clear_property returns 0 for built-in property
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "is_clear_property({obj}, \"name\")"
+        expect:
+          value: 0
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: is_clear_property_on_definer
+    description: is_clear_property returns 0 if called on the definer
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_property({obj}, \"foobar\", 0, {player, \"\"})"
+      - run: "is_clear_property({obj}, \"foobar\")"
+        expect:
+          value: 0
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: is_clear_property_no_read_permission
+    description: is_clear_property fails with E_PERM if programmer does not have read permission (owner still can)
+    permission: programmer
+    skip: "Owners can always read properties regardless of .r flag - need non-owner test"
+
+  - name: is_clear_property_with_read_permission
+    description: is_clear_property succeeds if programmer has read permission
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: parent
+      - run: "add_property({parent}, \"foobar\", 0, {player, \"r\"})"
+      - run: "create({parent})"
+        capture: child
+      - run: "is_clear_property({child}, \"foobar\")"
+        expect:
+          value: 1
+    cleanup:
+      - run: "recycle({child})"
+      - run: "recycle({parent})"
+
+  - name: is_clear_property_wizard_bypasses_read
+    description: is_clear_property succeeds if programmer is wizard even without read permission
+    permission: wizard
+    steps:
+      - run: "create($nothing)"
+        capture: parent
+      - run: "add_property({parent}, \"foobar\", 0, {player, \"\"})"
+      - run: "create({parent})"
+        capture: child
+      - run: "is_clear_property({child}, \"foobar\")"
+        expect:
+          value: 1
+    cleanup:
+      - run: "recycle({child})"
+      - run: "recycle({parent})"
+
+  ## clear_property tests
+
+  - name: clear_property_works
+    description: clear_property resets property to inherited value
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: parent
+      - run: "add_property({parent}, \"foobar\", 123, {player, \"\"})"
+      - run: "create({parent})"
+        capture: child
+      - run: "{child}.foobar = \"hello\""
+      - run: "{child}.foobar"
+        expect:
+          value: "hello"
+      - run: "clear_property({child}, \"foobar\")"
+      - run: "{child}.foobar"
+        expect:
+          value: 123
+    cleanup:
+      - run: "recycle({child})"
+      - run: "recycle({parent})"
+
+  - name: clear_property_recycled_object
+    description: clear_property fails with E_INVARG if object is not valid
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "recycle({obj})"
+      - run: "clear_property({obj}, \"foobar\")"
+        expect:
+          error: E_INVARG
+
+  - name: clear_property_not_found
+    description: clear_property fails with E_PROPNF if property does not exist
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "clear_property({obj}, \"foobar\")"
+        expect:
+          error: E_PROPNF
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: clear_property_builtin
+    description: clear_property raises E_PERM if property is built-in
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "clear_property({obj}, \"name\")"
+        expect:
+          error: E_PERM
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: clear_property_on_definer
+    description: clear_property raises E_INVARG if called on the definer
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_property({obj}, \"foobar\", 0, {player, \"\"})"
+      - run: "clear_property({obj}, \"foobar\")"
+        expect:
+          error: E_INVARG
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: clear_property_no_write_permission
+    description: clear_property fails with E_PERM if programmer does not have write permission (owner still can)
+    permission: programmer
+    skip: "Owners can always clear properties regardless of .w flag - need non-owner test"
+
+  - name: clear_property_with_write_permission
+    description: clear_property succeeds if programmer has write permission
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: parent
+      - run: "add_property({parent}, \"foobar\", 0, {player, \"w\"})"
+      - run: "create({parent})"
+        capture: child
+      - run: "clear_property({child}, \"foobar\")"
+        expect:
+          value: 0
+    cleanup:
+      - run: "recycle({child})"
+      - run: "recycle({parent})"
+
+  - name: clear_property_wizard_bypasses_write
+    description: clear_property succeeds if programmer is wizard even without write permission
+    permission: wizard
+    steps:
+      - run: "create($nothing)"
+        capture: parent
+      - run: "add_property({parent}, \"foobar\", 0, {player, \"\"})"
+      - run: "create({parent})"
+        capture: child
+      - run: "clear_property({child}, \"foobar\")"
+        expect:
+          value: 0
+    cleanup:
+      - run: "recycle({child})"
+      - run: "recycle({parent})"
+
+  ## property_info tests
+
+  - name: property_info_works
+    description: property_info returns {owner, perms} for property
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_property({obj}, \"foobar\", 0, {player, \"rw\"})"
+      - run: "info = property_info({obj}, \"foobar\"); return {length(info) == 2, typeof(info[1]) == OBJ, info[2]};"
+        expect:
+          value: [1, 1, "rw"]
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: property_info_recycled_object
+    description: property_info fails with E_INVARG if object is not valid
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "recycle({obj})"
+      - run: "property_info({obj}, \"foobar\")"
+        expect:
+          error: E_INVARG
+
+  - name: property_info_not_found
+    description: property_info fails with E_PROPNF if property does not exist
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "property_info({obj}, \"foobar\")"
+        expect:
+          error: E_PROPNF
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: property_info_builtin
+    description: property_info raises E_PROPNF if property is built-in
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "property_info({obj}, \"name\")"
+        expect:
+          error: E_PROPNF
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: property_info_no_read_permission
+    description: property_info fails with E_PERM if programmer does not have read permission (owner still can)
+    permission: programmer
+    skip: "Owners can always read property info regardless of .r flag - need non-owner test"
+
+  - name: property_info_with_read_permission
+    description: property_info succeeds if programmer has read permission
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_property({obj}, \"foobar\", 0, {player, \"r\"})"
+      - run: "info = property_info({obj}, \"foobar\"); return {typeof(info[1]) == OBJ, info[2]};"
+        expect:
+          value: [1, "r"]
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: property_info_wizard_bypasses_read
+    description: property_info succeeds if programmer is wizard even without read permission
+    permission: wizard
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_property({obj}, \"foobar\", 0, {player, \"\"})"
+      - run: "info = property_info({obj}, \"foobar\"); return {typeof(info[1]) == OBJ, info[2]};"
+        expect:
+          value: [1, ""]
+    cleanup:
+      - run: "recycle({obj})"
+
+  ## set_property_info tests
+
+  - name: set_property_info_works
+    description: set_property_info changes property owner and perms
+    permission: programmer
+    skip: "Needs wizard permission to change property info - see set_property_info_wizard_succeeds"
+
+  - name: set_property_info_recycled_object
+    description: set_property_info fails with E_INVARG if object is not valid
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "recycle({obj})"
+      - run: "set_property_info({obj}, \"foobar\", {player, \"\"})"
+        expect:
+          error: E_INVARG
+
+  - name: set_property_info_not_found
+    description: set_property_info fails with E_PROPNF if property does not exist
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "set_property_info({obj}, \"foobar\", {player, \"\"})"
+        expect:
+          error: E_PROPNF
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: set_property_info_builtin
+    description: set_property_info raises E_PROPNF if property is built-in
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "set_property_info({obj}, \"name\", {player, \"\"})"
+        expect:
+          error: E_PROPNF
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: set_property_info_no_write_permission
+    description: set_property_info fails with E_PERM if programmer does not have write permission (requires wizard)
+    permission: programmer
+    skip: "set_property_info requires wizard - not just write permission"
+
+  - name: set_property_info_with_write_permission_still_fails
+    description: set_property_info fails with E_PERM even if programmer has write permission (requires wizard)
+    permission: programmer
+    skip: "set_property_info requires wizard - not just write permission"
+
+  - name: set_property_info_wizard_succeeds
+    description: set_property_info succeeds if programmer is wizard
+    permission: wizard
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_property({obj}, \"foobar\", 0, {player, \"\"})"
+      - run: "set_property_info({obj}, \"foobar\", {player, \"\"})"
+        expect:
+          value: 0
+    cleanup:
+      - run: "recycle({obj})"
+
+  ## properties tests
+
+  - name: properties_works
+    description: properties returns list of property names
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "properties({obj})"
+        expect:
+          value: []
+      - run: "add_property({obj}, \"foobar\", 0, {player, \"rw\"})"
+      - run: "properties({obj})"
+        expect:
+          value: ["foobar"]
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: properties_recycled_object
+    description: properties fails with E_INVARG if object is not valid
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "recycle({obj})"
+      - run: "properties({obj})"
+        expect:
+          error: E_INVARG
+
+  - name: properties_no_read_permission
+    description: properties fails with E_PERM if programmer does not have read permission (owner still can)
+    permission: programmer
+    skip: "Owners can always read properties list regardless of .r flag - need non-owner test"
+
+  - name: properties_with_read_permission
+    description: properties succeeds if programmer has read permission
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "{obj}.r = 1"
+      - run: "properties({obj})"
+        expect:
+          value: []
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: properties_wizard_bypasses_read
+    description: properties succeeds if programmer is wizard even without read permission
+    permission: wizard
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "{obj}.r = 0"
+      - run: "properties({obj})"
+        expect:
+          value: []
+    cleanup:
+      - run: "recycle({obj})"

@@ -1,0 +1,675 @@
+name: verb_builtins
+description: Tests for verb manipulation builtins - add_verb, delete_verb, verb_info, set_verb_info, verb_args, set_verb_args, verb_code, set_verb_code, verbs
+
+requires:
+  builtins: [add_verb, delete_verb, verb_info, set_verb_info, verb_args, set_verb_args, verb_code, set_verb_code, verbs, create, recycle, valid]
+
+tests:
+  ## add_verb tests
+
+  - name: add_verb_basic
+    description: add_verb creates new verb that can be called
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_verb({obj}, {player, \"x\", \"foobar\"}, {\"this\", \"none\", \"this\"})"
+        expect:
+          value: 1
+      - run: "{obj}:foobar()"
+        expect:
+          value: 0
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: add_verb_invalid_owner
+    description: add_verb fails with E_INVARG if owner is not valid
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_verb({obj}, {$nothing, \"\", \"foobar\"}, {\"this\", \"none\", \"this\"})"
+        expect:
+          error: E_INVARG
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: add_verb_invalid_perms
+    description: add_verb fails with E_INVARG if perms are garbage
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_verb({obj}, {player, \"abc\", \"foobar\"}, {\"this\", \"none\", \"this\"})"
+        expect:
+          error: E_INVARG
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: add_verb_invalid_args
+    description: add_verb fails with E_INVARG if args are garbage
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_verb({obj}, {player, \"\", \"foobar\"}, {\"foo\", \"bar\", \"baz\"})"
+        expect:
+          error: E_INVARG
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: add_verb_recycled_object
+    description: add_verb fails with E_INVARG if object is not valid
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "recycle({obj})"
+      - run: "add_verb({obj}, {player, \"\", \"foobar\"}, {\"this\", \"none\", \"this\"})"
+        expect:
+          error: E_INVARG
+
+  - name: add_verb_no_write_permission
+    description: add_verb fails with E_PERM if programmer does not have write permission (owner still can)
+    permission: programmer
+    skip: "Owners can always add verbs regardless of .w flag - need non-owner test"
+
+  - name: add_verb_with_write_permission
+    description: add_verb succeeds if programmer has write permission
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "{obj}.w = 1"
+      - run: "add_verb({obj}, {player, \"\", \"foobar\"}, {\"this\", \"none\", \"this\"})"
+        expect:
+          value: 1
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: add_verb_wizard_bypasses_write
+    description: add_verb succeeds if programmer is wizard even without write permission
+    permission: wizard
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "{obj}.w = 0"
+      - run: "add_verb({obj}, {player, \"\", \"foobar\"}, {\"this\", \"none\", \"this\"})"
+        expect:
+          value: 1
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: add_verb_not_owner
+    description: add_verb fails with E_PERM if programmer is not the owner specified in verbinfo
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_verb({obj}, {$system, \"\", \"foobar\"}, {\"this\", \"none\", \"this\"})"
+        expect:
+          error: E_PERM
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: add_verb_is_owner
+    description: add_verb succeeds if programmer is the owner specified in verbinfo
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_verb({obj}, {player, \"\", \"foobar\"}, {\"this\", \"none\", \"this\"})"
+        expect:
+          value: 1
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: add_verb_wizard_sets_owner
+    description: add_verb succeeds if wizard sets different owner
+    permission: wizard
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_verb({obj}, {$system, \"\", \"foobar\"}, {\"this\", \"none\", \"this\"})"
+        expect:
+          value: 1
+    cleanup:
+      - run: "recycle({obj})"
+
+  ## delete_verb tests
+
+  - name: delete_verb_basic
+    description: delete_verb removes a verb
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_verb({obj}, {player, \"\", \"foobar\"}, {\"this\", \"none\", \"this\"})"
+      - run: "delete_verb({obj}, \"foobar\")"
+        expect:
+          value: 0
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: delete_verb_recycled_object
+    description: delete_verb fails with E_INVARG if object is not valid
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "recycle({obj})"
+      - run: "delete_verb({obj}, \"foobar\")"
+        expect:
+          error: E_INVARG
+
+  - name: delete_verb_not_found
+    description: delete_verb fails with E_VERBNF if verb does not exist
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "delete_verb({obj}, \"foobar\")"
+        expect:
+          error: E_VERBNF
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: delete_verb_no_write_permission
+    description: delete_verb fails with E_PERM if programmer does not have write permission (owner still can)
+    permission: programmer
+    skip: "Owners can always delete verbs regardless of .w flag - need non-owner test"
+
+  - name: delete_verb_with_write_permission
+    description: delete_verb succeeds if programmer has write permission
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_verb({obj}, {player, \"\", \"foobar\"}, {\"this\", \"none\", \"this\"})"
+      - run: "{obj}.w = 1"
+      - run: "delete_verb({obj}, \"foobar\")"
+        expect:
+          value: 0
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: delete_verb_wizard_bypasses_write
+    description: delete_verb succeeds if programmer is wizard even without write permission
+    permission: wizard
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_verb({obj}, {player, \"\", \"foobar\"}, {\"this\", \"none\", \"this\"})"
+      - run: "{obj}.w = 0"
+      - run: "delete_verb({obj}, \"foobar\")"
+        expect:
+          value: 0
+    cleanup:
+      - run: "recycle({obj})"
+
+  ## verb_info tests
+
+  - name: verb_info_basic
+    description: verb_info returns {owner, perms, names} for verb
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_verb({obj}, {player, \"rw\", \"foobar\"}, {\"this\", \"none\", \"this\"})"
+      - run: "info = verb_info({obj}, \"foobar\"); return {typeof(info[1]) == OBJ, info[2], info[3]};"
+        expect:
+          value: [1, "rw", "foobar"]
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: verb_info_recycled_object
+    description: verb_info fails with E_INVARG if object is not valid
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "recycle({obj})"
+      - run: "verb_info({obj}, \"foobar\")"
+        expect:
+          error: E_INVARG
+
+  - name: verb_info_not_found
+    description: verb_info fails with E_VERBNF if verb does not exist
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "verb_info({obj}, \"foobar\")"
+        expect:
+          error: E_VERBNF
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: verb_info_no_read_permission
+    description: verb_info fails with E_PERM if programmer does not have read permission
+    permission: programmer
+    skip: "Owners can always read verb info regardless of .r flag - need non-owner test"
+
+  - name: verb_info_with_read_permission
+    description: verb_info succeeds if programmer has read permission
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_verb({obj}, {player, \"r\", \"foobar\"}, {\"this\", \"none\", \"this\"})"
+      - run: "info = verb_info({obj}, \"foobar\"); return typeof(info[2]);"
+        expect:
+          value: 2  # STR
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: verb_info_wizard_bypasses_read
+    description: verb_info succeeds if programmer is wizard even without read permission
+    permission: wizard
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_verb({obj}, {player, \"\", \"foobar\"}, {\"this\", \"none\", \"this\"})"
+      - run: "info = verb_info({obj}, \"foobar\"); return typeof(info[2]);"
+        expect:
+          value: 2  # STR
+    cleanup:
+      - run: "recycle({obj})"
+
+  ## verb_args tests
+
+  - name: verb_args_basic
+    description: verb_args returns {dobj, prep, iobj} for verb
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_verb({obj}, {player, \"rw\", \"foobar\"}, {\"any\", \"on\", \"this\"})"
+      - run: "verb_args({obj}, \"foobar\")"
+        expect:
+          value: ["any", "on top of/on/onto/upon", "this"]
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: verb_args_recycled_object
+    description: verb_args fails with E_INVARG if object is not valid
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "recycle({obj})"
+      - run: "verb_args({obj}, \"foobar\")"
+        expect:
+          error: E_INVARG
+
+  - name: verb_args_not_found
+    description: verb_args fails with E_VERBNF if verb does not exist
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "verb_args({obj}, \"foobar\")"
+        expect:
+          error: E_VERBNF
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: verb_args_no_read_permission
+    description: verb_args fails with E_PERM if programmer does not have read permission
+    permission: programmer
+    skip: "Owners can always read verb args regardless of .r flag - need non-owner test"
+
+  - name: verb_args_with_read_permission
+    description: verb_args succeeds if programmer has read permission
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_verb({obj}, {player, \"r\", \"foobar\"}, {\"any\", \"none\", \"any\"})"
+      - run: "args = verb_args({obj}, \"foobar\"); return typeof(args[1]);"
+        expect:
+          value: 2  # STR
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: verb_args_wizard_bypasses_read
+    description: verb_args succeeds if programmer is wizard even without read permission
+    permission: wizard
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_verb({obj}, {player, \"\", \"foobar\"}, {\"any\", \"none\", \"any\"})"
+      - run: "args = verb_args({obj}, \"foobar\"); return typeof(args[1]);"
+        expect:
+          value: 2  # STR
+    cleanup:
+      - run: "recycle({obj})"
+
+  ## verb_code tests
+
+  - name: verb_code_basic
+    description: verb_code returns empty list for new verb
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_verb({obj}, {player, \"rw\", \"foobar\"}, {\"any\", \"on\", \"this\"})"
+      - run: "verb_code({obj}, \"foobar\")"
+        expect:
+          value: []
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: verb_code_recycled_object
+    description: verb_code fails with E_INVARG if object is not valid
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "recycle({obj})"
+      - run: "verb_code({obj}, \"foobar\")"
+        expect:
+          error: E_INVARG
+
+  - name: verb_code_not_found
+    description: verb_code fails with E_VERBNF if verb does not exist
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "verb_code({obj}, \"foobar\")"
+        expect:
+          error: E_VERBNF
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: verb_code_no_read_permission
+    description: verb_code fails with E_PERM if programmer does not have read permission
+    permission: programmer
+    skip: "Owners can always read verb code regardless of .r flag - need non-owner test"
+
+  - name: verb_code_with_read_permission
+    description: verb_code succeeds if programmer has read permission
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_verb({obj}, {player, \"r\", \"foobar\"}, {\"any\", \"none\", \"any\"})"
+      - run: "code = verb_code({obj}, \"foobar\"); return typeof(code);"
+        expect:
+          value: 4  # LIST
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: verb_code_wizard_bypasses_read
+    description: verb_code succeeds if programmer is wizard even without read permission
+    permission: wizard
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_verb({obj}, {player, \"\", \"foobar\"}, {\"any\", \"none\", \"any\"})"
+      - run: "code = verb_code({obj}, \"foobar\"); return typeof(code);"
+        expect:
+          value: 4  # LIST
+    cleanup:
+      - run: "recycle({obj})"
+
+  ## set_verb_info tests
+
+  - name: set_verb_info_basic
+    description: set_verb_info changes verb owner, perms, and names
+    permission: programmer
+    skip: "Needs wizard permission to change verb info - see set_verb_info_wizard_succeeds"
+
+  - name: set_verb_info_recycled_object
+    description: set_verb_info fails with E_INVARG if object is not valid
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "recycle({obj})"
+      - run: "set_verb_info({obj}, \"foobar\", {player, \"\", \"foobar\"})"
+        expect:
+          error: E_INVARG
+
+  - name: set_verb_info_not_found
+    description: set_verb_info fails with E_VERBNF if verb does not exist
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "set_verb_info({obj}, \"foobar\", {player, \"\", \"foobar\"})"
+        expect:
+          error: E_VERBNF
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: set_verb_info_no_write_permission
+    description: set_verb_info fails with E_PERM if programmer does not have write permission
+    permission: programmer
+    skip: "set_verb_info requires wizard permission - not just write"
+
+  - name: set_verb_info_with_write_permission_still_fails
+    description: set_verb_info fails with E_PERM even if programmer has write permission (requires wizard)
+    permission: programmer
+    skip: "set_verb_info requires wizard permission - not just write"
+
+  - name: set_verb_info_wizard_succeeds
+    description: set_verb_info succeeds if programmer is wizard
+    permission: wizard
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_verb({obj}, {player, \"\", \"foobar\"}, {\"any\", \"none\", \"any\"})"
+      - run: "set_verb_info({obj}, \"foobar\", {player, \"rw\", \"barfoo\"})"
+        expect:
+          value: 0
+      - run: "info = verb_info({obj}, \"barfoo\"); return {info[2], info[3]};"
+        expect:
+          value: ["rw", "barfoo"]
+    cleanup:
+      - run: "recycle({obj})"
+
+  ## set_verb_args tests
+
+  - name: set_verb_args_basic
+    description: set_verb_args changes verb argument spec
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_verb({obj}, {player, \"rw\", \"foobar\"}, {\"any\", \"in\", \"this\"})"
+      - run: "set_verb_args({obj}, \"foobar\", {\"any\", \"any\", \"any\"})"
+        expect:
+          value: 0
+      - run: "verb_args({obj}, \"foobar\")"
+        expect:
+          value: ["any", "any", "any"]
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: set_verb_args_recycled_object
+    description: set_verb_args fails with E_INVARG if object is not valid
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "recycle({obj})"
+      - run: "set_verb_args({obj}, \"foobar\", {\"any\", \"any\", \"any\"})"
+        expect:
+          error: E_INVARG
+
+  - name: set_verb_args_not_found
+    description: set_verb_args fails with E_VERBNF if verb does not exist
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "set_verb_args({obj}, \"foobar\", {\"any\", \"any\", \"any\"})"
+        expect:
+          error: E_VERBNF
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: set_verb_args_no_write_permission
+    description: set_verb_args fails with E_PERM if programmer does not have write permission
+    permission: programmer
+    skip: "Owners can always set verb args regardless of .w flag - need non-owner test"
+
+  - name: set_verb_args_with_write_permission
+    description: set_verb_args succeeds if programmer has write permission
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_verb({obj}, {player, \"w\", \"foobar\"}, {\"this\", \"in\", \"this\"})"
+      - run: "set_verb_args({obj}, \"foobar\", {\"any\", \"any\", \"any\"})"
+        expect:
+          value: 0
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: set_verb_args_wizard_bypasses_write
+    description: set_verb_args succeeds if programmer is wizard even without write permission
+    permission: wizard
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_verb({obj}, {player, \"\", \"foobar\"}, {\"this\", \"in\", \"this\"})"
+      - run: "set_verb_args({obj}, \"foobar\", {\"any\", \"any\", \"any\"})"
+        expect:
+          value: 0
+    cleanup:
+      - run: "recycle({obj})"
+
+  ## set_verb_code tests
+
+  - name: set_verb_code_basic
+    description: set_verb_code changes verb source code
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_verb({obj}, {player, \"rw\", \"foobar\"}, {\"any\", \"in\", \"this\"})"
+      - run: "set_verb_code({obj}, \"foobar\", {\"1;\", \"2;\", \"3;\"})"
+        expect:
+          value: []
+      - run: "verb_code({obj}, \"foobar\")"
+        expect:
+          value: ["1;", "2;", "3;"]
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: set_verb_code_recycled_object
+    description: set_verb_code fails with E_INVARG if object is not valid
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "recycle({obj})"
+      - run: "set_verb_code({obj}, \"foobar\", {\"1;\", \"2;\", \"3;\"})"
+        expect:
+          error: E_INVARG
+
+  - name: set_verb_code_not_found
+    description: set_verb_code fails with E_VERBNF if verb does not exist
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "set_verb_code({obj}, \"foobar\", {\"1;\", \"2;\", \"3;\"})"
+        expect:
+          error: E_VERBNF
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: set_verb_code_no_write_permission
+    description: set_verb_code fails with E_PERM if programmer does not have write permission
+    permission: programmer
+    skip: "Owners can always set verb code regardless of .w flag - need non-owner test"
+
+  - name: set_verb_code_with_write_permission
+    description: set_verb_code succeeds if programmer has write permission
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_verb({obj}, {player, \"w\", \"foobar\"}, {\"this\", \"in\", \"this\"})"
+      - run: "set_verb_code({obj}, \"foobar\", {\"1;\", \"2;\", \"3;\"})"
+        expect:
+          value: []
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: set_verb_code_wizard_bypasses_write
+    description: set_verb_code succeeds if programmer is wizard even without write permission
+    permission: wizard
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "add_verb({obj}, {player, \"\", \"foobar\"}, {\"this\", \"in\", \"this\"})"
+      - run: "set_verb_code({obj}, \"foobar\", {\"1;\", \"2;\", \"3;\"})"
+        expect:
+          value: []
+    cleanup:
+      - run: "recycle({obj})"
+
+  ## verbs tests
+
+  - name: verbs_basic
+    description: verbs returns list of verb names on object
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "verbs({obj})"
+        expect:
+          value: []
+      - run: "add_verb({obj}, {player, \"\", \"foobar\"}, {\"this\", \"none\", \"this\"})"
+      - run: "verbs({obj})"
+        expect:
+          value: ["foobar"]
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: verbs_recycled_object
+    description: verbs fails with E_INVARG if object is not valid
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "recycle({obj})"
+      - run: "verbs({obj})"
+        expect:
+          error: E_INVARG
+
+  - name: verbs_no_read_permission
+    description: verbs fails with E_PERM if programmer does not have read permission (owner still can)
+    permission: programmer
+    skip: "Owners can always read verb list regardless of .r flag - need non-owner test"
+
+  - name: verbs_with_read_permission
+    description: verbs succeeds if programmer has read permission
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "{obj}.r = 1"
+      - run: "verbs({obj})"
+        expect:
+          value: []
+    cleanup:
+      - run: "recycle({obj})"
+
+  - name: verbs_wizard_bypasses_read
+    description: verbs succeeds if programmer is wizard even without read permission
+    permission: wizard
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "{obj}.r = 0"
+      - run: "verbs({obj})"
+        expect:
+          value: []
+    cleanup:
+      - run: "recycle({obj})"

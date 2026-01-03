@@ -1,0 +1,90 @@
+name: http
+description: HTTP request/response parsing builtin (read_http)
+
+# NOTE: Most tests from test_http.rb require connection infrastructure:
+# - force_input() to inject HTTP data into connection buffer
+# - set_connection_option() to control input buffering
+# - A suspended task to feed messages to the connection
+#
+# These tests cover permission checks and argument validation.
+# Full HTTP parsing tests require integration test infrastructure.
+
+tests:
+  # Permission checks
+  - name: non_wizard_cannot_call_no_arg_version
+    permission: programmer
+    code: 'read_http("request")'
+    expect:
+      error: E_PERM
+
+  # Argument validation
+  - name: read_http_no_args_fails
+    permission: wizard
+    code: 'read_http()'
+    expect:
+      error: E_ARGS
+
+  - name: read_http_invalid_type_foobar
+    permission: wizard
+    code: 'read_http("foobar")'
+    expect:
+      error: E_INVARG
+
+  - name: read_http_invalid_type_empty_string
+    permission: wizard
+    code: 'read_http("")'
+    expect:
+      error: E_INVARG
+
+  # Type validation for arguments
+  - name: read_http_type_arg_not_string
+    permission: wizard
+    code: 'read_http(1)'
+    expect:
+      error: E_TYPE
+
+  - name: read_http_connection_arg_not_obj
+    permission: wizard
+    code: 'read_http("request", "foo")'
+    expect:
+      error: E_TYPE
+
+# NOTE: Testing read_http("request") or read_http("response") with valid
+# arguments but no data causes the task to suspend waiting for input.
+# This cannot be tested in the simple conformance framework.
+# Full HTTP parsing tests require integration infrastructure with
+# force_input() and connection state management.
+
+# Integration tests that require connection infrastructure (NOT CONVERTED):
+#
+# From test_http.rb - these need force_input() and connection state:
+# - test_that_forcing_bad_input_fails_gracefully
+# - test_that_bad_requests_fail
+# - test_that_bad_responses_fail
+# - test_that_it_is_invalid_to_read_from_a_connection_that_is_already_being_read
+# - test_that_we_can_kill_a_task_but_still_read_more_http_on_the_connection
+# - test_that_we_can_abruptly_close_a_reading_connection
+# - test_that_chopped_up_requests_work
+# - test_that_chopped_up_responses_work
+# - test_that_curl_get_request_works
+# - test_that_firefox_get_request_works
+# - test_that_chrome_get_request_works
+# - test_that_no_headers_no_body_request_works
+# - test_that_one_header_no_body_request_works
+# - test_that_funky_content_length_request_works
+# - test_that_chunked_all_your_base_request_works
+# - test_that_line_folding_in_header_request_works
+# - test_that_no_headers_no_body_response_works
+# - test_that_no_reason_phrase_response_works
+# - test_that_trailing_space_on_chunked_body_works
+#
+# These tests verify HTTP parsing logic but require:
+# 1. A connection object with buffered input
+# 2. force_input() to inject HTTP bytes (with ~0D~0A escape sequences)
+# 3. set_connection_option(conn, "hold-input", 1) to buffer
+# 4. A task infrastructure to manage the connection state
+#
+# To test these properly, we would need to either:
+# - Implement a mock connection system in the conformance framework
+# - Write integration tests that set up real connections
+# - Extract the HTTP parsing logic into a testable pure function

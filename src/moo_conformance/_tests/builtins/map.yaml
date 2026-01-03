@@ -1,0 +1,585 @@
+name: map
+description: Map literal syntax, operations, and builtin functions
+
+requires:
+  features: [maps]
+
+tests:
+  # Literal syntax
+  - name: empty_map
+    code: "[]"
+    expect:
+      value: {}
+
+  - name: single_entry
+    code: "[1 -> 2]"
+    expect:
+      value: {1: 2}
+
+  - name: multiple_entries
+    code: "[#1 -> #2, 3 -> 4]"
+    expect:
+      value: {1: 2, 3: 4}
+
+  - name: nested_maps
+    statement: |
+      return [#1 -> ["a" -> {}, "b" -> {}], #2 -> ["b" -> [E_ARGS -> [1.0 -> []]]], #3 -> []];
+    expect:
+      value: {1: {"a": [], "b": []}, 2: {"b": {"E_ARGS": {1.0: {}}}}, 3: {}}
+
+  # Sorting
+  - name: sorted_insertion_order_1
+    statement: |
+      x = [3 -> 3, 1 -> 1, 4 -> 4, 5 -> 5, 9 -> 9, 2 -> 2];
+      x["a"] = "a";
+      x[6] = 6;
+      return x;
+    expect:
+      value: {1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 9: 9, "a": "a"}
+
+  - name: sorted_insertion_order_2
+    statement: |
+      y = [2 -> 2, 9 -> 9, 5 -> 5, 4 -> 4, 1 -> 1, 3 -> 3];
+      y["a"] = "a";
+      y[6] = 6;
+      return y;
+    expect:
+      value: {1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 9: 9, "a": "a"}
+
+  - name: sorted_insertion_order_3
+    statement: |
+      z = [1 -> 1, 2 -> 2, 3 -> 3, 4 -> 4, 5 -> 5, 9 -> 9];
+      z["a"] = "a";
+      z[6] = 6;
+      return z;
+    expect:
+      value: {1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 9: 9, "a": "a"}
+
+  - name: mapkeys_sorted
+    statement: |
+      x = [3 -> 3, 1 -> 1, 4 -> 4, 5 -> 5, 9 -> 9, 2 -> 2];
+      x["a"] = "a";
+      x[6] = 6;
+      return mapkeys(x);
+    expect:
+      value: [1, 2, 3, 4, 5, 6, 9, "a"]
+
+  - name: mapvalues_sorted
+    statement: |
+      x = [3 -> 3, 1 -> 1, 4 -> 4, 5 -> 5, 9 -> 9, 2 -> 2];
+      x["a"] = "a";
+      x[6] = 6;
+      return mapvalues(x);
+    expect:
+      value: [1, 2, 3, 4, 5, 6, 9, "a"]
+
+  # mapdelete
+  - name: mapdelete_removes_entry
+    statement: |
+      x = [E_NONE -> "No error", E_TYPE -> "Type mismatch", E_DIV -> "Division by zero", E_PERM -> "Permission denied"];
+      return mapdelete(x, E_TYPE);
+    expect:
+      value: {"E_NONE": "No error", "E_DIV": "Division by zero", "E_PERM": "Permission denied"}
+
+  - name: mapdelete_chain
+    statement: |
+      x = [E_NONE -> "No error", E_TYPE -> "Type mismatch", E_DIV -> "Division by zero", E_PERM -> "Permission denied"];
+      x = mapdelete(x, E_TYPE);
+      x = mapdelete(x, E_NONE);
+      x = mapdelete(x, E_DIV);
+      return x;
+    expect:
+      value: {"E_PERM": "Permission denied"}
+
+  - name: mapdelete_missing_key
+    statement: |
+      x = [E_NONE -> "No error"];
+      return mapdelete(x, E_ARGS);
+    expect:
+      error: E_RANGE
+
+  # length
+  - name: length_of_map
+    code: 'length(["3" -> "3", "1" -> "1", "4" -> "4", "5" -> "5", "9" -> "9", "2" -> "2"])'
+    expect:
+      value: 6
+
+  - name: length_after_delete
+    statement: |
+      x = ["3" -> "3", "1" -> "1", "4" -> "4", "5" -> "5", "9" -> "9", "2" -> "2"];
+      x = mapdelete(x, "3");
+      return length(x);
+    expect:
+      value: 5
+
+  # is_member
+  - name: is_member_found
+    code: 'is_member("5", ["3" -> "3", "1" -> "1", "4" -> "4", "5" -> "5", "9" -> "9", "2" -> "2"])'
+    expect:
+      value: 5
+
+  - name: is_member_not_found
+    code: 'is_member(5, ["3" -> "3", "1" -> "1", "4" -> "4", "5" -> "5", "9" -> "9", "2" -> "2"])'
+    expect:
+      value: 0
+
+  - name: is_member_case_sensitive_key
+    code: 'is_member("FOO", ["FOO" -> "BAR"])'
+    expect:
+      value: 0
+
+  - name: is_member_case_sensitive_value_not_found
+    code: 'is_member("bar", ["FOO" -> "BAR"])'
+    expect:
+      value: 0
+
+  # in operator
+  - name: in_operator_found
+    statement: |
+      x = ["3" -> "3", "1" -> "1", "4" -> "4", "5" -> "5", "9" -> "9", "2" -> "2"];
+      return "2" in x;
+    expect:
+      value: 2
+
+  - name: in_operator_not_found
+    statement: |
+      x = ["3" -> "3", "1" -> "1", "4" -> "4", "5" -> "5", "9" -> "9", "2" -> "2"];
+      return 2 in x;
+    expect:
+      value: 0
+
+  - name: in_operator_case_insensitive_value
+    statement: |
+      y = ["FOO" -> "BAR"];
+      return "bar" in y;
+    expect:
+      value: 1
+
+  - name: in_operator_case_sensitive_key
+    statement: |
+      y = ["FOO" -> "BAR"];
+      return "FOO" in y;
+    expect:
+      value: 0
+
+  # Equality with equal()
+  - name: equal_empty_maps
+    code: 'equal([], []) && "yes" || "no"'
+    expect:
+      value: "yes"
+
+  - name: equal_empty_vs_nonempty
+    code: 'equal([1 -> 2], []) && "yes" || "no"'
+    expect:
+      value: "no"
+
+  - name: equal_same_entries
+    code: 'equal([1 -> 2], [1 -> 2]) && "yes" || "no"'
+    expect:
+      value: "yes"
+
+  - name: equal_different_order
+    code: 'equal([1 -> 2, 3 -> 4], [3 -> 4, 1 -> 2]) && "yes" || "no"'
+    expect:
+      value: "yes"
+
+  - name: equal_nested_same
+    code: 'equal([1 -> [2 -> 3]], [1 -> [2 -> 3]]) && "yes" || "no"'
+    expect:
+      value: "yes"
+
+  - name: equal_nested_different
+    code: 'equal([1 -> [2 -> 3]], [1 -> [2 -> 4]]) && "yes" || "no"'
+    expect:
+      value: "no"
+
+  - name: equal_case_sensitive
+    code: 'equal(["foo" -> "bar"], ["FOO" -> "BAR"]) && "yes" || "no"'
+    expect:
+      value: "no"
+
+  # Equality with ==
+  - name: equality_empty_maps
+    code: '[] == [] && "yes" || "no"'
+    expect:
+      value: "yes"
+
+  - name: equality_empty_vs_nonempty
+    code: '[1 -> 2] == [] && "yes" || "no"'
+    expect:
+      value: "no"
+
+  - name: equality_same_entries
+    code: '[1 -> 2] == [1 -> 2] && "yes" || "no"'
+    expect:
+      value: "yes"
+
+  - name: equality_different_order
+    code: '[1 -> 2, 3 -> 4] == [3 -> 4, 1 -> 2] && "yes" || "no"'
+    expect:
+      value: "yes"
+
+  - name: equality_nested_same
+    code: '[1 -> [2 -> 3]] == [1 -> [2 -> 3]] && "yes" || "no"'
+    expect:
+      value: "yes"
+
+  - name: equality_nested_different
+    code: '[1 -> [2 -> 3]] == [1 -> [2 -> 4]] && "yes" || "no"'
+    expect:
+      value: "no"
+
+  - name: equality_case_insensitive
+    code: '["foo" -> "bar"] == ["FOO" -> "BAR"] && "yes" || "no"'
+    expect:
+      value: "yes"
+
+  # Truth values
+  - name: empty_map_is_false
+    code: '[] && "yes" || "no"'
+    expect:
+      value: "no"
+
+  - name: nonempty_map_is_true
+    code: '[1 -> 2] && "yes" || "no"'
+    expect:
+      value: "yes"
+
+  # tostr and toliteral
+  - name: tostr_map
+    code: 'tostr([#-1 -> #-1, "2" -> [], "1" -> {}, 5 -> 5, 3.14 -> 3.14])'
+    expect:
+      value: "[map]"
+
+  - name: toliteral_map
+    code: 'toliteral([#-1 -> #-1, "2" -> [], "1" -> {}, 5 -> 5, 3.14 -> 3.14])'
+    expect:
+      value: '[5 -> 5, #-1 -> #-1, 3.14 -> 3.14, "1" -> {}, "2" -> []]'
+
+  # Assignment and copying
+  - name: assignment_copies
+    statement: |
+      x = [#-1 -> #-1, "2" -> [], "1" -> {}, 5 -> 5, 3.14 -> 3.14];
+      y = x;
+      return x == y && "yes" || "no";
+    expect:
+      value: "yes"
+
+  - name: assignment_is_copy_not_reference_1
+    statement: |
+      x = [#-1 -> #-1, "2" -> [], "1" -> {}, 5 -> 5, 3.14 -> 3.14];
+      y = x;
+      x["1"] = "foo";
+      return x == y && "yes" || "no";
+    expect:
+      value: "no"
+
+  - name: assignment_is_copy_not_reference_2
+    statement: |
+      x = [#-1 -> #-1, "2" -> [], "1" -> {}, 5 -> 5, 3.14 -> 3.14];
+      y = x;
+      y[1] = "foo";
+      return x == y && "yes" || "no";
+    expect:
+      value: "no"
+
+  # Indexed access
+  - name: indexed_access_get
+    statement: |
+      x = [#-1 -> #-1, "2" -> [], "1" -> {}, 5 -> 5, 3.14 -> 3.14];
+      return x["1"];
+    expect:
+      value: []
+
+  - name: indexed_access_nested
+    statement: |
+      x = [#-1 -> #-1, "2" -> ["3" -> "three"], "1" -> {}, 5 -> 5, 3.14 -> 3.14];
+      return x["2"]["3"];
+    expect:
+      value: "three"
+
+  - name: indexed_access_float
+    statement: |
+      x = [#-1 -> #-1, "2" -> [], "1" -> {}, 5 -> 5, 3.14 -> 3.14];
+      return x[3.14];
+    expect:
+      value: 3.14
+
+  - name: indexed_access_missing_key
+    statement: |
+      x = [#-1 -> #-1, "2" -> [], "1" -> {}, 5 -> 5, 3.14 -> 3.14];
+      return x[1.0];
+    expect:
+      error: E_RANGE
+
+  - name: indexed_assignment_set
+    statement: |
+      x = [#-1 -> #-1, "2" -> [], "1" -> {}, 5 -> 5, 3.14 -> 3.14];
+      x["1"] = "foo";
+      return x;
+    expect:
+      value: {-1: -1, "2": {}, "1": "foo", 5: 5, 3.14: 3.14}
+
+  - name: indexed_assignment_nested
+    statement: |
+      x = [#-1 -> #-1, "2" -> ["3" -> "three"], "1" -> {}, 5 -> 5, 3.14 -> 3.14];
+      x["2"]["3"] = "foo";
+      return x;
+    expect:
+      value: {-1: -1, "2": {"3": "foo"}, "1": [], 5: 5, 3.14: 3.14}
+
+  - name: indexed_assignment_replace_float
+    statement: |
+      x = [#-1 -> #-1, "2" -> [], "1" -> {}, 5 -> 5, 3.14 -> 3.14];
+      x[3.14] = "bar";
+      return x;
+    expect:
+      value: {-1: -1, "2": {}, "1": [], 5: 5, 3.14: "bar"}
+
+  - name: indexed_assignment_new_key
+    statement: |
+      x = [#-1 -> #-1, "2" -> [], "1" -> {}, 5 -> 5, 3.14 -> 3.14];
+      x[1.0] = "baz";
+      return x;
+    expect:
+      value: {-1: -1, "2": {}, "1": [], 5: 5, 1.0: "baz", 3.14: 3.14}
+
+  # Property mutation
+  - name: property_indexed_access_get
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_property(o, "p", {}, {player, ""});
+      o.p = [#-1 -> #-1, "2" -> [], "1" -> {}, 5 -> 5, 3.14 -> 3.14];
+      return o.p["1"];
+    expect:
+      value: []
+
+  - name: property_indexed_access_nested
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_property(o, "p", {}, {player, ""});
+      o.p = [#-1 -> #-1, "2" -> ["3" -> "three"], "1" -> {}, 5 -> 5, 3.14 -> 3.14];
+      return o.p["2"]["3"];
+    expect:
+      value: "three"
+
+  - name: property_indexed_access_float
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_property(o, "p", {}, {player, ""});
+      o.p = [#-1 -> #-1, "2" -> [], "1" -> {}, 5 -> 5, 3.14 -> 3.14];
+      return o.p[3.14];
+    expect:
+      value: 3.14
+
+  - name: property_indexed_access_missing_key
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_property(o, "p", {}, {player, ""});
+      o.p = [#-1 -> #-1, "2" -> [], "1" -> {}, 5 -> 5, 3.14 -> 3.14];
+      return o.p[1.0];
+    expect:
+      error: E_RANGE
+
+  - name: property_indexed_assignment_set
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_property(o, "p", {}, {player, ""});
+      o.p = [#-1 -> #-1, "2" -> [], "1" -> {}, 5 -> 5, 3.14 -> 3.14];
+      o.p["1"] = "foo";
+      return o.p;
+    expect:
+      value: {-1: -1, "2": {}, "1": "foo", 5: 5, 3.14: 3.14}
+
+  - name: property_indexed_assignment_nested
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_property(o, "p", {}, {player, ""});
+      o.p = [#-1 -> #-1, "2" -> ["3" -> "three"], "1" -> {}, 5 -> 5, 3.14 -> 3.14];
+      o.p["2"]["3"] = "foo";
+      return o.p;
+    expect:
+      value: {-1: -1, "2": {"3": "foo"}, "1": [], 5: 5, 3.14: 3.14}
+
+  - name: property_indexed_assignment_replace_float
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_property(o, "p", {}, {player, ""});
+      o.p = [#-1 -> #-1, "2" -> [], "1" -> {}, 5 -> 5, 3.14 -> 3.14];
+      o.p[3.14] = "bar";
+      return o.p;
+    expect:
+      value: {-1: -1, "2": {}, "1": [], 5: 5, 3.14: "bar"}
+
+  - name: property_indexed_assignment_new_key
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_property(o, "p", {}, {player, ""});
+      o.p = [#-1 -> #-1, "2" -> [], "1" -> {}, 5 -> 5, 3.14 -> 3.14];
+      o.p[1.0] = "baz";
+      return o.p;
+    expect:
+      value: {-1: -1, "2": {}, "1": [], 5: 5, 1.0: "baz", 3.14: 3.14}
+
+  # Invalid keys
+  - name: list_key_literal
+    code: "[[] -> 1]"
+    expect:
+      error: E_TYPE
+
+  - name: empty_list_key_literal
+    code: "[{} -> 1]"
+    expect:
+      error: E_TYPE
+
+  - name: map_key_literal
+    code: "[[1 -> 2] -> 1]"
+    expect:
+      error: E_TYPE
+
+  - name: list_values_key_literal
+    code: "[{1, 2} -> 1]"
+    expect:
+      error: E_TYPE
+
+  - name: list_key_assignment_1
+    statement: |
+      x = [];
+      x[[]] = 1;
+    expect:
+      error: E_TYPE
+
+  - name: list_key_assignment_2
+    statement: |
+      x = [];
+      x[{}] = 1;
+    expect:
+      error: E_TYPE
+
+  - name: map_key_assignment
+    statement: |
+      x = [];
+      x[[1 -> 2]] = 1;
+    expect:
+      error: E_TYPE
+
+  - name: list_values_key_assignment
+    statement: |
+      x = [];
+      x[{1, 2}] = 1;
+    expect:
+      error: E_TYPE
+
+  - name: mapdelete_empty_list_key
+    description: Empty list is a valid map key - returns map unchanged since key not present
+    code: "mapdelete([1 -> 2, 3 -> 4], {})"
+    expect:
+      value: {1: 2, 3: 4}
+
+  - name: mapdelete_list_key
+    code: "mapdelete([1 -> 2, 3 -> 4], [])"
+    expect:
+      error: E_TYPE
+
+  - name: mapdelete_map_key
+    code: "mapdelete([1 -> 2, 3 -> 4], [1 -> 2])"
+    expect:
+      error: E_TYPE
+
+  - name: mapdelete_list_values_key
+    description: Lists ARE valid map keys - E_RANGE because key not found
+    code: "mapdelete([1 -> 2, 3 -> 4], {1, 2})"
+    expect:
+      error: E_RANGE
+
+  - name: anonymous_object_key
+    code: "mapdelete([1 -> 2, 3 -> 4], create($anonymous, 1))"
+    expect:
+      error: E_TYPE
+
+  # Range operations
+  - name: first_last_index
+    permission: wizard
+    skip: "Requires call() builtin which needs verb execution infrastructure"
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "grow"}, {"this", "none", "this"});
+      set_verb_code(o, "grow", "x = []; r = {}; x[1] = 1; x[(a = ^)..(b = $)]; r = {@r, {a, b}}; x[2] = 2; x[(a = ^)..(b = $)]; r = {@r, {a, b}}; x[3] = 3; x[(a = ^)..(b = $)]; r = {@r, {a, b}}; x[5] = 5; x[(a = ^)..(b = $)]; r = {@r, {a, b}}; x[8] = 8; x[(a = ^)..(b = $)]; r = {@r, {a, b}}; return r;");
+      return call(o, "grow");
+    expect:
+      value: [[1, 1], [1, 2], [1, 3], [1, 5], [1, 8]]
+
+  - name: ranged_set_invalid_range_1
+    statement: |
+      x = [1 -> 1];
+      x[3..2] = ["a" -> "a", "b" -> "b"];
+      return x;
+    expect:
+      error: E_RANGE
+
+  - name: ranged_set_invalid_range_2
+    statement: |
+      x = [1 -> 1];
+      x[2..1] = ["a" -> "a", "b" -> "b"];
+      return x;
+    expect:
+      error: E_RANGE
+
+  - name: ranged_set_invalid_range_3
+    statement: |
+      x = [1 -> 1];
+      x[1..0] = ["a" -> "a", "b" -> "b"];
+      return x;
+    expect:
+      error: E_RANGE
+
+  - name: ranged_set_single_element
+    statement: |
+      x = [1 -> 1];
+      x[1..1] = ["a" -> "a", "b" -> "b"];
+      return x;
+    expect:
+      value: {"a": "a", "b": "b"}
+
+  - name: ranged_set_between_elements
+    statement: |
+      x = [1 -> 1, 2 -> 2];
+      x[2..1] = ["a" -> "a", "b" -> "b"];
+      return x;
+    expect:
+      value: {1: 1, 2: 2, "a": "a", "b": "b"}
+
+  - name: ranged_set_merge_existing_key
+    description: Existing keys are NOT replaced, only new keys added
+    statement: |
+      x = [1 -> 1, 2 -> 2, "a" -> "foo"];
+      x[2..1] = ["a" -> "a", "b" -> "b"];
+      return x;
+    expect:
+      value: {1: 1, 2: 2, "a": "foo", "b": "b"}
+
+  - name: ranged_set_replace_range
+    statement: |
+      x = [1 -> 1, 2 -> 2];
+      x[1..2] = ["a" -> "a", "b" -> "b"];
+      return x;
+    expect:
+      value: {"a": "a", "b": "b"}
+
+  - name: inverted_ranged_set_in_loop
+    statement: |
+      x = [];
+      for i in [1..10]
+        x[1..0] = [i -> i];
+      endfor
+      return length(x);
+    expect:
+      error: E_RANGE

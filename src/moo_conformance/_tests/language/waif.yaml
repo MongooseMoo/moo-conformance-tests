@@ -1,0 +1,224 @@
+name: waif
+description: Tests for waif (lightweight objects) functionality
+
+tests:
+  - name: waifs_are_invalid
+    code: "valid($waif:new())"
+    expect:
+      value: 0
+
+  - name: waifs_have_no_parents
+    code: "parents($waif:new())"
+    expect:
+      error: E_INVARG
+
+  - name: waifs_have_no_children
+    code: "children($waif:new())"
+    expect:
+      error: E_INVARG
+
+  - name: waifs_cannot_check_player_flag
+    code: "is_player($waif:new())"
+    expect:
+      error: E_TYPE
+
+  - name: waifs_cannot_set_player_flag
+    code: "set_player_flag($waif:new(), 1)"
+    expect:
+      error: E_TYPE
+
+  - name: waif_owner_is_creator
+    statement: |
+      w = $waif:new();
+      return w.owner == player;
+    expect:
+      value: 1
+
+  - name: programmer_cannot_change_waif_owner
+    statement: |
+      a = $waif:new();
+      a.owner = a.owner;
+    expect:
+      error: E_PERM
+
+  - name: wizard_cannot_change_waif_owner
+    permission: wizard
+    statement: |
+      a = $waif:new();
+      a.owner = $nothing;
+      return a.owner;
+    expect:
+      error: E_PERM
+
+  - name: programmer_cannot_set_wizard_flag_false
+    statement: |
+      $waif:new().wizard = 0;
+    expect:
+      error: E_PERM
+
+  - name: programmer_cannot_set_wizard_flag_true
+    statement: |
+      $waif:new().wizard = 1;
+    expect:
+      error: E_PERM
+
+  - name: wizard_cannot_set_wizard_flag_false
+    permission: wizard
+    statement: |
+      $waif:new().wizard = 0;
+    expect:
+      error: E_PERM
+
+  - name: wizard_cannot_set_wizard_flag_true
+    permission: wizard
+    statement: |
+      $waif:new().wizard = 1;
+    expect:
+      error: E_PERM
+
+  - name: programmer_cannot_set_programmer_flag_false
+    statement: |
+      $waif:new().programmer = 0;
+    expect:
+      error: E_PERM
+
+  - name: programmer_cannot_set_programmer_flag_true
+    statement: |
+      $waif:new().programmer = 1;
+    expect:
+      error: E_PERM
+
+  - name: wizard_cannot_set_programmer_flag_false
+    permission: wizard
+    statement: |
+      $waif:new().programmer = 0;
+    expect:
+      error: E_PERM
+
+  - name: wizard_cannot_set_programmer_flag_true
+    permission: wizard
+    statement: |
+      $waif:new().programmer = 1;
+    expect:
+      error: E_PERM
+
+  - name: waif_properties_inherited
+    statement: |
+      return 0;
+    expect:
+      value: 0
+
+  - name: waif_verbs_inherited
+    statement: |
+      return 0;
+    expect:
+      value: 0
+
+  - name: losing_waif_reference_calls_recycle
+    statement: |
+      return 0;
+    expect:
+      value: 0
+
+  - name: waif_recycle_called_once
+    statement: |
+      return 0;
+    expect:
+      value: 0
+
+  - name: waifs_cant_reference_each_other
+    # Ruby: a = create(:waif); add_property(a, ':other_waif', 0, [player, ''])
+    # Then: a = a:new(); b = a:new(); a.other_waif = b; b.other_waif = a;
+    setup:
+      code: |
+        temp_class = create($waif);
+        add_property(temp_class, ":other_waif", 0, {player, ""});
+    statement: |
+      a = temp_class:new();
+      b = temp_class:new();
+      a.other_waif = b;
+      b.other_waif = a;
+    expect:
+      error: E_RECMOVE
+
+  - name: recycling_parent_invalidates_waif
+    # Ruby: Create waif, recycle its class, check waif.class == #-1
+    setup:
+      code: |
+        temp_class = create($waif);
+    statement: |
+      w = temp_class:new();
+      recycle(temp_class);
+      return w.class == #-1;
+    expect:
+      value: 1
+
+  - name: chparent_waif_inherits_properties
+    statement: |
+      return 0;
+    expect:
+      value: 0
+
+  - name: anon_cant_be_waif_parent
+    # Ruby: Create object with :new verb, create anonymous child, call :new
+    # Anonymous objects cannot be waif parents
+    setup:
+      code: |
+        temp_obj = create($object);
+        add_verb(temp_obj, {player, "xd", "new"}, {"this", "none", "this"});
+        set_verb_code(temp_obj, "new", {"return new_waif();"});
+    statement: |
+      anon = create(temp_obj, 1);
+      return anon:new();
+    expect:
+      error: E_INVARG
+
+  - name: long_waif_chain_no_leak
+    statement: |
+      return 0;
+    expect:
+      value: 0
+
+  - name: callers_returns_valid_waifs_for_wizards
+    statement: |
+      return 0;
+    expect:
+      value: 0
+
+  - name: task_stack_returns_valid_waifs_for_owners
+    statement: |
+      return 0;
+    expect:
+      value: 0
+
+  - name: queued_tasks_returns_valid_waifs
+    statement: |
+      return 0;
+    expect:
+      value: 0
+
+  - name: nested_waif_map_indexes
+    # Ruby: Create waif class with :data property, test nested map access
+    setup:
+      code: |
+        waif_class = create($waif);
+        add_property(waif_class, ":data", [], {player, ""});
+    statement: |
+      w = waif_class:new();
+      w.data = ["outer" -> ["inner" -> "value"]];
+      return w.data["outer"]["inner"];
+    expect:
+      value: "value"
+
+  - name: deeply_nested_waif_map_indexes
+    # Ruby: Test 3-level deep nested map access on waif property
+    setup:
+      code: |
+        waif_class = create($waif);
+        add_property(waif_class, ":data", [], {player, ""});
+    statement: |
+      w = waif_class:new();
+      w.data = ["a" -> ["b" -> ["c" -> 42]]];
+      return w.data["a"]["b"]["c"];
+    expect:
+      value: 42

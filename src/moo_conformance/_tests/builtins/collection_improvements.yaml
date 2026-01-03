@@ -1,0 +1,209 @@
+name: collection_improvements
+description: Tests for copy-on-write semantics of nested collections (lists and maps)
+
+tests:
+  # Control case: nested list assignment
+  - name: nested_list_assignment
+    statement: |
+      x = {{{1, 2}, {3, 4}}, {{5, 6}, {7, 8}}};
+      x[1][1] = "abc";
+      return x;
+    expect:
+      value: [["abc", [3, 4]], [[5, 6], [7, 8]]]
+
+  # Control case: nested map assignment
+  - name: nested_map_assignment
+    statement: |
+      x = [1 -> [1 -> [1 -> 1, 2 -> 2], 2 -> [1 -> 3, 2 -> 4]], 2 -> [1 -> [1 -> 5, 2 -> 6], 2 -> [1 -> 7, 2 -> 8]]];
+      x[1][1] = "abc";
+      return x;
+    expect:
+      value: {1: {1: "abc", 2: {1: 3, 2: 4}}, 2: {1: {1: 5, 2: 6}, 2: {1: 7, 2: 8}}}
+
+  # Top level list reference not shared
+  - name: top_level_list_refs_not_shared
+    statement: |
+      x = {{{1, 2}, {3, 4}}, {{5, 6}, {7, 8}}};
+      y = x;
+      z = x;
+      x[1] = "abc";
+      return y;
+    expect:
+      value: [[[1, 2], [3, 4]], [[5, 6], [7, 8]]]
+
+  # Top level map reference not shared
+  - name: top_level_map_refs_not_shared
+    statement: |
+      x = [1 -> [1 -> [1 -> 1, 2 -> 2], 2 -> [1 -> 3, 2 -> 4]], 2 -> [1 -> [1 -> 5, 2 -> 6], 2 -> [1 -> 7, 2 -> 8]]];
+      y = x;
+      z = x;
+      x[1] = "abc";
+      return y;
+    expect:
+      value: {1: {1: {1: 1, 2: 2}, 2: {1: 3, 2: 4}}, 2: {1: {1: 5, 2: 6}, 2: {1: 7, 2: 8}}}
+
+  # Top level list nested assignment not shared
+  - name: top_level_list_nested_assign_not_shared
+    statement: |
+      x = {{{1, 2}, {3, 4}}, {{5, 6}, {7, 8}}};
+      y = x;
+      z = x;
+      x[1][1] = "abc";
+      return y;
+    expect:
+      value: [[[1, 2], [3, 4]], [[5, 6], [7, 8]]]
+
+  # Top level map nested assignment not shared
+  - name: top_level_map_nested_assign_not_shared
+    statement: |
+      x = [1 -> [1 -> [1 -> 1, 2 -> 2], 2 -> [1 -> 3, 2 -> 4]], 2 -> [1 -> [1 -> 5, 2 -> 6], 2 -> [1 -> 7, 2 -> 8]]];
+      y = x;
+      z = x;
+      x[1][1] = "abc";
+      return y;
+    expect:
+      value: {1: {1: {1: 1, 2: 2}, 2: {1: 3, 2: 4}}, 2: {1: {1: 5, 2: 6}, 2: {1: 7, 2: 8}}}
+
+  # Nested collection reference not shared (list)
+  - name: nested_list_refs_not_shared_1
+    statement: |
+      x = {{{1, 2}, {3, 4}}, {{5, 6}, {7, 8}}};
+      y = x[1];
+      z = x[1];
+      x[1][1][1] = "abc";
+      return y;
+    expect:
+      value: [[1, 2], [3, 4]]
+
+  # Nested collection reference not shared (map)
+  - name: nested_map_refs_not_shared_1
+    statement: |
+      x = [1 -> [1 -> [1 -> 1, 2 -> 2], 2 -> [1 -> 3, 2 -> 4]], 2 -> [1 -> [1 -> 5, 2 -> 6], 2 -> [1 -> 7, 2 -> 8]]];
+      y = x[1];
+      z = x[1];
+      x[1][1][1] = "abc";
+      return y;
+    expect:
+      value: {1: {1: 1, 2: 2}, 2: {1: 3, 2: 4}}
+
+  # Nested collection reference not shared (deeper list)
+  - name: nested_list_refs_not_shared_2
+    statement: |
+      x = {{{{1, 2}, {3, 4}}, {{5, 6}, {7, 8}}}};
+      y = x[1];
+      z = x[1];
+      x[1][1][1] = "abc";
+      return y;
+    expect:
+      value: [[[1, 2], [3, 4]], [[5, 6], [7, 8]]]
+
+  # Nested collection reference not shared (deeper map)
+  - name: nested_map_refs_not_shared_2
+    statement: |
+      x = [1 -> [1 -> [1 -> [1 -> 1, 2 -> 2], 2 -> [1 -> 3, 2 -> 4]], 2 -> [1 -> [1 -> 5, 2 -> 6], 2 -> [1 -> 7, 2 -> 8]]]];
+      y = x[1];
+      z = x[1];
+      x[1][1][1] = "abc";
+      return y;
+    expect:
+      value: {1: {1: {1: 1, 2: 2}, 2: {1: 3, 2: 4}}, 2: {1: {1: 5, 2: 6}, 2: {1: 7, 2: 8}}}
+
+  # Nested collection reference not shared (even deeper list)
+  - name: nested_list_refs_not_shared_3
+    statement: |
+      x = {{{{1, 2}, {3, 4}}, {{5, 6}, {7, 8}}}};
+      y = x[1][1];
+      z = x[1][1];
+      x[1][1][1][1] = "abc";
+      return y;
+    expect:
+      value: [[1, 2], [3, 4]]
+
+  # Nested collection reference not shared (even deeper map)
+  - name: nested_map_refs_not_shared_3
+    statement: |
+      x = [1 -> [1 -> [1 -> [1 -> 1, 2 -> 2], 2 -> [1 -> 3, 2 -> 4]], 2 -> [1 -> [1 -> 5, 2 -> 6], 2 -> [1 -> 7, 2 -> 8]]]];
+      y = x[1][1];
+      z = x[1][1];
+      x[1][1][1][1] = "abc";
+      return y;
+    expect:
+      value: {1: {1: 1, 2: 2}, 2: {1: 3, 2: 4}}
+
+  # Updates to references not shared (list)
+  - name: list_ref_updates_not_shared_1
+    statement: |
+      x = {{{{1, 2}, {3, 4}}, {{5, 6}, {7, 8}}}};
+      y = x[1][2];
+      z = x[1][2];
+      x[1][1][1] = "abc";
+      y[1][2] = "foobar";
+      return x;
+    expect:
+      value: [[["abc", [3, 4]], [[5, 6], [7, 8]]]]
+
+  # Updates to references not shared (map)
+  - name: map_ref_updates_not_shared_1
+    statement: |
+      x = [1 -> [1 -> [1 -> [1 -> 1, 2 -> 2], 2 -> [1 -> 3, 2 -> 4]], 2 -> [1 -> [1 -> 5, 2 -> 6], 2 -> [1 -> 7, 2 -> 8]]]];
+      y = x[1][2];
+      z = x[1][2];
+      x[1][1][1] = "abc";
+      y[1][2] = "foobar";
+      return x;
+    expect:
+      value: {1: {1: {1: "abc", 2: {1: 3, 2: 4}}, 2: {1: {1: 5, 2: 6}, 2: {1: 7, 2: 8}}}}
+
+  # Updates to references not shared (deeper list)
+  - name: list_ref_updates_not_shared_2
+    statement: |
+      x = {{{{1, 2}, {3, 4}}, {{5, 6}, {7, 8}}}};
+      y = x[1][1][2];
+      z = x[1][1][2];
+      x[1][1][1][1] = "abc";
+      y[2] = "foobar";
+      return x;
+    expect:
+      value: [[[["abc", 2], [3, 4]], [[5, 6], [7, 8]]]]
+
+  # Updates to references not shared (deeper map)
+  - name: map_ref_updates_not_shared_2
+    statement: |
+      x = [1 -> [1 -> [1 -> [1 -> 1, 2 -> 2], 2 -> [1 -> 3, 2 -> 4]], 2 -> [1 -> [1 -> 5, 2 -> 6], 2 -> [1 -> 7, 2 -> 8]]]];
+      y = x[1][1][2];
+      z = x[1][1][2];
+      x[1][1][1][1] = "abc";
+      y[2] = "foobar";
+      return x;
+    expect:
+      value: {1: {1: {1: {1: "abc", 2: 2}, 2: {1: 3, 2: 4}}, 2: {1: {1: 5, 2: 6}, 2: {1: 7, 2: 8}}}}
+
+  # Multiple writes work (deeply nested list)
+  # Ruby test had "parslet issues" and used wrong expected value.
+  # Correct COW behavior: y retains original value after x is modified.
+  - name: multiple_writes_nested_list
+    statement: |
+      x = {{{{{1}}}}};
+      y = x;
+      z = x;
+      for i in [1..10000]
+        ticks_left() < 2000 || seconds_left() < 2 && suspend(0);
+        x[1][1][1][1] = i;
+      endfor
+      return y;
+    expect:
+      value: [[[[[1]]]]]
+
+  # Multiple writes work (deeply nested map)
+  - name: multiple_writes_nested_map
+    statement: |
+      x = [1 -> [1 -> [1 -> [1 -> [1 -> 1]]]]];
+      y = x;
+      z = x;
+      for i in [1..10000]
+        ticks_left() < 2000 || seconds_left() < 2 && suspend(0);
+        x[1][1][1][1] = i;
+      endfor
+      return y;
+    expect:
+      value: {1: {1: {1: {1: {1: 1}}}}}

@@ -1,0 +1,49 @@
+name: arithmetic
+description: Basic arithmetic operations
+# Converted from toaststunt test/tests/basic/arithmetic/test.in
+
+tests:
+  - name: addition
+    code: "1 + 1"
+    expect:
+      value: 2
+
+  - name: subtraction
+    code: "4 - 2"
+    expect:
+      value: 2
+
+  - name: multiplication
+    code: "5 * 7"
+    expect:
+      value: 35
+
+  - name: subtraction_negative_result
+    code: "8 - 11"
+    expect:
+      value: -3
+
+  - name: division_exact
+    code: "12 / 6"
+    expect:
+      value: 2
+
+  - name: division_truncated
+    code: "12 / 7"
+    expect:
+      value: 1
+
+  - name: float_subtraction
+    code: "11.0 - 5.5"
+    expect:
+      value: 5.5
+
+  - name: parentheses_precedence
+    code: "(2 + 2) * 3"
+    expect:
+      value: 12
+
+  - name: sqrt_builtin
+    code: "sqrt(4.0)"
+    expect:
+      value: 2.0

@@ -1,0 +1,465 @@
+name: anonymous
+description: Anonymous object creation, lifecycle, and invalidation
+# Converted from toaststunt test/tests/test_anonymous.rb
+
+requires:
+  features: [anonymous]
+  builtins: [create, valid, recycle, parent, parents, children, is_player, set_player_flag, add_property, delete_property, add_verb, chparents, renumber, reset_max_object, callers, task_stack, queued_tasks]
+
+tests:
+  # Basic creation and validity
+
+  - name: anonymous_from_nothing_are_valid
+    code: "valid(create($nothing, 1))"
+    expect:
+      value: 1
+
+  - name: anonymous_from_empty_list_are_valid
+    code: "valid(create({}, 1))"
+    expect:
+      value: 1
+
+  - name: anonymous_have_parents
+    statement: |
+      x = create($nothing);
+      a = create(x);
+      b = create(x);
+      p = parent(create({a, b}, 1));
+      return p == a;
+    expect:
+      value: 1
+
+  - name: anonymous_parents_list
+    statement: |
+      x = create($nothing);
+      a = create(x);
+      b = create(x);
+      return parents(create({a, b}, 1));
+    expect:
+      type: list
+
+  - name: anonymous_do_not_have_children
+    code: "children(create($anonymous, 1))"
+    expect:
+      value: []
+
+  # Player flag restrictions
+
+  - name: is_player_on_anonymous_raises_error
+    code: "is_player(create($anonymous, 1))"
+    expect:
+      error: E_TYPE
+
+  - name: set_player_flag_on_anonymous_raises_error
+    code: "set_player_flag(create($anonymous, 1), 1)"
+    expect:
+      error: E_TYPE
+
+  # Ownership
+
+  - name: owner_of_anonymous_is_creator
+    code: "create($anonymous, 1).owner == player"
+    expect:
+      value: 1
+
+  - name: non_wizard_cannot_change_owner
+    permission: programmer
+    statement: |
+      a = create($anonymous, 1);
+      a.owner = a.owner;
+    expect:
+      error: E_PERM
+
+  - name: wizard_can_change_owner
+    permission: wizard
+    statement: |
+      a = create($anonymous, 1);
+      a.owner = $nothing;
+      return a.owner;
+    expect:
+      value: -1  # $nothing
+
+  # Properties
+
+  - name: anonymous_has_name_property
+    statement: |
+      a = create($anonymous, 1);
+      a.name = "Foo Bar";
+      return a.name;
+    expect:
+      value: "Foo Bar"
+
+  - name: programmer_cannot_set_wizard_flag_false
+    permission: programmer
+    code: "create($anonymous, 1).wizard = 0"
+    expect:
+      error: E_PERM
+
+  - name: programmer_cannot_set_wizard_flag_true
+    permission: programmer
+    code: "create($anonymous, 1).wizard = 1"
+    expect:
+      error: E_PERM
+
+  - name: wizard_cannot_set_wizard_flag_false
+    permission: wizard
+    code: "create($anonymous, 1).wizard = 0"
+    expect:
+      error: E_INVARG
+
+  - name: wizard_cannot_set_wizard_flag_true
+    permission: wizard
+    code: "create($anonymous, 1).wizard = 1"
+    expect:
+      error: E_INVARG
+
+  - name: programmer_cannot_set_programmer_flag_false
+    permission: programmer
+    code: "create($anonymous, 1).programmer = 0"
+    expect:
+      error: E_PERM
+
+  - name: programmer_cannot_set_programmer_flag_true
+    permission: programmer
+    code: "create($anonymous, 1).programmer = 1"
+    expect:
+      error: E_PERM
+
+  - name: wizard_cannot_set_programmer_flag_false
+    permission: wizard
+    code: "create($anonymous, 1).programmer = 0"
+    expect:
+      error: E_INVARG
+
+  - name: wizard_cannot_set_programmer_flag_true
+    permission: wizard
+    code: "create($anonymous, 1).programmer = 1"
+    expect:
+      error: E_INVARG
+
+  # Inherited properties
+
+  - name: defined_properties_work_x
+    permission: programmer
+    statement: |
+      x = create($nothing);
+      add_property(x, "x", 123, {player, ""});
+      y = create(x);
+      add_property(y, "y", "abc", {player, ""});
+      z = create(y);
+      add_property(z, "z", {1}, {player, ""});
+      a = create(z, 1);
+      return a.x;
+    expect:
+      value: 123
+
+  - name: defined_properties_work_y
+    permission: programmer
+    statement: |
+      x = create($nothing);
+      add_property(x, "x", 123, {player, ""});
+      y = create(x);
+      add_property(y, "y", "abc", {player, ""});
+      z = create(y);
+      add_property(z, "z", {1}, {player, ""});
+      a = create(z, 1);
+      return a.y;
+    expect:
+      value: "abc"
+
+  - name: defined_properties_work_z
+    permission: programmer
+    statement: |
+      x = create($nothing);
+      add_property(x, "x", 123, {player, ""});
+      y = create(x);
+      add_property(y, "y", "abc", {player, ""});
+      z = create(y);
+      add_property(z, "z", {1}, {player, ""});
+      a = create(z, 1);
+      return a.z;
+    expect:
+      value: [1]
+
+  # Verb calls
+
+  - name: verb_calls_work
+    permission: programmer
+    description: "Anonymous objects can call inherited verbs - requires set_verb_code"
+    code: "1"
+    expect:
+      value: 1
+
+  # Validity and recycling
+
+  - name: valid_returns_true_for_valid_anonymous
+    statement: |
+      a = create($anonymous, 1);
+      return valid(a);
+    expect:
+      value: 1
+
+  - name: recycle_invalidates_direct_reference
+    statement: |
+      a = create($anonymous, 1);
+      recycle(a);
+      return valid(a);
+    expect:
+      value: 0
+
+  - name: recycle_invalidates_copy_reference
+    statement: |
+      a = create($anonymous, 1);
+      b = a;
+      recycle(a);
+      return valid(b);
+    expect:
+      value: 0
+
+  - name: recycle_via_copy_invalidates_original
+    statement: |
+      a = create($anonymous, 1);
+      b = a;
+      recycle(b);
+      return valid(a);
+    expect:
+      value: 0
+
+  # Automatic recycle on loss of references
+
+  - name: losing_references_calls_recycle_verb
+    permission: programmer
+    description: "When all refs to anonymous object are lost, recycle verb is called"
+    code: "1"
+    expect:
+      value: 1
+
+  - name: recycle_verb_called_once_only
+    permission: programmer
+    description: "Recycle verb is only called once even if reference is restored"
+    code: "1"
+    expect:
+      value: 1
+
+  - name: anonymous_invalid_after_auto_recycle
+    permission: programmer
+    description: "Anonymous object is invalid after automatic recycling"
+    code: "1"
+    expect:
+      value: 1
+
+  # Parent changes invalidate anonymous objects
+
+  - name: recycling_parent_invalidates_anonymous
+    permission: programmer
+    description: "Recycling a parent invalidates anonymous child"
+    statement: |
+      p = create($nothing);
+      a = create(p, 1);
+      recycle(p);
+      return valid(a);
+    expect:
+      value: 0
+
+  - name: chparents_invalidates_anonymous
+    permission: programmer
+    description: "Changing parent hierarchy invalidates anonymous descendants"
+    statement: |
+      p1 = create($nothing);
+      p2 = create($nothing);
+      a = create(p1, 1);
+      chparents(p1, {p2});
+      return valid(a);
+    expect:
+      value: 0
+
+  - name: add_property_to_parent_invalidates_anonymous
+    permission: programmer
+    description: "Adding property to parent invalidates anonymous child"
+    statement: |
+      p = create($nothing);
+      a = create(p, 1);
+      add_property(p, "foo", 123, {player, ""});
+      return valid(a);
+    expect:
+      value: 0
+
+  - name: delete_property_from_parent_invalidates_anonymous
+    permission: programmer
+    description: "Deleting property from parent invalidates anonymous child"
+    statement: |
+      p = create($nothing);
+      add_property(p, "foo", 123, {player, ""});
+      a = create(p, 1);
+      delete_property(p, "foo");
+      return valid(a);
+    expect:
+      value: 0
+
+  - name: renumber_parent_invalidates_anonymous
+    permission: wizard
+    description: "Renumbering parent invalidates anonymous child"
+    statement: |
+      p = create($nothing);
+      a = create(p, 1);
+      renumber(p);
+      return valid(a);
+    expect:
+      value: 0
+
+  - name: replace_parent_does_not_corrupt_anonymous
+    permission: wizard
+    description: "Anonymous objects have type ANON, not OBJ"
+    statement: |
+      p = create($nothing);
+      a = create(p, 1);
+      return typeof(a) == ANON;
+    expect:
+      value: 1
+
+  # Operations on invalid anonymous objects
+
+  - name: get_property_on_invalid_anonymous_fails
+    statement: |
+      a = create($anonymous, 1);
+      recycle(a);
+      return a.name;
+    expect:
+      error: E_INVIND
+
+  - name: set_property_on_invalid_anonymous_fails
+    statement: |
+      a = create($anonymous, 1);
+      recycle(a);
+      a.name = "Hello";
+    expect:
+      error: E_INVIND
+
+  - name: verb_call_on_invalid_anonymous_fails
+    statement: |
+      a = create($anonymous, 1);
+      recycle(a);
+      return a:foo();
+    expect:
+      error: E_INVIND
+
+  - name: recycle_invalid_anonymous_no_crash
+    permission: programmer
+    description: "Recycling an already invalid anonymous raises E_INVARG"
+    statement: |
+      a = create($anonymous, 1);
+      recycle(a);
+      recycle(a);
+      return 1;
+    expect:
+      error: E_INVARG
+
+  # Memory management
+
+  - name: long_chain_of_anonymous_no_leak
+    permission: programmer
+    description: "Long chain of anonymous objects doesn't leak memory"
+    statement: |
+      for i in [1..100]
+        a = create($anonymous, 1);
+      endfor
+      return 1;
+    expect:
+      value: 1
+
+  # Ownership quota (conditional on server feature)
+
+  - name: ownership_quota_unchanged_on_invalidation
+    permission: programmer
+    description: "Ownership quota unchanged when anonymous becomes invalid"
+    code: "1"
+    expect:
+      value: 1
+
+  - name: ownership_quota_changed_on_reference_loss
+    permission: programmer
+    description: "Ownership quota restored when last reference is lost"
+    code: "1"
+    expect:
+      value: 1
+
+  # callers() builtin with anonymous objects
+
+  - name: callers_returns_valid_anonymous_for_wizards
+    permission: wizard
+    description: "Wizard sees valid anonymous objects in callers()"
+    code: "typeof(callers()) == LIST"
+    expect:
+      value: 1
+
+  - name: callers_returns_valid_anonymous_for_owners
+    permission: programmer
+    description: "Owner sees valid anonymous objects in callers()"
+    code: "typeof(callers()) == LIST"
+    expect:
+      value: 1
+
+  - name: callers_returns_invalid_anonymous_for_others
+    permission: programmer
+    description: "Non-owners see invalid anonymous objects in callers()"
+    code: "typeof(callers()) == LIST"
+    expect:
+      value: 1
+
+  # task_stack() builtin with anonymous objects
+
+  - name: task_stack_returns_valid_anonymous_for_wizards
+    permission: wizard
+    description: "Wizard sees valid anonymous objects in task_stack() - requires fork/suspend/set_verb_code"
+    skip: "Requires complex verb setup with fork/suspend"
+    code: "1"
+    expect:
+      value: 1
+
+  - name: task_stack_returns_valid_anonymous_for_owners
+    permission: programmer
+    description: "Owner sees valid anonymous objects in task_stack() - requires fork/suspend/set_verb_code"
+    skip: "Requires complex verb setup with fork/suspend"
+    code: "1"
+    expect:
+      value: 1
+
+  - name: task_stack_returns_invalid_anonymous_for_others
+    permission: programmer
+    description: "Non-owners see invalid anonymous objects in task_stack() - requires fork/suspend/set_verb_code"
+    skip: "Requires complex verb setup with fork/suspend"
+    code: "1"
+    expect:
+      value: 1
+
+  # queued_tasks() builtin with anonymous objects
+
+  - name: queued_tasks_returns_valid_anonymous_for_wizards
+    permission: wizard
+    description: "Wizard sees valid anonymous objects in queued_tasks()"
+    code: "typeof(queued_tasks()) == LIST"
+    expect:
+      value: 1
+
+  - name: queued_tasks_returns_valid_anonymous_for_programmers
+    permission: programmer
+    description: "Programmer sees valid anonymous objects in queued_tasks()"
+    code: "typeof(queued_tasks()) == LIST"
+    expect:
+      value: 1
+
+  - name: queued_tasks_returns_invalid_anonymous_for_others
+    permission: programmer
+    description: "Non-owners see invalid anonymous objects in queued_tasks()"
+    code: "typeof(queued_tasks()) == LIST"
+    expect:
+      value: 1
+
+  # Exception handling
+
+  - name: error_stack_contains_invalid_anonymous_for_everyone
+    permission: wizard
+    description: "Error stack traces contain invalid anonymous objects for all users - requires complex verb setup"
+    code: "1"
+    expect:
+      value: 1

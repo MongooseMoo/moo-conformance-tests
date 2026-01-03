@@ -29,7 +29,7 @@ from .schema import (
     validate_test_suite,
 )
 from .moo_types import MooError, MooType, ERROR_CODES, TYPE_NAMES
-from .conftest import get_tests_dir, get_db_path, discover_yaml_tests
+from .plugin import get_tests_dir, get_db_path, discover_yaml_tests
 
 __version__ = "0.1.0"
 

@@ -37,7 +37,7 @@ Repository = "https://github.com/MongooseMoo/moo-conformance-tests"
 Issues = "https://github.com/MongooseMoo/moo-conformance-tests/issues"
 
 [project.entry-points.pytest11]
-moo_conformance = "moo_conformance.conftest"
+moo_conformance = "moo_conformance.plugin"
 
 [build-system]
 requires = ["setuptools>=61.0"]

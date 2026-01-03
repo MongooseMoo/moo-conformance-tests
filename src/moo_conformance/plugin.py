@@ -10,7 +10,7 @@ Provides:
 
 Usage as pytest plugin:
     # In your conftest.py:
-    pytest_plugins = ["moo_conformance.conftest"]
+    pytest_plugins = ["moo_conformance.plugin"]
 
     # Or install the package and it auto-registers via entry point
 

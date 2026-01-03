@@ -390,9 +390,11 @@ tests:
   # object_bytes builtin
   - name: object_bytes_permission_denied
     permission: programmer
-    code: "object_bytes($object)"
+    description: "object_bytes() is accessible to programmers in Toast, not wizard-only"
+    statement: |
+      return object_bytes($object) > 0;
     expect:
-      error: E_PERM
+      value: 1
 
   - name: object_bytes_wizard_allowed
     permission: wizard

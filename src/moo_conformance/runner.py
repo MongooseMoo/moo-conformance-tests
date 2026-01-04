@@ -195,6 +195,21 @@ class YamlTestRunner:
             self._verify_error(expect.error, result, context)
             return
 
+        # Check for expected match pattern (can match on error messages too)
+        if expect.match:
+            # If we got an error, check if the pattern matches the error message
+            if not result.success and result.error_message:
+                self._verify_match(expect.match, result.error_message, context)
+                return
+            # Otherwise expect success and check value
+            if not result.success:
+                raise AssertionError(
+                    f"{context} expected success but got error: "
+                    f"{result.error or result.error_message}"
+                )
+            self._verify_match(expect.match, result.value, context)
+            return
+
         # If we got here, we expect success
         if not result.success:
             raise AssertionError(
@@ -209,10 +224,6 @@ class YamlTestRunner:
         # Check type expectation
         if expect.type:
             self._verify_type(expect.type, result.value, context)
-
-        # Check match expectation
-        if expect.match:
-            self._verify_match(expect.match, result.value, context)
 
     def _verify_expectations(self, test: MooTestCase, result: ExecutionResult) -> None:
         """Verify test result against expectations.
@@ -231,6 +242,21 @@ class YamlTestRunner:
             self._verify_error(expect.error, result, test.name)
             return
 
+        # Check for expected match pattern (can match on error messages too)
+        if expect.match:
+            # If we got an error, check if the pattern matches the error message
+            if not result.success and result.error_message:
+                self._verify_match(expect.match, result.error_message, test.name)
+                return
+            # Otherwise expect success and check value
+            if not result.success:
+                raise AssertionError(
+                    f"Test '{test.name}' expected success but got error: "
+                    f"{result.error or result.error_message}"
+                )
+            self._verify_match(expect.match, result.value, test.name)
+            return
+
         # If we got here, we expect success
         if not result.success:
             raise AssertionError(
@@ -245,10 +271,6 @@ class YamlTestRunner:
         # Check type expectation
         if expect.type:
             self._verify_type(expect.type, result.value, test.name)
-
-        # Check match expectation
-        if expect.match:
-            self._verify_match(expect.match, result.value, test.name)
 
         # Check contains expectation
         if expect.contains is not None:

@@ -164,24 +164,22 @@ tests:
 
   # test_that_invalid_for_loops_do_not_compile
   - name: for_loop_no_variables
-    skip: "Test harness doesn't handle eval() parse error format for match expectations"
     statement: |
       x = {};
       for in ({"1", "2", "3", "4", "5"})
       endfor
       return x;
     expect:
-      match: "syntax error"
+      match: "(syntax error|Parse error)"
 
   - name: for_loop_three_variables
-    skip: "Test harness doesn't handle eval() parse error format for match expectations"
     statement: |
       x = {};
       for i, j, k in ({"1", "2", "3", "4", "5"})
       endfor
       return x;
     expect:
-      match: "syntax error"
+      match: "(syntax error|Parse error)"
 
   - name: for_loop_continue_invalid_name_single_var
     skip: "Barn parser doesn't validate loop names in continue/break - needs fix"

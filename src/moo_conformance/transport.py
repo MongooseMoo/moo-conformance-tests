@@ -378,9 +378,14 @@ class SocketTransport(MooTransport):
                         return ExecutionResult(success=False, error=error)
                     except ValueError:
                         pass
+                # Extract error message from nested structure
+                # Barn format: {0, {line, "error message"}}
+                error_msg = str(result)
+                if isinstance(result, list) and len(result) >= 2:
+                    error_msg = str(result[1])  # Extract message from {line, message}
                 return ExecutionResult(
                     success=False,
-                    error_message=f"Parse error: {result}",
+                    error_message=error_msg,
                 )
             elif status == 1:
                 # Success: {1, actual_value}

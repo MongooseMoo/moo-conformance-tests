@@ -1,0 +1,24 @@
+name: verb_creation_verification
+description: Verifies verb_setup creates callable verbs
+
+tests:
+  - name: verb_setup_creates_verb
+    permission: wizard
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "typeof({obj})"
+        expect:
+          value: 1  # OBJ type
+      - verb_setup:
+          object: "{obj}"
+          name: "test_verb"
+          args: ["this", "none", "this"]
+          code: "return 42;"
+        expect:
+          type: list  # set_verb_code returns empty list on success
+      - run: "{obj}:test_verb()"
+        expect:
+          value: 42
+    cleanup:
+      - run: "recycle({obj})"

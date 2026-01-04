@@ -122,22 +122,26 @@ class YamlTestRunner:
                 # if step.as_:
                 #     self.transport.connect(step.as_)
 
-                # Execute the step
-                code = self._substitute_variables(step.run, variables)
+                # Check if this is a verb_setup step
+                if step.verb_setup:
+                    result = self._execute_verb_setup(step.verb_setup, variables)
+                else:
+                    # Execute the step
+                    code = self._substitute_variables(step.run, variables)
 
-                # Wrap as expression if it doesn't look like a statement
-                # Check if code contains 'return' anywhere (for multi-line code)
-                stripped = code.strip()
-                has_return = 'return ' in stripped or stripped.startswith('return')
-                is_statement = any(stripped.startswith(kw) for kw in ('if', 'for', 'while', 'try'))
+                    # Wrap as expression if it doesn't look like a statement
+                    # Check if code contains 'return' anywhere (for multi-line code)
+                    stripped = code.strip()
+                    has_return = 'return ' in stripped or stripped.startswith('return')
+                    is_statement = any(stripped.startswith(kw) for kw in ('if', 'for', 'while', 'try'))
 
-                if not has_return and not is_statement:
-                    if not stripped.endswith(';'):
-                        code = f"return {stripped};"
-                    else:
-                        code = f"return {stripped}"
+                    if not has_return and not is_statement:
+                        if not stripped.endswith(';'):
+                            code = f"return {stripped};"
+                        else:
+                            code = f"return {stripped}"
 
-                result = self.transport.execute(code)
+                    result = self.transport.execute(code)
 
                 # Capture result if requested
                 if step.capture:
@@ -149,7 +153,8 @@ class YamlTestRunner:
 
                 # Verify expectation if present
                 if step.expect:
-                    self._verify_expectation(step.expect, result, f"step '{step.run[:30]}...'")
+                    step_desc = f"verb_setup '{step.verb_setup.name}'" if step.verb_setup else f"step '{step.run[:30]}...'"
+                    self._verify_expectation(step.expect, result, step_desc)
 
         finally:
             # Run cleanup steps (always, even on failure)
@@ -181,6 +186,39 @@ class YamlTestRunner:
             if placeholder in result:
                 result = result.replace(placeholder, _value_to_moo(value))
         return result
+
+    def _execute_verb_setup(self, vs: Any, variables: dict) -> ExecutionResult:
+        """Create a verb on an object.
+
+        Args:
+            vs: VerbSetup instance with object, name, args, and code
+            variables: Dict of captured variable values for substitution
+
+        Returns:
+            ExecutionResult from set_verb_code (last operation)
+        """
+        obj = self._substitute_variables(vs.object, variables)
+        name = vs.name
+        args_str = '{' + ', '.join(f'"{a}"' for a in vs.args) + '}'
+
+        # Convert code to list of lines (set_verb_code requires a list)
+        # Split on newlines and escape each line for MOO string
+        code_lines = vs.code.split('\n')
+        code_list_items = []
+        for line in code_lines:
+            # Escape backslashes and quotes for MOO string literal
+            escaped = line.replace('\\', '\\\\').replace('"', '\\"')
+            code_list_items.append(f'"{escaped}"')
+        code_list_str = '{' + ', '.join(code_list_items) + '}'
+
+        # Execute both add_verb and set_verb_code in ONE statement
+        # This is necessary because MOO doesn't maintain variable scope between executions
+        # Both statements must end with semicolons for proper MOO syntax
+        combined_code = (
+            f'add_verb({obj}, {{player, "xd", "{name}"}}, {args_str}); '
+            f'set_verb_code({obj}, "{name}", {code_list_str});'
+        )
+        return self.transport.execute(combined_code)
 
     def _verify_expectation(self, expect: Expectation, result: ExecutionResult, context: str) -> None:
         """Verify a single expectation against a result.

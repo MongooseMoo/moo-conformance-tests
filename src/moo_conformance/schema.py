@@ -153,13 +153,23 @@ class Expectation:
 
 
 @dataclass
+class VerbSetup:
+    """Declarative verb creation for test setup."""
+    object: str           # Object ref (supports {var})
+    name: str             # Verb name
+    args: list[str]       # Verb args like ["this", "none", "this"]
+    code: str             # Verb body
+
+
+@dataclass
 class TestStep:
     """A single step in a multi-step test.
 
     Steps execute sequentially, with optional variable capture.
     Variables can be substituted in subsequent steps using {varname} syntax.
     """
-    run: str                              # MOO code to execute
+    run: str | None = None                # MOO code to execute
+    verb_setup: VerbSetup | None = None   # Declarative verb creation
     capture: str | None = None            # Variable name to store result
     as_: str | None = None                # Permission for this step (wizard, programmer)
     expect: Expectation | None = None     # Optional assertion on this step's result
@@ -357,15 +367,28 @@ def _parse_expectation(data: dict) -> Expectation:
 
 def _parse_test_step(data: dict) -> TestStep:
     """Parse a single test step from YAML data."""
-    if 'run' not in data:
-        raise ValueError("Test step must have a 'run' field")
+    # Must have either 'run' or 'verb_setup'
+    if 'run' not in data and 'verb_setup' not in data:
+        raise ValueError("Test step must have either 'run' or 'verb_setup' field")
 
     expect = None
     if 'expect' in data:
         expect = _parse_expectation(data['expect'])
 
+    # Parse verb_setup if present
+    verb_setup = None
+    if 'verb_setup' in data:
+        vs_data = data['verb_setup']
+        verb_setup = VerbSetup(
+            object=vs_data['object'],
+            name=vs_data['name'],
+            args=vs_data['args'],
+            code=vs_data['code'],
+        )
+
     return TestStep(
-        run=data['run'],
+        run=data.get('run'),
+        verb_setup=verb_setup,
         capture=data.get('capture'),
         as_=data.get('as'),
         expect=expect,

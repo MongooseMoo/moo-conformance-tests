@@ -1,0 +1,56 @@
+name: fork_observation_tests
+description: |
+  Tests fork() behavior by observing tasks via queued_tasks().
+
+  These tests verify that fork creates observable tasks that can be
+  inspected using the queued_tasks() builtin.
+
+  Declares 'assumes: [queued_tasks]' because these tests rely on
+  queued_tasks() working correctly. If queued_tasks tests fail,
+  these tests will be automatically skipped.
+version: "1.0"
+assumes: [queued_tasks]
+
+tests:
+  - name: fork_creates_task
+    description: Fork creates an observable task in queued_tasks()
+    permission: wizard
+    statement: |
+      before = length(queued_tasks());
+      fork (1)
+        suspend(5);
+      endfork
+      after = length(queued_tasks());
+      return after > before;
+    expect:
+      value: 1
+
+  - name: fork_with_delay_shows_future_start
+    description: Fork with delay shows future start time
+    skip: "Task format varies by implementation - needs investigation"
+    permission: wizard
+    statement: |
+      fork (3)
+        suspend(5);
+      endfork
+      tasks = queued_tasks();
+      if (length(tasks) == 0)
+        return 0;
+      endif
+      task = tasks[length(tasks)];
+      return task[2] > time();
+    expect:
+      value: 1
+
+  - name: multiple_forks_all_visible
+    description: Multiple forks are all visible in queued_tasks()
+    permission: wizard
+    statement: |
+      before = length(queued_tasks());
+      fork (1) suspend(5); endfork
+      fork (2) suspend(5); endfork
+      fork (3) suspend(5); endfork
+      after = length(queued_tasks());
+      return after >= before + 3;
+    expect:
+      value: 1

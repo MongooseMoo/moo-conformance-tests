@@ -1,0 +1,48 @@
+name: queued_tasks_verification
+description: |
+  Verifies queued_tasks() builtin works correctly.
+
+  This capability test ensures that queued_tasks() returns valid task
+  information that can be reliably used to observe forked task behavior.
+
+  Other tests can declare 'assumes: [queued_tasks]' to indicate they
+  depend on this builtin working correctly.
+version: "1.0"
+provides: queued_tasks
+
+tests:
+  - name: returns_list
+    description: queued_tasks() returns a list
+    code: "typeof(queued_tasks())"
+    expect:
+      value: 4  # TYPE_LIST
+
+  - name: returns_non_negative_length
+    description: queued_tasks() returns a list with non-negative length
+    code: "length(queued_tasks()) >= 0"
+    expect:
+      value: 1  # true
+
+  - name: list_elements_are_lists
+    description: Each element in queued_tasks() is a list (task info)
+    statement: |
+      tasks = queued_tasks();
+      if (length(tasks) == 0)
+        return 1;
+      endif
+      return typeof(tasks[1]) == LIST;
+    expect:
+      value: 1
+
+  - name: task_info_has_correct_structure
+    description: Task info lists have expected structure [id, start_time, ...]
+    permission: wizard
+    statement: |
+      tasks = queued_tasks();
+      if (length(tasks) == 0)
+        return 1;
+      endif
+      task = tasks[1];
+      return typeof(task) == LIST && length(task) >= 2;
+    expect:
+      value: 1

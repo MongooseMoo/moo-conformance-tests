@@ -27,6 +27,10 @@ import importlib.resources
 from .transport import MooTransport, SocketTransport
 from .schema import validate_test_suite, MooTestSuite, MooTestCase
 from .runner import YamlTestRunner
+from .capabilities import CapabilityManager, CapabilityState
+
+# Global capability manager (session-scoped)
+capability_manager = CapabilityManager()
 
 
 def get_tests_dir() -> Path:
@@ -179,6 +183,66 @@ def yaml_test_case():
     The actual value is provided by pytest_generate_tests.
     """
     pass
+
+
+def pytest_collection_modifyitems(session, config, items):
+    """Reorder tests to run providers before consumers."""
+    providers = []
+    consumers = []
+    normal = []
+
+    for item in items:
+        # Get test case from parametrized fixture
+        if hasattr(item, 'callspec') and 'yaml_test_case' in item.callspec.params:
+            suite, test = item.callspec.params['yaml_test_case']
+
+            # Check for provides (test-level or suite-level)
+            provides = test.provides or suite.provides
+            if provides:
+                providers.append(item)
+                capability_manager.register_provider(provides, item.nodeid)
+                continue
+
+            # Check for assumes (test-level or suite-level)
+            assumes = test.assumes or suite.assumes
+            if assumes:
+                consumers.append(item)
+                continue
+
+        normal.append(item)
+
+    items[:] = providers + normal + consumers
+
+
+def pytest_runtest_setup(item):
+    """Skip test if assumed capabilities aren't verified."""
+    if hasattr(item, 'callspec') and 'yaml_test_case' in item.callspec.params:
+        suite, test = item.callspec.params['yaml_test_case']
+
+        # Get assumes from test or suite
+        assumes = test.assumes or suite.assumes
+        if assumes:
+            can_run, reason = capability_manager.can_run(assumes)
+            if not can_run:
+                pytest.skip(reason)
+
+
+@pytest.hookimpl(tryfirst=True, hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    """Track provider test results to update capability states."""
+    outcome = yield
+    report = outcome.get_result()
+
+    if call.when == "call":
+        if hasattr(item, 'callspec') and 'yaml_test_case' in item.callspec.params:
+            suite, test = item.callspec.params['yaml_test_case']
+
+            provides = test.provides or suite.provides
+            if provides:
+                if report.passed:
+                    capability_manager.mark_passed(provides, item.nodeid)
+                elif report.failed:
+                    capability_manager.mark_failed(provides, item.nodeid)
 
 
 # Register markers

@@ -205,6 +205,10 @@ class MooTestCase:
     # Timeout override
     timeout_ms: int = 5000
 
+    # Capability dependencies
+    provides: str | None = None   # Capability this test provides (e.g., "fork", "queued_tasks")
+    assumes: list[str] = field(default_factory=list)  # Capabilities this test assumes
+
     def has_steps(self) -> bool:
         """Check if this is a multi-step test."""
         return len(self.steps) > 0
@@ -256,6 +260,10 @@ class MooTestSuite:
     setup: SetupTeardown | None = None
     teardown: SetupTeardown | None = None
     tests: list[MooTestCase] = field(default_factory=list)
+
+    # Capability dependencies (suite-level defaults for all tests)
+    provides: str | None = None   # Capability this suite provides
+    assumes: list[str] = field(default_factory=list)  # Capabilities this suite assumes
 
 
 def _value_to_moo(value: Any) -> str:
@@ -329,6 +337,13 @@ def validate_test_suite(data: dict) -> MooTestSuite:
         test = _parse_test_case(test_data)
         tests.append(test)
 
+    # Parse suite-level capability dependencies
+    provides = data.get('provides')
+    assumes = data.get('assumes', [])
+    # Ensure assumes is always a list
+    if isinstance(assumes, str):
+        assumes = [assumes]
+
     return MooTestSuite(
         name=data['name'],
         description=data.get('description', ''),
@@ -338,6 +353,8 @@ def validate_test_suite(data: dict) -> MooTestSuite:
         setup=setup,
         teardown=teardown,
         tests=tests,
+        provides=provides,
+        assumes=assumes,
     )
 
 
@@ -422,6 +439,13 @@ def _parse_test_case(data: dict) -> MooTestCase:
     for cleanup_data in data.get('cleanup', []):
         cleanup.append(_parse_test_step(cleanup_data))
 
+    # Parse capability dependencies
+    provides = data.get('provides')
+    assumes = data.get('assumes', [])
+    # Ensure assumes is always a list
+    if isinstance(assumes, str):
+        assumes = [assumes]
+
     return MooTestCase(
         name=data['name'],
         description=data.get('description', ''),
@@ -439,4 +463,6 @@ def _parse_test_case(data: dict) -> MooTestCase:
         expect=expect,
         cleanup=cleanup,
         timeout_ms=data.get('timeout_ms', 5000),
+        provides=provides,
+        assumes=assumes,
     )

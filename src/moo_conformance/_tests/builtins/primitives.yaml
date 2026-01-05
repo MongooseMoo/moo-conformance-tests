@@ -251,10 +251,10 @@ tests:
     expect:
       value: 1
 
-  # Test that callers() 'this' field is #-1 for primitive prototype calls
-  # Note: The 'this' variable INSIDE the verb is the primitive, but callers() shows #-1
-  # because primitives don't have object IDs. This matches ToastStunt behavior.
-  - name: callers_this_is_nothing_for_primitives
+  # Test that callers() 'this' field contains the primitive value itself
+  # Note: The 'this' variable in callers() is the primitive value, not an object reference
+  # This matches ToastStunt behavior where primitives retain their value through the call chain.
+  - name: callers_includes_primitive_this
     permission: wizard
     setup:
       code: |
@@ -270,11 +270,10 @@ tests:
       code: "`recycle(#0.list_proto) ! ANY => 0'; `delete_property(#0, \"list_proto\") ! ANY => 0';"
     statement: |
       c = {1, 2, "three", 4.0}:foo();
-      return typeof(c[1][1]);
+      return c[1][1];
     expect:
-      # TYPE_OBJ = 1 (c[1][1] is #-1, the 'nothing' object)
-      value: 1
-
+      # callers()[1][1] (the 'this' field) should be the primitive value itself
+      value: [1, 2, "three", 4.0]
   # Test that inheritance works with prototypes
   - name: inheritance_with_prototypes
     permission: wizard

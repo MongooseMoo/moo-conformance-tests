@@ -231,13 +231,12 @@ tests:
   - name: recycling_object_calls_recycle_verb
     description: Recycling an object calls its :recycle verb
     permission: programmer
-    skip: "Callback tests require more complex server integration"
     steps:
       - run: "create($object)"
         capture: a
       - run: "add_property({a}, \"recycle_called\", 0, {player, \"\"})"
       - run: "add_verb({a}, {player, \"xd\", \"recycle\"}, {\"this\", \"none\", \"this\"})"
-      - run: "set_verb_code({a}, \"recycle\", \"typeof(this) == OBJ || raise(E_INVARG); {a}.recycle_called = {a}.recycle_called + 1;\")"
+      - run: "set_verb_code({a}, \"recycle\", {\"typeof(this) == OBJ || raise(E_INVARG);\", \"{a}.recycle_called = {a}.recycle_called + 1;\"})"
       - run: "{a}.recycle_called"
         expect:
           value: 0
@@ -251,13 +250,12 @@ tests:
   - name: recycling_anonymous_calls_recycle_verb
     description: Recycling an anonymous object calls its :recycle verb
     permission: programmer
-    skip: "Callback tests require more complex server integration"
     steps:
       - run: "create($object)"
         capture: a
       - run: "add_property({a}, \"recycle_called\", 0, {player, \"\"})"
       - run: "add_verb({a}, {player, \"xd\", \"recycle\"}, {\"this\", \"none\", \"this\"})"
-      - run: "set_verb_code({a}, \"recycle\", \"typeof(this) == ANON || raise(E_INVARG); {a}.recycle_called = {a}.recycle_called + 1;\")"
+      - run: "set_verb_code({a}, \"recycle\", {\"typeof(this) == ANON || raise(E_INVARG);\", \"{a}.recycle_called = {a}.recycle_called + 1;\"})"
       - run: "{a}.recycle_called"
         expect:
           value: 0
@@ -271,13 +269,12 @@ tests:
   - name: calling_recycle_in_recycle_verb_on_anonymous_fails
     description: Calling recycle(this) inside :recycle verb on anonymous object fails
     permission: programmer
-    skip: "Callback tests require more complex server integration"
     steps:
       - run: "create($object)"
         capture: a
       - run: "add_property({a}, \"recycle_called\", 0, {player, \"\"})"
       - run: "add_verb({a}, {player, \"xd\", \"recycle\"}, {\"this\", \"none\", \"this\"})"
-      - run: "set_verb_code({a}, \"recycle\", \"typeof(this) == ANON || raise(E_INVARG); {a}.recycle_called = {a}.recycle_called + 1; recycle(this);\")"
+      - run: "set_verb_code({a}, \"recycle\", {\"typeof(this) == ANON || raise(E_INVARG);\", \"{a}.recycle_called = {a}.recycle_called + 1;\", \"recycle(this);\"})"
       - run: "{a}.recycle_called"
         expect:
           value: 0
@@ -291,13 +288,12 @@ tests:
   - name: recycled_object_saved_in_verb_becomes_invalid
     description: Object recycled and saved in :recycle verb becomes invalid
     permission: programmer
-    skip: "Callback tests require more complex server integration"
     steps:
       - run: "create($object)"
         capture: a
       - run: "add_property({a}, \"keep\", 0, {player, \"\"})"
       - run: "add_verb({a}, {player, \"xd\", \"recycle\"}, {\"this\", \"none\", \"this\"})"
-      - run: "set_verb_code({a}, \"recycle\", \"typeof(this) == OBJ || raise(E_INVARG); {a}.keep = this;\")"
+      - run: "set_verb_code({a}, \"recycle\", {\"typeof(this) == OBJ || raise(E_INVARG);\", \"{a}.keep = this;\"})"
       - run: "typeof({a}.keep) == INT"
         expect:
           value: 1
@@ -319,13 +315,12 @@ tests:
   - name: recycled_anonymous_saved_in_verb_becomes_invalid
     description: Anonymous object recycled and saved in :recycle verb becomes invalid
     permission: programmer
-    skip: "Callback tests require more complex server integration"
     steps:
       - run: "create($object)"
         capture: a
       - run: "add_property({a}, \"keep\", 0, {player, \"\"})"
       - run: "add_verb({a}, {player, \"xd\", \"recycle\"}, {\"this\", \"none\", \"this\"})"
-      - run: "set_verb_code({a}, \"recycle\", \"typeof(this) == ANON || raise(E_INVARG); {a}.keep = this;\")"
+      - run: "set_verb_code({a}, \"recycle\", {\"typeof(this) == ANON || raise(E_INVARG);\", \"{a}.keep = this;\"})"
       - run: "typeof({a}.keep) == INT"
         expect:
           value: 1
@@ -349,15 +344,14 @@ tests:
   - name: recycling_object_recycles_property_values_on_object
     description: Recycling an object also recycles anonymous objects stored in properties defined on the object
     permission: wizard
-    skip: "Cascading recycle tests require more complex server integration"
     steps:
       - run: "create($object)"
         capture: a
       - run: "add_property({a}, \"recycle_called\", 0, {player, \"\"})"
       - run: "add_verb({a}, {player, \"xd\", \"recycle\"}, {\"this\", \"none\", \"this\"})"
-      - run: "set_verb_code({a}, \"recycle\", \"{a}.recycle_called = {a}.recycle_called + 1;\")"
+      - run: "set_verb_code({a}, \"recycle\", {\"{a}.recycle_called = {a}.recycle_called + 1;\"})"
       - run: "add_verb({a}, {player, \"xd\", \"go\"}, {\"this\", \"none\", \"this\"})"
-      - run: "set_verb_code({a}, \"go\", \"x = create({a}, 0); add_property(x, \\\"next\\\", 0, {player, \\\"\\\"}); x.next = create({a}, 1); recycle(x);\")"
+      - run: "set_verb_code({a}, \"go\", {\"x = create({a}, 0);\", \"add_property(x, \\\"next\\\", 0, {player, \\\"\\\"});\", \"x.next = create({a}, 1);\", \"recycle(x);\"})"
       - run: "{a}.recycle_called = 0"
       - run: "{a}:go()"
       - run: "{a}.recycle_called"
@@ -369,16 +363,15 @@ tests:
   - name: recycling_object_recycles_property_values_on_parent
     description: Recycling an object also recycles anonymous objects stored in properties defined on the parent
     permission: wizard
-    skip: "Cascading recycle tests require more complex server integration"
     steps:
       - run: "create($object)"
         capture: a
       - run: "add_property({a}, \"next\", 0, {player, \"\"})"
       - run: "add_property({a}, \"recycle_called\", 0, {player, \"\"})"
       - run: "add_verb({a}, {player, \"xd\", \"recycle\"}, {\"this\", \"none\", \"this\"})"
-      - run: "set_verb_code({a}, \"recycle\", \"{a}.recycle_called = {a}.recycle_called + 1;\")"
+      - run: "set_verb_code({a}, \"recycle\", {\"{a}.recycle_called = {a}.recycle_called + 1;\"})"
       - run: "add_verb({a}, {player, \"xd\", \"go\"}, {\"this\", \"none\", \"this\"})"
-      - run: "set_verb_code({a}, \"go\", \"x = create({a}, 0); x.next = create({a}, 1); recycle(x);\")"
+      - run: "set_verb_code({a}, \"go\", {\"x = create({a}, 0);\", \"x.next = create({a}, 1);\", \"recycle(x);\"})"
       - run: "{a}.recycle_called = 0"
       - run: "{a}:go()"
       - run: "{a}.recycle_called"
@@ -390,15 +383,14 @@ tests:
   - name: recycling_anonymous_recycles_property_values_on_object
     description: Recycling an anonymous object also recycles anonymous objects stored in properties defined on the object
     permission: wizard
-    skip: "Cascading recycle tests require more complex server integration"
     steps:
       - run: "create($object)"
         capture: a
       - run: "add_property({a}, \"recycle_called\", 0, {player, \"\"})"
       - run: "add_verb({a}, {player, \"xd\", \"recycle\"}, {\"this\", \"none\", \"this\"})"
-      - run: "set_verb_code({a}, \"recycle\", \"{a}.recycle_called = {a}.recycle_called + 1;\")"
+      - run: "set_verb_code({a}, \"recycle\", {\"{a}.recycle_called = {a}.recycle_called + 1;\"})"
       - run: "add_verb({a}, {player, \"xd\", \"go\"}, {\"this\", \"none\", \"this\"})"
-      - run: "set_verb_code({a}, \"go\", \"x = create({a}, 1); add_property(x, \\\"next\\\", 0, {player, \\\"\\\"}); x.next = create({a}, 1); args || recycle(x);\")"
+      - run: "set_verb_code({a}, \"go\", {\"x = create({a}, 1);\", \"add_property(x, \\\"next\\\", 0, {player, \\\"\\\"});\", \"x.next = create({a}, 1);\", \"args || recycle(x);\"})"
       - run: "{a}.recycle_called = 0"
       - run: "{a}:go()"
       - run: "{a}.recycle_called"
@@ -415,16 +407,15 @@ tests:
   - name: recycling_anonymous_recycles_property_values_on_parent
     description: Recycling an anonymous object also recycles anonymous objects stored in properties defined on the parent
     permission: wizard
-    skip: "Cascading recycle tests require more complex server integration"
     steps:
       - run: "create($object)"
         capture: a
       - run: "add_property({a}, \"next\", 0, {player, \"\"})"
       - run: "add_property({a}, \"recycle_called\", 0, {player, \"\"})"
       - run: "add_verb({a}, {player, \"xd\", \"recycle\"}, {\"this\", \"none\", \"this\"})"
-      - run: "set_verb_code({a}, \"recycle\", \"{a}.recycle_called = {a}.recycle_called + 1;\")"
+      - run: "set_verb_code({a}, \"recycle\", {\"{a}.recycle_called = {a}.recycle_called + 1;\"})"
       - run: "add_verb({a}, {player, \"xd\", \"go\"}, {\"this\", \"none\", \"this\"})"
-      - run: "set_verb_code({a}, \"go\", \"x = create({a}, 1); x.next = create({a}, 1); args || recycle(x);\")"
+      - run: "set_verb_code({a}, \"go\", {\"x = create({a}, 1);\", \"x.next = create({a}, 1);\", \"args || recycle(x);\"})"
       - run: "{a}.recycle_called = 0"
       - run: "{a}:go()"
       - run: "{a}.recycle_called"

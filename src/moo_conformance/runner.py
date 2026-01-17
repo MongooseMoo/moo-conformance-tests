@@ -32,8 +32,9 @@ class YamlTestRunner:
         want to ensure properties exist with correct values.
         """
         if suite.setup and suite.name not in self._suites_setup_done:
-            # REMOVED: Connection is now session-scoped (managed by fixture)
-            # self.transport.connect(suite.setup.permission)
+            # Switch user for suite setup if permission specified
+            if suite.setup.permission:
+                self.transport.switch_user(suite.setup.permission)
             # Execute setup code as individual statements to match Ruby behavior
             # Ruby calls evaluate() separately for each statement, ignoring errors
             code = suite.setup.code if isinstance(suite.setup.code, str) else "\n".join(suite.setup.code)
@@ -68,9 +69,9 @@ class YamlTestRunner:
         Raises:
             AssertionError: If the test expectation is not met
         """
-        # Connect as the required user
-        # REMOVED: Connection is now session-scoped (managed by fixture)
-        # self.transport.connect(test.permission)
+        # Switch to required user for this test
+        if test.permission:
+            self.transport.switch_user(test.permission)
 
         try:
             # Check if this is a multi-step test
@@ -118,15 +119,40 @@ class YamlTestRunner:
         try:
             for step in test.steps:
                 # Switch permission if step specifies different one
-                # REMOVED: Connection is now session-scoped (managed by fixture)
-                # if step.as_:
-                #     self.transport.connect(step.as_)
+                if step.as_:
+                    self.transport.switch_user(step.as_)
 
                 # Check if this is a verb_setup step
                 if step.verb_setup:
                     result = self._execute_verb_setup(step.verb_setup, variables)
+                    # Capture result if requested
+                    if step.capture:
+                        if result.success:
+                            variables[step.capture] = result.value
+                        else:
+                            variables[step.capture] = result.error
+                    # Verify expectation if present
+                    if step.expect:
+                        step_desc = f"verb_setup '{step.verb_setup.name}'"
+                        self._verify_expectation(step.expect, result, step_desc)
+
+                elif step.command:
+                    # Raw command step - for testing command parser
+                    command = self._substitute_variables(step.command, variables)
+                    output_lines = self.transport.send_command(command)
+
+                    # Note: command output is captured as list of lines, not as result value
+                    # Capture is not typically used for commands, but we could capture output
+                    if step.capture:
+                        variables[step.capture] = output_lines
+
+                    # Verify output expectation if present
+                    if step.expect and step.expect.output:
+                        step_desc = f"command '{step.command[:30]}...'"
+                        self._verify_output(step.expect.output, output_lines, step_desc)
+
                 else:
-                    # Execute the step
+                    # Execute the step (run field)
                     code = self._substitute_variables(step.run, variables)
 
                     # Wrap as expression if it doesn't look like a statement
@@ -143,26 +169,25 @@ class YamlTestRunner:
 
                     result = self.transport.execute(code)
 
-                # Capture result if requested
-                if step.capture:
-                    if result.success:
-                        variables[step.capture] = result.value
-                    else:
-                        # Capture error for later use
-                        variables[step.capture] = result.error
+                    # Capture result if requested
+                    if step.capture:
+                        if result.success:
+                            variables[step.capture] = result.value
+                        else:
+                            # Capture error for later use
+                            variables[step.capture] = result.error
 
-                # Verify expectation if present
-                if step.expect:
-                    step_desc = f"verb_setup '{step.verb_setup.name}'" if step.verb_setup else f"step '{step.run[:30]}...'"
-                    self._verify_expectation(step.expect, result, step_desc)
+                    # Verify expectation if present
+                    if step.expect:
+                        step_desc = f"step '{step.run[:30]}...'"
+                        self._verify_expectation(step.expect, result, step_desc)
 
         finally:
             # Run cleanup steps (always, even on failure)
             for cleanup_step in test.cleanup:
                 # Switch permission if cleanup step specifies different one
-                # REMOVED: Connection is now session-scoped (managed by fixture)
-                # if cleanup_step.as_:
-                #     self.transport.connect(cleanup_step.as_)
+                if cleanup_step.as_:
+                    self.transport.switch_user(cleanup_step.as_)
 
                 cleanup_code = self._substitute_variables(cleanup_step.run, variables)
                 # Best effort - don't fail on cleanup errors
@@ -213,10 +238,10 @@ class YamlTestRunner:
 
         # Execute both add_verb and set_verb_code in ONE statement
         # This is necessary because MOO doesn't maintain variable scope between executions
-        # Both statements must end with semicolons for proper MOO syntax
+        # Use return on set_verb_code to capture its result (empty list on success)
         combined_code = (
             f'add_verb({obj}, {{player, "xd", "{name}"}}, {args_str}); '
-            f'set_verb_code({obj}, "{name}", {code_list_str});'
+            f'return set_verb_code({obj}, "{name}", {code_list_str});'
         )
         return self.transport.execute(combined_code)
 
@@ -488,6 +513,9 @@ class YamlTestRunner:
             # Check if it's an anonymous object (anon:#N format - alternate)
             if value.startswith("anon:#"):
                 return "anon"
+            # Check if it's anonymous object (*anonymous* format - Toast return)
+            if value == "*anonymous*":
+                return "anon"
             # Check if it's a regular object (#N format)
             if value.startswith("#") and len(value) > 1:
                 # Verify it's a valid object number format
@@ -588,4 +616,54 @@ class YamlTestRunner:
                 raise AssertionError(
                     f"Test '{test_name}' expected notification {expected_msg!r}, "
                     f"but only got: {actual_msgs}"
+                )
+
+    def _verify_output(self, expected: Any, actual: list[str], context: str) -> None:
+        """Verify output from raw command matches expectation.
+
+        Args:
+            expected: OutputExpect with exact, match, or contains
+            actual: List of output lines from command
+            context: Context string for error messages
+        """
+        # Import here to avoid circular dependency
+        from .schema import OutputExpect
+
+        if not isinstance(expected, OutputExpect):
+            raise AssertionError(f"{context} invalid output expectation type: {type(expected)}")
+
+        # Join lines for matching
+        joined = "\n".join(actual)
+
+        if expected.exact is not None:
+            # Exact match
+            if isinstance(expected.exact, list):
+                if actual != expected.exact:
+                    raise AssertionError(
+                        f"{context} expected output lines {expected.exact!r}, "
+                        f"but got {actual!r}"
+                    )
+            else:
+                # Single string - match against joined output
+                if joined != expected.exact:
+                    raise AssertionError(
+                        f"{context} expected output {expected.exact!r}, "
+                        f"but got {joined!r}"
+                    )
+            return
+
+        if expected.match is not None:
+            # Regex match on joined output
+            if not re.search(expected.match, joined):
+                raise AssertionError(
+                    f"{context} pattern {expected.match!r} not found in output {joined!r}"
+                )
+            return
+
+        if expected.contains is not None:
+            # Substring match on joined output
+            if expected.contains not in joined:
+                raise AssertionError(
+                    f"{context} expected output to contain {expected.contains!r}, "
+                    f"but got {joined!r}"
                 )

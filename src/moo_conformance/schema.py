@@ -125,6 +125,18 @@ class SetupTeardown:
 
 
 @dataclass
+class OutputExpect:
+    """Expected output from raw commands.
+
+    For testing notify() output from command execution.
+    Exactly ONE of these should be set.
+    """
+    exact: str | list[str] | None = None  # Exact line(s) match
+    match: str | None = None              # Regex match on joined output
+    contains: str | None = None           # Substring in joined output
+
+
+@dataclass
 class Expectation:
     """Expected test outcome.
 
@@ -137,6 +149,7 @@ class Expectation:
     - range: Numeric range [min, max] (inclusive)
     - satisfies: MOO code predicate
     - notifications: Expected notification messages
+    - output: Expected notify() output from raw commands
     """
     value: Any = None
     error: str | None = None
@@ -146,6 +159,7 @@ class Expectation:
     range: list[float] | None = None
     satisfies: str | None = None
     notifications: list[str] | None = None
+    output: OutputExpect | None = None
 
     def is_error_expected(self) -> bool:
         """Check if this expectation expects an error."""
@@ -167,8 +181,14 @@ class TestStep:
 
     Steps execute sequentially, with optional variable capture.
     Variables can be substituted in subsequent steps using {varname} syntax.
+
+    Exactly ONE of these should be set:
+    - run: MOO code to execute (wrapped in ; prefix)
+    - command: Raw command to send (for testing command parser)
+    - verb_setup: Declarative verb creation
     """
     run: str | None = None                # MOO code to execute
+    command: str | None = None            # Raw command (no ; prefix)
     verb_setup: VerbSetup | None = None   # Declarative verb creation
     capture: str | None = None            # Variable name to store result
     as_: str | None = None                # Permission for this step (wizard, programmer)
@@ -368,8 +388,28 @@ def _parse_setup_teardown(data: dict | str) -> SetupTeardown:
     )
 
 
+def _parse_output_expect(data: dict | str | list) -> OutputExpect:
+    """Parse an output expectation for raw commands."""
+    if isinstance(data, str):
+        # Simple string is exact match
+        return OutputExpect(exact=data)
+    if isinstance(data, list):
+        # List of strings is exact match on lines
+        return OutputExpect(exact=data)
+    # Dict with match/contains/exact
+    return OutputExpect(
+        exact=data.get('exact'),
+        match=data.get('match'),
+        contains=data.get('contains'),
+    )
+
+
 def _parse_expectation(data: dict) -> Expectation:
     """Parse an expectation block."""
+    output = None
+    if 'output' in data:
+        output = _parse_output_expect(data['output'])
+
     return Expectation(
         value=data.get('value'),
         error=data.get('error'),
@@ -379,14 +419,21 @@ def _parse_expectation(data: dict) -> Expectation:
         range=data.get('range'),
         satisfies=data.get('satisfies'),
         notifications=data.get('notifications'),
+        output=output,
     )
 
 
 def _parse_test_step(data: dict) -> TestStep:
     """Parse a single test step from YAML data."""
-    # Must have either 'run' or 'verb_setup'
-    if 'run' not in data and 'verb_setup' not in data:
-        raise ValueError("Test step must have either 'run' or 'verb_setup' field")
+    # Must have exactly one of 'run', 'command', or 'verb_setup'
+    has_run = 'run' in data
+    has_command = 'command' in data
+    has_verb_setup = 'verb_setup' in data
+
+    if not (has_run or has_command or has_verb_setup):
+        raise ValueError("Test step must have 'run', 'command', or 'verb_setup' field")
+    if sum([has_run, has_command, has_verb_setup]) > 1:
+        raise ValueError("Test step must have exactly one of 'run', 'command', or 'verb_setup'")
 
     expect = None
     if 'expect' in data:
@@ -405,6 +452,7 @@ def _parse_test_step(data: dict) -> TestStep:
 
     return TestStep(
         run=data.get('run'),
+        command=data.get('command'),
         verb_setup=verb_setup,
         capture=data.get('capture'),
         as_=data.get('as'),

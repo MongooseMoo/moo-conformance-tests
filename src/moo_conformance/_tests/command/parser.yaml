@@ -1,0 +1,122 @@
+name: command_parser_basic
+description: Basic tests for command parser and verb dispatch
+
+tests:
+  - name: verb_on_iobj_dispatches_correctly
+    description: '"put X in Y" dispatches to Y''s put verb with correct parsed values'
+    steps:
+      # Create box with put verb
+      - run: |
+          obj = create($nothing);
+          obj.name = "box";
+          move(obj, player);
+          add_verb(obj, {player, "xd", "put"}, {"any", "in", "this"});
+          set_verb_code(obj, "put", {
+            "notify(player, \"VERB:\" + verb);",
+            "notify(player, \"ARGSTR:\" + argstr);",
+            "notify(player, \"DOBJSTR:\" + dobjstr);",
+            "notify(player, \"PREPSTR:\" + prepstr);",
+            "notify(player, \"IOBJSTR:\" + iobjstr);"
+          });
+          return obj;
+        capture: box
+        as: wizard
+      # Create ball
+      - run: |
+          obj = create($nothing);
+          obj.name = "ball";
+          move(obj, player);
+          return obj;
+        capture: ball
+        as: wizard
+      # Send raw command and verify parsed values
+      - command: "put ball in box"
+        expect:
+          output:
+            - "VERB:put"
+            - "ARGSTR:ball in box"
+            - "DOBJSTR:ball"
+            - "PREPSTR:in"
+            - "IOBJSTR:box"
+    cleanup:
+      - run: "recycle({box})"
+        as: wizard
+      - run: "recycle({ball})"
+        as: wizard
+
+  - name: failed_dobj_match_is_minus_3
+    description: Non-existent dobj resolves to #-3 (FAILED_MATCH)
+    steps:
+      - run: |
+          obj = create($nothing);
+          obj.name = "box";
+          move(obj, player);
+          add_verb(obj, {player, "xd", "put"}, {"any", "in", "this"});
+          set_verb_code(obj, "put", {
+            "notify(player, \"DOBJ:\" + toliteral(dobj));"
+          });
+          return obj;
+        capture: box
+        as: wizard
+      - command: "put rock in box"
+        expect:
+          output: "DOBJ:#-3"
+    cleanup:
+      - run: "recycle({box})"
+        as: wizard
+
+  - name: wrong_preposition_no_match
+    description: Verb with "in" spec doesn't match "on" command
+    steps:
+      - run: |
+          obj = create($nothing);
+          obj.name = "box";
+          move(obj, player);
+          add_verb(obj, {player, "xd", "put"}, {"any", "in", "this"});
+          set_verb_code(obj, "put", {"notify(player, \"CALLED\");"});
+          return obj;
+        capture: box
+        as: wizard
+      - command: "put ball on box"
+        expect:
+          output:
+            contains: "couldn't understand"
+    cleanup:
+      - run: "recycle({box})"
+        as: wizard
+
+  - name: player_verb_dispatches
+    description: Verbs on player are found by command dispatch
+    steps:
+      - run: |
+          add_verb(player, {player, "xd", "wave"}, {"none", "none", "none"});
+          return set_verb_code(player, "wave", {"notify(player, \"WAVED\");"});
+        as: wizard
+      - command: "wave"
+        expect:
+          output: "WAVED"
+    cleanup:
+      - run: 'delete_verb(player, "wave")'
+        as: wizard
+
+  - name: dobj_resolution_to_object
+    description: dobj string resolves to actual object
+    steps:
+      - run: |
+          obj = create($nothing);
+          obj.name = "ball";
+          move(obj, player);
+          add_verb(player, {player, "xd", "grab"}, {"any", "none", "none"});
+          set_verb_code(player, "grab", {"notify(player, \"DOBJ:\" + toliteral(dobj));"});
+          return obj;
+        capture: ball
+        as: wizard
+      - command: "grab ball"
+        expect:
+          output:
+            match: "DOBJ:#\\d+"
+    cleanup:
+      - run: 'delete_verb(player, "grab")'
+        as: wizard
+      - run: "recycle({ball})"
+        as: wizard

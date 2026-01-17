@@ -77,6 +77,21 @@ class MooTransport(ABC):
         """
         raise NotImplementedError("execute_as() not supported by this transport")
 
+    def send_command(self, command: str) -> list[str]:
+        """Send a raw command (not wrapped as eval) and capture output.
+
+        For testing command parsing and verb dispatch. The command is sent
+        as-is without any `;` prefix, so it goes through the normal command
+        parser.
+
+        Args:
+            command: Raw command text (e.g., "put ball in box")
+
+        Returns:
+            List of output lines (notify() messages) from command execution
+        """
+        raise NotImplementedError("send_command() not supported by this transport")
+
     def __enter__(self):
         return self
 
@@ -116,10 +131,10 @@ class SocketTransport(MooTransport):
         self.current_user = user
 
         # Map user names to actual database users
-        # Toast/toastcore only has "Wizard" player, not "programmer"
+        # Toast/toastcore has both "Wizard" and "Programmer" players
         # Note: player name is case-sensitive - must be "Wizard" not "wizard"
         user_map = {
-            "programmer": "Wizard",
+            "programmer": "Programmer",
             "wizard": "Wizard",
         }
         login_user = user_map.get(user, user)
@@ -205,6 +220,44 @@ class SocketTransport(MooTransport):
             # Read and discard response
             self._receive()
 
+    def switch_user(self, user: str = "programmer") -> None:
+        """Switch to a different user by closing and reopening connection.
+
+        Toast doesn't support @quit, so we must close the socket and reconnect.
+        """
+        if self.current_user == user:
+            return  # Already this user
+
+        # Map user names to database users
+        user_map = {
+            "programmer": "Programmer",
+            "wizard": "Wizard",
+        }
+        login_user = user_map.get(user, user)
+
+        # Close existing connection
+        if self.sock:
+            try:
+                self.sock.close()
+            except Exception:
+                pass
+            self.sock = None
+
+        # Open new connection
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock.settimeout(3)
+        self.sock.connect((self.host, self.port))
+
+        # Log in as new user
+        self._send(f"connect {login_user}")
+        self._consume_login_output()
+
+        # Set up PREFIX/SUFFIX for response parsing
+        self._send("PREFIX -=!-^-!=-")
+        self._send("SUFFIX -=!-v-!=-")
+
+        self.current_user = user
+
     def disconnect(self) -> None:
         """Close socket connection."""
         if self.sock:
@@ -233,6 +286,67 @@ class SocketTransport(MooTransport):
         self._send(cmd)
         response = self._receive()
         return self._parse_response(response)
+
+    def send_command(self, command: str) -> list[str]:
+        """Send a raw command and capture output lines.
+
+        Unlike execute(), this sends the command as-is without the `;` prefix,
+        so it goes through the normal command parser. The output is whatever
+        the verb notify()s to the player.
+
+        Args:
+            command: Raw command text (e.g., "put ball in box")
+
+        Returns:
+            List of output lines from command execution
+        """
+        if self.sock is None:
+            raise RuntimeError("Transport not connected. Call connect() first.")
+
+        # Send raw command (no ; prefix)
+        self._send(command)
+
+        # Receive output between PREFIX/SUFFIX markers
+        return self._receive_lines()
+
+    def _receive_lines(self) -> list[str]:
+        """Receive lines between PREFIX and SUFFIX markers.
+
+        Similar to _receive() but returns list of lines instead of joined string.
+        Used for raw command output where we want to preserve line structure.
+        """
+        if self.sock is None:
+            raise RuntimeError("Socket not connected")
+
+        lines: list[str] = []
+        state = 'looking'
+
+        buffer = b""
+        while state != 'done':
+            try:
+                data = self.sock.recv(4096)
+                if not data:
+                    break
+                clean_data = self._strip_telnet_commands(data)
+                buffer += clean_data
+
+                while b'\n' in buffer:
+                    line_bytes, buffer = buffer.split(b'\n', 1)
+                    line = line_bytes.decode('utf-8').rstrip('\r')
+
+                    if line == '-=!-^-!=-' and state in ('looking', 'found'):
+                        state = 'found'
+                        continue
+                    if line == '-=!-v-!=-' and state == 'found':
+                        # For raw commands, stop even if no output (unlike eval)
+                        state = 'done'
+                        continue
+                    if state == 'found':
+                        lines.append(line)
+            except socket.timeout:
+                break
+
+        return lines
 
     def _send(self, message: str) -> None:
         """Send a line to the server."""
@@ -285,7 +399,14 @@ class SocketTransport(MooTransport):
         return bytes(result)
 
     def _receive(self) -> str | None:
-        """Receive response between PREFIX and SUFFIX markers."""
+        """Receive response between PREFIX and SUFFIX markers.
+
+        Toast sends double PREFIX/SUFFIX markers for eval commands.
+        For exec() builtins, an early SUFFIX may appear before data:
+          PREFIX, PREFIX, SUFFIX, DATA, SUFFIX
+
+        We handle this by not stopping at SUFFIX until we have data.
+        """
         if self.sock is None:
             raise RuntimeError("Socket not connected")
 
@@ -309,7 +430,9 @@ class SocketTransport(MooTransport):
                     state = 'found'
                     continue
                 if line == '-=!-v-!=-' and state == 'found':
-                    state = 'done'
+                    # Only stop if we have data - handles exec() early SUFFIX
+                    if lines:
+                        state = 'done'
                     continue
                 if state == 'found':
                     lines.append(line)
@@ -421,9 +544,11 @@ class SocketTransport(MooTransport):
         if re.match(r'^-?\d+\.\d+([eE][-+]?\d+)?$', text):
             return float(text)
 
-        # Anonymous object - *#N format (ToastStunt style)
-        if re.match(r'^\*#-?\d+$', text):
-            return text  # Return as "*#N" string to preserve type info
+        # Anonymous object - multiple formats:
+        # *#N (ToastStunt numbered format)
+        # *anonymous* (ToastStunt string format for create($anonymous, 1) return value)
+        if re.match(r'^\*#-?\d+$', text) or text == '*anonymous*':
+            return text  # Return as-is to preserve type info
 
         # Object - keep as string with # prefix for type checking
         # Toast may add object name like "#2  (Wizard)" - strip the name part

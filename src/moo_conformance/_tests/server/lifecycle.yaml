@@ -1,0 +1,143 @@
+name: server_lifecycle
+description: Tests for server lifecycle verb invocation
+
+tests:
+  # ============================================
+  # do_command Tests
+  # ============================================
+  # #0:do_command is called for every command before normal parsing
+  # If it returns true, command is handled; false continues to verb parsing
+  # NOTE: do_command runs with restricted permissions - can't call notify()
+
+  - name: do_command_return_true_stops_parsing
+    description: do_command returning true prevents normal verb dispatch
+    steps:
+      - run: |
+          add_verb(#0, {#0, "rxd", "do_command"}, {"this", "none", "this"});
+          set_verb_code(#0, "do_command", {
+            "if (args[1][1] == \";\")",
+            "  return 0;",
+            "endif",
+            "return 1;"
+          });
+          add_verb(player, {player, "xd", "testverb"}, {"none", "none", "none"});
+          set_verb_code(player, "testverb", {"notify(player, \"VERB_CALLED\");"});
+          return 1;
+        as: wizard
+      # If do_command returns 1, the verb should NOT be called
+      - command: "testverb"
+        expect:
+          output: []
+    cleanup:
+      - run: 'delete_verb(#0, "do_command")'
+        as: wizard
+      - run: 'delete_verb(player, "testverb")'
+        as: wizard
+
+  - name: do_command_return_false_continues_parsing
+    description: do_command returning false allows normal verb dispatch
+    steps:
+      - run: |
+          add_verb(#0, {#0, "rxd", "do_command"}, {"this", "none", "this"});
+          set_verb_code(#0, "do_command", {
+            "return 0;"
+          });
+          add_verb(player, {player, "xd", "passthrough"}, {"none", "none", "none"});
+          set_verb_code(player, "passthrough", {"notify(player, \"VERB_CALLED\");"});
+          return 1;
+        as: wizard
+      - command: "passthrough"
+        expect:
+          output: "VERB_CALLED"
+    cleanup:
+      - run: 'delete_verb(#0, "do_command")'
+        as: wizard
+      - run: 'delete_verb(player, "passthrough")'
+        as: wizard
+
+  # ============================================
+  # do_out_of_band_command Tests
+  # ============================================
+  # Commands starting with #$# bypass normal parsing
+  # NOTE: do_out_of_band_command also runs with restricted permissions
+
+  - name: oob_command_bypasses_normal_parsing
+    description: '#$# prefix bypasses normal verb dispatch'
+    skip: "do_out_of_band_command runs with restricted permissions - cannot observe directly"
+
+  # ============================================
+  # recycle Verb Tests
+  # ============================================
+  # object:recycle() is called just before object destruction
+
+  - name: recycle_verb_called_on_object
+    description: Object recycle verb is called before destruction
+    steps:
+      - run: |
+          add_property(#0, "recycle_log", {}, {#0, "w"});
+          obj = create($nothing);
+          add_verb(obj, {#0, "xd", "recycle"}, {"this", "none", "none"});
+          set_verb_code(obj, "recycle", {
+            "#0.recycle_log = {@#0.recycle_log, this};"
+          });
+          return obj;
+        capture: obj
+        as: wizard
+      - run: |
+          recycle({obj});
+          return length(#0.recycle_log) > 0;
+        as: wizard
+        expect:
+          value: 1
+    cleanup:
+      - run: 'delete_property(#0, "recycle_log")'
+        as: wizard
+
+  - name: recycle_verb_this_is_recycled_object
+    description: In recycle verb, this refers to the object being recycled
+    steps:
+      - run: |
+          add_property(#0, "recycle_this", #-1, {#0, "w"});
+          obj = create($nothing);
+          add_verb(obj, {#0, "xd", "recycle"}, {"this", "none", "none"});
+          set_verb_code(obj, "recycle", {
+            "#0.recycle_this = this;"
+          });
+          return obj;
+        capture: obj
+        as: wizard
+      # Note: Can't use {obj} as MOO list literal because framework interprets it as placeholder
+      # Instead, compare directly - both {obj} substitutions become the same objid
+      - run: |
+          recycle({obj});
+          return #0.recycle_this == {obj};
+        as: wizard
+        expect:
+          value: 1
+    cleanup:
+      - run: 'delete_property(#0, "recycle_this")'
+        as: wizard
+
+  - name: recycle_verb_player_is_caller
+    description: In recycle verb, player is who initiated recycle
+    steps:
+      - run: |
+          add_property(#0, "recycle_player", #-1, {#0, "w"});
+          obj = create($nothing);
+          add_verb(obj, {#0, "xd", "recycle"}, {"this", "none", "none"});
+          set_verb_code(obj, "recycle", {
+            "#0.recycle_player = player;"
+          });
+          return obj;
+        capture: obj
+        as: wizard
+      - run: |
+          recycle({obj});
+          return #0.recycle_player;
+        as: wizard
+        expect:
+          # player should be the wizard who called recycle()
+          match: "#\\d+"
+    cleanup:
+      - run: 'delete_property(#0, "recycle_player")'
+        as: wizard

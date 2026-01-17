@@ -120,3 +120,293 @@ tests:
         as: wizard
       - run: "recycle({ball})"
         as: wizard
+
+  # ============================================
+  # Verb Dispatch Order Tests
+  # ============================================
+  # MOO searches for verbs in this order:
+  # 1. player
+  # 2. player.location
+  # 3. dobj
+  # 4. iobj
+  # 5. dobj.location (if different from player.location)
+  # 6. iobj.location (if different)
+
+  - name: dispatch_player_before_dobj
+    description: Verb on player is found before verb on dobj
+    steps:
+      - run: |
+          obj = create($nothing);
+          obj.name = "ball";
+          move(obj, player);
+          add_verb(player, {player, "xd", "kick"}, {"any", "none", "none"});
+          set_verb_code(player, "kick", {"notify(player, \"PLAYER\");"});
+          add_verb(obj, {player, "xd", "kick"}, {"this", "none", "none"});
+          set_verb_code(obj, "kick", {"notify(player, \"DOBJ\");"});
+          return obj;
+        capture: ball
+        as: wizard
+      - command: "kick ball"
+        expect:
+          output: "PLAYER"
+    cleanup:
+      - run: 'delete_verb(player, "kick")'
+        as: wizard
+      - run: "recycle({ball})"
+        as: wizard
+
+  - name: dispatch_dobj_when_no_player_verb
+    description: Verb on dobj is found when player has no matching verb
+    steps:
+      - run: |
+          obj = create($nothing);
+          obj.name = "ball";
+          move(obj, player);
+          add_verb(obj, {player, "xd", "bounce"}, {"this", "none", "none"});
+          set_verb_code(obj, "bounce", {"notify(player, \"DOBJ\");"});
+          return obj;
+        capture: ball
+        as: wizard
+      - command: "bounce ball"
+        expect:
+          output: "DOBJ"
+    cleanup:
+      - run: "recycle({ball})"
+        as: wizard
+
+  - name: dispatch_iobj_verb
+    description: Verb on iobj is found for two-object command
+    steps:
+      - run: |
+          box = create($nothing);
+          box.name = "box";
+          move(box, player);
+          add_verb(box, {player, "xd", "drop"}, {"any", "in", "this"});
+          set_verb_code(box, "drop", {"notify(player, \"IOBJ\");"});
+          return box;
+        capture: box
+        as: wizard
+      - run: |
+          ball = create($nothing);
+          ball.name = "ball";
+          move(ball, player);
+          return ball;
+        capture: ball
+        as: wizard
+      - command: "drop ball in box"
+        expect:
+          output: "IOBJ"
+    cleanup:
+      - run: "recycle({box})"
+        as: wizard
+      - run: "recycle({ball})"
+        as: wizard
+
+  - name: dispatch_location_verb
+    description: Verb on player location is found
+    steps:
+      - run: |
+          room = player.location;
+          add_verb(room, {player, "xd", "shout"}, {"none", "none", "none"});
+          set_verb_code(room, "shout", {"notify(player, \"LOCATION\");"});
+          return room;
+        capture: room
+        as: wizard
+      - command: "shout"
+        expect:
+          output: "LOCATION"
+    cleanup:
+      - run: 'delete_verb({room}, "shout")'
+        as: wizard
+
+  - name: dispatch_player_before_location
+    description: Verb on player is found before verb on location
+    steps:
+      - run: |
+          room = player.location;
+          add_verb(player, {player, "xd", "yell"}, {"none", "none", "none"});
+          set_verb_code(player, "yell", {"notify(player, \"PLAYER\");"});
+          add_verb(room, {player, "xd", "yell"}, {"none", "none", "none"});
+          set_verb_code(room, "yell", {"notify(player, \"LOCATION\");"});
+          return room;
+        capture: room
+        as: wizard
+      - command: "yell"
+        expect:
+          output: "PLAYER"
+    cleanup:
+      - run: 'delete_verb(player, "yell")'
+        as: wizard
+      - run: 'delete_verb({room}, "yell")'
+        as: wizard
+
+  # ============================================
+  # Verb Alias Tests
+  # ============================================
+  # Verb names can include * for partial matching
+  # e.g., "look l*" matches "l", "lo", "loo", "look"
+
+  - name: verb_alias_full_match
+    description: Full verb name matches exactly
+    steps:
+      - run: |
+          add_verb(player, {player, "xd", "examine ex*"}, {"none", "none", "none"});
+          set_verb_code(player, "examine", {"notify(player, \"EXAMINE\");"});
+          return 1;
+        as: wizard
+      - command: "examine"
+        expect:
+          output: "EXAMINE"
+    cleanup:
+      - run: 'delete_verb(player, "examine")'
+        as: wizard
+
+  - name: verb_alias_short_match
+    description: Shortened verb name matches with * alias
+    steps:
+      - run: |
+          add_verb(player, {player, "xd", "examine ex*"}, {"none", "none", "none"});
+          set_verb_code(player, "examine", {"notify(player, \"EXAMINE\");"});
+          return 1;
+        as: wizard
+      - command: "ex"
+        expect:
+          output: "EXAMINE"
+    cleanup:
+      - run: 'delete_verb(player, "examine")'
+        as: wizard
+
+  - name: verb_alias_partial_match
+    description: Partial verb name matches with * alias
+    steps:
+      - run: |
+          add_verb(player, {player, "xd", "look l*"}, {"none", "none", "none"});
+          set_verb_code(player, "look", {"notify(player, \"LOOK\");"});
+          return 1;
+        as: wizard
+      - command: "loo"
+        expect:
+          output: "LOOK"
+    cleanup:
+      - run: 'delete_verb(player, "look")'
+        as: wizard
+
+  - name: verb_alias_single_letter
+    description: Single letter matches with * alias
+    steps:
+      - run: |
+          add_verb(player, {player, "xd", "inventory i*"}, {"none", "none", "none"});
+          set_verb_code(player, "inventory", {"notify(player, \"INVENTORY\");"});
+          return 1;
+        as: wizard
+      - command: "i"
+        expect:
+          output: "INVENTORY"
+    cleanup:
+      - run: 'delete_verb(player, "inventory")'
+        as: wizard
+
+  - name: verb_multiple_aliases
+    description: Verb with multiple aliases works
+    steps:
+      - run: |
+          add_verb(player, {player, "xd", "quit @quit"}, {"none", "none", "none"});
+          set_verb_code(player, "quit", {"notify(player, \"QUIT\");"});
+          return 1;
+        as: wizard
+      - command: "@quit"
+        expect:
+          output: "QUIT"
+    cleanup:
+      - run: 'delete_verb(player, "quit")'
+        as: wizard
+
+  # ============================================
+  # huh Verb Fallback Tests
+  # ============================================
+  # When no matching verb is found, player.location:huh is called
+
+  - name: huh_verb_called_on_no_match
+    description: huh verb is called when command does not match any verb
+    steps:
+      - run: |
+          room = player.location;
+          add_verb(room, {player, "xd", "huh"}, {"none", "none", "none"});
+          set_verb_code(room, "huh", {"notify(player, \"HUH:\" + verb);"});
+          return room;
+        capture: room
+        as: wizard
+      - command: "xyzzy"
+        expect:
+          output: "HUH:xyzzy"
+    cleanup:
+      - run: 'delete_verb({room}, "huh")'
+        as: wizard
+
+  - name: huh_receives_parsed_command
+    description: huh verb receives the attempted command info
+    steps:
+      - run: |
+          room = player.location;
+          add_verb(room, {player, "xd", "huh"}, {"none", "none", "none"});
+          set_verb_code(room, "huh", {"notify(player, \"ARGSTR:\" + argstr);"});
+          return room;
+        capture: room
+        as: wizard
+      - command: "frobnicate the widget"
+        expect:
+          output: "ARGSTR:the widget"
+    cleanup:
+      - run: 'delete_verb({room}, "huh")'
+        as: wizard
+
+  # ============================================
+  # Say/Emote Shortcut Tests
+  # ============================================
+  # " prefix → say command
+  # : prefix → emote command
+
+  - name: say_shortcut_quote
+    description: '"hello expands to say hello'
+    steps:
+      - run: |
+          add_verb(player, {player, "xd", "say"}, {"any", "none", "none"});
+          set_verb_code(player, "say", {"notify(player, \"SAY:\" + argstr);"});
+          return 1;
+        as: wizard
+      - command: '"hello world'
+        expect:
+          output: "SAY:hello world"
+    cleanup:
+      - run: 'delete_verb(player, "say")'
+        as: wizard
+
+  - name: emote_shortcut_colon
+    description: ':waves expands to emote waves'
+    steps:
+      - run: |
+          add_verb(player, {player, "xd", "emote"}, {"any", "none", "none"});
+          set_verb_code(player, "emote", {"notify(player, \"EMOTE:\" + argstr);"});
+          return 1;
+        as: wizard
+      - command: ":waves"
+        expect:
+          output: "EMOTE:waves"
+    cleanup:
+      - run: 'delete_verb(player, "emote")'
+        as: wizard
+
+  - name: emote_with_spaces
+    description: ':waves happily expands correctly'
+    steps:
+      - run: |
+          add_verb(player, {player, "xd", "emote"}, {"any", "none", "none"});
+          set_verb_code(player, "emote", {"notify(player, \"EMOTE:\" + argstr);"});
+          return 1;
+        as: wizard
+      - command: ":waves happily"
+        expect:
+          output: "EMOTE:waves happily"
+    cleanup:
+      - run: 'delete_verb(player, "emote")'
+        as: wizard

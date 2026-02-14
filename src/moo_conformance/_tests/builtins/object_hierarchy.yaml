@@ -1,0 +1,683 @@
+name: object_hierarchy
+description: Tests for object hierarchy query builtins - players, is_player, set_player_flag, locate_by_name, occupants, locations, recycled_objects, next_recycled_object, owned_objects, object_bytes expansion
+
+requires:
+  builtins: [create, recycle, valid, move, is_player, set_player_flag, players, locate_by_name, occupants, locations, recycled_objects, next_recycled_object, owned_objects, object_bytes, add_property, max_object, toobj]
+
+tests:
+  # =========================================================================
+  # players() tests
+  # =========================================================================
+
+  - name: players_returns_list
+    permission: wizard
+    code: "typeof(players())"
+    expect:
+      value: 4
+
+  - name: players_contains_wizard
+    permission: wizard
+    code: "(player in players()) > 0"
+    expect:
+      value: 1
+
+  - name: players_set_and_check
+    permission: wizard
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "({obj} in players()) > 0"
+        expect:
+          value: 0
+      - run: "set_player_flag({obj}, 1)"
+      - run: "({obj} in players()) > 0"
+        expect:
+          value: 1
+      - run: "set_player_flag({obj}, 0)"
+      - run: "({obj} in players()) > 0"
+        expect:
+          value: 0
+    cleanup:
+      - run: "recycle({obj})"
+        as: wizard
+
+  - name: players_too_many_args
+    permission: wizard
+    code: "players(1)"
+    expect:
+      error: E_ARGS
+
+  # =========================================================================
+  # is_player() tests
+  # =========================================================================
+
+  - name: is_player_on_wizard
+    permission: wizard
+    code: "is_player(player)"
+    expect:
+      value: 1
+
+  - name: is_player_on_non_player
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      result = is_player(o);
+      recycle(o);
+      return result;
+    expect:
+      value: 0
+
+  - name: is_player_on_invalid_object
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      recycle(o);
+      return is_player(o);
+    expect:
+      error: E_INVARG
+
+  - name: is_player_after_set_flag
+    permission: wizard
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "set_player_flag({obj}, 1)"
+      - run: "is_player({obj})"
+        expect:
+          value: 1
+      - run: "set_player_flag({obj}, 0)"
+      - run: "is_player({obj})"
+        expect:
+          value: 0
+    cleanup:
+      - run: "recycle({obj})"
+        as: wizard
+
+  - name: is_player_type_int
+    code: "is_player(1)"
+    expect:
+      error: E_TYPE
+
+  - name: is_player_type_string
+    code: 'is_player("foo")'
+    expect:
+      error: E_TYPE
+
+  - name: is_player_type_float
+    code: "is_player(1.0)"
+    expect:
+      error: E_TYPE
+
+  - name: is_player_type_list
+    code: "is_player({1})"
+    expect:
+      error: E_TYPE
+
+  - name: is_player_no_args
+    code: "is_player()"
+    expect:
+      error: E_ARGS
+
+  - name: is_player_too_many_args
+    code: "is_player(#1, #2)"
+    expect:
+      error: E_ARGS
+
+  - name: is_player_on_nothing
+    code: "is_player($nothing)"
+    expect:
+      error: E_INVARG
+
+  # =========================================================================
+  # set_player_flag() tests
+  # =========================================================================
+
+  - name: set_player_flag_basic
+    permission: wizard
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: "set_player_flag({obj}, 1)"
+        expect:
+          value: 0
+      - run: "is_player({obj})"
+        expect:
+          value: 1
+      - run: "set_player_flag({obj}, 0)"
+        expect:
+          value: 0
+      - run: "is_player({obj})"
+        expect:
+          value: 0
+    cleanup:
+      - run: "recycle({obj})"
+        as: wizard
+
+  - name: set_player_flag_requires_wizard
+    permission: programmer
+    statement: |
+      o = create($nothing);
+      return set_player_flag(o, 1);
+    expect:
+      error: E_PERM
+
+  - name: set_player_flag_invalid_object
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      recycle(o);
+      return set_player_flag(o, 1);
+    expect:
+      error: E_INVARG
+
+  - name: set_player_flag_nothing
+    permission: wizard
+    code: "set_player_flag($nothing, 1)"
+    expect:
+      error: E_INVARG
+
+  - name: set_player_flag_type_int
+    permission: wizard
+    code: "set_player_flag(1, 1)"
+    expect:
+      error: E_TYPE
+
+  - name: set_player_flag_type_string
+    permission: wizard
+    code: 'set_player_flag("foo", 1)'
+    expect:
+      error: E_TYPE
+
+  - name: set_player_flag_no_args
+    permission: wizard
+    code: "set_player_flag()"
+    expect:
+      error: E_ARGS
+
+  - name: set_player_flag_one_arg
+    permission: wizard
+    code: "set_player_flag(#1)"
+    expect:
+      error: E_ARGS
+
+  - name: set_player_flag_too_many_args
+    permission: wizard
+    code: "set_player_flag(#1, 1, 2)"
+    expect:
+      error: E_ARGS
+
+  # =========================================================================
+  # locate_by_name() tests
+  # =========================================================================
+
+  - name: locate_by_name_finds_named_object
+    permission: wizard
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: '{obj}.name = "LocateTest7Unique"'
+      - run: '({obj} in locate_by_name("LocateTest7Unique")) > 0'
+        expect:
+          value: 1
+    cleanup:
+      - run: "recycle({obj})"
+        as: wizard
+
+  - name: locate_by_name_case_insensitive_default
+    permission: wizard
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: '{obj}.name = "CaSeFoOHierTest"'
+      - run: '({obj} in locate_by_name("casefoohiertest")) > 0'
+        expect:
+          value: 1
+    cleanup:
+      - run: "recycle({obj})"
+        as: wizard
+
+  - name: locate_by_name_case_sensitive
+    permission: wizard
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: '{obj}.name = "CaSeFoOHierTest"'
+      - run: '({obj} in locate_by_name("casefoohiertest", 1)) > 0'
+        expect:
+          value: 0
+      - run: '({obj} in locate_by_name("CaSeFoOHierTest", 1)) > 0'
+        expect:
+          value: 1
+    cleanup:
+      - run: "recycle({obj})"
+        as: wizard
+
+  - name: locate_by_name_partial_match
+    permission: wizard
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: '{obj}.name = "FooBarBazHierTest"'
+      - run: '({obj} in locate_by_name("BarBaz")) > 0'
+        expect:
+          value: 1
+    cleanup:
+      - run: "recycle({obj})"
+        as: wizard
+
+  - name: locate_by_name_no_match
+    permission: wizard
+    code: 'locate_by_name("NoSuchObjectName9999xyz")'
+    expect:
+      value: []
+
+  - name: locate_by_name_returns_list
+    permission: wizard
+    code: 'typeof(locate_by_name("test"))'
+    expect:
+      value: 4
+
+  - name: locate_by_name_requires_wizard
+    permission: programmer
+    code: 'locate_by_name("test")'
+    expect:
+      error: E_PERM
+
+  - name: locate_by_name_type_int
+    permission: wizard
+    code: "locate_by_name(1)"
+    expect:
+      error: E_TYPE
+
+  - name: locate_by_name_no_args
+    permission: wizard
+    code: "locate_by_name()"
+    expect:
+      error: E_ARGS
+
+  - name: locate_by_name_too_many_args
+    permission: wizard
+    code: 'locate_by_name("test", 1, 2)'
+    expect:
+      error: E_ARGS
+
+  # =========================================================================
+  # occupants() tests
+  # =========================================================================
+
+  - name: occupants_one_arg_filters_players
+    permission: wizard
+    statement: |
+      room = create($nothing);
+      npc = create($nothing);
+      pc = create($nothing);
+      move(npc, room);
+      move(pc, room);
+      set_player_flag(pc, 1);
+      result = occupants(room.contents);
+      match = (result == {pc});
+      set_player_flag(pc, 0);
+      recycle(npc);
+      recycle(pc);
+      recycle(room);
+      return match;
+    expect:
+      value: 1
+
+  - name: occupants_two_args_filters_by_parent
+    permission: wizard
+    statement: |
+      base = create($nothing);
+      other = create($nothing);
+      child1 = create(base);
+      child2 = create(other);
+      result = occupants({child1, child2}, base);
+      match = (result == {child1});
+      recycle(child1);
+      recycle(child2);
+      recycle(other);
+      recycle(base);
+      return match;
+    expect:
+      value: 1
+
+  - name: occupants_three_args_parent_and_player
+    permission: wizard
+    statement: |
+      base = create($nothing);
+      child1 = create(base);
+      child2 = create(base);
+      set_player_flag(child1, 1);
+      result = occupants({child1, child2}, base, 1);
+      match = (result == {child1});
+      set_player_flag(child1, 0);
+      recycle(child1);
+      recycle(child2);
+      recycle(base);
+      return match;
+    expect:
+      value: 1
+
+  - name: occupants_four_args_inverse_parent
+    permission: wizard
+    statement: |
+      base = create($nothing);
+      other = create($nothing);
+      child1 = create(base);
+      child2 = create(other);
+      result = occupants({child1, child2}, base, 0, 1);
+      match = (result == {child2});
+      recycle(child1);
+      recycle(child2);
+      recycle(other);
+      recycle(base);
+      return match;
+    expect:
+      value: 1
+
+  - name: occupants_empty_list
+    permission: wizard
+    code: "occupants({})"
+    expect:
+      value: []
+
+  - name: occupants_type_error_parent
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      return occupants({o}, "foo");
+    expect:
+      error: E_TYPE
+
+  - name: occupants_invarg_invalid_contents
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      recycle(o);
+      return occupants({o});
+    expect:
+      error: E_INVARG
+
+  - name: occupants_no_args
+    permission: wizard
+    code: "occupants()"
+    expect:
+      error: E_ARGS
+
+  # =========================================================================
+  # locations() tests
+  # =========================================================================
+
+  - name: locations_basic_chain
+    permission: wizard
+    statement: |
+      a = create($nothing);
+      b = create($nothing);
+      c = create($nothing);
+      move(b, a);
+      move(c, b);
+      result = locations(c);
+      match = (result == {b, a});
+      recycle(c);
+      recycle(b);
+      recycle(a);
+      return match;
+    expect:
+      value: 1
+
+  - name: locations_no_location
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      result = locations(o);
+      recycle(o);
+      return result;
+    expect:
+      value: []
+
+  - name: locations_with_base_object
+    permission: wizard
+    statement: |
+      a = create($nothing);
+      b = create($nothing);
+      c = create($nothing);
+      move(b, a);
+      move(c, b);
+      result = locations(c, a);
+      match = (result == {b});
+      recycle(c);
+      recycle(b);
+      recycle(a);
+      return match;
+    expect:
+      value: 1
+
+  - name: locations_with_parent_check
+    permission: wizard
+    statement: |
+      base = create($nothing);
+      room = create(base);
+      box = create($nothing);
+      item = create($nothing);
+      move(box, room);
+      move(item, box);
+      result = locations(item, base, 1);
+      match = (result == {box});
+      recycle(item);
+      recycle(box);
+      recycle(room);
+      recycle(base);
+      return match;
+    expect:
+      value: 1
+
+  - name: locations_invalid_object
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      recycle(o);
+      return locations(o);
+    expect:
+      error: E_INVIND
+
+  - name: locations_type_int
+    permission: wizard
+    code: "locations(1)"
+    expect:
+      error: E_TYPE
+
+  - name: locations_type_string
+    permission: wizard
+    code: 'locations("foo")'
+    expect:
+      error: E_TYPE
+
+  - name: locations_no_args
+    permission: wizard
+    code: "locations()"
+    expect:
+      error: E_ARGS
+
+  # =========================================================================
+  # recycled_objects() tests
+  # =========================================================================
+
+  - name: recycled_objects_returns_list
+    permission: wizard
+    code: "typeof(recycled_objects())"
+    expect:
+      value: 4
+
+  - name: recycled_objects_includes_recycled
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      recycle(o);
+      return (o in recycled_objects()) > 0;
+    expect:
+      value: 1
+
+  - name: recycled_objects_excludes_valid
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      result = (o in recycled_objects()) > 0;
+      recycle(o);
+      return result;
+    expect:
+      value: 0
+
+  - name: recycled_objects_too_many_args
+    permission: wizard
+    code: "recycled_objects(1)"
+    expect:
+      error: E_ARGS
+
+  # =========================================================================
+  # next_recycled_object() tests
+  # =========================================================================
+
+  - name: next_recycled_object_finds_recycled
+    permission: wizard
+    statement: |
+      nro = next_recycled_object(#0);
+      return typeof(nro) == OBJ && !valid(nro);
+    expect:
+      value: 1
+
+  - name: next_recycled_object_no_args_returns_obj
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      recycle(o);
+      result = next_recycled_object();
+      return typeof(result) == OBJ;
+    expect:
+      value: 1
+
+  - name: next_recycled_object_returns_zero_when_none
+    permission: wizard
+    statement: |
+      result = next_recycled_object(max_object());
+      return result;
+    expect:
+      value: 0
+
+  - name: next_recycled_object_invarg_nothing
+    permission: wizard
+    code: "next_recycled_object($nothing)"
+    expect:
+      error: E_INVARG
+
+  - name: next_recycled_object_invarg_past_max
+    permission: wizard
+    statement: |
+      return next_recycled_object(toobj(toint(max_object()) + 1));
+    expect:
+      error: E_INVARG
+
+  - name: next_recycled_object_too_many_args
+    permission: wizard
+    code: "next_recycled_object(#0, #1)"
+    expect:
+      error: E_ARGS
+
+  # =========================================================================
+  # owned_objects() tests
+  # =========================================================================
+
+  - name: owned_objects_wizard_owns_objects
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      result = (o in owned_objects(player)) > 0;
+      recycle(o);
+      return result;
+    expect:
+      value: 1
+
+  - name: owned_objects_returns_list
+    permission: wizard
+    code: "typeof(owned_objects(player))"
+    expect:
+      value: 4
+
+  - name: owned_objects_invalid_object
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      recycle(o);
+      return owned_objects(o);
+    expect:
+      error: E_INVIND
+
+  - name: owned_objects_no_args
+    permission: wizard
+    code: "owned_objects()"
+    expect:
+      error: E_ARGS
+
+  - name: owned_objects_too_many_args
+    permission: wizard
+    code: "owned_objects(#1, #2)"
+    expect:
+      error: E_ARGS
+
+  - name: owned_objects_type_int
+    permission: wizard
+    code: "owned_objects(1)"
+    expect:
+      error: E_TYPE
+
+  - name: owned_objects_type_string
+    permission: wizard
+    code: 'owned_objects("foo")'
+    expect:
+      error: E_TYPE
+
+  - name: owned_objects_respects_owner
+    permission: wizard
+    statement: |
+      a = create($nothing);
+      b = create($nothing, a);
+      result = (b in owned_objects(a)) > 0;
+      recycle(b);
+      recycle(a);
+      return result;
+    expect:
+      value: 1
+
+  # =========================================================================
+  # object_bytes() expansion tests
+  # =========================================================================
+
+  - name: object_bytes_increases_with_properties
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      before = object_bytes(o);
+      add_property(o, "test1", "hello world", {player, ""});
+      add_property(o, "test2", {1, 2, 3, 4, 5}, {player, ""});
+      after = object_bytes(o);
+      recycle(o);
+      return after > before;
+    expect:
+      value: 1
+
+  - name: object_bytes_on_nothing
+    permission: wizard
+    code: "object_bytes($nothing)"
+    expect:
+      error: E_INVIND
+
+  - name: object_bytes_no_args
+    permission: wizard
+    code: "object_bytes()"
+    expect:
+      error: E_ARGS
+
+  - name: object_bytes_too_many_args
+    permission: wizard
+    code: "object_bytes(#1, #2)"
+    expect:
+      error: E_ARGS

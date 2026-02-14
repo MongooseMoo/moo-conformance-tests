@@ -451,3 +451,63 @@ tests:
     expect:
       value: [{"ERROR": "E_FILE"}, 1]
     skip: "File I/O not available in Test.db"
+
+  # Writing invalid binary strings
+  - name: invalid_binary_string_writeline
+    permission: wizard
+    statement: |
+      fh = file_open('test_fileio.tmp', 'w-bn');
+      file_writeline(fh, 'abc~ZZ');
+      file_close(fh);
+      file_remove('test_fileio.tmp');
+      return 1;
+    expect:
+      value: 1
+    skip: "File I/O not available in Test.db"
+
+  - name: invalid_binary_string_write
+    permission: wizard
+    statement: |
+      fh = file_open('test_fileio.tmp', 'w-bn');
+      file_write(fh, 'abc~ZZ');
+      file_close(fh);
+      file_remove('test_fileio.tmp');
+      return 1;
+    expect:
+      value: 1
+    skip: "File I/O not available in Test.db"
+
+  # Large file tests
+  - name: long_file_text_mode
+    permission: wizard
+    statement: |
+      fh = file_open('test_fileio.tmp', 'w-tn');
+      for i in [1..10]
+        file_writeline(fh, '1234567890' * 1000);
+      endfor
+      file_close(fh);
+      fh = file_open('test_fileio.tmp', 'r-tn');
+      lines = file_readlines(fh, 1, 100);
+      file_close(fh);
+      file_remove('test_fileio.tmp');
+      return {length(lines), length(lines[1])};
+    expect:
+      value: [10, 10000]
+    skip: "File I/O not available in Test.db"
+
+  - name: long_file_binary_mode
+    permission: wizard
+    statement: |
+      fh = file_open('test_fileio.tmp', 'w-bn');
+      for i in [1..10]
+        file_write(fh, '1234567890' * 1000);
+      endfor
+      file_close(fh);
+      fh = file_open('test_fileio.tmp', 'r-bn');
+      data = file_read(fh, 100000);
+      file_close(fh);
+      file_remove('test_fileio.tmp');
+      return length(data);
+    expect:
+      value: 100000
+    skip: "File I/O not available in Test.db"

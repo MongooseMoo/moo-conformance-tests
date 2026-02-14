@@ -1,0 +1,154 @@
+name: scatter_assignment
+description: >
+  Scatter (destructuring) assignment. Tests {a, b, c} = list syntax
+  including required, optional (?), and rest (@) variables.
+
+tests:
+  # ===========================================================================
+  # Basic scatter
+  # ===========================================================================
+
+  - name: scatter_basic
+    description: Simple 3-element scatter assignment
+    statement: |
+      {a, b, c} = {1, 2, 3};
+      return {a, b, c};
+    expect:
+      value: [1, 2, 3]
+
+  - name: scatter_two_elements
+    description: 2-element scatter assignment
+    statement: |
+      {a, b} = {"hello", "world"};
+      return {a, b};
+    expect:
+      value: ["hello", "world"]
+
+  - name: scatter_single_element
+    description: 1-element scatter assignment
+    statement: |
+      {a} = {42};
+      return a;
+    expect:
+      value: 42
+
+  # ===========================================================================
+  # Rest variable (@)
+  # ===========================================================================
+
+  - name: scatter_with_rest
+    description: Rest variable collects excess elements
+    statement: |
+      {a, b, @c} = {1, 2, 3, 4, 5};
+      return {a, b, c};
+    expect:
+      value: [1, 2, [3, 4, 5]]
+
+  - name: scatter_rest_empty
+    description: Rest variable is empty list when elements match exactly
+    statement: |
+      {a, b, @c} = {1, 2};
+      return c;
+    expect:
+      value: []
+
+  - name: scatter_rest_in_middle
+    description: Rest variable in middle position
+    statement: |
+      {a, @b, c} = {1, 2, 3, 4, 5};
+      return {a, b, c};
+    expect:
+      value: [1, [2, 3, 4], 5]
+
+  - name: scatter_rest_at_beginning
+    description: Rest variable at beginning position
+    statement: |
+      {@a, b, c} = {1, 2, 3, 4, 5};
+      return {a, b, c};
+    expect:
+      value: [[1, 2, 3], 4, 5]
+
+  # ===========================================================================
+  # Optional variables (?)
+  # ===========================================================================
+
+  - name: scatter_optional_present
+    description: Optional variable gets value when element is present
+    statement: |
+      {a, ?b, c} = {1, 2, 3};
+      return {a, b, c};
+    expect:
+      value: [1, 2, 3]
+
+  - name: scatter_optional_missing_with_default
+    description: Optional variable gets default when element is missing
+    statement: |
+      {a, ?b = 99, c} = {1, 2};
+      return {a, b, c};
+    expect:
+      value: [1, 99, 2]
+
+  - name: scatter_optional_with_expression_default
+    description: Optional variable default can be an expression
+    statement: |
+      x = 10;
+      {a, ?b = x * 2} = {1};
+      return {a, b};
+    expect:
+      value: [1, 20]
+
+  - name: scatter_optional_no_default
+    description: Optional without default is unset when element is missing
+    statement: |
+      {a, ?b, c} = {1, 2};
+      return b;
+    expect:
+      error: E_VARNF
+
+  # ===========================================================================
+  # Error cases
+  # ===========================================================================
+
+  - name: scatter_too_few_error
+    description: Too few elements for required variables raises E_ARGS
+    statement: |
+      {a, b, c} = {1, 2};
+    expect:
+      error: E_ARGS
+
+  - name: scatter_too_many_error
+    description: Too many elements without rest variable raises E_ARGS
+    statement: |
+      {a, b} = {1, 2, 3};
+    expect:
+      error: E_ARGS
+
+  - name: scatter_non_list_error
+    description: Non-list right-hand side raises E_TYPE
+    statement: |
+      {a, b} = "hello";
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # Return value and usage patterns
+  # ===========================================================================
+
+  - name: scatter_return_value
+    description: Scatter assignment returns the RHS list
+    statement: |
+      return {a, b, c} = {1, 2, 3};
+    expect:
+      value: [1, 2, 3]
+
+  - name: scatter_nested_in_loop
+    description: Scatter assignment inside a for loop
+    statement: |
+      result = {};
+      for item in ({{1, "a"}, {2, "b"}, {3, "c"}})
+        {num, letter} = item;
+        result = {@result, {letter, num}};
+      endfor
+      return result;
+    expect:
+      value: [["a", 1], ["b", 2], ["c", 3]]

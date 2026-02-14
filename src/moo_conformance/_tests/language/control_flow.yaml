@@ -1,0 +1,255 @@
+name: control_flow
+description: >
+  Named loops (while with name), for-range loops, ternary expressions,
+  and fork semantics.
+
+tests:
+  # ===========================================================================
+  # Named while loops
+  # ===========================================================================
+
+  - name: while_named_basic
+    description: Named while loop executes normally
+    statement: |
+      x = 0;
+      while loop (x < 5)
+        x = x + 1;
+      endwhile
+      return x;
+    expect:
+      value: 5
+
+  - name: while_named_break
+    description: Break with name exits the named while loop
+    statement: |
+      x = 0;
+      while outer (1)
+        x = x + 1;
+        if (x >= 3)
+          break outer;
+        endif
+      endwhile
+      return x;
+    expect:
+      value: 3
+
+  - name: while_named_continue
+    description: Continue with name skips to loop condition
+    statement: |
+      x = 0;
+      y = 0;
+      while loop (x < 5)
+        x = x + 1;
+        if (x == 3)
+          continue loop;
+        endif
+        y = y + 1;
+      endwhile
+      return y;
+    expect:
+      value: 4
+
+  - name: while_unnamed_break
+    description: Break without name works on unnamed while loop
+    statement: |
+      x = 0;
+      while (1)
+        x = x + 1;
+        if (x >= 3)
+          break;
+        endif
+      endwhile
+      return x;
+    expect:
+      value: 3
+
+  - name: while_unnamed_continue
+    description: Continue without name works on unnamed while loop
+    statement: |
+      x = 0;
+      y = 0;
+      while (x < 5)
+        x = x + 1;
+        if (x == 3)
+          continue;
+        endif
+        y = y + 1;
+      endwhile
+      return y;
+    expect:
+      value: 4
+
+  # ===========================================================================
+  # for-range loops
+  # ===========================================================================
+
+  - name: for_range_basic
+    description: "for i in [from..to] iterates the range"
+    statement: |
+      x = 0;
+      for i in [1..5]
+        x = x + i;
+      endfor
+      return x;
+    expect:
+      value: 15
+
+  - name: for_range_reverse_zero_iterations
+    description: "from > to means zero iterations"
+    statement: |
+      x = 0;
+      for i in [5..1]
+        x = x + i;
+      endfor
+      return x;
+    expect:
+      value: 0
+
+  - name: for_range_single
+    description: "from == to means exactly one iteration"
+    statement: |
+      x = 0;
+      for i in [3..3]
+        x = i;
+      endfor
+      return x;
+    expect:
+      value: 3
+
+  # ===========================================================================
+  # Nested named loops
+  # ===========================================================================
+
+  - name: nested_named_loops_break_outer
+    description: Break outer from inner for loop using loop variable name
+    statement: |
+      result = {};
+      for i in ({1, 2, 3})
+        for j in ({10, 20, 30})
+          if (j == 20)
+            break i;
+          endif
+          result = {@result, {i, j}};
+        endfor
+      endfor
+      return result;
+    expect:
+      value: [[1, 10]]
+
+  # ===========================================================================
+  # Ternary expressions (expr ? expr | expr)
+  # ===========================================================================
+
+  - name: ternary_true
+    description: Truthy condition returns first branch
+    code: "1 ? \"yes\" | \"no\""
+    expect:
+      value: "yes"
+
+  - name: ternary_false
+    description: Falsy condition (0) returns second branch
+    code: "0 ? \"yes\" | \"no\""
+    expect:
+      value: "no"
+
+  - name: ternary_int_truthy
+    description: Nonzero integer is truthy
+    code: "42 ? \"yes\" | \"no\""
+    expect:
+      value: "yes"
+
+  - name: ternary_string_truthy
+    description: Nonempty string is truthy
+    code: "\"hello\" ? \"yes\" | \"no\""
+    expect:
+      value: "yes"
+
+  - name: ternary_empty_string_falsy
+    description: Empty string is falsy
+    code: "\"\" ? \"yes\" | \"no\""
+    expect:
+      value: "no"
+
+  - name: ternary_list_truthy
+    description: Nonempty list is truthy
+    code: "{1} ? \"yes\" | \"no\""
+    expect:
+      value: "yes"
+
+  - name: ternary_empty_list_falsy
+    description: Empty list is falsy
+    code: "{} ? \"yes\" | \"no\""
+    expect:
+      value: "no"
+
+  - name: ternary_nested
+    description: Nested ternary expression
+    code: "1 ? (0 ? \"inner-yes\" | \"inner-no\") | \"outer-no\""
+    expect:
+      value: "inner-no"
+
+  - name: ternary_with_expressions
+    description: Expressions in ternary branches
+    code: "(3 > 2) ? 3 + 4 | 5 + 6"
+    expect:
+      value: 7
+
+  - name: ternary_in_assignment
+    description: Ternary expression can be used in assignment
+    statement: |
+      x = 1 > 0 ? "positive" | "non-positive";
+      return x;
+    expect:
+      value: "positive"
+
+  # ===========================================================================
+  # fork
+  # ===========================================================================
+
+  - name: fork_with_id_variable
+    description: Named fork stores task ID as an integer
+    statement: |
+      fork task_id (0)
+        suspend(5);
+      endfork
+      return typeof(task_id) == INT;
+    expect:
+      value: 1
+
+  - name: fork_negative_delay_error
+    description: Negative delay raises E_INVARG
+    statement: |
+      fork (-1)
+        1;
+      endfork
+    expect:
+      error: E_INVARG
+
+  - name: fork_float_delay
+    description: Float delay is accepted
+    statement: |
+      fork (0.5)
+        suspend(5);
+      endfork
+      return 1;
+    expect:
+      value: 1
+
+  - name: fork_non_numeric_delay_error
+    description: Non-numeric delay raises E_TYPE
+    statement: |
+      fork ("abc")
+        1;
+      endfork
+    expect:
+      error: E_TYPE
+
+  - name: fork_zero_delay
+    description: Fork with zero delay creates a queued task
+    statement: |
+      fork (0)
+        suspend(5);
+      endfork
+      return length(queued_tasks()) > 0;
+    expect:
+      value: 1

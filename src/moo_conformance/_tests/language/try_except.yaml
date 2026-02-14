@@ -1,0 +1,361 @@
+name: try_except
+description: >
+  try/except, try/finally, catch expressions (backtick syntax), and raise().
+  Tests error handling language features.
+
+tests:
+  # ===========================================================================
+  # try/except
+  # ===========================================================================
+
+  - name: try_except_basic
+    description: Catch a specific error code
+    statement: |
+      try
+        1 / 0;
+      except e (E_DIV)
+        return e[1];
+      endtry
+    expect:
+      value: E_DIV
+
+  - name: try_except_any
+    description: Catch any error with ANY keyword
+    statement: |
+      try
+        {}[5];
+      except e (ANY)
+        return e[1];
+      endtry
+    expect:
+      value: E_RANGE
+
+  - name: try_except_no_var
+    description: Except clause without variable capture
+    statement: |
+      try
+        1 / 0;
+      except (E_DIV)
+        return "caught";
+      endtry
+    expect:
+      value: "caught"
+
+  - name: try_except_multiple_clauses
+    description: First matching except clause wins
+    statement: |
+      try
+        1 / 0;
+      except e (E_TYPE)
+        return "type";
+      except e (E_DIV)
+        return "div";
+      except e (ANY)
+        return "any";
+      endtry
+    expect:
+      value: "div"
+
+  - name: try_except_any_catches_all
+    description: ANY clause catches all error types
+    statement: |
+      try
+        1 / 0;
+      except e (ANY)
+        return "any";
+      endtry
+    expect:
+      value: "any"
+
+  - name: try_except_multi_codes
+    description: Single except clause with multiple error codes
+    statement: |
+      try
+        1 / 0;
+      except e (E_TYPE, E_DIV, E_RANGE)
+        return e[1];
+      endtry
+    expect:
+      value: E_DIV
+
+  - name: try_except_no_error
+    description: Body completes normally, except clause is skipped
+    statement: |
+      x = 0;
+      try
+        x = 1;
+      except (ANY)
+        x = 2;
+      endtry
+      return x;
+    expect:
+      value: 1
+
+  - name: try_except_exception_value_is_list
+    description: Captured exception value is a list
+    statement: |
+      try
+        1 / 0;
+      except e (E_DIV)
+        return typeof(e) == LIST;
+      endtry
+    expect:
+      value: 1
+
+  - name: try_except_exception_value_has_code
+    description: First element of exception value is the error code
+    statement: |
+      try
+        1 / 0;
+      except e (E_DIV)
+        return e[1];
+      endtry
+    expect:
+      value: E_DIV
+
+  - name: try_except_exception_value_has_message
+    description: Second element of exception value is a string message
+    statement: |
+      try
+        1 / 0;
+      except e (E_DIV)
+        return typeof(e[2]) == STR;
+      endtry
+    expect:
+      value: 1
+
+  - name: try_except_unmatched_error_propagates
+    description: Error not matching any codes propagates to outer handler
+    statement: |
+      try
+        try
+          1 / 0;
+        except (E_TYPE)
+          return "type";
+        endtry
+      except e (E_DIV)
+        return "outer";
+      endtry
+    expect:
+      value: "outer"
+
+  - name: try_except_nested
+    description: Nested try/except - inner handler catches first
+    statement: |
+      try
+        try
+          {}[5];
+        except (E_RANGE)
+          return "inner";
+        endtry
+      except (ANY)
+        return "outer";
+      endtry
+    expect:
+      value: "inner"
+
+  - name: try_except_return_from_body
+    description: Return in try body works normally
+    statement: |
+      try
+        return 42;
+      except (ANY)
+        return 0;
+      endtry
+    expect:
+      value: 42
+
+  # ===========================================================================
+  # try/finally
+  # ===========================================================================
+
+  - name: try_finally_normal
+    description: Finally block runs on normal completion
+    statement: |
+      x = 0;
+      try
+        x = 1;
+      finally
+        x = x + 10;
+      endtry
+      return x;
+    expect:
+      value: 11
+
+  - name: try_finally_with_error
+    description: Finally runs even when error occurs, then error propagates
+    statement: |
+      try
+        try
+          x = 1;
+          1 / 0;
+        finally
+          x = x + 10;
+        endtry
+      except e (E_DIV)
+        return x;
+      endtry
+    expect:
+      value: 11
+
+  - name: try_finally_with_return
+    description: >
+      Return value is captured before finally runs.
+      The finally block executes but does not change the return value.
+    statement: |
+      x = 0;
+      try
+        x = 1;
+        return x;
+      finally
+        x = x + 10;
+      endtry
+    expect:
+      value: 1
+
+  - name: try_finally_nested_in_except
+    description: Finally inside try/except - execution order is try, finally, except
+    statement: |
+      result = {};
+      try
+        try
+          result = {@result, "try"};
+          1 / 0;
+        finally
+          result = {@result, "finally"};
+        endtry
+      except (E_DIV)
+        result = {@result, "except"};
+      endtry
+      return result;
+    expect:
+      value: ["try", "finally", "except"]
+
+  # ===========================================================================
+  # Catch expression (backtick syntax)
+  # ===========================================================================
+
+  - name: catch_expr_no_error
+    description: Expression succeeds, catch returns the expression value
+    code: "`1 + 2 ! ANY => 0'"
+    expect:
+      value: 3
+
+  - name: catch_expr_catches_error
+    description: Error caught, returns default value
+    code: "`1 / 0 ! E_DIV => -1'"
+    expect:
+      value: -1
+
+  - name: catch_expr_any
+    description: ANY catches all errors
+    code: "`{}[5] ! ANY => \"caught\"'"
+    expect:
+      value: "caught"
+
+  - name: catch_expr_specific_code
+    description: Only matching error code is caught
+    code: "`1 / 0 ! E_DIV => \"div\"'"
+    expect:
+      value: "div"
+
+  - name: catch_expr_unmatched_propagates
+    description: Unmatched error propagates through catch expression
+    statement: |
+      try
+        return `1 / 0 ! E_TYPE => "type"';
+      except e (E_DIV)
+        return "propagated";
+      endtry
+    expect:
+      value: "propagated"
+
+  - name: catch_expr_no_default
+    description: Without => clause, catch returns the error value itself
+    code: "`1 / 0 ! E_DIV'"
+    expect:
+      value: E_DIV
+
+  - name: catch_expr_multiple_codes
+    description: Multiple error codes in catch expression
+    code: "`1 / 0 ! E_TYPE, E_DIV => \"caught\"'"
+    expect:
+      value: "caught"
+
+  - name: catch_expr_in_assignment
+    description: Catch expression can be used in assignment
+    statement: |
+      x = `1 / 0 ! E_DIV => 42';
+      return x;
+    expect:
+      value: 42
+
+  # ===========================================================================
+  # raise()
+  # ===========================================================================
+
+  - name: raise_basic
+    description: Raise with error code only
+    statement: |
+      try
+        raise(E_INVARG);
+      except e (E_INVARG)
+        return e[1];
+      endtry
+    expect:
+      value: E_INVARG
+
+  - name: raise_with_message
+    description: Raise with custom message
+    statement: |
+      try
+        raise(E_INVARG, "custom message");
+      except e (E_INVARG)
+        return e[2];
+      endtry
+    expect:
+      value: "custom message"
+
+  - name: raise_with_value
+    description: Raise with custom message and value
+    statement: |
+      try
+        raise(E_INVARG, "msg", {1, 2, 3});
+      except e (E_INVARG)
+        return e[3];
+      endtry
+    expect:
+      value: [1, 2, 3]
+
+  - name: raise_caught_by_catch_expr
+    description: raise() caught by backtick catch expression
+    code: "`raise(E_INVARG) ! E_INVARG => \"caught\"'"
+    expect:
+      value: "caught"
+
+  - name: raise_default_message_is_string
+    description: Default message for error codes is a string
+    statement: |
+      try
+        raise(E_TYPE);
+      except e (E_TYPE)
+        return typeof(e[2]) == STR;
+      endtry
+    expect:
+      value: 1
+
+  - name: raise_propagates_through_finally
+    description: raise() error propagates through finally, finally still runs
+    statement: |
+      x = 0;
+      try
+        try
+          raise(E_ARGS);
+        finally
+          x = 1;
+        endtry
+      except (E_ARGS)
+        return x;
+      endtry
+    expect:
+      value: 1

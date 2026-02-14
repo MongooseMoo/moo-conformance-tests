@@ -1,0 +1,126 @@
+name: in_operator
+description: >
+  The binary `in` operator. Returns 1-based position for string-in-string
+  (case-insensitive), value-in-list, and value-in-map (checks values, not keys).
+  Returns 0 if not found. Raises E_TYPE for non-sequence RHS.
+
+tests:
+  # ===========================================================================
+  # String in string
+  # ===========================================================================
+
+  - name: in_string_found
+    description: Substring found returns 1-based character position
+    code: '"bar" in "foobar"'
+    expect:
+      value: 4
+
+  - name: in_string_not_found
+    description: Substring not found returns 0
+    code: '"xyz" in "foobar"'
+    expect:
+      value: 0
+
+  - name: in_string_case_insensitive
+    description: String in is case-insensitive
+    code: '"BAR" in "foobar"'
+    expect:
+      value: 4
+
+  - name: in_string_empty_needle
+    description: Empty string in string returns 1 (matches at position 1)
+    code: '"" in "foobar"'
+    expect:
+      value: 1
+
+  # ===========================================================================
+  # Value in list
+  # ===========================================================================
+
+  - name: in_list_found
+    description: Value found in list returns 1-based index
+    code: '3 in {1, 2, 3, 4, 5}'
+    expect:
+      value: 3
+
+  - name: in_list_not_found
+    description: Value not in list returns 0
+    code: '99 in {1, 2, 3}'
+    expect:
+      value: 0
+
+  - name: in_list_string
+    description: String value found in list of strings
+    code: '"bar" in {"foo", "bar", "baz"}'
+    expect:
+      value: 2
+
+  - name: in_list_type_matters
+    description: Type must match exactly - int 1 is not float 1.0
+    code: '1 in {1.0, 2.0, 3.0}'
+    expect:
+      value: 0
+
+  - name: in_list_first_match
+    description: Returns index of first occurrence
+    code: '2 in {1, 2, 3, 2, 1}'
+    expect:
+      value: 2
+
+  - name: in_list_nested
+    description: List in list uses deep equality
+    code: '{1, 2} in {{3, 4}, {1, 2}, {5, 6}}'
+    expect:
+      value: 2
+
+  - name: in_empty_list
+    description: Value in empty list returns 0
+    code: '1 in {}'
+    expect:
+      value: 0
+
+  # ===========================================================================
+  # Value in map
+  # ===========================================================================
+
+  - name: in_map_value
+    description: Value in map checks map VALUES, not keys
+    statement: |
+      m = ["a" -> 1, "b" -> 2, "c" -> 3];
+      return 2 in m;
+    expect:
+      type: int
+
+  - name: in_empty_map
+    description: Value in empty map returns 0
+    code: '1 in []'
+    expect:
+      value: 0
+
+  # ===========================================================================
+  # Error cases - non-sequence RHS raises E_TYPE
+  # ===========================================================================
+
+  - name: in_int_error
+    description: Value in int raises E_TYPE
+    code: '1 in 5'
+    expect:
+      error: E_TYPE
+
+  - name: in_float_error
+    description: Value in float raises E_TYPE
+    code: '1 in 3.14'
+    expect:
+      error: E_TYPE
+
+  - name: in_object_error
+    description: Value in object raises E_TYPE
+    code: '1 in #0'
+    expect:
+      error: E_TYPE
+
+  - name: in_error_value_error
+    description: Value in error value raises E_TYPE
+    code: '1 in E_TYPE'
+    expect:
+      error: E_TYPE

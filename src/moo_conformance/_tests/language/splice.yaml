@@ -1,0 +1,161 @@
+name: splice_and_misc
+description: >
+  Splice (@) operator for list construction and function call arguments,
+  string literal escape sequences, and computed property/verb access.
+
+tests:
+  # ===========================================================================
+  # Splice (@) in list construction
+  # ===========================================================================
+
+  - name: splice_in_list
+    description: Basic list splicing with @ operator
+    statement: |
+      x = {1, 2, 3};
+      return {0, @x, 4};
+    expect:
+      value: [0, 1, 2, 3, 4]
+
+  - name: splice_empty_list
+    description: Splicing empty list contributes no elements
+    statement: |
+      x = {};
+      return {1, @x, 2};
+    expect:
+      value: [1, 2]
+
+  - name: splice_multiple
+    description: Multiple splices in one list expression
+    statement: |
+      a = {1, 2};
+      b = {3, 4};
+      return {@a, @b};
+    expect:
+      value: [1, 2, 3, 4]
+
+  - name: splice_in_function_call
+    description: Splice in function call arguments
+    statement: |
+      args = {1, 2, 3};
+      return max(@args);
+    expect:
+      value: 3
+
+  - name: splice_non_list_error
+    description: Splicing a non-list value raises E_TYPE
+    statement: |
+      x = 5;
+      return {@x};
+    expect:
+      error: E_TYPE
+
+  - name: splice_nested
+    description: Splice of already-spliced list
+    statement: |
+      a = {1, 2};
+      b = {@a, 3};
+      return {@b, 4};
+    expect:
+      value: [1, 2, 3, 4]
+
+  - name: splice_string_error
+    description: Splicing a string raises E_TYPE
+    statement: |
+      x = "hello";
+      return {@x};
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # String literal escape sequences
+  # ===========================================================================
+
+  - name: string_escape_backslash
+    description: Double backslash in string literal produces single backslash
+    code: 'length("\\")'
+    expect:
+      value: 1
+
+  - name: string_escape_quote
+    description: Escaped double-quote inside a string literal
+    statement: |
+      x = "he said \"hello\"";
+      return length(x);
+    expect:
+      value: 15
+
+  - name: string_backslash_n_is_literal_n
+    description: >
+      Backslash-n in MOO is literal n, not a newline character.
+      MOO only supports \\ and \" escapes.
+    statement: |
+      return "\n" == "n";
+    expect:
+      value: 1
+
+  - name: string_backslash_t_is_literal_t
+    description: Backslash-t in MOO is literal t, not a tab character
+    statement: |
+      return "\t" == "t";
+    expect:
+      value: 1
+
+  - name: string_backslash_any_char
+    description: Backslash before any character produces just that character
+    statement: |
+      return "\a\b\c" == "abc";
+    expect:
+      value: 1
+
+  # ===========================================================================
+  # Computed property access: obj.(name)
+  # ===========================================================================
+
+  - name: computed_property_read
+    description: "obj.(name) reads a property by computed name"
+    statement: |
+      name = "name";
+      return #0.(name);
+    expect:
+      type: str
+
+  - name: computed_property_equivalent_to_dot
+    description: "obj.(\"name\") is equivalent to obj.name"
+    statement: |
+      return #0.("name") == #0.name;
+    expect:
+      value: 1
+
+  - name: computed_property_nonexistent
+    description: Computed access to missing property raises E_PROPNF
+    code: '#0.("nonexistent_prop_xyz")'
+    expect:
+      error: E_PROPNF
+
+  - name: computed_property_write
+    description: "obj.(name) = value writes a property by computed name"
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_property(o, "foo", 0, {player, ""});
+      name = "foo";
+      o.(name) = 99;
+      result = o.foo;
+      recycle(o);
+      return result;
+    expect:
+      value: 99
+
+  - name: computed_verb_call
+    description: "obj:(name)(args) calls a verb by computed name"
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "test_verb"}, {"this", "none", "this"});
+      set_verb_code(o, "test_verb", {"return 42;"});
+      name = "test_verb";
+      result = o:(name)();
+      recycle(o);
+      return result;
+    expect:
+      value: 42

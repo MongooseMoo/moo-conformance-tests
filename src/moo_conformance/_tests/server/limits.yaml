@@ -368,6 +368,28 @@ tests:
     expect:
       error: E_QUOTA
 
+  - name: decode_binary_with_fully_decode_checks_list_max_value_bytes
+    permission: wizard
+    statement: |
+      a = create($nothing);
+      add_property(a, "foo", 0, {a, ""});
+      x = "x";
+      for i in [1..12]
+        x = tostr(x, x);
+      endfor
+      a.foo = x;
+      $server_options.max_list_value_bytes = 1000000;
+      load_server_options();
+      pad = value_bytes({1, 2}) - value_bytes({});
+      size = value_bytes(decode_binary(a.foo));
+      $server_options.max_list_value_bytes = size + pad;
+      load_server_options();
+      result = decode_binary(a.foo, 1);
+      recycle(a);
+      return result;
+    expect:
+      error: E_QUOTA
+
   - name: mapdelete_fails_if_result_too_large
     permission: wizard
     statement: |

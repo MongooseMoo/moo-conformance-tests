@@ -107,6 +107,60 @@ tests:
     expect:
       value: "foo~0Abar~0D"
 
+  # ===========================================================================
+  # encode_binary / decode_binary edge cases
+  # ===========================================================================
+
+  - name: decode_binary_empty_string
+    code: 'decode_binary("")'
+    expect:
+      value: []
+
+  - name: decode_binary_null_byte
+    code: 'decode_binary("~00")'
+    expect:
+      value: [0]
+
+  - name: decode_binary_null_byte_fully
+    code: 'decode_binary("~00", 1)'
+    expect:
+      value: [0]
+
+  - name: decode_binary_bad_escape
+    code: 'decode_binary("~ZZ")'
+    expect:
+      error: E_INVARG
+
+  - name: encode_binary_no_args
+    code: 'encode_binary()'
+    expect:
+      value: ""
+
+  - name: encode_binary_empty_list
+    code: 'encode_binary({})'
+    expect:
+      value: ""
+
+  - name: encode_binary_out_of_range
+    code: 'encode_binary(256)'
+    expect:
+      error: E_INVARG
+
+  - name: encode_binary_negative
+    code: 'encode_binary(-1)'
+    expect:
+      error: E_INVARG
+
+  - name: encode_binary_object_type
+    code: 'encode_binary(#1)'
+    expect:
+      error: E_INVARG
+
+  - name: encode_binary_roundtrip
+    code: 'decode_binary(encode_binary(65, 0, 10), 1)'
+    expect:
+      value: [65, 0, 10]
+
   - name: crypt_hashes_string
     skip: "DES crypt not supported on Windows"
     code: 'crypt("foobar", "SA")'

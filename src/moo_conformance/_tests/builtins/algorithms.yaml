@@ -76,6 +76,56 @@ tests:
     code: 'length(encode_base64("a", 1))'
     expect:
       value: 2
+  - name: encode_base64_length_two_char
+    code: 'length(encode_base64("aa"))'
+    expect:
+      value: 4
+
+  - name: encode_base64_length_three_char
+    code: 'length(encode_base64("aaa"))'
+    expect:
+      value: 4
+
+  - name: encode_base64_url_safe_length_two_char
+    code: 'length(encode_base64("aa", 1))'
+    expect:
+      value: 3
+
+  - name: encode_base64_url_safe_length_three_char
+    code: 'length(encode_base64("aaa", 1))'
+    expect:
+      value: 4
+
+  - name: encode_base64_long_binary_with_nulls
+    code: 'encode_base64("123456789~00123456789~00123456789~00")'
+    expect:
+      value: "MTIzNDU2Nzg5ADEyMzQ1Njc4OQAxMjM0NTY3ODkA"
+
+  - name: encode_base64_url_safe_two_char
+    code: 'encode_base64("aa", 1)'
+    expect:
+      value: "YWE"
+
+  - name: encode_base64_long_binary_blob
+    code: "encode_base64(\"~A7~CED~8E~D2L~16a~F6~F2~01UZ2~BC~B0)~EC~02~86v~CD~9B~05~E66~F3.vx<~F0~D1E@~C7~DA~F3~C7~C0~AAC~1E~D2~D0~03]!~F7~0C~C9~19~F0~82gv~E4~19:~02~F0~7E~F8~BE~CCj'F~C2~C3~B8~1C~91~1F~7E~F7~F5P~D9~0E~D8~D6~89~DA~86~B5~95~E0f~0CJ~92~01+~8A~AE.~7F;~88\")"
+    expect:
+      value: "p85EjtJMFmH28gFVWjK8sCnsAoZ2zZsF5jbzLnZ4PPDRRUDH2vPHwKpDHtLQA10h9wzJGfCCZ3bkGToC8H74vsxqJ0bCw7gckR9+9/VQ2Q7Y1onahrWV4GYMSpIBK4quLn87iA=="
+
+  - name: encode_base64_url_safe_long_binary_blob
+    code: "encode_base64(\"~A7~CED~8E~D2L~16a~F6~F2~01UZ2~BC~B0)~EC~02~86v~CD~9B~05~E66~F3.vx<~F0~D1E@~C7~DA~F3~C7~C0~AAC~1E~D2~D0~03]!~F7~0C~C9~19~F0~82gv~E4~19:~02~F0~7E~F8~BE~CCj'F~C2~C3~B8~1C~91~1F~7E~F7~F5P~D9~0E~D8~D6~89~DA~86~B5~95~E0f~0CJ~92~01+~8A~AE.~7F;~88\", 1)"
+    expect:
+      value: "p85EjtJMFmH28gFVWjK8sCnsAoZ2zZsF5jbzLnZ4PPDRRUDH2vPHwKpDHtLQA10h9wzJGfCCZ3bkGToC8H74vsxqJ0bCw7gckR9-9_VQ2Q7Y1onahrWV4GYMSpIBK4quLn87iA"
+
+  - name: encode_base64_url_safe_bad_binary
+    code: 'encode_base64("~00~#!~00", 1)'
+    expect:
+      error: E_INVARG
+
+  - name: encode_base64_url_safe_foobar_binary
+    code: 'encode_base64("~66~6f~6f~62~61~72", 1)'
+    expect:
+      value: "Zm9vYmFy"
+
 
   # Base64 Decoding
   - name: decode_base64_one_char
@@ -142,6 +192,111 @@ tests:
     code: 'decode_base64("A===")'
     expect:
       error: E_INVARG
+  - name: decode_base64_binary_fb
+    code: 'decode_base64("+w==")'
+    expect:
+      value: "~FB"
+
+  - name: decode_base64_url_safe_binary_fb
+    code: 'decode_base64("-w", 1)'
+    expect:
+      value: "~FB"
+
+  - name: decode_base64_long_binary_with_nulls
+    code: 'decode_base64("MTIzNDU2Nzg5ADEyMzQ1Njc4OQAxMjM0NTY3ODkA")'
+    expect:
+      value: "123456789~00123456789~00123456789~00"
+
+  - name: decode_base64_url_safe_long_binary_with_nulls
+    code: 'decode_base64("MTIzNDU2Nzg5ADEyMzQ1Njc4OQAxMjM0NTY3ODkA", 1)'
+    expect:
+      value: "123456789~00123456789~00123456789~00"
+
+  - name: decode_base64_standard_one_padding_char
+    code: 'decode_base64("dGVzdA=")'
+    expect:
+      error: E_INVARG
+
+  - name: decode_base64_url_safe_one_padding_char
+    code: 'decode_base64("dGVzdA=", 1)'
+    expect:
+      value: "test"
+
+  - name: decode_base64_url_safe_single_char_error
+    code: 'decode_base64("A", 1)'
+    expect:
+      error: E_INVARG
+
+  - name: decode_base64_url_safe_bad_chars
+    code: 'decode_base64("@@@@", 1)'
+    expect:
+      error: E_INVARG
+
+  - name: decode_base64_length_one_char
+    code: 'length(decode_base64("YQ=="))'
+    expect:
+      value: 1
+
+  - name: decode_base64_length_two_char
+    code: 'length(decode_base64("YWE="))'
+    expect:
+      value: 2
+
+  - name: decode_base64_length_three_char
+    code: 'length(decode_base64("YWFh"))'
+    expect:
+      value: 3
+
+  - name: decode_base64_url_safe_length_one_char
+    code: 'length(decode_base64("YQ", 1))'
+    expect:
+      value: 1
+
+  - name: decode_base64_url_safe_length_two_char
+    code: 'length(decode_base64("YWE", 1))'
+    expect:
+      value: 2
+
+  - name: decode_base64_url_safe_length_three_char
+    code: 'length(decode_base64("YWFh", 1))'
+    expect:
+      value: 3
+
+  - name: decode_base64_url_safe_two_char
+    code: 'decode_base64("YWE", 1)'
+    expect:
+      value: "aa"
+
+  - name: decode_base64_url_safe_three_char
+    code: 'decode_base64("YWFh", 1)'
+    expect:
+      value: "aaa"
+
+  - name: decode_base64_standard_test_with_padding
+    code: 'decode_base64("dGVzdA==")'
+    expect:
+      value: "test"
+
+  - name: decode_base64_url_safe_test_with_full_padding
+    code: 'decode_base64("dGVzdA==", 1)'
+    expect:
+      value: "test"
+
+  - name: decode_base64_url_safe_not_binary_string
+    code: 'decode_base64("~5A~6D~39~76~59~6D~46~79", 1)'
+    expect:
+      error: E_INVARG
+
+  - name: decode_base64_url_safe_embedded_padding
+    code: 'decode_base64("dGV=zdA=", 1)'
+    expect:
+      error: E_INVARG
+
+  - name: decode_base64_url_safe_too_much_padding
+    code: 'decode_base64("dGVzd===", 1)'
+    expect:
+      error: E_INVARG
+
 
   # Hashing - string_hash
   - name: string_hash_abc_md5
@@ -508,6 +663,152 @@ tests:
     expect:
       value: "6B2D075B1CD34CD1C3E43A995F110C55649DAD0E"
 
+  # string_hash - "abcdbcde..." extended vectors (missing algorithms)
+  - name: string_hash_abcdbcde_md5
+    code: 'string_hash("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq", "md5")'
+    expect:
+      value: "8215EF0796A20BCAAAE116D3876C664A"
+
+  - name: string_hash_abcdbcde_ripemd160
+    code: 'string_hash("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq", "ripemd160")'
+    expect:
+      value: "12A053384A9C0C88E405A06C27DCF49ADA62EB2B"
+
+  - name: string_hash_abcdbcde_sha1
+    code: 'string_hash("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq", "sha1")'
+    expect:
+      value: "84983E441C3BD26EBAAE4AA1F95129E5E54670F1"
+
+  - name: string_hash_abcdbcde_sha384
+    code: 'string_hash("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq", "sha384")'
+    expect:
+      value: "3391FDDDFC8DC7393707A65B1B4709397CF8B1D162AF05ABFE8F450DE5F36BC6B0455A8520BC4E6F5FE95B1FE3C8452B"
+
+  - name: string_hash_abcdbcde_sha512
+    code: 'string_hash("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq", "sha512")'
+    expect:
+      value: "204A8FC6DDA82F0A0CED7BEB8E08A41657C16EF468B228A8279BE331A703C33596FD15C13B1B07F9AA1D3BEA57789CA031AD85C7A71DD70354EC631238CA3445"
+
+  # binary_hash - nulls with additional algorithms
+  - name: binary_hash_nulls_md5
+    code: 'binary_hash("~00~00~00~00~00", "md5")'
+    expect:
+      value: "CA9C491AC66B2C62500882E93F3719A8"
+
+  - name: binary_hash_nulls_ripemd160
+    code: 'binary_hash("~00~00~00~00~00", "ripemd160")'
+    expect:
+      value: "585BD7ED566208944B1F2E13170CD4B66325B8EE"
+
+  - name: binary_hash_nulls_sha1
+    code: 'binary_hash("~00~00~00~00~00", "sha1")'
+    expect:
+      value: "A10909C2CDCAF5ADB7E6B092A4FABA558B62BD96"
+
+  - name: binary_hash_nulls_sha224
+    code: 'binary_hash("~00~00~00~00~00", "sha224")'
+    expect:
+      value: "0E61C65E55810439F418C959DD030C194B2FDAA2AE46B13B3732FF17"
+
+  - name: binary_hash_nulls_sha384
+    code: 'binary_hash("~00~00~00~00~00", "sha384")'
+    expect:
+      value: "8E8D9847B6BD198BB1980DB334659E96A1BF3DBB5C56368C6FABE6F6B561232790E3B40C1D4FB50A19C349B10BDC6950"
+
+  - name: binary_hash_nulls_sha512
+    code: 'binary_hash("~00~00~00~00~00", "sha512")'
+    expect:
+      value: "65FAA9D920E0E9CFF43FC3F30AB02BA2E8CF6F4643B58F7C1E64583FBEC8A268E677B0EC4D54406E748BECB53FDA210F5D4F39CF2A5014B1CA496B0805182649"
+
+  # value_hash - empty map [] with additional algorithms
+  - name: value_hash_empty_map_md5
+    code: 'value_hash([], "md5")'
+    expect:
+      value: "D751713988987E9331980363E24189CE"
+
+  - name: value_hash_empty_map_ripemd160
+    code: 'value_hash([], "ripemd160")'
+    expect:
+      value: "2BDF48D04094F739353B0C92F25B8BDCF7BBB679"
+
+  - name: value_hash_empty_map_sha1
+    code: 'value_hash([], "sha1")'
+    expect:
+      value: "97D170E1550EEE4AFC0AF065B78CDA302A97674C"
+
+  - name: value_hash_empty_map_sha224
+    code: 'value_hash([], "sha224")'
+    expect:
+      value: "23F497F643E37257C3F7E54F049D8829C41103BB29BF8C0BA0D1DF0A"
+
+  - name: value_hash_empty_map_sha384
+    code: 'value_hash([], "sha384")'
+    expect:
+      value: "562109B054CB4428FC53607B107C0ACDF91DE434B990A0295F516EF2AAD79EFC902238944E76D42F21BCF710BFA4C554"
+
+  - name: value_hash_empty_map_sha512
+    code: 'value_hash([], "sha512")'
+    expect:
+      value: "B25B294CB4DEB69EA00A4C3CF3113904801B6015E5956BD019A8570B1FE1D6040E944EF3CDEE16D0A46503CA6E659A25F21CF9CEDDC13F352A3C98138C15D6AF"
+
+  # value_hash - empty list {} with additional algorithms
+  - name: value_hash_empty_list_md5
+    code: 'value_hash({}, "md5")'
+    expect:
+      value: "99914B932BD37A50B983C5E7C90AE93B"
+
+  - name: value_hash_empty_list_ripemd160
+    code: 'value_hash({}, "ripemd160")'
+    expect:
+      value: "85E318A2B32953EDE3405FF0B2914E96C6292464"
+
+  - name: value_hash_empty_list_sha1
+    code: 'value_hash({}, "sha1")'
+    expect:
+      value: "BF21A9E8FBC5A3846FB05B4FA0859E0917B2202F"
+
+  - name: value_hash_empty_list_sha224
+    code: 'value_hash({}, "sha224")'
+    expect:
+      value: "5CDD15A873608087BE07A41B7F1A04E96D3A66FE7A9B0FAAC71F8D05"
+
+  - name: value_hash_empty_list_sha384
+    code: 'value_hash({}, "sha384")'
+    expect:
+      value: "D2A23BC783E3AA38F401E13C7488505137C4954A7FD88331F1597C5FF71111DC807C7370A5B282C6DA541C56EDE69F30"
+
+  - name: value_hash_empty_list_sha512
+    code: 'value_hash({}, "sha512")'
+    expect:
+      value: "27C74670ADB75075FAD058D5CEAF7B20C4E7786C83BAE8A32F626F9782AF34C9A33C2046EF60FD2A7878D378E29FEC851806BBD9A67878F3A9F1CDA4830763FD"
+
+  # Exact binary output for hash functions
+  - name: string_hash_binary_output_exact_md5
+    code: 'string_hash("", "md5", 1)'
+    expect:
+      value: "~D4~1D~8C~D9~8F~00~B2~04~E9~80~09~98~EC~F8~42~7E"
+
+  - name: binary_hash_binary_output_exact_md5
+    code: 'binary_hash("~00~00~00~00~00", "md5", 1)'
+    expect:
+      value: "~CA~9C~49~1A~C6~6B~2C~62~50~08~82~E9~3F~37~19~A8"
+
+  - name: value_hash_binary_output_exact_md5
+    code: 'value_hash([], "md5", 1)'
+    expect:
+      value: "~D7~51~71~39~88~98~7E~93~31~98~03~63~E2~41~89~CE"
+
+  # Invalid algorithm names for binary_hash and value_hash
+  - name: binary_hash_invalid_algorithm
+    code: 'binary_hash("abc", "con")'
+    expect:
+      error: E_INVARG
+
+  - name: value_hash_invalid_algorithm
+    code: 'value_hash("abc", "carne")'
+    expect:
+      error: E_INVARG
+
   # HMAC - string_hmac
   - name: string_hmac_jefe_sha256
     code: 'string_hmac("what do ya want for nothing?", "Jefe", "sha256")'
@@ -533,6 +834,63 @@ tests:
     code: 'string_hmac("abc", "abc", "bozo")'
     expect:
       error: E_INVARG
+
+  # HMAC-SHA1 extended test vectors (Nettle reference)
+  - name: string_hmac_hi_there_sha1
+    code: 'string_hmac("Hi There", "~0b~0b~0b~0b~0b~0b~0b~0b~0b~0b~0b~0b~0b~0b~0b~0b~0b~0b~0b~0b", "sha1")'
+    expect:
+      value: "B617318655057264E28BC0B6FB378C8EF146BE00"
+
+  - name: string_hmac_truncation_sha1
+    code: 'string_hmac("Test With Truncation", "~0c~0c~0c~0c~0c~0c~0c~0c~0c~0c~0c~0c~0c~0c~0c~0c~0c~0c~0c~0c", "sha1")'
+    expect:
+      value: "4C1A03424B55E07FE7F27BE1D58BB9324A9A5A04"
+
+  - name: string_hmac_large_key_first_sha1
+    code: 'string_hmac("Test Using Larger Than Block-Size Key - Hash Key First", "~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa", "sha1")'
+    expect:
+      value: "AA4AE5E15272D00E95705637CE8A3B55ED402112"
+
+  - name: string_hmac_large_key_and_data_sha1
+    code: 'string_hmac("Test Using Larger Than Block-Size Key and Larger Than One Block-Size Data", "~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa", "sha1")'
+    expect:
+      value: "E8E99D0F45237D786D6BBAA7965C7808BBFF1A91"
+
+  - name: string_hmac_empty_sha1
+    code: 'string_hmac("", "", "sha1")'
+    expect:
+      value: "FBDB1D1B18AA6C08324B7D64B71FB76370690E1D"
+
+  - name: string_hmac_key_with_nulls_sha1
+    code: 'string_hmac("Test Using Key with nulls", "123456789~00123456789~00123456789~00", "sha1")'
+    expect:
+      value: "999D63DE9594FB320FA1B1D7CC6D3662FEC60AB1"
+
+  - name: string_hmac_key_with_nulls_sha256
+    code: 'string_hmac("Test Using Key with nulls", "123456789~00123456789~00123456789~00", "sha256")'
+    expect:
+      value: "44D1527E6295BF1055924DEBECC4499776903B9C37FF7D6519452230A7C30AF8"
+
+  # HMAC-SHA256 extended test vectors (Nettle reference)
+  - name: string_hmac_hi_there_sha256
+    code: 'string_hmac("Hi There", "~0b~0b~0b~0b~0b~0b~0b~0b~0b~0b~0b~0b~0b~0b~0b~0b~0b~0b~0b~0b", "sha256")'
+    expect:
+      value: "B0344C61D8DB38535CA8AFCEAF0BF12B881DC200C9833DA726E9376C2E32CFF7"
+
+  - name: string_hmac_truncation_sha256
+    code: 'string_hmac("Test With Truncation", "~0c~0c~0c~0c~0c~0c~0c~0c~0c~0c~0c~0c~0c~0c~0c~0c~0c~0c~0c~0c", "sha256")'
+    expect:
+      value: "A3B6167473100EE06E0C796C2955552BFA6F7C0A6A8AEF8B93F860AAB0CD20C5"
+
+  - name: string_hmac_large_key_131_sha256
+    code: 'string_hmac("Test Using Larger Than Block-Size Key - Hash Key First", "~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa", "sha256")'
+    expect:
+      value: "60E431591EE0B67F0D8A26AACBF5B77F8E0BC6213728C5140546040F0EE37F54"
+
+  - name: string_hmac_large_key_and_large_data_131_sha256
+    code: 'string_hmac("This is a test using a larger than block-size key and a larger than block-size data. The key needs to be hashed before being used by the HMAC algorithm.", "~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa", "sha256")'
+    expect:
+      value: "9B09FFA71B942FCB27635FBCD5B0E944BFDC63644F0713938A7F51535C3A35E2"
 
   # HMAC - binary_hmac
   - name: binary_hmac_jefe_sha1
@@ -560,6 +918,47 @@ tests:
     expect:
       error: E_INVARG
 
+  # binary_hmac - extended test vectors
+  - name: binary_hmac_dd_data_sha1
+    code: 'binary_hmac("~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd", "~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa", "sha1")'
+    expect:
+      value: "125D7342B9AC11CD91A39AF48AA17B4F63F175D3"
+
+  - name: binary_hmac_cd_data_sha1
+    code: 'binary_hmac("~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd", "~01~02~03~04~05~06~07~08~09~0a~0b~0c~0d~0e~0f~10~11~12~13~14~15~16~17~18~19", "sha1")'
+    expect:
+      value: "4C9007F4026250C6BC8414F9BF50C86C2D7235DA"
+
+  - name: binary_hmac_dd_data_sha256
+    code: 'binary_hmac("~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd~dd", "~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa~aa", "sha256")'
+    expect:
+      value: "773EA91E36800E46854DB8EBD09181A72959098B3EF8C122D9635514CED565FE"
+
+  - name: binary_hmac_cd_data_sha256
+    code: 'binary_hmac("~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd~cd", "~01~02~03~04~05~06~07~08~09~0a~0b~0c~0d~0e~0f~10~11~12~13~14~15~16~17~18~19", "sha256")'
+    expect:
+      value: "82558A389A443C0EA4CC819899F2083A85F0FAA3E578F8077A2E3FF46729665B"
+
+  - name: binary_hmac_key_with_nulls_sha1
+    code: 'binary_hmac("Test Using Key with nulls", "123456789~00123456789~00123456789~00", "sha1")'
+    expect:
+      value: "999D63DE9594FB320FA1B1D7CC6D3662FEC60AB1"
+
+  - name: binary_hmac_key_with_nulls_sha256
+    code: 'binary_hmac("Test Using Key with nulls", "123456789~00123456789~00123456789~00", "sha256")'
+    expect:
+      value: "44D1527E6295BF1055924DEBECC4499776903B9C37FF7D6519452230A7C30AF8"
+
+  - name: binary_hmac_empty_sha1
+    code: 'binary_hmac("", "", "sha1")'
+    expect:
+      value: "FBDB1D1B18AA6C08324B7D64B71FB76370690E1D"
+
+  - name: binary_hmac_bad_key_binary_string
+    code: 'binary_hmac("", "~00~#!~00")'
+    expect:
+      error: E_INVARG
+
   # HMAC - value_hmac
   - name: value_hmac_jefe_sha1
     code: 'value_hmac("what do ya want for nothing?", "Jefe", "sha1")'
@@ -575,6 +974,39 @@ tests:
     code: 'value_hmac("", "", "sha256")'
     expect:
       value: "140B47411F10521CC48851F43C9ABE73016E1D45627C8523D25CBF7FE64F8B03"
+
+  # Invalid algorithm names for HMAC
+  - name: binary_hmac_invalid_algorithm
+    code: 'binary_hmac("abc", "abc", "con")'
+    expect:
+      error: E_INVARG
+
+  - name: value_hmac_invalid_algorithm
+    code: 'value_hmac("abc", "abc", "carne")'
+    expect:
+      error: E_INVARG
+
+  # Bad binary key for HMAC
+  - name: value_hmac_bad_key
+    code: 'value_hmac("", "~00~#!~00")'
+    expect:
+      error: E_INVARG
+
+  # Exact binary output for HMAC
+  - name: string_hmac_binary_output_exact_sha256
+    code: 'string_hmac("", "", "sha256", 1)'
+    expect:
+      value: "~B6~13~67~9A~08~14~D9~EC~77~2F~95~D7~78~C3~5F~C5~FF~16~97~C4~93~71~56~53~C6~C7~12~14~42~92~C5~AD"
+
+  - name: binary_hmac_binary_output_exact_sha256
+    code: 'binary_hmac("", "", "sha256", 1)'
+    expect:
+      value: "~B6~13~67~9A~08~14~D9~EC~77~2F~95~D7~78~C3~5F~C5~FF~16~97~C4~93~71~56~53~C6~C7~12~14~42~92~C5~AD"
+
+  - name: value_hmac_binary_output_exact_sha256
+    code: 'value_hmac("", "", "sha256", 1)'
+    expect:
+      value: "~14~0B~47~41~1F~10~52~1C~C4~88~51~F4~3C~9A~BE~73~01~6E~1D~45~62~7C~85~23~D2~5C~BF~7F~E6~4F~8B~03"
 
   # Hash case sensitivity
   - name: string_hash_case_insensitive_md5
@@ -762,82 +1194,146 @@ tests:
     expect:
       error: E_INVARG
 
-  # Crypt
+  # Salt edge cases from Ruby tests
+  - name: salt_bcrypt_cost_04
+    code: 'salt("$2a$04$", "1234567890123456")'
+    expect:
+      value: "$2a$04$KRGxLBS0Lxe3KBCwKxOzLe"
+
+  - name: salt_bcrypt_cost_max_above_31
+    code: 'salt("$2a$41$", "1234567890123456")'
+    expect:
+      error: E_INVARG
+
+  - name: salt_bcrypt_cost_empty
+    code: 'salt("$2a$$", "1234567890123456")'
+    expect:
+      error: E_INVARG
+
+  - name: salt_bcrypt_cost_alpha
+    code: 'salt("$2a$mm$", "1234567890123456")'
+    expect:
+      error: E_INVARG
+
+  - name: salt_standard_one_byte_too_few
+    code: 'salt("", "~00")'
+    expect:
+      error: E_INVARG
+
+  - name: salt_bcrypt_bad_binary_last_byte
+    code: 'salt("$2a$", "~00~00~00~00~00~00~00~00~00~00~00~00~00~00~00~zz")'
+    expect:
+      error: E_INVARG
+
+  - name: salt_invalid_prefix_foo
+    code: 'salt("foo", "")'
+    expect:
+      error: E_INVARG
+
+  # Crypt - Windows Toast only supports $2a$ bcrypt, not DES/SHA/SHA512/$2b$
   - name: crypt_one_arg_defaults_to_unix
+    skip: "DES crypt not supported on Windows"
     code: 'length(crypt("password"))'
     expect:
       value: 13
 
   - name: crypt_falls_through_to_unix
+    skip: "DES crypt not supported on Windows"
     code: 'length(crypt("password", "ab"))'
     expect:
       value: 13
 
   - name: crypt_sha256_with_salt
+    skip: "SHA256 crypt not supported on Windows"
     code: 'index(crypt("password", "$5$abc"), "$5$")'
     expect:
       value: 1
 
   - name: crypt_sha256_rounds_wizard
+    skip: "SHA256 crypt not supported on Windows"
     permission: wizard
     code: 'index(crypt("password", "$5$rounds=10000$abc"), "$5$rounds=10000$")'
     expect:
       value: 1
 
   - name: crypt_sha256_rounds_non_wizard
+    skip: "SHA256 crypt not supported on Windows"
     permission: programmer
     code: 'index(crypt("password", "$5$rounds=10000$abc"), "$5$rounds=10000$")'
     expect:
-      value: 1
+      error: E_PERM
 
   - name: crypt_sha512_with_salt
+    skip: "SHA512 crypt not supported on Windows"
     code: 'index(crypt("password", "$6$abc"), "$6$")'
     expect:
       value: 1
 
   - name: crypt_sha512_rounds_wizard
+    skip: "SHA512 crypt not supported on Windows"
     permission: wizard
     code: 'index(crypt("password", "$6$rounds=10000$abc"), "$6$rounds=10000$")'
     expect:
       value: 1
 
   - name: crypt_sha512_rounds_non_wizard
+    skip: "SHA512 crypt not supported on Windows"
     permission: programmer
     code: 'index(crypt("password", "$6$rounds=10000$abc"), "$6$rounds=10000$")'
     expect:
-      value: 1
+      error: E_PERM
 
-  - name: crypt_bcrypt_with_salt
-    code: 'index(crypt("password", "$2b$05$1234567890123456"), "$2b$05$")'
+  - name: crypt_bcrypt_2a_with_salt
+    code: 'crypt("foobar", "$2a$05$KRGxLBS0Lxe3KBCwKxOzLe")'
     expect:
-      value: 1
+      value: "$2a$05$KRGxLBS0Lxe3KBCwKxOzLeMe5OhXhsCBVMLq7IYo9z2kiiCZMSmz6"
 
-  - name: crypt_bcrypt_requires_sixteen_chars
-    code: 'crypt("password", "$2b$05$123456789012345")'
+  - name: crypt_bcrypt_2a_requires_sixteen_chars
+    code: 'crypt("foobar", "$2a$05$KRGxLBS0Lxe3KBCwKxOzL")'
     expect:
       error: E_INVARG
 
-  - name: crypt_bcrypt_cost_factor
+  - name: crypt_bcrypt_2a_cost_factor_wizard
     permission: wizard
-    code: 'index(crypt("password", "$2b$10$1234567890123456"), "$2b$10$")'
+    code: 'crypt("foobar", "$2a$14$KRGxLBS0Lxe3KBCwKxOzLe")'
     expect:
-      value: 1
+      value: "$2a$14$KRGxLBS0Lxe3KBCwKxOzLe7p.ddns6iDfgZCpWHCQ4hN.RUaeF9Rq"
 
-  - name: crypt_bcrypt_cost_min
-    code: 'crypt("password", "$2b$03$1234567890123456")'
-    expect:
-      error: E_INVARG
-
-  - name: crypt_bcrypt_cost_max
-    code: 'crypt("password", "$2b$32$1234567890123456")'
+  - name: crypt_bcrypt_2a_cost_min
+    permission: wizard
+    code: 'crypt("foobar", "$2a$03$KRGxLBS0Lxe3KBCwKxOzLe")'
     expect:
       error: E_INVARG
 
-  - name: crypt_bcrypt_cost_non_five_requires_wizard
+  - name: crypt_bcrypt_2a_cost_max
+    permission: wizard
+    code: 'crypt("foobar", "$2a$32$KRGxLBS0Lxe3KBCwKxOzLe")'
+    expect:
+      error: E_INVARG
+
+  - name: crypt_bcrypt_2a_cost_non_five_requires_wizard
     permission: programmer
-    code: 'index(crypt("password", "$2b$10$1234567890123456"), "$2b$10$")'
+    code: 'crypt("foobar", "$2a$10$KRGxLBS0Lxe3KBCwKxOzLe")'
     expect:
-      value: 1
+      error: E_PERM
+
+  - name: crypt_bcrypt_2a_cost_non_five_wizard_succeeds
+    permission: wizard
+    code: 'crypt("foobar", "$2a$10$KRGxLBS0Lxe3KBCwKxOzLe")'
+    expect:
+      value: "$2a$10$KRGxLBS0Lxe3KBCwKxOzLeAgxB7LpTJ36c2o2iVIDdBSv3rB.GHhW"
+
+  - name: crypt_bcrypt_2a_invalid_cost_alpha
+    permission: wizard
+    code: 'crypt("foobar", "$2a$ab$KRGxLBS0Lxe3KBCwKxOzLe")'
+    expect:
+      error: E_INVARG
+
+  - name: crypt_bcrypt_2a_invalid_cost_special
+    permission: wizard
+    code: 'crypt("foobar", "$2a$!!$KRGxLBS0Lxe3KBCwKxOzLe")'
+    expect:
+      error: E_INVARG
 
   - name: crypt_invalid_salt
     code: 'crypt("password", "$99$abc")'

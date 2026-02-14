@@ -29,9 +29,9 @@ tests:
         expect:
           output: []
     cleanup:
-      - run: 'delete_verb(#0, "do_command")'
+      - run: 'delete_verb(#0, "do_command");'
         as: wizard
-      - run: 'delete_verb(player, "testverb")'
+      - run: 'delete_verb(player, "testverb");'
         as: wizard
 
   - name: do_command_return_false_continues_parsing
@@ -50,9 +50,9 @@ tests:
         expect:
           output: "VERB_CALLED"
     cleanup:
-      - run: 'delete_verb(#0, "do_command")'
+      - run: 'delete_verb(#0, "do_command");'
         as: wizard
-      - run: 'delete_verb(player, "passthrough")'
+      - run: 'delete_verb(player, "passthrough");'
         as: wizard
 
   # ============================================
@@ -90,7 +90,7 @@ tests:
         expect:
           value: 1
     cleanup:
-      - run: 'delete_property(#0, "recycle_log")'
+      - run: 'delete_property(#0, "recycle_log");'
         as: wizard
 
   - name: recycle_verb_this_is_recycled_object
@@ -106,8 +106,6 @@ tests:
           return obj;
         capture: obj
         as: wizard
-      # Note: Can't use {obj} as MOO list literal because framework interprets it as placeholder
-      # Instead, compare directly - both {obj} substitutions become the same objid
       - run: |
           recycle({obj});
           return #0.recycle_this == {obj};
@@ -115,7 +113,7 @@ tests:
         expect:
           value: 1
     cleanup:
-      - run: 'delete_property(#0, "recycle_this")'
+      - run: 'delete_property(#0, "recycle_this");'
         as: wizard
 
   - name: recycle_verb_player_is_caller
@@ -136,8 +134,33 @@ tests:
           return #0.recycle_player;
         as: wizard
         expect:
-          # player should be the wizard who called recycle()
           match: "#\\d+"
     cleanup:
-      - run: 'delete_property(#0, "recycle_player")'
+      - run: 'delete_property(#0, "recycle_player");'
         as: wizard
+
+  # ============================================
+  # Multi-Connection Tests
+  # ============================================
+  # These tests use secondary socket connections to test lifecycle verbs
+
+  - name: new_connection_opens_socket
+    description: new_connection opens a secondary socket to the server
+    steps:
+      - new_connection:
+          capture: conn1
+      - close_connection: conn1
+
+  - name: new_connection_receives_welcome
+    description: new_connection receives server welcome message
+    steps:
+      - new_connection:
+          capture: conn1
+      - send:
+          connection: conn1
+          text: "connect Wizard"
+        capture: login_output
+        expect:
+          output:
+            match: "Connected"
+      - close_connection: conn1

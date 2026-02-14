@@ -1,0 +1,741 @@
+name: types
+description: >
+  Type system tests: typeof(), type constants, booleans, truthiness,
+  type conversions (toint/tofloat/toobj/tostr/toliteral), number
+  promotion, cross-type comparisons, and the power operator.
+
+requires:
+  builtins:
+    - typeof
+    - toint
+    - tofloat
+    - toobj
+    - tostr
+    - toliteral
+
+tests:
+  # ===========================================================================
+  # typeof() returning numeric type values
+  # ===========================================================================
+
+  - name: typeof_int_value
+    code: "typeof(42)"
+    expect:
+      value: 0
+
+  - name: typeof_obj_value
+    code: "typeof(#0)"
+    expect:
+      value: 1
+
+  - name: typeof_str_value
+    code: 'typeof("hello")'
+    expect:
+      value: 2
+
+  - name: typeof_err_value
+    code: "typeof(E_TYPE)"
+    expect:
+      value: 3
+
+  - name: typeof_list_value
+    code: "typeof({1, 2})"
+    expect:
+      value: 4
+
+  - name: typeof_float_value
+    code: "typeof(1.0)"
+    expect:
+      value: 9
+
+  - name: typeof_map_value
+    code: 'typeof(["a" -> 1])'
+    expect:
+      value: 10
+
+  - name: typeof_bool_true_value
+    code: "typeof(true)"
+    expect:
+      value: 14
+
+  - name: typeof_bool_false_value
+    code: "typeof(false)"
+    expect:
+      value: 14
+
+  - name: typeof_no_args
+    code: "typeof()"
+    expect:
+      error: E_ARGS
+
+  - name: typeof_too_many_args
+    code: "typeof(1, 2)"
+    expect:
+      error: E_ARGS
+
+  # ===========================================================================
+  # Type constant numeric values
+  # ===========================================================================
+
+  - name: constant_NUM_value
+    code: "NUM"
+    expect:
+      value: 0
+
+  - name: constant_INT_value
+    code: "INT"
+    expect:
+      value: 0
+
+  - name: constant_NUM_equals_INT
+    code: "NUM == INT"
+    expect:
+      value: 1
+
+  - name: constant_OBJ_value
+    code: "OBJ"
+    expect:
+      value: 1
+
+  - name: constant_STR_value
+    code: "STR"
+    expect:
+      value: 2
+
+  - name: constant_ERR_value
+    code: "ERR"
+    expect:
+      value: 3
+
+  - name: constant_LIST_value
+    code: "LIST"
+    expect:
+      value: 4
+
+  - name: constant_FLOAT_value
+    code: "FLOAT"
+    expect:
+      value: 9
+
+  - name: constant_MAP_value
+    code: "MAP"
+    expect:
+      value: 10
+
+  - name: constant_ANON_value
+    code: "ANON"
+    expect:
+      value: 12
+
+  - name: constant_WAIF_value
+    code: "WAIF"
+    expect:
+      value: 13
+
+  - name: constant_BOOL_value
+    code: "BOOL"
+    expect:
+      value: 14
+
+  - name: typeof_int_matches_NUM
+    code: "typeof(42) == NUM"
+    expect:
+      value: 1
+
+  - name: typeof_int_matches_INT
+    code: "typeof(42) == INT"
+    expect:
+      value: 1
+
+  - name: typeof_err_matches_ERR
+    code: "typeof(E_PERM) == ERR"
+    expect:
+      value: 1
+
+  - name: typeof_map_matches_MAP
+    code: 'typeof(["a" -> 1]) == MAP'
+    expect:
+      value: 1
+
+  - name: typeof_bool_matches_BOOL
+    code: "typeof(true) == BOOL"
+    expect:
+      value: 1
+
+  # ===========================================================================
+  # Boolean true/false basics
+  # ===========================================================================
+
+  - name: bool_true_is_truthy
+    statement: |
+      if (true)
+        return 1;
+      else
+        return 0;
+      endif
+    expect:
+      value: 1
+
+  - name: bool_false_is_falsy
+    statement: |
+      if (false)
+        return 1;
+      else
+        return 0;
+      endif
+    expect:
+      value: 0
+
+  - name: bool_true_typeof
+    code: "typeof(true)"
+    expect:
+      value: 14
+
+  - name: bool_false_typeof
+    code: "typeof(false)"
+    expect:
+      value: 14
+
+  - name: bool_true_equal_one
+    description: "true compares equal to 1 in Toast"
+    code: "true == 1"
+    expect:
+      value: 1
+
+  - name: bool_false_equal_zero
+    description: "false compares equal to 0 in Toast"
+    code: "false == 0"
+    expect:
+      value: 1
+
+  - name: bool_true_equals_true
+    code: "true == true"
+    expect:
+      value: 1
+
+  - name: bool_false_equals_false
+    code: "false == false"
+    expect:
+      value: 1
+
+  - name: bool_true_not_equals_false
+    code: "true == false"
+    expect:
+      value: 0
+
+  - name: bool_not_true_is_falsy
+    code: "!true"
+    expect:
+      value: 0
+
+  - name: bool_not_false_is_truthy
+    code: "!false"
+    expect:
+      value: 1
+
+  # ===========================================================================
+  # Truthiness (is_true semantics)
+  # ===========================================================================
+
+  - name: truthy_nonzero_int
+    code: '42 && "yes" || "no"'
+    expect:
+      value: "yes"
+
+  - name: truthy_zero_int
+    code: '0 && "yes" || "no"'
+    expect:
+      value: "no"
+
+  - name: truthy_nonzero_float
+    code: '1.0 && "yes" || "no"'
+    expect:
+      value: "yes"
+
+  - name: truthy_zero_float
+    code: '0.0 && "yes" || "no"'
+    expect:
+      value: "no"
+
+  - name: truthy_nonempty_string
+    code: '"hello" && "yes" || "no"'
+    expect:
+      value: "yes"
+
+  - name: truthy_empty_string
+    code: '"" && "yes" || "no"'
+    expect:
+      value: "no"
+
+  - name: truthy_nonempty_list
+    code: '{1} && "yes" || "no"'
+    expect:
+      value: "yes"
+
+  - name: truthy_empty_list
+    code: '{} && "yes" || "no"'
+    expect:
+      value: "no"
+
+  - name: truthy_nonempty_map
+    code: '["a" -> 1] && "yes" || "no"'
+    expect:
+      value: "yes"
+
+  - name: truthy_empty_map
+    code: '[] && "yes" || "no"'
+    expect:
+      value: "no"
+
+  - name: truthy_object_ref
+    description: "Objects are always falsy (is_true default returns 0)"
+    code: '#0 && "yes" || "no"'
+    expect:
+      value: "no"
+
+  - name: truthy_error_value
+    description: "Errors are always falsy"
+    code: 'E_NONE && "yes" || "no"'
+    expect:
+      value: "no"
+
+  - name: truthy_true
+    code: 'true && "yes" || "no"'
+    expect:
+      value: "yes"
+
+  - name: truthy_false
+    code: 'false && "yes" || "no"'
+    expect:
+      value: "no"
+
+  # ===========================================================================
+  # toint() conversions
+  # ===========================================================================
+
+  - name: toint_from_error_none
+    description: "Error values convert to their enum ordinal"
+    code: "toint(E_NONE)"
+    expect:
+      value: 0
+
+  - name: toint_from_error_type
+    code: "toint(E_TYPE)"
+    expect:
+      value: 1
+
+  - name: toint_from_error_div
+    code: "toint(E_DIV)"
+    expect:
+      value: 2
+
+  - name: toint_from_bool_true
+    code: "toint(true)"
+    expect:
+      value: 1
+
+  - name: toint_from_bool_false
+    code: "toint(false)"
+    expect:
+      value: 0
+
+  - name: toint_unparseable_string
+    description: "Unparseable string returns 0"
+    code: 'toint("foo")'
+    expect:
+      value: 0
+
+  - name: toint_string_float
+    description: "String with float is parsed as float then truncated"
+    code: 'toint("3.5")'
+    expect:
+      value: 3
+
+  - name: toint_string_with_spaces
+    description: "Leading/trailing spaces are handled"
+    code: 'toint(" 42 ")'
+    expect:
+      value: 42
+
+  - name: toint_float_truncates
+    description: "Float is truncated toward zero"
+    code: "toint(3.9)"
+    expect:
+      value: 3
+
+  - name: toint_negative_float_truncates
+    code: "toint(-3.9)"
+    expect:
+      value: -3
+
+  - name: toint_list_error
+    code: "toint({})"
+    expect:
+      error: E_TYPE
+
+  - name: toint_map_error
+    code: "toint([])"
+    expect:
+      error: E_TYPE
+
+  - name: toint_no_args
+    code: "toint()"
+    expect:
+      error: E_ARGS
+
+  - name: toint_too_many_args
+    code: "toint(1, 2)"
+    expect:
+      error: E_ARGS
+
+  # ===========================================================================
+  # tofloat() conversions
+  # ===========================================================================
+
+  - name: tofloat_from_obj
+    code: "tofloat(#5)"
+    expect:
+      value: 5.0
+
+  - name: tofloat_from_error
+    code: "tofloat(E_NONE)"
+    expect:
+      value: 0.0
+
+  - name: tofloat_unparseable_string
+    code: 'tofloat("foo")'
+    expect:
+      error: E_INVARG
+
+  - name: tofloat_empty_string
+    code: 'tofloat("")'
+    expect:
+      error: E_INVARG
+
+  - name: tofloat_bool_true_error
+    code: "tofloat(true)"
+    expect:
+      error: E_TYPE
+
+  - name: tofloat_bool_false_error
+    code: "tofloat(false)"
+    expect:
+      error: E_TYPE
+
+  - name: tofloat_list_error
+    code: "tofloat({})"
+    expect:
+      error: E_TYPE
+
+  - name: tofloat_map_error
+    code: "tofloat([])"
+    expect:
+      error: E_TYPE
+
+  - name: tofloat_negative_string
+    code: 'tofloat("-3.14")'
+    expect:
+      value: -3.14
+
+  - name: tofloat_no_args
+    code: "tofloat()"
+    expect:
+      error: E_ARGS
+
+  - name: tofloat_too_many_args
+    code: "tofloat(1, 2)"
+    expect:
+      error: E_ARGS
+
+  # ===========================================================================
+  # toobj() conversions
+  # ===========================================================================
+
+  - name: toobj_from_obj
+    code: "toobj(#5)"
+    expect:
+      value: "#5"
+
+  - name: toobj_from_string_with_hash
+    code: 'toobj("#5")'
+    expect:
+      value: "#5"
+
+  - name: toobj_from_float
+    code: "toobj(3.0)"
+    expect:
+      value: "#3"
+
+  - name: toobj_from_error
+    code: "toobj(E_NONE)"
+    expect:
+      value: "#0"
+
+  - name: toobj_from_bool_true
+    code: "toobj(true)"
+    expect:
+      value: "#1"
+
+  - name: toobj_from_bool_false
+    code: "toobj(false)"
+    expect:
+      value: "#0"
+
+  - name: toobj_from_negative_int
+    code: "toobj(-1)"
+    expect:
+      value: "#-1"
+
+  - name: toobj_list_error
+    code: "toobj({})"
+    expect:
+      error: E_TYPE
+
+  - name: toobj_map_error
+    code: "toobj([])"
+    expect:
+      error: E_TYPE
+
+  - name: toobj_no_args
+    code: "toobj()"
+    expect:
+      error: E_ARGS
+
+  - name: toobj_too_many_args
+    code: "toobj(1, 2)"
+    expect:
+      error: E_ARGS
+
+  # ===========================================================================
+  # tostr() additional edge cases
+  # ===========================================================================
+
+  - name: tostr_map
+    code: 'tostr(["a" -> 1])'
+    expect:
+      value: "[map]"
+
+  - name: tostr_empty_map
+    code: "tostr([])"
+    expect:
+      value: "[map]"
+
+  - name: tostr_bool_true
+    code: "tostr(true)"
+    expect:
+      value: "true"
+
+  - name: tostr_bool_false
+    code: "tostr(false)"
+    expect:
+      value: "false"
+
+  - name: tostr_zero_float
+    code: "tostr(0.0)"
+    expect:
+      value: "0.0"
+
+  - name: tostr_negative_int
+    code: "tostr(-42)"
+    expect:
+      value: "-42"
+
+  - name: tostr_negative_float
+    code: "tostr(-3.14)"
+    expect:
+      value: "-3.14"
+
+  - name: tostr_empty_list
+    code: "tostr({})"
+    expect:
+      value: "{list}"
+
+  # ===========================================================================
+  # toliteral() additional edge cases
+  # ===========================================================================
+
+  - name: toliteral_bool_true
+    code: "toliteral(true)"
+    expect:
+      value: "true"
+
+  - name: toliteral_bool_false
+    code: "toliteral(false)"
+    expect:
+      value: "false"
+
+  - name: toliteral_error_perm
+    code: "toliteral(E_PERM)"
+    expect:
+      value: "E_PERM"
+
+  - name: toliteral_error_none
+    code: "toliteral(E_NONE)"
+    expect:
+      value: "E_NONE"
+
+  - name: toliteral_empty_list
+    code: "toliteral({})"
+    expect:
+      value: "{}"
+
+  - name: toliteral_empty_map
+    code: "toliteral([])"
+    expect:
+      value: "[]"
+
+  - name: toliteral_zero_float
+    code: "toliteral(0.0)"
+    expect:
+      value: "0.0"
+
+  - name: toliteral_string_with_quotes
+    description: "Quotes in string are backslash-escaped"
+    code: 'toliteral("he said \"hi\"")'
+    expect:
+      value: "\"he said \\\"hi\\\"\""
+
+  - name: toliteral_string_with_backslash
+    description: "Backslash is escaped"
+    code: 'toliteral("a\\b")'
+    expect:
+      value: "\"a\\\\b\""
+
+  - name: toliteral_negative_obj
+    code: "toliteral(#-1)"
+    expect:
+      value: "#-1"
+
+  # ===========================================================================
+  # No automatic number promotion (int op float -> E_TYPE)
+  # ===========================================================================
+
+  - name: no_promotion_int_plus_float
+    description: "int + float is E_TYPE in Toast (no auto-promotion)"
+    code: "1 + 0.0"
+    expect:
+      error: E_TYPE
+
+  - name: no_promotion_float_plus_int
+    description: "float + int is E_TYPE in Toast (no auto-promotion)"
+    code: "1.0 + 0"
+    expect:
+      error: E_TYPE
+
+  - name: no_promotion_int_minus_float
+    code: "5 - 2.0"
+    expect:
+      error: E_TYPE
+
+  - name: no_promotion_int_times_float
+    code: "3 * 2.0"
+    expect:
+      error: E_TYPE
+
+  - name: no_promotion_int_div_float
+    code: "6 / 2.0"
+    expect:
+      error: E_TYPE
+
+  - name: no_promotion_float_div_int
+    code: "6.0 / 2"
+    expect:
+      error: E_TYPE
+
+  - name: no_promotion_int_mod_float
+    code: "7 % 3.0"
+    expect:
+      error: E_TYPE
+
+  - name: no_promotion_int_power_float
+    description: "int ^ float is E_TYPE (no auto-promotion)"
+    code: "2 ^ 3.0"
+    expect:
+      error: E_TYPE
+
+  - name: no_promotion_typeof_mixed
+    description: "int + float gives E_TYPE, not a promotable float result"
+    code: "typeof(1 + 0.0)"
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # Cross-type comparisons (<, >, <=, >=) -- no promotion, E_TYPE
+  # ===========================================================================
+
+  - name: compare_int_lt_float_error
+    description: "int < float is E_TYPE (no cross-type comparison)"
+    code: "1 < 2.0"
+    expect:
+      error: E_TYPE
+
+  - name: compare_float_lt_int_error
+    description: "float < int is E_TYPE (no cross-type comparison)"
+    code: "1.0 < 2"
+    expect:
+      error: E_TYPE
+
+  - name: compare_int_gt_float_error
+    description: "int > float is E_TYPE (no cross-type comparison)"
+    code: "2 > 1.0"
+    expect:
+      error: E_TYPE
+
+  - name: compare_int_le_float_error
+    description: "int <= float is E_TYPE (no cross-type comparison)"
+    code: "1 <= 1.0"
+    expect:
+      error: E_TYPE
+
+  - name: compare_string_int_error
+    description: "Comparing non-numeric types gives E_TYPE"
+    code: '"hello" < 5'
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # Power operator (^) edge cases
+  # ===========================================================================
+
+  - name: power_int_int_positive
+    code: "2 ^ 3"
+    expect:
+      value: 8
+
+  - name: power_int_int_zero
+    code: "5 ^ 0"
+    expect:
+      value: 1
+
+  - name: power_int_int_negative
+    description: "Negative exponent with integers truncates to 0"
+    code: "2 ^ -1"
+    expect:
+      value: 0
+
+  - name: power_float_int
+    code: "2.0 ^ 3"
+    expect:
+      value: 8.0
+
+  - name: power_float_float
+    code: "4.0 ^ 0.5"
+    expect:
+      value: 2.0
+
+  - name: power_int_float_error
+    description: "int ^ float is E_TYPE (no cross-type promotion)"
+    code: "4 ^ 0.5"
+    expect:
+      error: E_TYPE
+
+  - name: power_string_error
+    code: '"2" ^ 3'
+    expect:
+      error: E_TYPE
+
+  - name: power_zero_negative
+    description: "0 ^ -1 raises E_DIV (division by zero)"
+    code: "0 ^ -1"
+    expect:
+      error: E_DIV

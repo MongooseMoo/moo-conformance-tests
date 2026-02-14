@@ -6,7 +6,7 @@ Executes test cases defined in YAML format against a MOO transport.
 import re
 from typing import Any
 
-from .transport import MooTransport, ExecutionResult
+from .transport import MooTransport, ExecutionResult, TestConnection
 from .schema import MooTestSuite, MooTestCase, Expectation, TestStep
 from .moo_types import MooError, TYPE_NAMES
 
@@ -115,12 +115,44 @@ class YamlTestRunner:
             AssertionError: If any step's expectation is not met
         """
         variables: dict[str, Any] = {}
+        connections: dict[str, TestConnection] = {}
 
         try:
             for step in test.steps:
                 # Switch permission if step specifies different one
                 if step.as_:
                     self.transport.switch_user(step.as_)
+
+                # Handle new_connection step
+                if step.new_connection:
+                    conn = self.transport.open_connection()
+                    connections[step.new_connection.capture] = conn
+                    continue
+
+                # Handle send step
+                if step.send:
+                    conn_name = step.send.connection
+                    if conn_name not in connections:
+                        raise AssertionError(
+                            f"Unknown connection '{conn_name}'. Available: {list(connections.keys())}"
+                        )
+                    text = self._substitute_variables(step.send.text, variables)
+                    output_lines = connections[conn_name].send(text)
+
+                    if step.capture:
+                        variables[step.capture] = output_lines
+
+                    if step.expect and step.expect.output:
+                        self._verify_output(step.expect.output, output_lines, f"send on '{conn_name}'")
+                    continue
+
+                # Handle close_connection step
+                if step.close_connection:
+                    conn_name = step.close_connection
+                    if conn_name in connections:
+                        connections[conn_name].close()
+                        del connections[conn_name]
+                    continue
 
                 # Check if this is a verb_setup step
                 if step.verb_setup:
@@ -192,6 +224,13 @@ class YamlTestRunner:
                 cleanup_code = self._substitute_variables(cleanup_step.run, variables)
                 # Best effort - don't fail on cleanup errors
                 self.transport.execute(cleanup_code)
+
+            # Close any remaining connections
+            for conn in connections.values():
+                try:
+                    conn.close()
+                except Exception:
+                    pass
 
     def _substitute_variables(self, code: str, variables: dict[str, Any]) -> str:
         """Substitute {varname} placeholders with captured values.

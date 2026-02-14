@@ -1,0 +1,708 @@
+name: task_management
+description: |
+  Behavioral tests for task management builtins: task_id, seconds_left,
+  ticks_left, callers, caller_perms, task_perms, set_task_perms, queue_info,
+  finished_tasks, call_function, force_input, kill_task, suspend, resume,
+  task_stack, queued_tasks, flush_input.
+
+requires:
+  builtins:
+    - task_id
+    - seconds_left
+    - ticks_left
+    - callers
+    - caller_perms
+    - task_perms
+    - set_task_perms
+    - queue_info
+    - call_function
+    - force_input
+    - kill_task
+    - suspend
+    - resume
+    - task_stack
+    - queued_tasks
+    - flush_input
+
+tests:
+  # ===================================================================
+  # task_id()
+  # ===================================================================
+
+  - name: task_id_returns_int
+    code: "typeof(task_id())"
+    expect:
+      value: 0  # TYPE_INT
+
+  - name: task_id_returns_positive
+    code: "task_id() > 0"
+    expect:
+      value: 1
+
+  - name: task_id_no_args
+    code: "task_id(1)"
+    expect:
+      error: E_ARGS
+
+  - name: task_id_consistent_within_task
+    statement: |
+      a = task_id();
+      b = task_id();
+      return a == b;
+    expect:
+      value: 1
+
+  # ===================================================================
+  # seconds_left()
+  # ===================================================================
+
+  - name: seconds_left_returns_int
+    code: "typeof(seconds_left())"
+    expect:
+      value: 0  # TYPE_INT
+
+  - name: seconds_left_returns_positive
+    code: "seconds_left() > 0"
+    expect:
+      value: 1
+
+  - name: seconds_left_no_args
+    code: "seconds_left(1)"
+    expect:
+      error: E_ARGS
+
+  # ===================================================================
+  # ticks_left()
+  # ===================================================================
+
+  - name: ticks_left_returns_int
+    code: "typeof(ticks_left())"
+    expect:
+      value: 0  # TYPE_INT
+
+  - name: ticks_left_returns_positive
+    code: "ticks_left() > 0"
+    expect:
+      value: 1
+
+  - name: ticks_left_no_args
+    code: "ticks_left(1)"
+    expect:
+      error: E_ARGS
+
+  - name: ticks_left_decreases
+    description: "ticks_left() should decrease after work is done"
+    statement: |
+      a = ticks_left();
+      x = 0;
+      for i in [1..100]
+        x = x + i;
+      endfor
+      b = ticks_left();
+      return a > b;
+    expect:
+      value: 1
+
+  # ===================================================================
+  # callers()
+  # VERIFY: callers() at top-level eval may return empty list or may
+  # include eval wrapper frame(s). The verifier will fix the expected
+  # value if wrong.
+  # ===================================================================
+
+  - name: callers_at_top_level_returns_eval_frames
+    description: "callers() at top level eval returns eval wrapper frames (2 frames, both named 'eval')"
+    statement: |
+      c = callers();
+      return {length(c), c[1][2], c[2][2]};
+    expect:
+      value: [2, "eval", "eval"]
+
+  - name: callers_no_args_returns_list
+    code: "typeof(callers())"
+    expect:
+      value: 4  # TYPE_LIST
+
+  - name: callers_too_many_args
+    code: "callers(1, 2)"
+    expect:
+      error: E_ARGS
+
+  - name: callers_with_false_returns_without_line_numbers
+    description: "callers(0) returns same as callers() - frames have 5 elements (no line numbers)"
+    statement: |
+      c = callers(0);
+      return {length(c), length(c[1]), length(c[2])};
+    expect:
+      value: [2, 5, 5]
+
+  - name: callers_with_true_returns_with_line_numbers
+    description: "callers(1) returns frames with 6 elements (includes line numbers)"
+    statement: |
+      c = callers(1);
+      return {length(c), length(c[1]), length(c[2])};
+    expect:
+      value: [2, 6, 6]
+
+  # ===================================================================
+  # caller_perms()
+  # Existing coverage: 2 tests in caller_perms.yaml
+  #   - caller_perms_top_level_eval (caller_perms() == player)
+  #   - caller_perms_returns_player_type (typeof == OBJ)
+  # Only adding E_ARGS test here.
+  # ===================================================================
+
+  - name: caller_perms_no_args_only
+    code: "caller_perms(1)"
+    expect:
+      error: E_ARGS
+
+  # ===================================================================
+  # task_perms()
+  # ===================================================================
+
+  - name: task_perms_returns_obj
+    code: "typeof(task_perms())"
+    expect:
+      value: 1  # TYPE_OBJ
+
+  - name: task_perms_equals_player_at_top_level
+    description: "At top level, task_perms() should equal player"
+    code: "task_perms() == player"
+    expect:
+      value: 1
+
+  - name: task_perms_no_args_only
+    code: "task_perms(1)"
+    expect:
+      error: E_ARGS
+
+  - name: task_perms_as_wizard
+    permission: wizard
+    code: "task_perms() == player"
+    expect:
+      value: 1
+
+  - name: task_perms_as_programmer
+    permission: programmer
+    code: "task_perms() == player"
+    expect:
+      value: 1
+
+  # ===================================================================
+  # set_task_perms()
+  # ===================================================================
+
+  - name: set_task_perms_no_args
+    permission: wizard
+    code: "set_task_perms()"
+    expect:
+      error: E_ARGS
+
+  - name: set_task_perms_too_many_args
+    permission: wizard
+    code: "set_task_perms(player, player)"
+    expect:
+      error: E_ARGS
+
+  - name: set_task_perms_type_check
+    permission: wizard
+    code: 'set_task_perms("foo")'
+    expect:
+      error: E_TYPE
+
+  - name: set_task_perms_type_check_int
+    permission: wizard
+    code: "set_task_perms(42)"
+    expect:
+      error: E_TYPE
+
+  - name: set_task_perms_wizard_can_set_to_self
+    permission: wizard
+    statement: |
+      set_task_perms(player);
+      return task_perms() == player;
+    expect:
+      value: 1
+
+  - name: set_task_perms_wizard_can_set_to_other
+    description: "Wizard can set task_perms to any valid object"
+    permission: wizard
+    statement: |
+      set_task_perms(#0);
+      return task_perms();
+    expect:
+      value: "#0"
+
+  - name: set_task_perms_returns_zero
+    permission: wizard
+    code: "set_task_perms(player)"
+    expect:
+      value: 0
+
+  - name: set_task_perms_programmer_can_set_to_self
+    description: "Programmer can set task_perms to themselves"
+    permission: programmer
+    code: "set_task_perms(player)"
+    expect:
+      value: 0
+
+  - name: set_task_perms_programmer_cannot_set_to_other
+    description: "Programmer cannot set task_perms to another object"
+    permission: programmer
+    code: "set_task_perms(#0)"
+    expect:
+      error: E_PERM
+
+  - name: set_task_perms_changes_task_perms
+    permission: wizard
+    statement: |
+      set_task_perms(#0);
+      return task_perms() == #0;
+    expect:
+      value: 1
+
+  # ===================================================================
+  # queue_info()
+  # ===================================================================
+
+  - name: queue_info_no_args_returns_list
+    permission: wizard
+    code: "typeof(queue_info())"
+    expect:
+      value: 4  # TYPE_LIST
+
+  - name: queue_info_no_args_contains_objects
+    permission: wizard
+    statement: |
+      info = queue_info();
+      if (length(info) == 0)
+        return 1;
+      endif
+      return typeof(info[1]) == OBJ;
+    expect:
+      value: 1
+
+  - name: queue_info_no_args_contains_player
+    description: "The connected wizard player should appear in queue_info()"
+    permission: wizard
+    statement: |
+      info = queue_info();
+      return player in info;
+    expect:
+      value: 1
+
+  - name: queue_info_too_many_args
+    permission: wizard
+    code: "queue_info(player, player)"
+    expect:
+      error: E_ARGS
+
+  - name: queue_info_type_check
+    permission: wizard
+    code: 'queue_info("foo")'
+    expect:
+      error: E_TYPE
+
+  - name: queue_info_wizard_with_player_returns_map
+    description: "Wizard gets a MAP for a specific player"
+    permission: wizard
+    code: "typeof(queue_info(player))"
+    expect:
+      value: 10  # TYPE_MAP (ToastStunt MAP type is 10)
+
+  - name: queue_info_wizard_map_has_player_key
+    permission: wizard
+    statement: |
+      info = queue_info(player);
+      return info["player"] == player;
+    expect:
+      value: 1
+
+  - name: queue_info_wizard_map_has_connected_key
+    description: "Connected player's queue_info map has connected == true"
+    permission: wizard
+    statement: |
+      info = queue_info(player);
+      return info["connected"] == 1;
+    expect:
+      value: 1
+
+  - name: queue_info_wizard_map_has_num_bg_tasks_key
+    permission: wizard
+    statement: |
+      info = queue_info(player);
+      return typeof(info["num_bg_tasks"]) == INT;
+    expect:
+      value: 1
+
+  - name: queue_info_nonexistent_player_wizard
+    description: "Wizard querying a non-connected player gets 0"
+    permission: wizard
+    code: "queue_info(#99999)"
+    expect:
+      value: 0
+
+  - name: queue_info_programmer_with_player_returns_int
+    description: "Non-wizard gets an INT (num_bg_tasks) for a specific player"
+    permission: programmer
+    code: "typeof(queue_info(player))"
+    expect:
+      value: 0  # TYPE_INT
+
+  - name: queue_info_programmer_with_player_returns_zero_bg
+    description: "Non-wizard gets 0 bg tasks for own player (no bg tasks running)"
+    permission: programmer
+    code: "queue_info(player)"
+    expect:
+      value: 0
+
+  # ===================================================================
+  # finished_tasks()
+  # WARNING: SAVE_FINISHED_TASKS is commented out in options.h.
+  # These tests may need skipping if not compiled in.
+  # ===================================================================
+
+  - name: finished_tasks_no_args_wizard
+    description: "finished_tasks() returns a list for wizards"
+    skip: "finished_tasks requires SAVE_FINISHED_TASKS compile option (commented out in options.h)"
+    permission: wizard
+    code: "typeof(finished_tasks())"
+    expect:
+      value: 4  # TYPE_LIST
+
+  - name: finished_tasks_too_many_args
+    skip: "finished_tasks requires SAVE_FINISHED_TASKS compile option (commented out in options.h)"
+    permission: wizard
+    code: "finished_tasks(1)"
+    expect:
+      error: E_ARGS
+
+  - name: finished_tasks_non_wizard_perm
+    skip: "finished_tasks requires SAVE_FINISHED_TASKS compile option (commented out in options.h)"
+    permission: programmer
+    code: "finished_tasks()"
+    expect:
+      error: E_PERM
+
+  # ===================================================================
+  # call_function()
+  # ===================================================================
+
+  - name: call_function_no_args
+    code: "call_function()"
+    expect:
+      error: E_ARGS
+
+  - name: call_function_type_check
+    code: "call_function(42)"
+    expect:
+      error: E_TYPE
+
+  - name: call_function_unknown_function
+    code: 'call_function("nonexistent_function_xyz")'
+    expect:
+      error: E_INVARG
+
+  - name: call_function_typeof
+    description: "call_function can call typeof()"
+    code: 'call_function("typeof", 42)'
+    expect:
+      value: 0  # TYPE_INT
+
+  - name: call_function_typeof_string
+    code: 'call_function("typeof", "hello")'
+    expect:
+      value: 2  # TYPE_STR
+
+  - name: call_function_length
+    code: 'call_function("length", {1, 2, 3})'
+    expect:
+      value: 3
+
+  - name: call_function_tostr
+    code: 'call_function("tostr", 42)'
+    expect:
+      value: "42"
+
+  - name: call_function_toint
+    code: 'call_function("toint", "123")'
+    expect:
+      value: 123
+
+  - name: call_function_max_obj
+    description: "call_function can call max_object()"
+    statement: |
+      return typeof(call_function("max_object")) == OBJ;
+    expect:
+      value: 1
+
+  - name: call_function_passes_errors_through
+    description: "Errors from the called function propagate"
+    code: 'call_function("typeof")'
+    expect:
+      error: E_ARGS
+
+  - name: call_function_toliteral
+    code: 'call_function("toliteral", {1, "two", 3})'
+    expect:
+      value: '{1, "two", 3}'
+
+  - name: call_function_nested
+    description: "call_function calling call_function"
+    code: 'call_function("call_function", "typeof", 1)'
+    expect:
+      value: 0  # TYPE_INT
+
+  - name: call_function_empty_string
+    description: "Empty string function name is unknown"
+    code: 'call_function("")'
+    expect:
+      error: E_INVARG
+
+  # ===================================================================
+  # force_input() -- error cases only (injecting input would corrupt
+  # the test session)
+  # ===================================================================
+
+  - name: force_input_no_args
+    permission: wizard
+    code: "force_input()"
+    expect:
+      error: E_ARGS
+
+  - name: force_input_one_arg
+    permission: wizard
+    code: "force_input(player)"
+    expect:
+      error: E_ARGS
+
+  - name: force_input_too_many_args
+    permission: wizard
+    code: 'force_input(player, "test", 1, "extra")'
+    expect:
+      error: E_ARGS
+
+  - name: force_input_type_check_first_arg
+    permission: wizard
+    code: 'force_input("not_obj", "test")'
+    expect:
+      error: E_TYPE
+
+  - name: force_input_type_check_second_arg
+    permission: wizard
+    code: "force_input(player, 42)"
+    expect:
+      error: E_TYPE
+
+  - name: force_input_programmer_perm
+    description: "Programmer can only force_input to themselves"
+    permission: programmer
+    code: 'force_input(#0, "test")'
+    expect:
+      error: E_PERM
+
+  # ===================================================================
+  # kill_task() -- error/arg cases only (not killing real/current tasks)
+  # Existing: 2 tests in exec.yaml (killing suspended exec, already-killed)
+  # ===================================================================
+
+  - name: kill_task_no_args
+    permission: wizard
+    code: "kill_task()"
+    expect:
+      error: E_ARGS
+
+  - name: kill_task_too_many_args
+    permission: wizard
+    code: "kill_task(1, 2)"
+    expect:
+      error: E_ARGS
+
+  - name: kill_task_type_check
+    permission: wizard
+    code: 'kill_task("not_an_int")'
+    expect:
+      error: E_TYPE
+
+  - name: kill_task_nonexistent_task
+    description: "Killing a non-existent task returns E_INVARG"
+    permission: wizard
+    code: "kill_task(999999999)"
+    expect:
+      error: E_INVARG
+
+  - name: kill_task_negative_id
+    description: "Negative task IDs should return E_INVARG"
+    permission: wizard
+    code: "kill_task(-1)"
+    expect:
+      error: E_INVARG
+
+  # ===================================================================
+  # suspend() -- error cases and suspend(0) only
+  # ===================================================================
+
+  - name: suspend_negative_seconds
+    permission: wizard
+    code: "suspend(-1)"
+    expect:
+      error: E_INVARG
+
+  - name: suspend_negative_float
+    permission: wizard
+    code: "suspend(-0.5)"
+    expect:
+      error: E_INVARG
+
+  - name: suspend_too_many_args
+    permission: wizard
+    code: "suspend(1, 2)"
+    expect:
+      error: E_ARGS
+
+  - name: suspend_type_check
+    permission: wizard
+    code: 'suspend("not_a_number")'
+    expect:
+      error: E_TYPE
+
+  - name: suspend_zero_returns_zero
+    description: "suspend(0) suspends and resumes immediately, returns 0 (no resume value)"
+    permission: wizard
+    code: "suspend(0)"
+    expect:
+      value: 0
+
+  # ===================================================================
+  # resume() -- error/arg cases only
+  # Existing: 1 test in exec.yaml (resume on exec-suspended task)
+  # ===================================================================
+
+  - name: resume_no_args
+    permission: wizard
+    code: "resume()"
+    expect:
+      error: E_ARGS
+
+  - name: resume_too_many_args
+    permission: wizard
+    code: "resume(1, 2, 3)"
+    expect:
+      error: E_ARGS
+
+  - name: resume_type_check
+    permission: wizard
+    code: 'resume("not_an_int")'
+    expect:
+      error: E_TYPE
+
+  - name: resume_nonexistent_task
+    description: "Resuming a non-existent task returns E_INVARG"
+    permission: wizard
+    code: "resume(999999999)"
+    expect:
+      error: E_INVARG
+
+  - name: resume_negative_id
+    permission: wizard
+    code: "resume(-1)"
+    expect:
+      error: E_INVARG
+
+  # ===================================================================
+  # task_stack() -- error/arg cases only
+  # Existing: 1 test in exec.yaml (comparing stacks)
+  # ===================================================================
+
+  - name: task_stack_no_args
+    permission: wizard
+    code: "task_stack()"
+    expect:
+      error: E_ARGS
+
+  - name: task_stack_too_many_args
+    permission: wizard
+    code: "task_stack(1, 2, 3, 4)"
+    expect:
+      error: E_ARGS
+
+  - name: task_stack_type_check
+    permission: wizard
+    code: 'task_stack("not_an_int")'
+    expect:
+      error: E_TYPE
+
+  - name: task_stack_nonexistent_task
+    permission: wizard
+    code: "task_stack(999999999)"
+    expect:
+      error: E_INVARG
+
+  # ===================================================================
+  # queued_tasks() -- new scenarios only
+  # Existing: 4 in queued_tasks.yaml, 3 in fork_observation.yaml
+  # ===================================================================
+
+  - name: queued_tasks_too_many_args
+    permission: wizard
+    code: "queued_tasks(1, 2, 3)"
+    expect:
+      error: E_ARGS
+
+  - name: queued_tasks_type_check
+    permission: wizard
+    code: 'queued_tasks("not_an_int")'
+    expect:
+      error: E_TYPE
+
+  - name: queued_tasks_count_mode_returns_int
+    description: "queued_tasks(0, 1) returns a count (integer) instead of a list"
+    permission: wizard
+    code: "typeof(queued_tasks(0, 1))"
+    expect:
+      value: 0  # TYPE_INT
+
+  - name: queued_tasks_count_mode_non_negative
+    permission: wizard
+    code: "queued_tasks(0, 1) >= 0"
+    expect:
+      value: 1
+
+  - name: queued_tasks_count_matches_length
+    description: "Count mode should match length of list mode"
+    permission: wizard
+    statement: |
+      count = queued_tasks(0, 1);
+      tasks = queued_tasks();
+      return count == length(tasks);
+    expect:
+      value: 1
+
+  # ===================================================================
+  # flush_input() -- error cases only
+  # ===================================================================
+
+  - name: flush_input_no_args
+    permission: wizard
+    code: "flush_input()"
+    expect:
+      error: E_ARGS
+
+  - name: flush_input_too_many_args
+    permission: wizard
+    code: "flush_input(player, 1, 2)"
+    expect:
+      error: E_ARGS
+
+  - name: flush_input_type_check
+    permission: wizard
+    code: 'flush_input("not_obj")'
+    expect:
+      error: E_TYPE
+
+  - name: flush_input_programmer_perm_on_other
+    permission: programmer
+    code: "flush_input(#0)"
+    expect:
+      error: E_PERM

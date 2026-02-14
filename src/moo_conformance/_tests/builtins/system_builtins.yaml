@@ -9,7 +9,7 @@ tests:
     permission: programmer
     code: 'typeof(getenv("HOME"))'
     expect:
-      value: 2  # STR
+      error: E_PERM
 
   - name: getenv_works_with_wizard_perms
     permission: wizard
@@ -46,3 +46,9 @@ tests:
     code: 'getenv("XYZZY_NONEXISTENT_VAR_12345")'
     expect:
       value: 0
+
+  - name: getenv_programmer_gets_perm_error
+    permission: programmer
+    code: 'getenv("PATH")'
+    expect:
+      error: E_PERM

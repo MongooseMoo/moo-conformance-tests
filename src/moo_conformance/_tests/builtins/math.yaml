@@ -1,17 +1,844 @@
-name: math
-description: Math operations and functions
+name: math_builtins
+description: >
+  Tests for math builtin functions: sqrt, cbrt, trig, hyperbolic,
+  exp/log, rounding, min/max/abs, random, floatstr, time, distance,
+  relative_heading, and division/modulus edge cases.
 
 requires:
-  builtins: [random, random_bytes]
+  builtins:
+    - sqrt
+    - cbrt
+    - sin
+    - cos
+    - tan
+    - asin
+    - acos
+    - atan
+    - atan2
+    - sinh
+    - cosh
+    - tanh
+    - acosh
+    - asinh
+    - atanh
+    - exp
+    - log
+    - log10
+    - ceil
+    - floor
+    - trunc
+    - round
+    - min
+    - max
+    - abs
+    - random
+    - frandom
+    - random_bytes
+    - floatstr
+    - time
+    - ctime
+    - ftime
+    - distance
+    - relative_heading
 
 tests:
-  # random() tests
-  - name: random_0_is_invalid
-    code: "random(0)"
+  # ===========================================================================
+  # sqrt (square root)
+  # ===========================================================================
+
+  - name: sqrt_perfect_square
+    code: "sqrt(4.0)"
+    expect:
+      value: 2.0
+
+  - name: sqrt_zero
+    code: "sqrt(0.0)"
+    expect:
+      value: 0.0
+
+  - name: sqrt_one
+    code: "sqrt(1.0)"
+    expect:
+      value: 1.0
+
+  - name: sqrt_irrational
+    code: "sqrt(2.0)"
+    expect:
+      range: [1.4142135, 1.4142136]
+
+  - name: sqrt_negative_is_invarg
+    code: "sqrt(-1.0)"
     expect:
       error: E_INVARG
 
-  - name: random_1_returns_1
+  - name: sqrt_type_error_int
+    code: "sqrt(4)"
+    expect:
+      error: E_TYPE
+
+  - name: sqrt_type_error_string
+    code: 'sqrt("4.0")'
+    expect:
+      error: E_TYPE
+
+  - name: sqrt_too_many_args
+    code: "sqrt(4.0, 2.0)"
+    expect:
+      error: E_ARGS
+
+  # ===========================================================================
+  # cbrt (cube root)
+  # ===========================================================================
+
+  - name: cbrt_positive
+    code: "cbrt(27.0)"
+    expect:
+      value: 3.0
+
+  - name: cbrt_zero
+    code: "cbrt(0.0)"
+    expect:
+      value: 0.0
+
+  - name: cbrt_negative
+    description: "cbrt handles negative numbers (unlike sqrt)"
+    code: "cbrt(-8.0)"
+    expect:
+      value: -2.0
+
+  - name: cbrt_one
+    code: "cbrt(1.0)"
+    expect:
+      value: 1.0
+
+  - name: cbrt_type_error_int
+    code: "cbrt(8)"
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # sin
+  # ===========================================================================
+
+  - name: sin_zero
+    code: "sin(0.0)"
+    expect:
+      value: 0.0
+
+  - name: sin_pi_half
+    description: "sin(pi/2) = 1"
+    code: "sin(1.5707963267948966)"
+    expect:
+      range: [0.9999999, 1.0000001]
+
+  - name: sin_pi
+    description: "sin(pi) is approximately 0"
+    code: "sin(3.141592653589793)"
+    expect:
+      range: [-0.0000001, 0.0000001]
+
+  - name: sin_negative
+    code: "sin(-1.0)"
+    expect:
+      range: [-0.8414710, -0.8414709]
+
+  - name: sin_type_error_int
+    code: "sin(0)"
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # cos
+  # ===========================================================================
+
+  - name: cos_zero
+    code: "cos(0.0)"
+    expect:
+      value: 1.0
+
+  - name: cos_pi_half
+    description: "cos(pi/2) is approximately 0"
+    code: "cos(1.5707963267948966)"
+    expect:
+      range: [-0.0000001, 0.0000001]
+
+  - name: cos_pi
+    description: "cos(pi) = -1"
+    code: "cos(3.141592653589793)"
+    expect:
+      range: [-1.0000001, -0.9999999]
+
+  - name: cos_type_error_int
+    code: "cos(0)"
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # tan
+  # ===========================================================================
+
+  - name: tan_zero
+    code: "tan(0.0)"
+    expect:
+      value: 0.0
+
+  - name: tan_pi_quarter
+    description: "tan(pi/4) = 1"
+    code: "tan(0.7853981633974483)"
+    expect:
+      range: [0.9999999, 1.0000001]
+
+  - name: tan_type_error_int
+    code: "tan(0)"
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # asin (arc sine)
+  # ===========================================================================
+
+  - name: asin_zero
+    code: "asin(0.0)"
+    expect:
+      value: 0.0
+
+  - name: asin_one
+    description: "asin(1) = pi/2"
+    code: "asin(1.0)"
+    expect:
+      range: [1.5707963, 1.5707964]
+
+  - name: asin_neg_one
+    description: "asin(-1) = -pi/2"
+    code: "asin(-1.0)"
+    expect:
+      range: [-1.5707964, -1.5707963]
+
+  - name: asin_out_of_domain
+    description: "asin(2) is undefined -- domain is [-1, 1]"
+    code: "asin(2.0)"
+    expect:
+      error: E_INVARG
+
+  - name: asin_type_error_int
+    code: "asin(0)"
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # acos (arc cosine)
+  # ===========================================================================
+
+  - name: acos_one
+    description: "acos(1) = 0"
+    code: "acos(1.0)"
+    expect:
+      value: 0.0
+
+  - name: acos_zero
+    description: "acos(0) = pi/2"
+    code: "acos(0.0)"
+    expect:
+      range: [1.5707963, 1.5707964]
+
+  - name: acos_neg_one
+    description: "acos(-1) = pi"
+    code: "acos(-1.0)"
+    expect:
+      range: [3.1415926, 3.1415927]
+
+  - name: acos_out_of_domain
+    description: "acos(2) is undefined -- domain is [-1, 1]"
+    code: "acos(2.0)"
+    expect:
+      error: E_INVARG
+
+  - name: acos_type_error_int
+    code: "acos(0)"
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # atan (arc tangent, 1-arg and 2-arg forms)
+  # ===========================================================================
+
+  - name: atan_zero
+    code: "atan(0.0)"
+    expect:
+      value: 0.0
+
+  - name: atan_one
+    description: "atan(1) = pi/4"
+    code: "atan(1.0)"
+    expect:
+      range: [0.7853981, 0.7853982]
+
+  - name: atan_two_args
+    description: "atan(y, x) is atan2 -- atan(1.0, 1.0) = pi/4"
+    code: "atan(1.0, 1.0)"
+    expect:
+      range: [0.7853981, 0.7853982]
+
+  - name: atan_two_args_quadrant
+    description: "atan(1.0, -1.0) = 3*pi/4"
+    code: "atan(1.0, -1.0)"
+    expect:
+      range: [2.3561944, 2.3561945]
+
+  - name: atan_type_error_int
+    code: "atan(0)"
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # atan2
+  # ===========================================================================
+
+  - name: atan2_basic
+    description: "atan2(1, 1) = pi/4"
+    code: "atan2(1.0, 1.0)"
+    expect:
+      range: [0.7853981, 0.7853982]
+
+  - name: atan2_zero_zero
+    description: "atan2(0, 0) -- implementation-defined but should not crash"
+    code: "atan2(0.0, 0.0)"
+    expect:
+      type: float
+
+  - name: atan2_positive_y_negative_x
+    description: "atan2(1, -1) = 3*pi/4"
+    code: "atan2(1.0, -1.0)"
+    expect:
+      range: [2.3561944, 2.3561945]
+
+  - name: atan2_type_error_int
+    code: "atan2(1, 1)"
+    expect:
+      error: E_TYPE
+
+  - name: atan2_wrong_arg_count
+    code: "atan2(1.0)"
+    expect:
+      error: E_ARGS
+
+  # ===========================================================================
+  # sinh (hyperbolic sine)
+  # ===========================================================================
+
+  - name: sinh_zero
+    code: "sinh(0.0)"
+    expect:
+      value: 0.0
+
+  - name: sinh_one
+    code: "sinh(1.0)"
+    expect:
+      range: [1.1752011, 1.1752012]
+
+  - name: sinh_negative
+    code: "sinh(-1.0)"
+    expect:
+      range: [-1.1752012, -1.1752011]
+
+  - name: sinh_type_error_int
+    code: "sinh(0)"
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # cosh (hyperbolic cosine)
+  # ===========================================================================
+
+  - name: cosh_zero
+    code: "cosh(0.0)"
+    expect:
+      value: 1.0
+
+  - name: cosh_one
+    code: "cosh(1.0)"
+    expect:
+      range: [1.5430806, 1.5430807]
+
+  - name: cosh_type_error_int
+    code: "cosh(0)"
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # tanh (hyperbolic tangent)
+  # ===========================================================================
+
+  - name: tanh_zero
+    code: "tanh(0.0)"
+    expect:
+      value: 0.0
+
+  - name: tanh_one
+    code: "tanh(1.0)"
+    expect:
+      range: [0.7615941, 0.7615942]
+
+  - name: tanh_large_positive
+    description: "tanh approaches 1 for large values"
+    code: "tanh(100.0)"
+    expect:
+      value: 1.0
+
+  - name: tanh_type_error_int
+    code: "tanh(0)"
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # acosh (inverse hyperbolic cosine)
+  # ===========================================================================
+
+  - name: acosh_one
+    description: "acosh(1) = 0"
+    code: "acosh(1.0)"
+    expect:
+      value: 0.0
+
+  - name: acosh_two
+    code: "acosh(2.0)"
+    expect:
+      range: [1.3169578, 1.3169579]
+
+  - name: acosh_domain_error
+    description: "acosh(x) requires x >= 1"
+    code: "acosh(0.5)"
+    expect:
+      error: E_INVARG
+
+  - name: acosh_type_error_int
+    code: "acosh(1)"
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # asinh (inverse hyperbolic sine)
+  # ===========================================================================
+
+  - name: asinh_zero
+    code: "asinh(0.0)"
+    expect:
+      value: 0.0
+
+  - name: asinh_one
+    code: "asinh(1.0)"
+    expect:
+      range: [0.8813735, 0.8813736]
+
+  - name: asinh_negative
+    code: "asinh(-1.0)"
+    expect:
+      range: [-0.8813736, -0.8813735]
+
+  - name: asinh_type_error_int
+    code: "asinh(0)"
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # atanh (inverse hyperbolic tangent)
+  # ===========================================================================
+
+  - name: atanh_zero
+    code: "atanh(0.0)"
+    expect:
+      value: 0.0
+
+  - name: atanh_half
+    code: "atanh(0.5)"
+    expect:
+      range: [0.5493061, 0.5493062]
+
+  - name: atanh_domain_error_one
+    description: "atanh(1) produces infinity -- E_FLOAT (not E_INVARG)"
+    code: "atanh(1.0)"
+    expect:
+      error: E_FLOAT
+
+  - name: atanh_domain_error_gt_one
+    description: "atanh(2) is undefined -- EDOM triggers E_INVARG"
+    code: "atanh(2.0)"
+    expect:
+      error: E_INVARG
+
+  - name: atanh_type_error_int
+    code: "atanh(0)"
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # exp (exponential)
+  # ===========================================================================
+
+  - name: exp_zero
+    code: "exp(0.0)"
+    expect:
+      value: 1.0
+
+  - name: exp_one
+    description: "exp(1) = e"
+    code: "exp(1.0)"
+    expect:
+      range: [2.7182818, 2.7182819]
+
+  - name: exp_negative
+    code: "exp(-1.0)"
+    expect:
+      range: [0.3678794, 0.3678795]
+
+  - name: exp_overflow
+    description: "exp(1000) overflows -- E_FLOAT"
+    code: "exp(1000.0)"
+    expect:
+      error: E_FLOAT
+
+  - name: exp_type_error_int
+    code: "exp(1)"
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # log (natural logarithm)
+  # ===========================================================================
+
+  - name: log_one
+    code: "log(1.0)"
+    expect:
+      value: 0.0
+
+  - name: log_e
+    description: "log(e) = 1"
+    code: "log(2.718281828459045)"
+    expect:
+      range: [0.9999999, 1.0000001]
+
+  - name: log_domain_error_zero
+    description: "log(0) produces -infinity -- E_FLOAT (ERANGE, not EDOM)"
+    code: "log(0.0)"
+    expect:
+      error: E_FLOAT
+
+  - name: log_domain_error_negative
+    description: "log(-1) is undefined -- EDOM triggers E_INVARG"
+    code: "log(-1.0)"
+    expect:
+      error: E_INVARG
+
+  - name: log_type_error_int
+    code: "log(1)"
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # log10 (base-10 logarithm)
+  # ===========================================================================
+
+  - name: log10_one
+    code: "log10(1.0)"
+    expect:
+      value: 0.0
+
+  - name: log10_ten
+    code: "log10(10.0)"
+    expect:
+      value: 1.0
+
+  - name: log10_hundred
+    code: "log10(100.0)"
+    expect:
+      value: 2.0
+
+  - name: log10_domain_error_zero
+    description: "log10(0) produces -infinity -- E_FLOAT"
+    code: "log10(0.0)"
+    expect:
+      error: E_FLOAT
+
+  - name: log10_domain_error_negative
+    description: "log10(-1) is undefined -- EDOM triggers E_INVARG"
+    code: "log10(-1.0)"
+    expect:
+      error: E_INVARG
+
+  - name: log10_type_error_int
+    code: "log10(10)"
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # ceil (ceiling)
+  # ===========================================================================
+
+  - name: ceil_positive_frac
+    code: "ceil(2.3)"
+    expect:
+      value: 3.0
+
+  - name: ceil_negative_frac
+    code: "ceil(-2.3)"
+    expect:
+      value: -2.0
+
+  - name: ceil_whole
+    code: "ceil(5.0)"
+    expect:
+      value: 5.0
+
+  - name: ceil_zero
+    code: "ceil(0.0)"
+    expect:
+      value: 0.0
+
+  - name: ceil_type_error_int
+    code: "ceil(3)"
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # floor
+  # ===========================================================================
+
+  - name: floor_positive_frac
+    code: "floor(2.7)"
+    expect:
+      value: 2.0
+
+  - name: floor_negative_frac
+    code: "floor(-2.7)"
+    expect:
+      value: -3.0
+
+  - name: floor_whole
+    code: "floor(5.0)"
+    expect:
+      value: 5.0
+
+  - name: floor_zero
+    code: "floor(0.0)"
+    expect:
+      value: 0.0
+
+  - name: floor_type_error_int
+    code: "floor(3)"
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # trunc (truncate toward zero)
+  # ===========================================================================
+
+  - name: trunc_positive_frac
+    description: "trunc(2.7) truncates toward zero"
+    code: "trunc(2.7)"
+    expect:
+      value: 2.0
+
+  - name: trunc_negative_frac
+    description: "trunc(-2.7) truncates toward zero (uses ceil for negatives)"
+    code: "trunc(-2.7)"
+    expect:
+      value: -2.0
+
+  - name: trunc_whole
+    code: "trunc(5.0)"
+    expect:
+      value: 5.0
+
+  - name: trunc_zero
+    code: "trunc(0.0)"
+    expect:
+      value: 0.0
+
+  - name: trunc_type_error_int
+    code: "trunc(3)"
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # round
+  # ===========================================================================
+
+  - name: round_up
+    code: "round(2.7)"
+    expect:
+      value: 3.0
+
+  - name: round_down
+    code: "round(2.3)"
+    expect:
+      value: 2.0
+
+  - name: round_half
+    description: "round(2.5) -- C round() rounds away from zero"
+    code: "round(2.5)"
+    expect:
+      value: 3.0
+
+  - name: round_negative_up
+    code: "round(-2.3)"
+    expect:
+      value: -2.0
+
+  - name: round_negative_down
+    code: "round(-2.7)"
+    expect:
+      value: -3.0
+
+  - name: round_negative_half
+    description: "round(-2.5) rounds away from zero"
+    code: "round(-2.5)"
+    expect:
+      value: -3.0
+
+  - name: round_zero
+    code: "round(0.0)"
+    expect:
+      value: 0.0
+
+  - name: round_type_error_int
+    code: "round(3)"
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # min
+  # ===========================================================================
+
+  - name: min_two_ints
+    code: "min(3, 1)"
+    expect:
+      value: 1
+
+  - name: min_single_int
+    code: "min(5)"
+    expect:
+      value: 5
+
+  - name: min_multiple_ints
+    code: "min(5, 3, 8, 1, 4)"
+    expect:
+      value: 1
+
+  - name: min_two_floats
+    code: "min(3.5, 1.5)"
+    expect:
+      value: 1.5
+
+  - name: min_multiple_floats
+    code: "min(5.0, 3.0, 8.0, 1.0)"
+    expect:
+      value: 1.0
+
+  - name: min_negative_ints
+    code: "min(-1, -5, -3)"
+    expect:
+      value: -5
+
+  - name: min_mixed_types_error
+    description: "min rejects mixed int/float args"
+    code: "min(1, 2.0)"
+    expect:
+      error: E_TYPE
+
+  - name: min_string_error
+    code: 'min("a", "b")'
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # max
+  # ===========================================================================
+
+  - name: max_two_ints
+    code: "max(3, 1)"
+    expect:
+      value: 3
+
+  - name: max_single_int
+    code: "max(5)"
+    expect:
+      value: 5
+
+  - name: max_multiple_ints
+    code: "max(5, 3, 8, 1, 4)"
+    expect:
+      value: 8
+
+  - name: max_two_floats
+    code: "max(1.5, 3.5)"
+    expect:
+      value: 3.5
+
+  - name: max_multiple_floats
+    code: "max(1.0, 5.0, 3.0, 8.0)"
+    expect:
+      value: 8.0
+
+  - name: max_negative_ints
+    code: "max(-1, -5, -3)"
+    expect:
+      value: -1
+
+  - name: max_mixed_types_error
+    description: "max rejects mixed int/float args"
+    code: "max(1, 2.0)"
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # abs
+  # ===========================================================================
+
+  - name: abs_positive_int
+    code: "abs(5)"
+    expect:
+      value: 5
+
+  - name: abs_negative_int
+    code: "abs(-5)"
+    expect:
+      value: 5
+
+  - name: abs_zero_int
+    code: "abs(0)"
+    expect:
+      value: 0
+
+  - name: abs_positive_float
+    code: "abs(3.14)"
+    expect:
+      value: 3.14
+
+  - name: abs_negative_float
+    code: "abs(-3.14)"
+    expect:
+      value: 3.14
+
+  - name: abs_zero_float
+    code: "abs(0.0)"
+    expect:
+      value: 0.0
+
+  - name: abs_type_error_string
+    code: 'abs("5")'
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # random
+  # ===========================================================================
+
+  - name: random_no_args_returns_int
+    code: "random()"
+    expect:
+      type: int
+
+  - name: random_one_returns_one
     code: "random(1)"
     expect:
       value: 1
@@ -28,63 +855,327 @@ tests:
       range: [1, 9223372036854775807]
     skip_if: "not feature.64bit"
 
-  - name: random_negative_invalid
+  - name: random_range_type
+    code: "random(10)"
+    expect:
+      type: int
+
+  - name: random_range_bounds
+    description: "random(10) returns value in [1, 10]"
+    code: "random(10)"
+    expect:
+      range: [1, 10]
+
+  - name: random_two_args_range
+    description: "random(5, 10) returns value in [5, 10]"
+    code: "random(5, 10)"
+    expect:
+      range: [5, 10]
+
+  - name: random_zero_is_invarg
+    code: "random(0)"
+    expect:
+      error: E_INVARG
+
+  - name: random_negative_is_invarg
     code: "random(-1)"
     expect:
       error: E_INVARG
 
-  # random_bytes() tests
-  - name: random_bytes_negative_invalid
-    code: "random_bytes(-1)"
+  - name: random_reversed_range_is_invarg
+    description: "random(10, 5) is invalid -- max < min"
+    code: "random(10, 5)"
     expect:
       error: E_INVARG
 
-  - name: random_bytes_0_is_empty_string
+  - name: random_type_error_float
+    code: "random(1.0)"
+    expect:
+      error: E_TYPE
+
+  - name: random_type_error_string
+    code: 'random("10")'
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # frandom (floating-point random)
+  # ===========================================================================
+
+  - name: frandom_one_arg_returns_float
+    code: "frandom(1.0)"
+    expect:
+      type: float
+
+  - name: frandom_one_arg_range
+    description: "frandom(10.0) returns value in [0.0, 10.0]"
+    code: "frandom(10.0)"
+    expect:
+      range: [0.0, 10.0]
+
+  - name: frandom_two_args_range
+    description: "frandom(5.0, 10.0) returns value in [5.0, 10.0]"
+    code: "frandom(5.0, 10.0)"
+    expect:
+      range: [5.0, 10.0]
+
+  - name: frandom_type_error_int
+    code: "frandom(10)"
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # random_bytes
+  # ===========================================================================
+
+  - name: random_bytes_zero
     code: "random_bytes(0)"
     expect:
       value: ""
 
-  - name: random_bytes_1_returns_one_byte
-    description: Random bytes length varies due to escape encoding (~XX for non-printable)
-    skip: "String length varies 1-3 based on printable vs escaped bytes"
-    code: "length(random_bytes(1))"
+  - name: random_bytes_returns_string
+    code: "random_bytes(1)"
     expect:
-      value: 1
+      type: str
 
-  - name: random_bytes_2_returns_two_bytes
-    description: Random bytes length varies due to escape encoding (~XX for non-printable)
-    skip: "String length varies 2-6 based on printable vs escaped bytes"
-    code: "length(random_bytes(2))"
+  - name: random_bytes_negative
+    code: "random_bytes(-1)"
     expect:
-      value: 2
+      error: E_INVARG
 
-  - name: random_bytes_max_limit
+  - name: random_bytes_too_large
     code: "random_bytes(10001)"
     expect:
       error: E_INVARG
 
-  # Division by zero tests
-  - name: division_by_zero_float
+  - name: random_bytes_type_error_float
+    code: "random_bytes(1.0)"
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # reseed_random
+  # ===========================================================================
+
+  - name: reseed_random_requires_wizard
+    permission: programmer
+    code: "reseed_random()"
+    expect:
+      error: E_PERM
+
+  - name: reseed_random_as_wizard
+    permission: wizard
+    statement: |
+      reseed_random();
+      return 1;
+    expect:
+      value: 1
+
+  # ===========================================================================
+  # floatstr
+  # ===========================================================================
+
+  - name: floatstr_basic
+    code: "floatstr(3.14159, 2)"
+    expect:
+      value: "3.14"
+
+  - name: floatstr_zero_precision
+    code: "floatstr(3.14159, 0)"
+    expect:
+      value: "3"
+
+  - name: floatstr_high_precision
+    code: "floatstr(3.14159, 10)"
+    expect:
+      value: "3.1415900000"
+
+  - name: floatstr_scientific
+    code: "floatstr(3.14159, 2, 1)"
+    expect:
+      value: "3.14e+00"
+
+  - name: floatstr_negative_precision
+    code: "floatstr(3.14, -1)"
+    expect:
+      error: E_INVARG
+
+  - name: floatstr_type_error_first_arg
+    code: "floatstr(3, 2)"
+    expect:
+      error: E_TYPE
+
+  - name: floatstr_type_error_second_arg
+    code: "floatstr(3.14, 2.0)"
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # time
+  # ===========================================================================
+
+  - name: time_returns_int
+    code: "time()"
+    expect:
+      type: int
+
+  - name: time_positive
+    description: "time() should be a positive number (seconds since epoch)"
+    statement: |
+      return time() > 0;
+    expect:
+      value: 1
+
+  - name: time_no_args_only
+    code: "time(1)"
+    expect:
+      error: E_ARGS
+
+  # ===========================================================================
+  # ctime
+  # ===========================================================================
+
+  - name: ctime_no_args_returns_string
+    code: "ctime()"
+    expect:
+      type: str
+
+  - name: ctime_no_args
+    description: "ctime() with no args returns current time string"
+    code: "ctime()"
+    expect:
+      type: str
+
+  - name: ctime_format
+    description: "ctime returns a formatted time string"
+    code: "ctime()"
+    expect:
+      match: "^\\w{3} \\w{3} .+ \\d{4}"
+
+  - name: ctime_with_int_arg_is_invarg
+    description: "ctime(0) is E_INVARG - ctime takes no arguments"
+    code: "ctime(0)"
+    expect:
+      error: E_INVARG
+
+  - name: ctime_type_error_float
+    code: "ctime(1.0)"
+    expect:
+      error: E_TYPE
+
+  - name: ctime_type_error_string
+    code: 'ctime("now")'
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # ftime
+  # ===========================================================================
+
+  - name: ftime_returns_float
+    code: "ftime()"
+    expect:
+      type: float
+
+  - name: ftime_positive
+    description: "ftime() should be a positive number"
+    statement: |
+      return ftime() > 0.0;
+    expect:
+      value: 1
+
+  - name: ftime_monotonic
+    description: "ftime(1) returns monotonic time"
+    code: "ftime(1)"
+    expect:
+      type: float
+
+  - name: ftime_type_error_float
+    code: "ftime(1.0)"
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # distance
+  # ===========================================================================
+
+  - name: distance_2d
+    code: "distance({0, 0}, {3, 4})"
+    expect:
+      value: 5.0
+
+  - name: distance_2d_float
+    code: "distance({0.0, 0.0}, {3.0, 4.0})"
+    expect:
+      value: 5.0
+
+  - name: distance_same_point
+    code: "distance({1, 2}, {1, 2})"
+    expect:
+      value: 0.0
+
+  - name: distance_3d
+    code: "distance({0, 0, 0}, {1, 2, 2})"
+    expect:
+      value: 3.0
+
+  - name: distance_type_error_non_numeric
+    code: 'distance({"a"}, {"b"})'
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # relative_heading
+  # ===========================================================================
+
+  - name: relative_heading_same_point
+    code: "relative_heading({0.0, 0.0, 0.0}, {0.0, 0.0, 0.0})"
+    expect:
+      value: [0, 0]
+
+  - name: relative_heading_east
+    description: "Heading due east (dx=1, dy=0)"
+    code: "relative_heading({0.0, 0.0, 0.0}, {1.0, 0.0, 0.0})"
+    expect:
+      value: [0, 0]
+
+  - name: relative_heading_north
+    description: "Heading due north (dx=0, dy=1)"
+    code: "relative_heading({0.0, 0.0, 0.0}, {0.0, 1.0, 0.0})"
+    expect:
+      value: [89, 0]
+
+  - name: relative_heading_type_error_int_elements
+    description: "relative_heading requires FLOAT list elements"
+    code: "relative_heading({0, 0, 0}, {1, 1, 1})"
+    expect:
+      error: E_TYPE
+
+  # ===========================================================================
+  # Division / Modulus edge cases (from Ruby tests)
+  # ===========================================================================
+
+  - name: div_by_zero_float
     code: "1.1 / 0.0"
     expect:
       error: E_DIV
 
-  - name: division_by_zero_int
+  - name: div_by_zero_int
     code: "1 / 0"
     expect:
       error: E_DIV
 
-  - name: modulus_by_zero_float
+  - name: mod_by_zero_float
     code: "1.1 % 0.0"
     expect:
       error: E_DIV
 
-  - name: modulus_by_zero_int
+  - name: mod_by_zero_int
     code: "1 % 0"
     expect:
       error: E_DIV
 
-  # Minint edge case tests (32-bit)
+  # Minint edge cases (32-bit)
   - name: minint_division_edge_case
     code: "-2147483648 / -1"
     expect:
@@ -97,7 +1188,7 @@ tests:
       value: 0
     skip_if: "feature.64bit"
 
-  # Minint edge case tests (64-bit)
+  # Minint edge cases (64-bit)
   - name: minint_division_edge_case_64bit
     code: "-9223372036854775807 / -1"
     expect:
@@ -110,86 +1201,98 @@ tests:
       value: 0
     skip_if: "not feature.64bit"
 
-  # Integer division tests
-  - name: division_neg_neg_int
+  # Signed integer division
+  - name: int_division_neg_neg
     code: "-15 / -3"
     expect:
       value: 5
 
-  - name: division_neg_pos_int
+  - name: int_division_neg_pos
     code: "-15 / 3"
     expect:
       value: -5
 
-  - name: division_pos_neg_int
+  - name: int_division_pos_neg
     code: "15 / -3"
     expect:
       value: -5
 
-  - name: division_pos_pos_int
+  - name: int_division_pos_pos
     code: "15 / 3"
     expect:
       value: 5
 
-  # Float division tests
-  - name: division_neg_neg_float
+  # Signed float division
+  - name: float_division_neg_neg
     code: "-15.0 / -3.0"
     expect:
       value: 5.0
 
-  - name: division_neg_pos_float
+  - name: float_division_neg_pos
     code: "-15.0 / 3.0"
     expect:
       value: -5.0
 
-  - name: division_pos_neg_float
+  - name: float_division_pos_neg
     code: "15.0 / -3.0"
     expect:
       value: -5.0
 
-  - name: division_pos_pos_float
+  - name: float_division_pos_pos
     code: "15.0 / 3.0"
     expect:
       value: 5.0
 
-  # Integer modulus tests
-  - name: modulus_neg_neg_int
+  # Signed integer modulus
+  - name: int_modulus_neg_neg
     code: "-15 % -4"
     expect:
       value: -3
 
-  - name: modulus_neg_pos_int
+  - name: int_modulus_neg_pos
     code: "-15 % 4"
     expect:
       value: 1
 
-  - name: modulus_pos_neg_int
+  - name: int_modulus_pos_neg
     code: "15 % -4"
     expect:
       value: -1
 
-  - name: modulus_pos_pos_int
+  - name: int_modulus_pos_pos
     code: "15 % 4"
     expect:
       value: 3
 
-  # Float modulus tests
-  - name: modulus_neg_neg_float
+  # Signed float modulus
+  - name: float_modulus_neg_neg
     code: "-15.0 % -4.0"
     expect:
       value: -3.0
 
-  - name: modulus_neg_pos_float
+  - name: float_modulus_neg_pos
     code: "-15.0 % 4.0"
     expect:
       value: 1.0
 
-  - name: modulus_pos_neg_float
+  - name: float_modulus_pos_neg
     code: "15.0 % -4.0"
     expect:
       value: -1.0
 
-  - name: modulus_pos_pos_float
+  - name: float_modulus_pos_pos
     code: "15.0 % 4.0"
     expect:
       value: 3.0
+
+  # ===========================================================================
+  # Trig identity
+  # ===========================================================================
+
+  - name: trig_identity_sin_cos_sum
+    description: "sin(x)^2 + cos(x)^2 = 1 for any x"
+    statement: |
+      x = 0.5;
+      return sin(x) ^ 2.0 + cos(x) ^ 2.0;
+    expect:
+      range: [0.9999999, 1.0000001]

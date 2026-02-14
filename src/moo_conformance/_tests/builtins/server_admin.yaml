@@ -1,0 +1,829 @@
+name: server_admin
+description: |
+  Behavioral tests for server & admin builtins: server_version, function_info,
+  memory_usage, server_log, load_server_options, connected_players,
+  output_delimiters, notify, connection_name, connection_info, listeners,
+  connected_seconds, idle_seconds, buffered_output_length, boot_player,
+  db_disk_size, dump_database, usage, connection_options, set_connection_option.
+
+requires:
+  builtins:
+    - server_version
+    - function_info
+    - memory_usage
+    - server_log
+    - load_server_options
+    - connected_players
+    - output_delimiters
+    - notify
+    - connection_name
+    - connection_info
+    - listeners
+    - connected_seconds
+    - idle_seconds
+    - buffered_output_length
+    - boot_player
+    - db_disk_size
+    - dump_database
+    - usage
+    - connection_options
+    - set_connection_option
+
+tests:
+  # ===================================================================
+  # server_version()
+  # ===================================================================
+
+  - name: server_version_no_args_returns_string
+    code: 'typeof(server_version())'
+    expect:
+      value: 2  # TYPE_STR
+
+  - name: server_version_no_args_matches_pattern
+    code: 'server_version()'
+    expect:
+      match: "^\\d+\\.\\d+\\.\\d+"
+
+  - name: server_version_empty_string_returns_list
+    code: 'typeof(server_version(""))'
+    expect:
+      value: 4  # TYPE_LIST
+
+  - name: server_version_full_has_major_key
+    statement: |
+      info = server_version("");
+      for item in (info)
+        if (typeof(item) == 4 && item[1] == "major")
+          return item[2];
+        endif
+      endfor
+      return -1;
+    expect:
+      type: int
+
+  - name: server_version_major_returns_int
+    code: 'typeof(server_version("major"))'
+    expect:
+      value: 0  # TYPE_INT
+
+  - name: server_version_string_returns_version
+    code: 'server_version("string") == server_version()'
+    expect:
+      value: 1
+
+  - name: server_version_invalid_path_returns_invarg
+    code: 'server_version("nonexistent_key_xyz")'
+    expect:
+      error: E_INVARG
+
+  - name: server_version_features_returns_list
+    code: 'typeof(server_version("features"))'
+    expect:
+      value: 4  # TYPE_LIST
+
+  # ===================================================================
+  # function_info()
+  # ===================================================================
+
+  - name: function_info_no_args_returns_list
+    code: 'typeof(function_info())'
+    expect:
+      value: 4  # TYPE_LIST
+
+  - name: function_info_no_args_is_nonempty
+    statement: 'return length(function_info()) > 100;'
+    expect:
+      value: 1
+
+  - name: function_info_specific_function
+    code: 'function_info("typeof")'
+    expect:
+      value: ["typeof", 1, 1, [-1]]
+
+  - name: function_info_function_info_itself
+    code: 'function_info("function_info")'
+    expect:
+      value: ["function_info", 0, 1, [2]]
+
+  - name: function_info_notify
+    code: 'function_info("notify")'
+    expect:
+      value: ["notify", 2, 4, [1, 2, -1, -1]]
+
+  - name: function_info_server_version
+    code: 'function_info("server_version")'
+    expect:
+      value: ["server_version", 0, 1, [-1]]
+
+  - name: function_info_connected_players
+    code: 'function_info("connected_players")'
+    expect:
+      value: ["connected_players", 0, 1, [-1]]
+
+  - name: function_info_invalid_name
+    code: 'function_info("this_function_does_not_exist_xyzzy")'
+    expect:
+      error: E_INVARG
+
+  - name: function_info_entry_structure
+    description: Each entry is a 4-element list
+    statement: |
+      info = function_info("tostr");
+      return length(info);
+    expect:
+      value: 4
+
+  - name: function_info_entry_first_is_name
+    statement: |
+      info = function_info("tostr");
+      return info[1];
+    expect:
+      value: "tostr"
+
+  - name: function_info_entry_second_is_minargs
+    statement: |
+      info = function_info("tostr");
+      return typeof(info[2]);
+    expect:
+      value: 0  # TYPE_INT
+
+  - name: function_info_entry_fourth_is_list
+    statement: |
+      info = function_info("tostr");
+      return typeof(info[4]);
+    expect:
+      value: 4  # TYPE_LIST
+
+  # ===================================================================
+  # memory_usage()
+  # ===================================================================
+
+  - name: memory_usage_returns_list
+    description: "Returns E_FILE on Windows MSVC builds without /proc/self/statm"
+    permission: programmer
+    code: 'memory_usage()'
+    expect:
+      error: E_FILE
+
+  - name: memory_usage_returns_five_elements
+    description: "Returns E_FILE on Windows MSVC builds without /proc/self/statm"
+    permission: programmer
+    code: 'memory_usage()'
+    expect:
+      error: E_FILE
+
+  - name: memory_usage_elements_are_floats
+    description: "Returns E_FILE on Windows MSVC builds without /proc/self/statm"
+    permission: programmer
+    code: 'memory_usage()'
+    expect:
+      error: E_FILE
+
+  # ===================================================================
+  # server_log()
+  # ===================================================================
+
+  - name: server_log_requires_wizard
+    permission: programmer
+    code: 'server_log("test")'
+    expect:
+      error: E_PERM
+
+  - name: server_log_basic
+    permission: wizard
+    code: 'server_log("conformance test message")'
+    expect:
+      value: 0
+
+  - name: server_log_with_level
+    permission: wizard
+    code: 'server_log("conformance test level 1", 1)'
+    expect:
+      value: 0
+
+  - name: server_log_with_error_level
+    permission: wizard
+    code: 'server_log("conformance test error", 7)'
+    expect:
+      value: 0
+
+  - name: server_log_with_truthy_value
+    permission: wizard
+    code: 'server_log("conformance test truthy", "yes")'
+    expect:
+      value: 0
+
+  - name: server_log_no_args
+    permission: wizard
+    statement: "server_log();"
+    expect:
+      error: E_ARGS
+
+  - name: server_log_wrong_type_first_arg
+    permission: wizard
+    code: 'server_log(42)'
+    expect:
+      error: E_TYPE
+
+  # ===================================================================
+  # load_server_options()
+  # ===================================================================
+
+  - name: load_server_options_requires_wizard
+    permission: programmer
+    code: 'load_server_options()'
+    expect:
+      error: E_PERM
+
+  - name: load_server_options_basic
+    permission: wizard
+    code: 'load_server_options()'
+    expect:
+      value: 0
+
+  - name: load_server_options_extra_args
+    permission: wizard
+    statement: "load_server_options(1);"
+    expect:
+      error: E_ARGS
+
+  # ===================================================================
+  # connected_players()
+  # ===================================================================
+
+  - name: connected_players_returns_list
+    code: 'typeof(connected_players())'
+    expect:
+      value: 4  # TYPE_LIST
+
+  - name: connected_players_includes_self
+    statement: |
+      return player in connected_players();
+    expect:
+      value: 1
+
+  - name: connected_players_show_all_returns_list
+    code: 'typeof(connected_players(1))'
+    expect:
+      value: 4  # TYPE_LIST
+
+  - name: connected_players_elements_are_objects
+    statement: |
+      pl = connected_players();
+      if (length(pl) == 0)
+        return 1;
+      endif
+      return typeof(pl[1]);
+    expect:
+      value: 1  # TYPE_OBJ
+
+  - name: connected_players_false_same_as_no_arg
+    code: 'connected_players(0) == connected_players()'
+    expect:
+      value: 1
+
+  # ===================================================================
+  # output_delimiters()
+  # ===================================================================
+
+  - name: output_delimiters_returns_list
+    permission: wizard
+    code: 'typeof(output_delimiters(player))'
+    expect:
+      value: 4  # TYPE_LIST
+
+  - name: output_delimiters_returns_two_strings
+    permission: wizard
+    code: 'length(output_delimiters(player))'
+    expect:
+      value: 2
+
+  - name: output_delimiters_default_prefix_empty
+    description: "Test connection has PREFIX set for transport; verify prefix is a string"
+    permission: wizard
+    statement: |
+      return typeof(output_delimiters(player)[1]);
+    expect:
+      value: 2  # TYPE_STR
+
+  - name: output_delimiters_default_suffix_empty
+    description: "Test connection has SUFFIX set for transport; verify suffix is a string"
+    permission: wizard
+    statement: |
+      return typeof(output_delimiters(player)[2]);
+    expect:
+      value: 2  # TYPE_STR
+
+  - name: output_delimiters_non_wizard_self_ok
+    permission: programmer
+    code: 'typeof(output_delimiters(player))'
+    expect:
+      value: 4  # TYPE_LIST
+
+  - name: output_delimiters_invalid_player
+    permission: wizard
+    code: 'output_delimiters(#999999)'
+    expect:
+      error: E_INVARG
+
+  - name: output_delimiters_no_args
+    permission: wizard
+    statement: "output_delimiters();"
+    expect:
+      error: E_ARGS
+
+  # ===================================================================
+  # notify()
+  # ===================================================================
+
+  - name: notify_self_returns_int
+    description: "notify() on unconnected obj returns int 1; avoids output stream pollution from self-notify"
+    permission: wizard
+    code: 'typeof(notify(#0, "test"))'
+    expect:
+      value: 0  # TYPE_INT
+
+  - name: notify_self_success
+    description: "notify() on unconnected obj returns 1 (no connection); confirms no error raised"
+    permission: wizard
+    code: 'notify(#0, "test_message")'
+    expect:
+      value: 1
+
+  - name: notify_programmer_self_ok
+    description: "Programmer can call notify; verify E_ARGS (not E_PERM) when missing arg, proving access is allowed"
+    permission: programmer
+    code: 'notify(player)'
+    expect:
+      error: E_ARGS
+
+  - name: notify_no_args
+    permission: wizard
+    statement: "notify();"
+    expect:
+      error: E_ARGS
+
+  - name: notify_one_arg
+    permission: wizard
+    code: 'notify(player)'
+    expect:
+      error: E_ARGS
+
+  - name: notify_wrong_type_first_arg
+    permission: wizard
+    code: 'notify("not_obj", "hello")'
+    expect:
+      error: E_TYPE
+
+  - name: notify_wrong_type_second_arg
+    permission: wizard
+    code: 'notify(player, 42)'
+    expect:
+      error: E_TYPE
+
+  - name: notify_with_no_flush
+    description: "notify with no_flush=1 on unconnected obj; verifies 3-arg form accepted without error"
+    permission: wizard
+    code: 'notify(#0, "test", 1)'
+    expect:
+      value: 1
+
+  - name: notify_with_no_newline
+    description: "notify with no_newline=1 on unconnected obj; verifies 4-arg form accepted without error"
+    permission: wizard
+    code: 'notify(#0, "test", 0, 1)'
+    expect:
+      value: 1
+
+  - name: notify_invalid_connection
+    description: "When connection not found, notify returns 1"
+    permission: wizard
+    code: 'notify(#999999, "test")'
+    expect:
+      value: 1
+
+  # ===================================================================
+  # connection_name()
+  # ===================================================================
+
+  - name: connection_name_returns_string
+    permission: wizard
+    code: 'typeof(connection_name(player))'
+    expect:
+      value: 2  # TYPE_STR
+
+  - name: connection_name_self_as_programmer
+    permission: programmer
+    code: 'typeof(connection_name(player))'
+    expect:
+      value: 2  # TYPE_STR
+
+  - name: connection_name_ip_mode
+    permission: wizard
+    code: 'typeof(connection_name(player, 1))'
+    expect:
+      value: 2  # TYPE_STR
+
+  - name: connection_name_invalid_player
+    permission: wizard
+    code: 'connection_name(#999999)'
+    expect:
+      error: E_INVARG
+
+  - name: connection_name_no_args
+    permission: wizard
+    statement: "connection_name();"
+    expect:
+      error: E_ARGS
+
+  - name: connection_name_contains_address
+    description: "Connection name is a non-empty string (may be hostname or IP)"
+    permission: wizard
+    statement: |
+      return length(connection_name(player)) > 0;
+    expect:
+      value: 1
+
+  # ===================================================================
+  # connection_info()
+  # VERIFY: typeof() return value for MAP -- scout believes 10
+  # ===================================================================
+
+  - name: connection_info_returns_map
+    description: "VERIFY: typeof(map) value -- scout used 10 based on _TYPE_MAP enum"
+    permission: wizard
+    code: 'typeof(connection_info(player))'
+    expect:
+      value: 10
+
+  - name: connection_info_has_source_address
+    description: "MOO 'in' returns index (>0 if found, 0 if not)"
+    permission: wizard
+    statement: |
+      info = connection_info(player);
+      return ("source_address" in mapkeys(info)) > 0;
+    expect:
+      value: 1
+
+  - name: connection_info_has_source_port
+    permission: wizard
+    statement: |
+      info = connection_info(player);
+      return typeof(info["source_port"]);
+    expect:
+      value: 0  # TYPE_INT
+
+  - name: connection_info_has_destination_port
+    permission: wizard
+    statement: |
+      info = connection_info(player);
+      return typeof(info["destination_port"]);
+    expect:
+      value: 0  # TYPE_INT
+
+  - name: connection_info_has_protocol
+    permission: wizard
+    statement: |
+      info = connection_info(player);
+      return typeof(info["protocol"]);
+    expect:
+      value: 2  # TYPE_STR
+
+  - name: connection_info_has_outbound
+    description: "Test connections are inbound"
+    permission: wizard
+    statement: |
+      info = connection_info(player);
+      return info["outbound"];
+    expect:
+      value: 0
+
+  - name: connection_info_invalid_player
+    permission: wizard
+    code: 'connection_info(#999999)'
+    expect:
+      error: E_INVARG
+
+  - name: connection_info_programmer_self
+    description: "VERIFY: typeof(map) value -- scout used 10"
+    permission: programmer
+    code: 'typeof(connection_info(player))'
+    expect:
+      value: 10
+
+  - name: connection_info_all_keys_present
+    permission: wizard
+    statement: |
+      info = connection_info(player);
+      keys = mapkeys(info);
+      required = {"destination_address", "destination_ip", "destination_port", "outbound", "protocol", "source_address", "source_ip", "source_port"};
+      for k in (required)
+        if (!(k in keys))
+          return 0;
+        endif
+      endfor
+      return 1;
+    expect:
+      value: 1
+
+  # ===================================================================
+  # listeners()
+  # ===================================================================
+
+  - name: listeners_returns_list
+    code: 'typeof(listeners())'
+    expect:
+      value: 4  # TYPE_LIST
+
+  - name: listeners_nonempty
+    description: Server must have at least one listener (the one we're connected to)
+    statement: 'return length(listeners()) > 0;'
+    expect:
+      value: 1
+
+  - name: listeners_entry_is_map
+    description: "VERIFY: typeof(map) value -- scout used 10"
+    statement: |
+      l = listeners();
+      return typeof(l[1]);
+    expect:
+      value: 10
+
+  - name: listeners_entry_has_object_key
+    description: "MOO 'in' returns index (>0 if found, 0 if not)"
+    statement: |
+      l = listeners();
+      return ("object" in mapkeys(l[1])) > 0;
+    expect:
+      value: 1
+
+  - name: listeners_entry_has_port_key
+    description: "MOO 'in' returns index (>0 if found, 0 if not)"
+    statement: |
+      l = listeners();
+      return ("port" in mapkeys(l[1])) > 0;
+    expect:
+      value: 1
+
+  - name: listeners_entry_object_is_obj
+    statement: |
+      l = listeners();
+      return typeof(l[1]["object"]);
+    expect:
+      value: 1  # TYPE_OBJ
+
+  - name: listeners_filter_by_object
+    permission: wizard
+    statement: |
+      l = listeners();
+      obj = l[1]["object"];
+      filtered = listeners(obj);
+      return length(filtered) > 0;
+    expect:
+      value: 1
+
+  # ===================================================================
+  # connected_seconds() and idle_seconds()
+  # ===================================================================
+
+  - name: connected_seconds_returns_int
+    code: 'typeof(connected_seconds(player))'
+    expect:
+      value: 0  # TYPE_INT
+
+  - name: connected_seconds_nonnegative
+    statement: 'return connected_seconds(player) >= 0;'
+    expect:
+      value: 1
+
+  - name: connected_seconds_invalid_player
+    code: 'connected_seconds(#999999)'
+    expect:
+      error: E_INVARG
+
+  - name: connected_seconds_no_args
+    statement: "connected_seconds();"
+    expect:
+      error: E_ARGS
+
+  - name: idle_seconds_returns_int
+    code: 'typeof(idle_seconds(player))'
+    expect:
+      value: 0  # TYPE_INT
+
+  - name: idle_seconds_nonnegative
+    statement: 'return idle_seconds(player) >= 0;'
+    expect:
+      value: 1
+
+  - name: idle_seconds_invalid_player
+    code: 'idle_seconds(#999999)'
+    expect:
+      error: E_INVARG
+
+  - name: idle_seconds_no_args
+    statement: "idle_seconds();"
+    expect:
+      error: E_ARGS
+
+  # ===================================================================
+  # buffered_output_length()
+  # ===================================================================
+
+  - name: buffered_output_length_no_args_returns_int
+    code: 'typeof(buffered_output_length())'
+    expect:
+      value: 0  # TYPE_INT
+
+  - name: buffered_output_length_no_args_positive
+    statement: 'return buffered_output_length() > 0;'
+    expect:
+      value: 1
+
+  - name: buffered_output_length_with_player
+    permission: wizard
+    code: 'typeof(buffered_output_length(player))'
+    expect:
+      value: 0  # TYPE_INT
+
+  - name: buffered_output_length_invalid_player
+    permission: wizard
+    code: 'buffered_output_length(#999999)'
+    expect:
+      error: E_INVARG
+
+  - name: buffered_output_length_self_as_programmer
+    permission: programmer
+    code: 'typeof(buffered_output_length(player))'
+    expect:
+      value: 0  # TYPE_INT
+
+  # ===================================================================
+  # boot_player() -- type/arg errors only, NOT actual boot
+  # ===================================================================
+
+  - name: boot_player_wrong_type
+    permission: wizard
+    code: 'boot_player("not_an_obj")'
+    expect:
+      error: E_TYPE
+
+  - name: boot_player_no_args
+    permission: wizard
+    statement: "boot_player();"
+    expect:
+      error: E_ARGS
+
+  - name: boot_player_extra_args
+    permission: wizard
+    statement: "boot_player(player, player);"
+    expect:
+      error: E_ARGS
+
+  # ===================================================================
+  # db_disk_size()
+  # ===================================================================
+
+  - name: db_disk_size_returns_int
+    code: 'typeof(db_disk_size())'
+    expect:
+      value: 0  # TYPE_INT
+
+  - name: db_disk_size_positive
+    description: "Returns 0 when database is in-memory or NUL device (no disk file)"
+    statement: 'return db_disk_size() >= 0;'
+    expect:
+      value: 1
+
+  - name: db_disk_size_extra_args
+    statement: "db_disk_size(1);"
+    expect:
+      error: E_ARGS
+
+  # ===================================================================
+  # dump_database()
+  # ===================================================================
+
+  - name: dump_database_requires_wizard
+    permission: programmer
+    code: 'dump_database()'
+    expect:
+      error: E_PERM
+
+  - name: dump_database_basic
+    permission: wizard
+    code: 'dump_database()'
+    expect:
+      value: 0
+
+  - name: dump_database_extra_args
+    permission: wizard
+    statement: "dump_database(1);"
+    expect:
+      error: E_ARGS
+
+  # ===================================================================
+  # usage()
+  # ===================================================================
+
+  - name: usage_requires_wizard
+    permission: programmer
+    code: 'usage()'
+    expect:
+      error: E_PERM
+
+  - name: usage_returns_list
+    permission: wizard
+    code: 'typeof(usage())'
+    expect:
+      value: 4  # TYPE_LIST
+
+  - name: usage_returns_ten_elements
+    permission: wizard
+    code: 'length(usage())'
+    expect:
+      value: 10
+
+  - name: usage_first_element_is_load_averages
+    permission: wizard
+    statement: |
+      u = usage();
+      return typeof(u[1]);
+    expect:
+      value: 4  # TYPE_LIST -- the 3-element load averages list
+
+  - name: usage_load_averages_has_three
+    permission: wizard
+    statement: |
+      u = usage();
+      return length(u[1]);
+    expect:
+      value: 3
+
+  - name: usage_extra_args
+    permission: wizard
+    statement: "usage(1);"
+    expect:
+      error: E_ARGS
+
+  # ===================================================================
+  # connection_options()
+  # ===================================================================
+
+  - name: connection_options_returns_list
+    permission: wizard
+    code: 'typeof(connection_options(player))'
+    expect:
+      value: 4  # TYPE_LIST
+
+  - name: connection_options_nonempty
+    permission: wizard
+    statement: 'return length(connection_options(player)) > 0;'
+    expect:
+      value: 1
+
+  - name: connection_options_invalid_player
+    permission: wizard
+    code: 'connection_options(#999999)'
+    expect:
+      error: E_INVARG
+
+  - name: connection_options_no_args
+    permission: wizard
+    statement: "connection_options();"
+    expect:
+      error: E_ARGS
+
+  - name: connection_options_programmer_self
+    permission: programmer
+    code: 'typeof(connection_options(player))'
+    expect:
+      value: 4  # TYPE_LIST
+
+  - name: connection_options_invalid_option_name
+    permission: wizard
+    code: 'connection_options(player, "nonexistent_option_xyz")'
+    expect:
+      error: E_INVARG
+
+  # ===================================================================
+  # set_connection_option()
+  # ===================================================================
+
+  - name: set_connection_option_no_args
+    permission: wizard
+    statement: "set_connection_option();"
+    expect:
+      error: E_ARGS
+
+  - name: set_connection_option_invalid_player
+    permission: wizard
+    code: 'set_connection_option(#999999, "hold-input", 1)'
+    expect:
+      error: E_INVARG
+
+  - name: set_connection_option_invalid_option
+    permission: wizard
+    code: 'set_connection_option(player, "nonexistent_option_xyz", 1)'
+    expect:
+      error: E_INVARG

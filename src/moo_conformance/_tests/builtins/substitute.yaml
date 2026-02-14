@@ -1,0 +1,61 @@
+name: substitute
+description: >
+  Tests for substitute() builtin. Uses match() results to perform
+  template substitution with %0-%9 references and %% for literal percent.
+
+requires:
+  builtins:
+    - substitute
+    - match
+
+tests:
+  # ===========================================================================
+  # substitute() - Template substitution using match results
+  # ===========================================================================
+
+  - name: substitute_basic
+    statement: |
+      m = match("foobar", "%(o+%)");
+      return substitute("found: %1", m);
+    expect:
+      value: "found: oo"
+
+  - name: substitute_whole_match
+    statement: |
+      m = match("foobar", "o+b");
+      return substitute("[%0]", m);
+    expect:
+      value: "[oob]"
+
+  - name: substitute_literal_percent
+    statement: |
+      m = match("foobar", "foo");
+      return substitute("100%% done", m);
+    expect:
+      value: "100% done"
+
+  - name: substitute_invalid_subs_list
+    code: 'substitute("hello", {1, 2, 3})'
+    expect:
+      error: E_INVARG
+
+  - name: substitute_invalid_percent_ref
+    statement: |
+      m = match("foobar", "foo");
+      return substitute("%a", m);
+    expect:
+      error: E_INVARG
+
+  - name: substitute_unused_capture
+    statement: |
+      m = match("foobar", "foo");
+      return substitute("group1=[%1]", m);
+    expect:
+      value: "group1=[]"
+
+  - name: substitute_multiple_refs
+    statement: |
+      m = match("hello world", "%(h.+%) %(w.+%)");
+      return substitute("%2 %1", m);
+    expect:
+      value: "world hello"

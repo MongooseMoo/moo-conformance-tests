@@ -1,0 +1,85 @@
+name: chr
+description: >
+  Tests for chr() builtin. Builds strings from integer codepoints.
+  Non-wizard range: 32-254. Wizard range: 0-255.
+  Also accepts string args (passed through) and list args.
+
+requires:
+  builtins:
+    - chr
+
+tests:
+  # ===========================================================================
+  # chr() - Character building
+  # ===========================================================================
+
+  - name: chr_single_printable
+    code: 'chr(65)'
+    expect:
+      value: "A"
+
+  - name: chr_space
+    description: "32 is lowest allowed value for non-wizard"
+    code: 'chr(32)'
+    expect:
+      value: " "
+
+  - name: chr_multiple_args
+    code: 'chr(72, 105)'
+    expect:
+      value: "Hi"
+
+  - name: chr_no_args
+    description: "Zero args is valid (minargs=0), returns empty string"
+    code: 'chr()'
+    expect:
+      value: ""
+
+  - name: chr_string_arg
+    description: "String args are passed through via encode_binary"
+    code: 'chr("A")'
+    expect:
+      value: "A"
+
+  - name: chr_mixed_args
+    description: "Mixed int and string args concatenated"
+    code: 'chr(72, "ell", 111)'
+    expect:
+      value: "Hello"
+
+  - name: chr_below_32_non_wizard
+    description: "Non-wizard cannot use values below 32"
+    code: 'chr(10)'
+    expect:
+      error: E_INVARG
+
+  - name: chr_above_254_non_wizard
+    description: "Non-wizard cannot use values above 254"
+    code: 'chr(255)'
+    expect:
+      error: E_INVARG
+
+  - name: chr_below_32_wizard
+    description: "Wizard can use 0-255 range"
+    permission: wizard
+    code: 'chr(10)'
+    expect:
+      type: str
+
+  - name: chr_negative_is_error
+    code: 'chr(-1)'
+    expect:
+      error: E_INVARG
+
+  - name: chr_above_255_is_error
+    description: "Even wizard cannot exceed 255"
+    permission: wizard
+    code: 'chr(256)'
+    expect:
+      error: E_INVARG
+
+  - name: chr_list_arg
+    description: "List arg iterates elements via encode_binary"
+    code: 'chr({65, 66, 67})'
+    expect:
+      value: "ABC"

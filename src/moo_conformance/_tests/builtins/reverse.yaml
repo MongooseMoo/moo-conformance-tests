@@ -1,0 +1,63 @@
+name: reverse
+description: >
+  Tests for reverse() builtin. Reverses strings and lists.
+  Returns E_INVARG for other types.
+
+requires:
+  builtins:
+    - reverse
+
+tests:
+  # ===========================================================================
+  # reverse() - String and list reversal
+  # ===========================================================================
+
+  - name: reverse_string
+    code: 'reverse("hello")'
+    expect:
+      value: "olleh"
+
+  - name: reverse_empty_string
+    code: 'reverse("")'
+    expect:
+      value: ""
+
+  - name: reverse_single_char
+    code: 'reverse("x")'
+    expect:
+      value: "x"
+
+  - name: reverse_list
+    code: 'reverse({1, 2, 3})'
+    expect:
+      value: [3, 2, 1]
+
+  - name: reverse_empty_list
+    code: 'reverse({})'
+    expect:
+      value: []
+
+  - name: reverse_single_element_list
+    code: 'reverse({42})'
+    expect:
+      value: [42]
+
+  - name: reverse_palindrome
+    code: 'reverse("abcba")'
+    expect:
+      value: "abcba"
+
+  - name: reverse_integer_is_error
+    code: 'reverse(42)'
+    expect:
+      error: E_INVARG
+
+  - name: reverse_map_is_error
+    code: 'reverse(["a" -> 1])'
+    expect:
+      error: E_INVARG
+
+  - name: reverse_mixed_list
+    code: 'reverse({"a", 1, #0, {2, 3}})'
+    expect:
+      value: [[2, 3], "#0", 1, "a"]

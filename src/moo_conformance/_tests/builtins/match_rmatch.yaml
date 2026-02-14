@@ -1,0 +1,93 @@
+name: match_rmatch
+description: >
+  Tests for match() and rmatch() string pattern matching builtins.
+  MOO regex uses %(%) for capture groups, not parentheses.
+
+requires:
+  builtins:
+    - match
+    - rmatch
+
+tests:
+  # ===========================================================================
+  # match() - Basic Functionality
+  # ===========================================================================
+
+  - name: match_simple_pattern
+    code: 'match("foobar", "o*b")'
+    expect:
+      value: [2, 4, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "foobar"]
+
+  - name: match_no_match
+    code: 'match("foobar", "^baz")'
+    expect:
+      value: []
+
+  - name: match_anchored_start
+    code: 'match("foobar", "^foo")'
+    expect:
+      value: [1, 3, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "foobar"]
+
+  - name: match_anchored_end
+    code: 'match("foobar", "bar$")'
+    expect:
+      value: [4, 6, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "foobar"]
+
+  - name: match_with_capture_group
+    code: 'match("foobar", "f%(o*%)b")'
+    expect:
+      value: [1, 4, [[2, 3], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "foobar"]
+
+  - name: match_case_insensitive_default
+    code: 'match("FooBar", "foo")'
+    expect:
+      value: [1, 3, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "FooBar"]
+
+  - name: match_case_sensitive
+    code: 'match("FooBar", "foo", 1)'
+    expect:
+      value: []
+
+  - name: match_empty_subject
+    code: 'match("", ".*")'
+    expect:
+      value: [1, 0, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], ""]
+
+  - name: match_invalid_regex
+    code: 'match("foobar", "%(unclosed")'
+    expect:
+      error: E_INVARG
+
+  - name: match_dot_matches_any
+    code: 'match("foobar", "f..b")'
+    expect:
+      value: [1, 4, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "foobar"]
+
+  # ===========================================================================
+  # rmatch() - Reverse Matching
+  # ===========================================================================
+
+  - name: rmatch_simple_pattern
+    code: 'rmatch("foobarfoo", "f.*")'
+    expect:
+      value: [7, 9, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "foobarfoo"]
+
+  - name: rmatch_no_match
+    code: 'rmatch("foobar", "baz")'
+    expect:
+      value: []
+
+  - name: rmatch_case_insensitive_default
+    code: 'rmatch("FooBar", "bar")'
+    expect:
+      value: [4, 6, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "FooBar"]
+
+  - name: rmatch_case_sensitive
+    code: 'rmatch("FooBar", "bar", 1)'
+    expect:
+      value: []
+
+  - name: rmatch_with_capture
+    code: 'rmatch("foobar", "%(o+%)")'
+    expect:
+      value: [3, 3, [[3, 3], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "foobar"]

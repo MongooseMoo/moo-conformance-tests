@@ -1,0 +1,93 @@
+name: parse_remove_ansi
+description: >
+  Tests for parse_ansi() and remove_ansi() builtins.
+  parse_ansi converts ANSI tags like [red] to escape codes.
+  remove_ansi strips ANSI tags from strings.
+  Tags are case-insensitive.
+
+requires:
+  builtins:
+    - parse_ansi
+    - remove_ansi
+
+tests:
+  # ===========================================================================
+  # parse_ansi() - Convert ANSI tags to escape codes
+  # ===========================================================================
+
+  - name: parse_ansi_red
+    description: "Verify [red] tag is replaced with escape code prefix before text"
+    code: 'index(parse_ansi("[red]hello"), "hello")'
+    expect:
+      type: int
+
+  - name: parse_ansi_normal
+    statement: |
+      s = parse_ansi("[red]hello[normal]");
+      return index(s, "hello") > 0;
+    expect:
+      value: 1
+
+  - name: parse_ansi_no_tags
+    code: 'parse_ansi("hello world")'
+    expect:
+      value: "hello world"
+
+  - name: parse_ansi_null_tag_removed
+    description: "[null] tag is replaced with empty string"
+    code: 'parse_ansi("[null]text")'
+    expect:
+      value: "text"
+
+  - name: parse_ansi_case_insensitive
+    statement: |
+      return parse_ansi("[RED]hello") == parse_ansi("[red]hello");
+    expect:
+      value: 1
+
+  - name: parse_ansi_multiple_tags
+    statement: |
+      s = parse_ansi("[bold][red]hello[normal]");
+      return index(s, "hello") > 0;
+    expect:
+      value: 1
+
+  # ===========================================================================
+  # remove_ansi() - Strip ANSI tags from strings
+  # ===========================================================================
+
+  - name: remove_ansi_strips_tags
+    code: 'remove_ansi("[red]hello[normal] world")'
+    expect:
+      value: "hello world"
+
+  - name: remove_ansi_no_tags
+    code: 'remove_ansi("hello world")'
+    expect:
+      value: "hello world"
+
+  - name: remove_ansi_all_foreground_colors
+    code: 'remove_ansi("[red][green][yellow][blue][purple][cyan][magenta][white][black][gray][grey]text")'
+    expect:
+      value: "text"
+
+  - name: remove_ansi_background_colors
+    code: 'remove_ansi("[b:red][b:green][b:yellow][b:blue][b:magenta][b:purple][b:cyan][b:white][b:black]text")'
+    expect:
+      value: "text"
+
+  - name: remove_ansi_formatting_tags
+    code: 'remove_ansi("[bold][bright][unbold][unbright][underline][inverse][blink][unblink][normal][beep][random][null]text")'
+    expect:
+      value: "text"
+
+  - name: remove_ansi_preserves_brackets_not_tags
+    description: "Unknown tags in brackets are not stripped"
+    code: 'remove_ansi("[unknown]text")'
+    expect:
+      value: "[unknown]text"
+
+  - name: remove_ansi_empty_string
+    code: 'remove_ansi("")'
+    expect:
+      value: ""

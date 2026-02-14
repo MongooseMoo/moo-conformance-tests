@@ -1,0 +1,101 @@
+name: pcre
+description: >
+  Tests for pcre_match() and pcre_replace() builtins.
+  PCRE2 regex support. Guarded by PCRE2_FOUND compile flag.
+  pcre_match defaults to case-insensitive and find_all=1.
+
+requires:
+  builtins:
+    - pcre_match
+    - pcre_replace
+
+tests:
+  # ===========================================================================
+  # pcre_match() - PCRE2 regex matching
+  # ===========================================================================
+
+  - name: pcre_match_simple
+    description: "Basic pcre_match returns a list of match results"
+    code: 'pcre_match("foobar", "o+")'
+    expect:
+      type: list
+
+  - name: pcre_match_no_match
+    code: 'pcre_match("foobar", "baz")'
+    expect:
+      value: []
+
+  - name: pcre_match_empty_pattern
+    description: "Empty pattern returns E_INVARG"
+    code: 'pcre_match("foobar", "")'
+    expect:
+      error: E_INVARG
+
+  - name: pcre_match_case_insensitive_default
+    description: "Default is case-insensitive (PCRE2_CASELESS)"
+    statement: |
+      r = pcre_match("FooBar", "foo");
+      return length(r) > 0;
+    expect:
+      value: 1
+
+  - name: pcre_match_case_sensitive
+    description: "case_matters=1 makes it case-sensitive"
+    code: 'pcre_match("FooBar", "foo", 1)'
+    expect:
+      value: []
+
+  - name: pcre_match_find_all_default
+    description: "Default find_all=1 returns all matches"
+    statement: |
+      r = pcre_match("banana", "a");
+      return length(r);
+    expect:
+      value: 3
+
+  - name: pcre_match_find_first_only
+    description: "find_all=0 returns only first match"
+    statement: |
+      r = pcre_match("banana", "a", 0, 0);
+      return length(r);
+    expect:
+      value: 1
+
+  - name: pcre_match_named_group
+    description: "Named capture groups returned as map keys"
+    statement: |
+      r = pcre_match("2024-01-15", "(?P<year>\\d{4})-(?P<month>\\d{2})-(?P<day>\\d{2})", 0, 0);
+      return r[1]["year"]["match"];
+    expect:
+      value: "2024"
+
+  - name: pcre_match_invalid_pattern
+    code: 'pcre_match("foobar", "[unclosed")'
+    expect:
+      error: E_INVARG
+
+  # ===========================================================================
+  # pcre_replace() - PCRE2 regex substitution
+  # ===========================================================================
+
+  - name: pcre_replace_basic
+    code: 'pcre_replace("foobar", "s/foo/baz/")'
+    expect:
+      value: "bazbar"
+
+  - name: pcre_replace_global
+    description: "/g flag replaces all occurrences"
+    code: 'pcre_replace("foofoofoo", "s/foo/bar/g")'
+    expect:
+      value: "barbarbar"
+
+  - name: pcre_replace_case_insensitive
+    description: "/i flag for case-insensitive match"
+    code: 'pcre_replace("FooBar", "s/foo/baz/i")'
+    expect:
+      value: "bazBar"
+
+  - name: pcre_replace_invalid_pattern
+    code: 'pcre_replace("foobar", "s/[unclosed/bar/")'
+    expect:
+      error: E_INVARG

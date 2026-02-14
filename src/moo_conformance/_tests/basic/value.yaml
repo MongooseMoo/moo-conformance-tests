@@ -142,3 +142,65 @@ tests:
     code: "equal({1, 2}, {1, 3})"
     expect:
       value: 0
+
+  # ===========================================================================
+  # tostr edge cases
+  # ===========================================================================
+
+  - name: tostr_string
+    description: "String passed to tostr returns itself"
+    code: 'tostr("hello")'
+    expect:
+      value: "hello"
+
+  - name: tostr_error
+    description: "Error values get their description string"
+    code: 'tostr(E_TYPE)'
+    expect:
+      value: "Type mismatch"
+
+  - name: tostr_no_args
+    description: "Zero args produces empty string"
+    code: 'tostr()'
+    expect:
+      value: ""
+
+  - name: tostr_multiple_args
+    description: "Multiple args are concatenated"
+    code: 'tostr("hello", " ", "world")'
+    expect:
+      value: "hello world"
+
+  - name: tostr_mixed_types
+    description: "Mixed types all convert to string and concatenate"
+    code: 'tostr("val=", 42, " obj=", #0)'
+    expect:
+      value: "val=42 obj=#0"
+
+  # ===========================================================================
+  # toliteral edge cases
+  # ===========================================================================
+
+  - name: toliteral_string
+    description: "Literal form of string includes quotes"
+    code: 'toliteral("hello")'
+    expect:
+      value: "\"hello\""
+
+  - name: toliteral_error
+    description: "Literal form of error is its name"
+    code: 'toliteral(E_TYPE)'
+    expect:
+      value: "E_TYPE"
+
+  - name: toliteral_nested_list
+    description: "Nested structures rendered recursively"
+    code: 'toliteral({1, {2, 3}})'
+    expect:
+      value: "{1, {2, 3}}"
+
+  - name: toliteral_map
+    description: "Map literal form uses arrow syntax"
+    code: 'toliteral(["a" -> 1])'
+    expect:
+      value: "[\"a\" -> 1]"

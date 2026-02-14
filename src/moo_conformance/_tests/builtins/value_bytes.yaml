@@ -1,0 +1,33 @@
+name: value_bytes
+description: >
+  Tests for value_bytes() builtin. Returns memory size of a value in bytes.
+
+requires:
+  builtins:
+    - value_bytes
+
+tests:
+  # ===========================================================================
+  # value_bytes() - Memory footprint
+  # ===========================================================================
+
+  - name: value_bytes_int
+    description: "value_bytes returns positive size for any value"
+    statement: |
+      return value_bytes(42) > 0;
+    expect:
+      value: 1
+
+  - name: value_bytes_string
+    description: "Longer string should use more bytes"
+    statement: |
+      return value_bytes("hello") > value_bytes("");
+    expect:
+      value: 1
+
+  - name: value_bytes_list
+    description: "Non-empty list should use more bytes than empty"
+    statement: |
+      return value_bytes({1, 2, 3}) > value_bytes({});
+    expect:
+      value: 1

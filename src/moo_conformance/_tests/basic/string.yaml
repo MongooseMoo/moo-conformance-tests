@@ -108,13 +108,109 @@ tests:
       value: "foo~0Abar~0D"
 
   - name: crypt_hashes_string
+    skip: "DES crypt not supported on Windows"
     code: 'crypt("foobar", "SA")'
     expect:
       value: "SAEmC5UwrAl2A"
-    # Note: DES crypt supported in cow_py (passlib) but not toaststunt/Windows
 
   - name: crypt_bcrypt_hashes_string
+    skip: "Windows Toast only supports $2a$, not $2b$"
     code: 'index(crypt("password", "$2b$05$1234567890123456"), "$2b$05$")'
     expect:
       value: 1
-    # Note: Uses default cost factor (05) which doesn't require wizard perms
+
+  # ===========================================================================
+  # strsub edge cases
+  # ===========================================================================
+
+  - name: strsub_case_insensitive_default
+    description: "Default is case-insensitive (case_matters=0)"
+    code: 'strsub("FooBarFoo", "foo", "baz")'
+    expect:
+      value: "bazBarbaz"
+
+  - name: strsub_case_sensitive
+    description: "Case-sensitive mode, no match for different case"
+    code: 'strsub("FooBarFoo", "foo", "baz", 1)'
+    expect:
+      value: "FooBarFoo"
+
+  - name: strsub_case_sensitive_match
+    description: "Case-sensitive mode matches only exact case"
+    code: 'strsub("FooBarfoo", "foo", "baz", 1)'
+    expect:
+      value: "FooBarbaz"
+
+  - name: strsub_empty_what_is_invarg
+    description: "Empty search string returns E_INVARG"
+    code: 'strsub("foobar", "", "x")'
+    expect:
+      error: E_INVARG
+
+  - name: strsub_empty_source
+    code: 'strsub("", "x", "y")'
+    expect:
+      value: ""
+
+  - name: strsub_with_empty_replacement
+    description: "Replacing with empty string removes matches"
+    code: 'strsub("foobar", "o", "")'
+    expect:
+      value: "fbar"
+
+  - name: strsub_multiple_occurrences
+    code: 'strsub("abcabcabc", "abc", "x")'
+    expect:
+      value: "xxx"
+
+  # ===========================================================================
+  # strcmp edge cases
+  # ===========================================================================
+
+  - name: strcmp_case_differs
+    description: "Case-sensitive comparison, result is platform-consistent type"
+    code: 'strcmp("abc", "ABC")'
+    expect:
+      type: int
+
+  - name: strcmp_case_differs_direction
+    description: "In ASCII, 'a' (97) > 'A' (65), so strcmp returns positive"
+    code: 'strcmp("abc", "ABC") > 0'
+    expect:
+      value: 1
+
+  - name: strcmp_empty_strings
+    code: 'strcmp("", "")'
+    expect:
+      value: 0
+
+  - name: strcmp_empty_vs_nonempty
+    description: "Empty string is less than any non-empty string"
+    code: 'strcmp("", "a") < 0'
+    expect:
+      value: 1
+
+  - name: strcmp_prefix
+    description: "Shorter prefix is less than longer string"
+    code: 'strcmp("abc", "abcd") < 0'
+    expect:
+      value: 1
+
+  # ===========================================================================
+  # length edge cases
+  # ===========================================================================
+
+  - name: length_empty_string
+    code: 'length("")'
+    expect:
+      value: 0
+
+  - name: length_type_error_on_int
+    code: 'length(42)'
+    expect:
+      error: E_TYPE
+
+  - name: length_type_error_on_object
+    code: 'length(#0)'
+    expect:
+      error: E_TYPE

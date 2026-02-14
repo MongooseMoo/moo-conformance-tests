@@ -1,0 +1,86 @@
+name: explode
+description: >
+  Tests for explode() builtin. Splits strings by delimiter.
+  Default delimiter is space. Only first character of delimiter string is used.
+  Adjacent flag controls whether consecutive delimiters produce empty strings.
+
+requires:
+  builtins:
+    - explode
+
+tests:
+  # ===========================================================================
+  # explode() - String splitting
+  # ===========================================================================
+
+  - name: explode_default_delimiter
+    code: 'explode("foo bar baz")'
+    expect:
+      value: ["foo", "bar", "baz"]
+
+  - name: explode_custom_delimiter
+    code: 'explode("foo:bar:baz", ":")'
+    expect:
+      value: ["foo", "bar", "baz"]
+
+  - name: explode_multiple_spaces_collapsed
+    code: 'explode("foo  bar   baz")'
+    expect:
+      value: ["foo", "bar", "baz"]
+
+  - name: explode_adjacent_flag_preserves_empty
+    code: 'explode("foo::bar", ":", 1)'
+    expect:
+      value: ["foo", "", "bar"]
+
+  - name: explode_leading_delimiter_no_adjacent
+    code: 'explode(" foo bar")'
+    expect:
+      value: ["foo", "bar"]
+
+  - name: explode_leading_delimiter_with_adjacent
+    code: 'explode(" foo bar", " ", 1)'
+    expect:
+      value: ["", "foo", "bar"]
+
+  - name: explode_trailing_delimiter_with_adjacent
+    code: 'explode("foo bar ", " ", 1)'
+    expect:
+      value: ["foo", "bar", ""]
+
+  - name: explode_empty_string
+    code: 'explode("")'
+    expect:
+      value: []
+
+  - name: explode_no_delimiter_found
+    code: 'explode("foobar", ":")'
+    expect:
+      value: ["foobar"]
+
+  - name: explode_single_char_string
+    code: 'explode("x")'
+    expect:
+      value: ["x"]
+
+  - name: explode_all_delimiters_no_adjacent
+    code: 'explode("   ")'
+    expect:
+      value: []
+
+  - name: explode_all_delimiters_with_adjacent
+    code: 'explode(":::", ":", 1)'
+    expect:
+      value: ["", "", "", ""]
+
+  - name: explode_only_first_char_of_delim_used
+    description: "Only delim[0] is used (source line 804)"
+    code: 'explode("foo:bar;baz", ":;")'
+    expect:
+      value: ["foo", "bar;baz"]
+
+  - name: explode_empty_delimiter_uses_space
+    description: "Empty delimiter string falls back to space"
+    code: 'explode("foo bar", "")'
+    expect:
+      value: ["foo", "bar"]

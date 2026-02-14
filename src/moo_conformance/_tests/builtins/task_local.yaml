@@ -11,13 +11,13 @@ tests:
     permission: programmer
     code: "set_task_local(1)"
     expect:
-      value: 0
+      error: E_PERM
 
   - name: task_local_requires_wizard
     permission: programmer
     code: "task_local()"
     expect:
-      value: {}
+      error: E_PERM
 
   # Argument checking
   - name: set_task_local_no_args
@@ -165,13 +165,6 @@ tests:
     expect:
       value: 97.65625
 
-  - name: read_between_verb_calls
-    permission: wizard
-    skip: "Requires dynamic verb creation on #-1 - YAML test harness limitation"
-    code: "#-1:baz(2.5)"
-    expect:
-      value: 97.65625
-
   # Memory leak regression tests (non-functional)
   - name: nonfunctional_fork_suspend
     permission: wizard
@@ -183,6 +176,7 @@ tests:
       value: 0
 
   - name: nonfunctional_kill_task
+    skip: "Kills current task before response can be sent - causes timeout"
     permission: wizard
     code: "kill_task(task_id())"
     expect:

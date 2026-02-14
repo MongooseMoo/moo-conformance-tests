@@ -199,7 +199,7 @@ tests:
     expect:
       value: "{1, {2, 3}}"
 
-  - name: toliteral_map
+  - name: toliteral_map_basic
     description: "Map literal form uses arrow syntax"
     code: 'toliteral(["a" -> 1])'
     expect:

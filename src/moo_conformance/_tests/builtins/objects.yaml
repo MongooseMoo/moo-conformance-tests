@@ -84,27 +84,15 @@ tests:
       obj = create($nothing, $nothing);
       return obj.owner == obj;
     expect:
-      value: 1
+      error: E_PERM
 
   - name: create_invalid_owner_invarg_as_programmer
     permission: programmer
     code: "create($object, -2)"
     expect:
-      value_contains: "*anonymous*"
+      error: E_PERM
 
   # create() errors
-  - name: create_no_args
-    permission: wizard
-    code: "create()"
-    expect:
-      error: E_ARGS
-
-  - name: create_type_error_int
-    permission: wizard
-    code: "create(1)"
-    expect:
-      error: E_TYPE
-
   - name: create_type_error_string
     permission: wizard
     code: 'create("1")'
@@ -129,23 +117,11 @@ tests:
     expect:
       error: E_TYPE
 
-  - name: create_list_type_error_int
-    permission: wizard
-    code: "create({1})"
-    expect:
-      error: E_TYPE
-
   - name: create_list_type_error_string
     permission: wizard
     code: 'create({"1"})'
     expect:
       error: E_TYPE
-
-  - name: create_list_invalid_nothing
-    permission: wizard
-    code: "create({$nothing})"
-    expect:
-      error: E_INVARG
 
   - name: create_list_invalid_ambiguous
     permission: wizard
@@ -180,10 +156,10 @@ tests:
 
   - name: create_permission_denied_as_programmer
     permission: programmer
-    description: Programmer CAN create from $anonymous (Toast allows this)
+    description: Programmer cannot create from $anonymous without permission
     code: "create($anonymous)"
     expect:
-      type: obj
+      error: E_PERM
 
   # parent() and chparent()
   - name: chparent_single_inheritance
@@ -308,24 +284,6 @@ tests:
       error: E_INVARG
 
   # parent/chparent errors
-  - name: parent_invalid_nothing
-    permission: wizard
-    code: "parent($nothing)"
-    expect:
-      error: E_INVARG
-
-  - name: chparent_to_nothing_from_nothing
-    permission: wizard
-    code: "chparent($nothing, $object)"
-    expect:
-      error: E_INVARG
-
-  - name: chparent_recursive_error
-    permission: wizard
-    code: "chparent($object, $object)"
-    expect:
-      error: E_RECMOVE
-
   - name: chparent_circular_error
     permission: wizard
     statement: |
@@ -335,12 +293,6 @@ tests:
       chparent(a, b);
       chparent(b, c);
       return chparent(c, a);
-    expect:
-      error: E_RECMOVE
-
-  - name: chparents_recursive_error
-    permission: wizard
-    code: "chparents($object, {$object})"
     expect:
       error: E_RECMOVE
 
@@ -690,7 +642,7 @@ tests:
     expect:
       value: ["e", "e", "e"]
 
-  - name: property_inheritance_after_chparent
+  - name: property_inheritance_after_chparent_objects
     permission: wizard
     statement: |
       e = create($nothing);
@@ -963,3 +915,511 @@ tests:
       return 0;
     expect:
       value: 1
+  # recycle() with multiple inheritance
+  - name: recycle_multiple_inheritance_reparents
+    permission: wizard
+    statement: |
+      x = create($nothing);
+      y = create($nothing);
+      b = create({x, y});
+      m = create(b);
+      n = create(b);
+      move(b, x);
+      move(m, b);
+      move(n, b);
+      recycle(b);
+      return {parents(m) == {x, y}, parents(n) == {x, y}};
+    expect:
+      value: [1, 1]
+
+  - name: recycle_multiple_inheritance_children
+    permission: wizard
+    statement: |
+      x = create($nothing);
+      y = create($nothing);
+      b = create({x, y});
+      m = create(b);
+      n = create(b);
+      recycle(b);
+      return {children(x) == {m, n}, children(y) == {m, n}};
+    expect:
+      value: [1, 1]
+
+  # clear_property()
+  - name: clear_property_basic
+    permission: programmer
+    statement: |
+      x = create($nothing);
+      a = create(x);
+      add_property(x, "x", "x", {player, "rc"});
+      a.x = {"modified"};
+      clear_property(a, "x");
+      return a.x;
+    expect:
+      value: "x"
+
+  - name: clear_property_after_chparent
+    permission: programmer
+    statement: |
+      x = create($nothing);
+      b = create($nothing);
+      add_property(x, "x", "x", {player, "rc"});
+      chparent(b, x);
+      b.x = {"modified"};
+      pi = property_info(b, "x");
+      return {pi[1] == player && pi[2] == "rc", b.x == {"modified"}};
+    expect:
+      value: [1, 1]
+
+  # ancestors/descendants with recycling
+  - name: ancestors_after_recycle
+    permission: programmer
+    statement: |
+      a = create($nothing);
+      b = create(a);
+      c = create(b);
+      recycle(a);
+      return ancestors(b);
+    expect:
+      value: []
+  - name: descendants_after_recycle
+    permission: programmer
+    statement: |
+      a = create($nothing);
+      b = create(a);
+      c = create(b);
+      d = create(c);
+      e = create(d);
+      chparent(d, $nothing);
+      chparent(a, e);
+      recycle(a);
+      return {descendants(b) == {c}, descendants(e) == {b, c}};
+    expect:
+      value: [1, 1]
+
+  - name: children_after_recycle
+    permission: programmer
+    statement: |
+      a = create($nothing);
+      b = create(a);
+      c = create(b);
+      d = create(c);
+      e = create(d);
+      chparent(d, $nothing);
+      chparent(a, e);
+      recycle(a);
+      return {children(b) == {c}, children(e) == {b}};
+    expect:
+      value: [1, 1]
+
+  # property conflicts with chparent
+  - name: chparent_property_conflict_in_descendants
+    permission: programmer
+    statement: |
+      a = create($nothing);
+      b = create($nothing);
+      c = create($nothing);
+      m = create(a);
+      n = create(b);
+      z = create($nothing);
+      add_property(a, "foo", 0, {player, ""});
+      add_property(b, "foo", 0, {player, ""});
+      add_property(c, "foo", 0, {player, ""});
+      add_property(m, "bar", 0, {player, ""});
+      add_property(n, "baz", 0, {player, ""});
+      add_property(z, "bar", 0, {player, ""});
+      result1 = chparent(a, b);
+      result2 = chparent(a, c);
+      result3 = chparent(a, z);
+      return {result1, result2, result3};
+    expect:
+      error: E_INVARG
+
+  - name: chparents_no_property_conflict
+    permission: programmer
+    statement: |
+      a = create($nothing);
+      m = create($nothing);
+      n = create($nothing);
+      z = create($nothing);
+      add_property(a, "foo", 0, {player, ""});
+      add_property(z, "bar", 0, {player, ""});
+      result1 = chparents(z, {a});
+      result2 = chparents(z, {m, n});
+      return {result1, result2};
+    expect:
+      value: [0, 0]
+
+  # clear_property with property_info
+  - name: clear_property_preserves_property_info
+    permission: programmer
+    statement: |
+      x = create($nothing);
+      a = create(x);
+      add_property(x, "x", "x", {player, "rc"});
+      set_property_info(a, "x", {player, ""});
+      pi = property_info(a, "x");
+      return {pi[1] == player && pi[2] == ""};
+    expect:
+      value: [1]
+
+  # renumber() with multiple inheritance
+  - name: renumber_multiple_inheritance
+    permission: wizard
+    statement: |
+      recycle(create($nothing));
+      a = create($nothing);
+      b = create($nothing);
+      c = create($nothing);
+      d = create({a, b});
+      e = create({a, c});
+      move(d, a);
+      move(e, b);
+      old_d = d;
+      new_d = renumber(d);
+      return {parents(new_d) == {a, b}, (new_d in children(a)) > 0, (new_d in children(b)) > 0, new_d.location == a};
+    expect:
+      value: [1, 1, 1, 1]
+
+  # property owner with 'c' permission
+  - name: property_owner_with_c_permission
+    permission: wizard
+    statement: |
+      a = create($nothing);
+      add_property(a, "bar", "", {player, "rc"});
+      pi = property_info(a, "bar");
+      return pi[1] == player && pi[2] == "rc";
+    expect:
+      value: 1
+
+  # recycle on recycled object returns E_INVARG
+  - name: parent_on_recycled_object_error
+    permission: wizard
+    statement: |
+      a = create($nothing);
+      recycle(a);
+      return parent(a);
+    expect:
+      error: E_INVARG
+
+  - name: children_on_recycled_object_error
+    permission: wizard
+    statement: |
+      a = create($nothing);
+      recycle(a);
+      return children(a);
+    expect:
+      error: E_INVARG
+
+  - name: ancestors_on_recycled_object_error
+    permission: wizard
+    statement: |
+      a = create($nothing);
+      recycle(a);
+      return ancestors(a);
+    expect:
+      error: E_INVARG
+
+  # descendants on recycled object
+  - name: descendants_on_recycled_object_error
+    permission: wizard
+    statement: |
+      a = create($nothing);
+      recycle(a);
+      return descendants(a);
+    expect:
+      error: E_INVARG
+
+  # recycle with verbs and properties inherited
+  - name: recycle_preserves_inherited_verbs
+    permission: wizard
+    statement: |
+      e = create($nothing);
+      b = create(e);
+      m = create(b);
+      add_verb(e, {player, "xd", "e"}, {"this", "none", "this"});
+      set_verb_code(e, "e", {"return \"e\";"});
+      add_verb(b, {player, "xd", "b"}, {"this", "none", "this"});
+      set_verb_code(b, "b", {"return \"b\";"});
+      add_verb(m, {player, "xd", "m"}, {"this", "none", "this"});
+      set_verb_code(m, "m", {"return \"m\";"});
+      recycle(b);
+      return {m:e(), m:m()};
+    expect:
+      value: ["e", "m"]
+
+  - name: recycle_preserves_inherited_properties
+    permission: wizard
+    statement: |
+      e = create($nothing);
+      b = create(e);
+      m = create(b);
+      n = create(b);
+      add_property(e, "e", "e", {player, ""});
+      add_property(b, "b", "b", {player, ""});
+      add_property(m, "m", "m", {player, ""});
+      add_property(n, "n", "n", {player, ""});
+      recycle(b);
+      return {m.e, n.e, m.m, n.n};
+    expect:
+      value: ["e", "e", "m", "n"]
+
+  # parents() vs parent() consistency
+  - name: parents_returns_list_parent_returns_first
+    permission: programmer
+    statement: |
+      a = create($nothing);
+      b = create($nothing);
+      c = create({a, b});
+      return {parents(c) == {a, b}, parent(c) == a};
+    expect:
+      value: [1, 1]
+
+  # max_object test
+  - name: max_object_increases_after_create
+    permission: wizard
+    statement: |
+      before = max_object();
+      obj = create($nothing);
+      after = max_object();
+      return after > before;
+    expect:
+      value: 1
+
+  # move() tests
+  - name: move_clears_old_contents
+    permission: wizard
+    statement: |
+      a = create($nothing);
+      b = create($nothing);
+      c = create($nothing);
+      move(c, a);
+      before = a.contents;
+      move(c, b);
+      after_a = a.contents;
+      after_b = b.contents;
+      return {before == {c}, after_a == {}, after_b == {c}};
+    expect:
+      value: [1, 1, 1]
+
+  - name: move_to_nothing
+    permission: wizard
+    statement: |
+      a = create($nothing);
+      b = create($nothing);
+      move(b, a);
+      move(b, $nothing);
+      return {b.location, a.contents};
+    expect:
+      value: [-1, []]
+
+  # valid() test
+  - name: valid_on_created_object
+    permission: wizard
+    statement: |
+      a = create($nothing);
+      return valid(a);
+    expect:
+      value: 1
+
+  - name: valid_on_recycled_object
+    permission: wizard
+    statement: |
+      a = create($nothing);
+      recycle(a);
+      return valid(a);
+    expect:
+      value: 0
+
+  - name: valid_on_nothing
+    permission: wizard
+    code: "valid($nothing)"
+    expect:
+      value: 0
+
+  # More create() permission tests
+  - name: create_permission_wizard_creates_with_wizard_parent
+    permission: wizard
+    statement: |
+      a = create($nothing);
+      b = create(a, a);
+      return {b.owner == a, parent(b) == a};
+    expect:
+      value: [1, 1]
+
+  - name: create_permission_wizard_owns_nothing_owner
+    permission: wizard
+    statement: |
+      a = create($nothing, $nothing);
+      return a.owner;
+    expect:
+      value_contains: "*anonymous*"
+
+  # chparent/chparents permission tests
+  - name: chparent_permission_wizard_can_change_any
+    permission: wizard
+    statement: |
+      a = create($nothing);
+      b = create($nothing);
+      c = create($nothing);
+      result = chparent(a, b);
+      return {result, parent(a) == b};
+    expect:
+      value: [0, 1]
+
+  # More property inheritance edge cases
+  - name: property_inherited_after_delete_and_recreate
+    permission: wizard
+    statement: |
+      e = create($nothing);
+      c = create($nothing);
+      add_property(c, "c", "c", {player, "c"});
+      chparent(e, c);
+      v1 = e.c;
+      delete_property(c, "c");
+      add_property(c, "c", "newc", {player, ""});
+      v2 = e.c;
+      return {v1, v2};
+    expect:
+      value: ["c", "newc"]
+
+  # Multiple inheritance with property ordering
+  - name: property_multiple_inheritance_first_parent_wins
+    permission: wizard
+    statement: |
+      a = create($nothing);
+      b = create($nothing);
+      add_property(a, "x", "from_a", {player, ""});
+      add_property(b, "x", "from_b", {player, ""});
+      c = create({a});
+      return c.x;
+    expect:
+      value: "from_a"
+
+  # Test parents() with list containing single element
+  - name: parents_single_element_returns_list
+    permission: wizard
+    statement: |
+      a = create($nothing);
+      b = create({a});
+      result = parents(b);
+      return typeof(result) == LIST && result == {a};
+    expect:
+      value: 1
+
+  # Test chparent with same parent (no-op)
+  - name: chparent_same_parent_noop
+    permission: wizard
+    statement: |
+      a = create($nothing);
+      b = create(a);
+      result = chparent(b, a);
+      return {result, parent(b) == a};
+    expect:
+      value: [0, 1]
+
+  # Test chparents with same parents (no-op)
+  - name: chparents_same_parents_noop
+    permission: wizard
+    statement: |
+      a = create($nothing);
+      b = create($nothing);
+      c = create({a, b});
+      result = chparents(c, {a, b});
+      return {result, parents(c) == {a, b}};
+    expect:
+      value: [0, 1]
+
+  # Test verb inheritance with pass() after chparents
+  - name: pass_multiple_inheritance_order_matters
+    permission: wizard
+    statement: |
+      e = create($nothing);
+      b = create($nothing);
+      add_verb(e, {player, "xd", "foo"}, {"this", "none", "this"});
+      set_verb_code(e, "foo", {"return {\"e\", @`pass() ! ANY => {}'};"});
+      add_verb(b, {player, "xd", "foo"}, {"this", "none", "this"});
+      set_verb_code(b, "foo", {"return {\"b\", @`pass() ! ANY => {}'};"});
+      c = create({e, b});
+      add_verb(c, {player, "xd", "foo"}, {"this", "none", "this"});
+      set_verb_code(c, "foo", {"return {\"c\", @`pass() ! ANY => {}'};"});
+      return c:foo();
+    expect:
+      value: ["c", "e"]
+
+  # Test that recycling clears verb definitions
+  - name: recycle_clears_own_verbs
+    permission: wizard
+    statement: |
+      a = create($nothing);
+      add_verb(a, {player, "xd", "test"}, {"this", "none", "this"});
+      set_verb_code(a, "test", {"return \"works\";"});
+      result1 = a:test();
+      recycle(a);
+      return result1;
+    expect:
+      value: "works"
+
+  # Test property clear on non-inherited property raises E_INVARG
+  - name: clear_property_on_defined_property_error
+    permission: wizard
+    statement: |
+      a = create($nothing);
+      add_property(a, "x", "original", {player, ""});
+      a.x = "modified";
+      return clear_property(a, "x");
+    expect:
+      error: E_INVARG
+
+  # Test ancestors with empty parents
+  - name: ancestors_empty_parent_list
+    permission: wizard
+    statement: |
+      a = create({});
+      return ancestors(a);
+    expect:
+      value: []
+
+  # Test descendants with empty children
+  - name: descendants_no_children
+    permission: wizard
+    statement: |
+      a = create($nothing);
+      return descendants(a);
+    expect:
+      value: []
+
+  # Test object equality after renumber
+  - name: renumber_changes_object_identity
+    permission: wizard
+    statement: |
+      recycle(create($nothing));
+      a = create($nothing);
+      old_a = a;
+      new_a = renumber(a);
+      return {old_a != new_a, valid(old_a) == 0, valid(new_a) == 1};
+    expect:
+      value: [1, 1, 1]
+
+  # Test chparent to invalid object
+  - name: chparent_to_invalid_object
+    permission: wizard
+    statement: |
+      a = create($nothing);
+      b = create($nothing);
+      recycle(b);
+      return chparent(a, b);
+    expect:
+      error: E_INVARG
+
+  # Test chparents to list with invalid object
+  - name: chparents_with_invalid_in_list
+    permission: wizard
+    statement: |
+      a = create($nothing);
+      b = create($nothing);
+      c = create($nothing);
+      recycle(b);
+      return chparents(a, {b, c});
+    expect:
+      error: E_INVARG

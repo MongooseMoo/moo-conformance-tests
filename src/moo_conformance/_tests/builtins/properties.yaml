@@ -167,14 +167,14 @@ tests:
       - run: "recycle({obj})"
 
   - name: add_property_not_owner
-    description: add_property allows programmer to specify different owner (Toast behavior)
+    description: add_property denies programmer specifying different owner
     permission: programmer
     steps:
       - run: "create($nothing)"
         capture: obj
       - run: "add_property({obj}, \"foobar\", 0, {$system, \"\"})"
         expect:
-          value: 0
+          error: E_PERM
     cleanup:
       - run: "recycle({obj})"
 
@@ -705,3 +705,359 @@ tests:
           value: []
     cleanup:
       - run: "recycle({obj})"
+
+  ## Property inheritance tests
+
+  - name: property_inheritance_basic_props
+    description: Child inherits property from parent with correct value
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: parent
+      - run: "add_property({parent}, \"test_prop\", \"parent_val\", {player, \"\"})"
+      - run: "create({parent})"
+        capture: child
+      - run: "{child}.test_prop"
+        expect:
+          value: "parent_val"
+      - run: "property_info({child}, \"test_prop\")[2]"
+        expect:
+          value: ""
+    cleanup:
+      - run: "recycle({child})"
+      - run: "recycle({parent})"
+
+  - name: property_inheritance_override
+    description: Child can override inherited property value
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: parent
+      - run: "add_property({parent}, \"test_prop\", \"parent_val\", {player, \"\"})"
+      - run: "create({parent})"
+        capture: child
+      - run: "{child}.test_prop = \"child_val\""
+      - run: "{child}.test_prop"
+        expect:
+          value: "child_val"
+      - run: "{parent}.test_prop"
+        expect:
+          value: "parent_val"
+    cleanup:
+      - run: "recycle({child})"
+      - run: "recycle({parent})"
+
+  - name: property_inheritance_clear_restores_parent
+    description: Clearing child property restores parent value
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: parent
+      - run: "add_property({parent}, \"test_prop\", \"parent_val\", {player, \"\"})"
+      - run: "create({parent})"
+        capture: child
+      - run: "{child}.test_prop = \"child_val\""
+      - run: "clear_property({child}, \"test_prop\")"
+      - run: "{child}.test_prop"
+        expect:
+          value: "parent_val"
+    cleanup:
+      - run: "recycle({child})"
+      - run: "recycle({parent})"
+
+  - name: property_inheritance_chparent_adds_properties
+    description: Changing parent adds new inherited properties
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: parent_a
+      - run: "create($nothing)"
+        capture: parent_b
+      - run: "add_property({parent_a}, \"prop_a\", \"val_a\", {player, \"\"})"
+      - run: "add_property({parent_b}, \"prop_b\", \"val_b\", {player, \"r\"})"
+      - run: "create({parent_a})"
+        capture: child
+      - run: "{child}.prop_a"
+        expect:
+          value: "val_a"
+      - run: "{child}.prop_b"
+        expect:
+          error: E_PROPNF
+      - run: "chparent({child}, {parent_b})"
+      - run: "{child}.prop_a"
+        expect:
+          error: E_PROPNF
+      - run: "{child}.prop_b"
+        expect:
+          value: "val_b"
+      - run: "property_info({child}, \"prop_b\")[2]"
+        expect:
+          value: "r"
+    cleanup:
+      - run: "recycle({child})"
+      - run: "recycle({parent_a})"
+      - run: "recycle({parent_b})"
+
+  - name: property_inheritance_chparent_removes_properties
+    description: Changing parent removes old inherited properties
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: parent_a
+      - run: "create($nothing)"
+        capture: parent_b
+      - run: "add_property({parent_a}, \"prop_a\", \"val_a\", {player, \"\"})"
+      - run: "add_property({parent_b}, \"prop_b\", \"val_b\", {player, \"\"})"
+      - run: "create({parent_a})"
+        capture: child
+      - run: "chparent({child}, {parent_b})"
+      - run: "{child}.prop_a"
+        expect:
+          error: E_PROPNF
+    cleanup:
+      - run: "recycle({child})"
+      - run: "recycle({parent_a})"
+      - run: "recycle({parent_b})"
+
+  - name: property_inheritance_multiple_parents_basic
+    description: Multiple inheritance - properties from all parents are inherited
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: parent_a
+      - run: "create($nothing)"
+        capture: parent_b
+      - run: "create($nothing)"
+        capture: parent_c
+      - run: "add_property({parent_a}, \"prop_a\", 1, {player, \"\"})"
+      - run: "add_property({parent_b}, \"prop_b\", 2, {player, \"r\"})"
+      - run: "add_property({parent_c}, \"prop_c\", 3, {player, \"w\"})"
+      - run: "create({{parent_a}, {parent_b}, {parent_c}})"
+        capture: child
+      - run: "{child}.prop_a"
+        expect:
+          value: 1
+      - run: "{child}.prop_b"
+        expect:
+          value: 2
+      - run: "{child}.prop_c"
+        expect:
+          value: 3
+      - run: "property_info({child}, \"prop_a\")[2]"
+        expect:
+          value: ""
+      - run: "property_info({child}, \"prop_b\")[2]"
+        expect:
+          value: "r"
+      - run: "property_info({child}, \"prop_c\")[2]"
+        expect:
+          value: "w"
+    cleanup:
+      - run: "recycle({child})"
+      - run: "recycle({parent_a})"
+      - run: "recycle({parent_b})"
+      - run: "recycle({parent_c})"
+
+  - name: property_inheritance_chparents_multi
+    description: chparents with multiple parents adds all properties
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: parent_a
+      - run: "create($nothing)"
+        capture: parent_b
+      - run: "add_property({parent_a}, \"prop_a\", \"val_a\", {player, \"\"})"
+      - run: "add_property({parent_b}, \"prop_b\", \"val_b\", {player, \"r\"})"
+      - run: "create($nothing)"
+        capture: child
+      - run: "chparents({child}, {{parent_a}, {parent_b}})"
+      - run: "{child}.prop_a"
+        expect:
+          value: "val_a"
+      - run: "{child}.prop_b"
+        expect:
+          value: "val_b"
+    cleanup:
+      - run: "recycle({child})"
+      - run: "recycle({parent_a})"
+      - run: "recycle({parent_b})"
+
+  - name: property_inheritance_delete_from_parent
+    description: Deleting property from parent removes it from children
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: parent
+      - run: "add_property({parent}, \"test_prop\", 123, {player, \"\"})"
+      - run: "create({parent})"
+        capture: child
+      - run: "{child}.test_prop"
+        expect:
+          value: 123
+      - run: "chparent({child}, $nothing)"
+      - run: "delete_property({parent}, \"test_prop\")"
+      - run: "chparent({child}, {parent})"
+      - run: "{child}.test_prop"
+        expect:
+          error: E_PROPNF
+    cleanup:
+      - run: "recycle({child})"
+      - run: "recycle({parent})"
+
+  - name: property_inheritance_add_to_parent
+    description: Adding property to parent makes it available to children
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: parent
+      - run: "create({parent})"
+        capture: child
+      - run: "chparent({child}, $nothing)"
+      - run: "add_property({parent}, \"test_prop\", 456, {player, \"r\"})"
+      - run: "chparent({child}, {parent})"
+      - run: "{child}.test_prop"
+        expect:
+          value: 456
+      - run: "property_info({child}, \"test_prop\")[2]"
+        expect:
+          value: "r"
+    cleanup:
+      - run: "recycle({child})"
+      - run: "recycle({parent})"
+
+  - name: property_inheritance_cannot_delete_from_child
+    description: Cannot delete inherited property from child
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: parent
+      - run: "add_property({parent}, \"test_prop\", 123, {player, \"\"})"
+      - run: "create({parent})"
+        capture: child
+      - run: "delete_property({child}, \"test_prop\")"
+        expect:
+          error: E_PROPNF
+    cleanup:
+      - run: "recycle({child})"
+      - run: "recycle({parent})"
+
+  - name: property_inheritance_grandparent
+    description: Grandchild inherits properties through inheritance chain
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: grandparent
+      - run: "add_property({grandparent}, \"gp_prop\", \"gp_val\", {player, \"\"})"
+      - run: "create({grandparent})"
+        capture: parent
+      - run: "add_property({parent}, \"p_prop\", \"p_val\", {player, \"r\"})"
+      - run: "create({parent})"
+        capture: child
+      - run: "{child}.gp_prop"
+        expect:
+          value: "gp_val"
+      - run: "{child}.p_prop"
+        expect:
+          value: "p_val"
+    cleanup:
+      - run: "recycle({child})"
+      - run: "recycle({parent})"
+      - run: "recycle({grandparent})"
+
+
+  - name: property_inheritance_chparent_loses_override
+    description: Changing parent to different property tree loses child override
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: parent_a
+      - run: "create($nothing)"
+        capture: parent_b
+      - run: "add_property({parent_a}, \"shared\", \"from_a\", {player, \"\"})"
+      - run: "add_property({parent_b}, \"shared\", \"from_b\", {player, \"\"})"
+      - run: "create({parent_a})"
+        capture: child
+      - run: "{child}.shared = \"child_val\""
+      - run: "chparent({child}, {parent_b})"
+      - run: "{child}.shared"
+        expect:
+          value: "from_b"
+    cleanup:
+      - run: "recycle({child})"
+      - run: "recycle({parent_a})"
+      - run: "recycle({parent_b})"
+
+  - name: property_inheritance_multi_level_clear
+    description: Clearing properties in chain - all clear objects inherit from nearest defined ancestor
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: base
+      - run: "add_property({base}, \"prop\", \"base\", {player, \"\"})"
+      - run: "create({base})"
+        capture: mid
+      - run: "{mid}.prop = \"mid\""
+      - run: "create({mid})"
+        capture: leaf
+      - run: "{leaf}.prop = \"leaf\""
+      - run: "clear_property({leaf}, \"prop\")"
+      - run: "{leaf}.prop"
+        expect:
+          value: "mid"
+      - run: "clear_property({mid}, \"prop\")"
+      - run: "{mid}.prop"
+        expect:
+          value: "base"
+      - run: "{leaf}.prop"
+        expect:
+          value: "base"
+    cleanup:
+      - run: "recycle({leaf})"
+      - run: "recycle({mid})"
+      - run: "recycle({base})"
+
+  - name: property_inheritance_multi_parent_distinct_props
+    description: Multiple inheritance - each parent contributes distinct properties
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: parent_a
+      - run: "create($nothing)"
+        capture: parent_b
+      - run: "add_property({parent_a}, \"unique_a\", \"from_a\", {player, \"\"})"
+      - run: "add_property({parent_b}, \"unique_b\", \"from_b\", {player, \"r\"})"
+      - run: "create({{parent_a}, {parent_b}})"
+        capture: child
+      - run: "{child}.unique_a"
+        expect:
+          value: "from_a"
+      - run: "{child}.unique_b"
+        expect:
+          value: "from_b"
+      - run: "property_info({child}, \"unique_a\")[2]"
+        expect:
+          value: ""
+      - run: "property_info({child}, \"unique_b\")[2]"
+        expect:
+          value: "r"
+    cleanup:
+      - run: "recycle({child})"
+      - run: "recycle({parent_a})"
+      - run: "recycle({parent_b})"
+
+  - name: property_inheritance_duplicate_property_error
+    description: Cannot create object with multiple parents having same property name
+    permission: programmer
+    steps:
+      - run: "create($nothing)"
+        capture: parent_a
+      - run: "create($nothing)"
+        capture: parent_b
+      - run: "add_property({parent_a}, \"dup\", \"from_a\", {player, \"\"})"
+      - run: "add_property({parent_b}, \"dup\", \"from_b\", {player, \"r\"})"
+      - run: "create({{parent_a}, {parent_b}})"
+        expect:
+          error: E_INVARG
+    cleanup:
+      - run: "recycle({parent_a})"
+      - run: "recycle({parent_b})"

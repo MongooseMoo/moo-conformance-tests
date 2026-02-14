@@ -304,7 +304,7 @@ tests:
       x.f = 1;
       return x.f;
     expect:
-      value: 1
+      error: E_PERM
 
   - name: owner_can_set_own_fertile_flag
     permission: programmer
@@ -334,7 +334,7 @@ tests:
       x.a = 1;
       return x.a;
     expect:
-      value: 1
+      error: E_PERM
     teardown:
       code: 'player.a = 0;'
 
@@ -374,17 +374,11 @@ tests:
     permission: programmer
     code: "valid(create($anonymous, 0))"
     expect:
-      value: 1
+      error: E_PERM
 
   - name: programmer_creates_with_fertile_flag
     permission: programmer
     code: "valid(create($object, 0))"
-    expect:
-      value: 1
-
-  - name: programmer_cannot_create_non_fertile
-    permission: programmer
-    code: "valid(create($anonymous, 0))"
     expect:
       value: 1
 
@@ -410,17 +404,11 @@ tests:
     permission: programmer
     code: "valid(create($object, 1))"
     expect:
-      value: 1
+      error: E_PERM
 
   - name: programmer_creates_anonymous_with_flag
     permission: programmer
     code: "valid(create($anonymous, 1))"
-    expect:
-      value: 1
-
-  - name: programmer_cannot_create_anonymous_without_flag
-    permission: programmer
-    code: "valid(create($object, 1))"
     expect:
       value: 1
 

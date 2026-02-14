@@ -1040,12 +1040,6 @@ tests:
     expect:
       type: str
 
-  - name: ctime_no_args
-    description: "ctime() with no args returns current time string"
-    code: "ctime()"
-    expect:
-      type: str
-
   - name: ctime_format
     description: "ctime returns a formatted time string"
     code: "ctime()"

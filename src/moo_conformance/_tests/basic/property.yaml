@@ -80,12 +80,6 @@ tests:
     expect:
       value: [1, 0]
 
-  - name: is_clear_property_after_clear
-    permission: wizard
-    code: 'is_clear_property($temp0, "test")'
-    expect:
-      value: 1
-
   - name: read_property_after_clear
     permission: wizard
     code: "$temp0.test"

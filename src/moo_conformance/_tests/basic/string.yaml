@@ -27,7 +27,7 @@ tests:
     expect:
       value: 4
 
-  - name: index_case_sensitive_no_match
+  - name: index_case_sensitive_no_match_basic
     code: 'index("fooBar", "baz")'
     expect:
       value: 0
@@ -37,7 +37,7 @@ tests:
     expect:
       value: 0
 
-  - name: rindex_finds_last_occurrence
+  - name: rindex_finds_last_occurrence_basic
     code: 'rindex("bazbarbazfoo", "baz")'
     expect:
       value: 7

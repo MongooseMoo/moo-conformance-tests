@@ -454,11 +454,6 @@ tests:
     expect:
       value: "ABD37534C7D9A2EFB9465DE931CD7055FFDB8879563AE98078D6D6D5"
 
-  - name: sha224_abc
-    code: 'string_hash("abc", "sha224")'
-    expect:
-      value: "23097D223405D8228642A477BDA255B32AADBCE4BDA0B3F7E36C9DA7"
-
   - name: sha224_message_digest
     code: 'string_hash("message digest", "sha224")'
     expect:
@@ -1178,11 +1173,6 @@ tests:
     code: 'salt("$2a$32$", "1234567890123456")'
     expect:
       error: E_INVARG
-
-  - name: salt_binary_string
-    code: 'salt("", "~00~00")'
-    expect:
-      value: ".."
 
   - name: salt_bad_binary_string
     code: 'salt("", "~00~#!")'

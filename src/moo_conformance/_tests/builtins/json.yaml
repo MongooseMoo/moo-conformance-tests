@@ -580,11 +580,6 @@ tests:
     expect:
       value: '{"foo":"bar/baz"}'
 
-  - name: generate_json_escape_slash_2
-    code: 'generate_json(["foo" -> "bar/baz"])'
-    expect:
-      value: '{"foo":"bar/baz"}'
-
   - name: generate_json_escape_backspace
     code: 'generate_json(["foo" -> "bar~08baz"])'
     expect:
@@ -621,6 +616,41 @@ tests:
     expect:
       value: {"foo": "bar\\baz"}
 
+  - name: parse_json_escape_newline
+    code: 'parse_json("{\"foo\":\"bar\\nbaz\"}")'
+    expect:
+      value: {"foo": "bar~0Abaz"}
+
+  - name: parse_json_escape_carriage
+    code: 'parse_json("{\"foo\":\"bar\\rbaz\"}")'
+    expect:
+      value: {"foo": "bar~0Dbaz"}
+
+  - name: parse_json_escape_tab
+    code: 'parse_json("{\"foo\":\"bar\\tbaz\"}")'
+    expect:
+      value: {"foo": "bar	baz"}
+
+  - name: parse_json_invalid_escape_u
+    code: 'parse_json("{\"foo\":\"bar\\ubaz\"}")'
+    expect:
+      error: E_INVARG
+
+  - name: parse_json_invalid_escape_a
+    code: 'parse_json("{\"foo\":\"bar\\abaz\"}")'
+    expect:
+      error: E_INVARG
+
+  - name: parse_json_invalid_escape_z
+    code: 'parse_json("{\"foo\":\"bar\\zbaz\"}")'
+    expect:
+      error: E_INVARG
+
+  - name: parse_json_invalid_escape_end
+    code: 'parse_json("{\"foo\":\"bar\\\"}")'
+    expect:
+      error: E_INVARG
+
   # Unicode escapes
   - name: parse_json_unicode_control
     code: 'parse_json("[\"\\u000A\",\"\\u000D\",\"\\u001b\",\"\\u007f\"]")'
@@ -647,6 +677,26 @@ tests:
     expect:
       value: "[\"\\u0000\",\"\\u0001\",\"\\u001B\",\"\\u001F\",\"~20\",\"~7F\"]"
 
+  - name: parse_json_unicode_concat_1byte
+    code: 'parse_json("[\"\\u000A\\u000D\\u001b\\u007f\"]")'
+    expect:
+      value: ["~0A~0D~1B~7F"]
+
+  - name: parse_json_unicode_concat_2byte
+    code: 'parse_json("[\"\\u0080\\u00f8\\u0200\\u07ff\"]")'
+    expect:
+      value: ["~C2~80~C3~B8~C8~80~DF~BF"]
+
+  - name: parse_json_unicode_concat_mixed
+    code: 'parse_json("[\"\\u000A\\u0200\\u000D\\ud800\\udc00\"]")'
+    expect:
+      value: ["~0A~C8~80~0D~F0~90~80~80"]
+
+  - name: generate_json_unicode_concat
+    code: 'generate_json({"~00~01", "~1B~1F", "~20~7F"})'
+    expect:
+      value: "[\"\\u0000\\u0001\",\"\\u001B\\u001F\",\"~20~7F\"]"
+
   # Round-tripping
   - name: roundtrip_escape_quote
     statement: |
@@ -658,6 +708,55 @@ tests:
   - name: roundtrip_escape_backslash
     statement: |
       x = ["foo" -> "bar\\baz"];
+      return x == parse_json(generate_json(x));
+    expect:
+      value: 1
+
+  - name: roundtrip_escape_slash_1
+    statement: |
+      x = ["foo" -> "bar\/baz"];
+      return x == parse_json(generate_json(x));
+    expect:
+      value: 1
+
+  - name: roundtrip_escape_slash_2
+    statement: |
+      x = ["foo" -> "bar/baz"];
+      return x == parse_json(generate_json(x));
+    expect:
+      value: 1
+
+  - name: roundtrip_binary_backspace
+    statement: |
+      x = ["foo" -> "bar~08baz"];
+      return x == parse_json(generate_json(x));
+    expect:
+      value: 1
+
+  - name: roundtrip_binary_formfeed
+    statement: |
+      x = ["foo" -> "bar~0Cbaz"];
+      return x == parse_json(generate_json(x));
+    expect:
+      value: 1
+
+  - name: roundtrip_binary_newline
+    statement: |
+      x = ["foo" -> "bar~0Abaz"];
+      return x == parse_json(generate_json(x));
+    expect:
+      value: 1
+
+  - name: roundtrip_binary_carriage
+    statement: |
+      x = ["foo" -> "bar~0Dbaz"];
+      return x == parse_json(generate_json(x));
+    expect:
+      value: 1
+
+  - name: roundtrip_binary_tab
+    statement: |
+      x = ["foo" -> "bar~09baz"];
       return x == parse_json(generate_json(x));
     expect:
       value: 1
@@ -681,6 +780,69 @@ tests:
     permission: programmer
     statement: |
       return generate_json(create($nothing, 1), "embedded-types");
+    expect:
+      error: E_INVARG
+
+  - name: generate_json_anon_obj_in_list
+    permission: programmer
+    statement: |
+      return generate_json({create($nothing, 1)});
+    expect:
+      error: E_INVARG
+
+  - name: generate_json_anon_obj_in_list_common
+    permission: programmer
+    statement: |
+      return generate_json({create($nothing, 1)}, "common-subset");
+    expect:
+      error: E_INVARG
+
+  - name: generate_json_anon_obj_in_list_embedded
+    permission: programmer
+    statement: |
+      return generate_json({create($nothing, 1)}, "embedded-types");
+    expect:
+      error: E_INVARG
+
+  - name: generate_json_anon_obj_as_map_value
+    permission: programmer
+    statement: |
+      return generate_json(["one" -> create($nothing, 1)]);
+    expect:
+      error: E_INVARG
+
+  - name: generate_json_anon_obj_as_map_value_common
+    permission: programmer
+    statement: |
+      return generate_json(["one" -> create($nothing, 1)], "common-subset");
+    expect:
+      error: E_INVARG
+
+  - name: generate_json_anon_obj_as_map_value_embedded
+    permission: programmer
+    statement: |
+      return generate_json(["one" -> create($nothing, 1)], "embedded-types");
+    expect:
+      error: E_INVARG
+
+  - name: generate_json_anon_obj_as_map_key
+    permission: programmer
+    statement: |
+      return generate_json([create($nothing, 1) -> "one"]);
+    expect:
+      error: E_INVARG
+
+  - name: generate_json_anon_obj_as_map_key_common
+    permission: programmer
+    statement: |
+      return generate_json([create($nothing, 1) -> "one"], "common-subset");
+    expect:
+      error: E_INVARG
+
+  - name: generate_json_anon_obj_as_map_key_embedded
+    permission: programmer
+    statement: |
+      return generate_json([create($nothing, 1) -> "one"], "embedded-types");
     expect:
       error: E_INVARG
 

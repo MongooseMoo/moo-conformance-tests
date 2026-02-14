@@ -186,16 +186,6 @@ tests:
     expect:
       value: 0
 
-  - name: bool_true_typeof
-    code: "typeof(true)"
-    expect:
-      value: 14
-
-  - name: bool_false_typeof
-    code: "typeof(false)"
-    expect:
-      value: 14
-
   - name: bool_true_equal_one
     description: "true compares equal to 1 in Toast"
     code: "true == 1"
@@ -281,11 +271,6 @@ tests:
     code: '["a" -> 1] && "yes" || "no"'
     expect:
       value: "yes"
-
-  - name: truthy_empty_map
-    code: '[] && "yes" || "no"'
-    expect:
-      value: "no"
 
   - name: truthy_object_ref
     description: "Objects are always falsy (is_true default returns 0)"
@@ -510,7 +495,7 @@ tests:
   # tostr() additional edge cases
   # ===========================================================================
 
-  - name: tostr_map
+  - name: tostr_map_basic
     code: 'tostr(["a" -> 1])'
     expect:
       value: "[map]"

@@ -42,8 +42,3 @@ tests:
     code: "(2 + 2) * 3"
     expect:
       value: 12
-
-  - name: sqrt_builtin
-    code: "sqrt(4.0)"
-    expect:
-      value: 2.0

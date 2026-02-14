@@ -315,23 +315,11 @@ tests:
       value: 0
 
   # 64-bit shift edge cases
-  - name: shift_left_negative_bits_64bit
-    skip_if: "not feature.64bit"
-    code: "0 << -1"
-    expect:
-      error: E_INVARG
-
   - name: shift_left_overflow_64bit
     skip_if: "not feature.64bit"
     code: "0 << 65"
     expect:
       error: E_INVARG
-
-  - name: shift_left_zero_64bit
-    skip_if: "not feature.64bit"
-    code: "1 << 0"
-    expect:
-      value: 1
 
   - name: shift_left_max_64bit
     skip_if: "not feature.64bit"
@@ -350,12 +338,6 @@ tests:
     code: "1 << 64"
     expect:
       value: 0
-
-  - name: shift_right_negative_bits_64bit
-    skip_if: "not feature.64bit"
-    code: "0 >> -1"
-    expect:
-      error: E_INVARG
 
   - name: shift_right_overflow_64bit
     skip_if: "not feature.64bit"
@@ -425,5 +407,96 @@ tests:
 
   - name: precedence_shift_and_right
     code: "4 >> 2 &. 1"
+    expect:
+      value: 1
+
+  - name: shift_roundtrip_7_32bit
+    skip_if: "feature.64bit"
+    code: "(-2147483648 >> 7) << 7"
+    expect:
+      value: -2147483648
+
+  - name: shift_roundtrip_7_forward_32bit
+    skip_if: "feature.64bit"
+    code: "(1 << 7) >> 7"
+    expect:
+      value: 1
+
+  - name: shift_roundtrip_15_32bit
+    skip_if: "feature.64bit"
+    code: "(-2147483648 >> 15) << 15"
+    expect:
+      value: -2147483648
+
+  - name: shift_roundtrip_15_forward_32bit
+    skip_if: "feature.64bit"
+    code: "(1 << 15) >> 15"
+    expect:
+      value: 1
+
+  - name: shift_roundtrip_23_32bit
+    skip_if: "feature.64bit"
+    code: "(-2147483648 >> 23) << 23"
+    expect:
+      value: -2147483648
+
+  - name: shift_roundtrip_23_forward_32bit
+    skip_if: "feature.64bit"
+    code: "(1 << 23) >> 23"
+    expect:
+      value: 1
+
+  - name: shift_roundtrip_31_32bit
+    skip_if: "feature.64bit"
+    code: "(-2147483648 >> 31) << 31"
+    expect:
+      value: -2147483648
+
+  - name: shift_roundtrip_31_forward_32bit
+    skip_if: "feature.64bit"
+    code: "(1 << 31) >> 31"
+    expect:
+      value: 1
+
+  # Shift round-trip tests (64-bit)
+  - name: shift_roundtrip_1_64bit
+    skip_if: "not feature.64bit"
+    code: "(-9223372036854775807 >> 1) << 1"
+    expect:
+      value: -9223372036854775808
+
+  - name: shift_roundtrip_15_64bit
+    skip_if: "not feature.64bit"
+    code: "(-9223372036854775807 >> 15) << 15"
+    expect:
+      value: -9223372036854775808
+
+  - name: shift_roundtrip_31_64bit
+    skip_if: "not feature.64bit"
+    code: "(-9223372036854775807 >> 31) << 31"
+    expect:
+      value: -9223372036854775808
+
+  - name: shift_roundtrip_47_64bit
+    skip_if: "not feature.64bit"
+    code: "(-9223372036854775807 >> 47) << 47"
+    expect:
+      value: -9223372036854775808
+
+  - name: shift_roundtrip_47_forward_64bit
+    skip_if: "not feature.64bit"
+    code: "(1 << 47) >> 47"
+    expect:
+      value: 1
+
+  - name: shift_roundtrip_63_64bit
+    skip_if: "not feature.64bit"
+    code: "(-9223372036854775807 >> 63) << 63"
+    expect:
+      value: -9223372036854775808
+
+  - name: shift_roundtrip_63_forward_64bit
+    skip_if: "not feature.64bit"
+    code: "(1 << 63) >> 63"
     expect:
       value: 1

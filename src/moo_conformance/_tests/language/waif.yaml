@@ -50,52 +50,52 @@ tests:
     expect:
       error: E_PERM
 
-  - name: programmer_cannot_set_wizard_flag_false
+  - name: waif_programmer_cannot_set_wizard_flag_false
     statement: |
       $waif:new().wizard = 0;
     expect:
       error: E_PERM
 
-  - name: programmer_cannot_set_wizard_flag_true
+  - name: waif_programmer_cannot_set_wizard_flag_true
     statement: |
       $waif:new().wizard = 1;
     expect:
       error: E_PERM
 
-  - name: wizard_cannot_set_wizard_flag_false
+  - name: waif_wizard_cannot_set_wizard_flag_false
     permission: wizard
     statement: |
       $waif:new().wizard = 0;
     expect:
       error: E_PERM
 
-  - name: wizard_cannot_set_wizard_flag_true
+  - name: waif_wizard_cannot_set_wizard_flag_true
     permission: wizard
     statement: |
       $waif:new().wizard = 1;
     expect:
       error: E_PERM
 
-  - name: programmer_cannot_set_programmer_flag_false
+  - name: waif_programmer_cannot_set_programmer_flag_false
     statement: |
       $waif:new().programmer = 0;
     expect:
       error: E_PERM
 
-  - name: programmer_cannot_set_programmer_flag_true
+  - name: waif_programmer_cannot_set_programmer_flag_true
     statement: |
       $waif:new().programmer = 1;
     expect:
       error: E_PERM
 
-  - name: wizard_cannot_set_programmer_flag_false
+  - name: waif_wizard_cannot_set_programmer_flag_false
     permission: wizard
     statement: |
       $waif:new().programmer = 0;
     expect:
       error: E_PERM
 
-  - name: wizard_cannot_set_programmer_flag_true
+  - name: waif_wizard_cannot_set_programmer_flag_true
     permission: wizard
     statement: |
       $waif:new().programmer = 1;

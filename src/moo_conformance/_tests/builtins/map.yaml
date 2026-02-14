@@ -583,3 +583,290 @@ tests:
       return length(x);
     expect:
       error: E_RANGE
+
+  # ===================================================================
+  # maphaskey() dedicated tests
+  # ===================================================================
+
+  - name: maphaskey_found_int_key
+    code: 'maphaskey([1 -> "a", 2 -> "b"], 1)'
+    expect:
+      value: 1
+
+  - name: maphaskey_not_found_int_key
+    code: 'maphaskey([1 -> "a", 2 -> "b"], 3)'
+    expect:
+      value: 0
+
+  - name: maphaskey_found_string_key
+    code: 'maphaskey(["foo" -> 1, "bar" -> 2], "foo")'
+    expect:
+      value: 1
+
+  - name: maphaskey_not_found_string_key
+    code: 'maphaskey(["foo" -> 1, "bar" -> 2], "baz")'
+    expect:
+      value: 0
+
+  - name: maphaskey_empty_map
+    code: 'maphaskey([], "key")'
+    expect:
+      value: 0
+
+  - name: maphaskey_found_obj_key
+    code: 'maphaskey([#1 -> "a", #2 -> "b"], #2)'
+    expect:
+      value: 1
+
+  - name: maphaskey_found_float_key
+    code: 'maphaskey([3.14 -> "pi"], 3.14)'
+    expect:
+      value: 1
+
+  - name: maphaskey_found_error_key
+    code: 'maphaskey([E_TYPE -> "type error"], E_TYPE)'
+    expect:
+      value: 1
+
+  # Case sensitivity (3rd arg)
+  # Default (nargs=2) is case_matters=false (case-insensitive string key lookup)
+  - name: maphaskey_default_case_insensitive
+    code: 'maphaskey(["Foo" -> 1], "foo")'
+    expect:
+      value: 1
+
+  - name: maphaskey_case_sensitive_found
+    code: 'maphaskey(["Foo" -> 1], "Foo", 1)'
+    expect:
+      value: 1
+
+  - name: maphaskey_case_sensitive_not_found
+    code: 'maphaskey(["Foo" -> 1], "foo", 1)'
+    expect:
+      value: 0
+
+  - name: maphaskey_explicit_case_insensitive
+    code: 'maphaskey(["Foo" -> 1], "foo", 0)'
+    expect:
+      value: 1
+
+  # maphaskey error cases
+  - name: maphaskey_list_key_error
+    description: Lists are collections and cannot be map keys
+    code: 'maphaskey([1 -> 2], {1, 2})'
+    expect:
+      error: E_TYPE
+
+  - name: maphaskey_map_key_error
+    description: Maps are collections and cannot be map keys
+    code: 'maphaskey([1 -> 2], [1 -> 2])'
+    expect:
+      error: E_TYPE
+
+  # maphaskey argument validation
+  - name: maphaskey_too_few_args
+    code: 'maphaskey([1 -> 2])'
+    expect:
+      error: E_ARGS
+
+  - name: maphaskey_too_many_args
+    code: 'maphaskey([1 -> 2], "a", 1, "extra")'
+    expect:
+      error: E_ARGS
+
+  - name: maphaskey_wrong_type_arg1
+    code: 'maphaskey("not a map", "key")'
+    expect:
+      error: E_TYPE
+
+  - name: maphaskey_wrong_type_arg3
+    code: 'maphaskey([1 -> 2], 1, "not an int")'
+    expect:
+      error: E_TYPE
+
+  # ===================================================================
+  # mapvalues() with multiple arguments
+  # ===================================================================
+
+  - name: mapvalues_single_key_lookup
+    code: 'mapvalues(["a" -> 1, "b" -> 2, "c" -> 3], "b")'
+    expect:
+      value: [2]
+
+  - name: mapvalues_multi_key_lookup
+    code: 'mapvalues(["a" -> 1, "b" -> 2, "c" -> 3], "a", "c")'
+    expect:
+      value: [1, 3]
+
+  - name: mapvalues_multi_key_preserves_arg_order
+    description: Values returned in order of key arguments, not map key order
+    code: 'mapvalues(["a" -> 1, "b" -> 2, "c" -> 3], "c", "a", "b")'
+    expect:
+      value: [3, 1, 2]
+
+  - name: mapvalues_multi_key_duplicate_keys
+    description: Same key can be requested multiple times
+    code: 'mapvalues(["a" -> 1, "b" -> 2], "a", "a", "b")'
+    expect:
+      value: [1, 1, 2]
+
+  - name: mapvalues_multi_key_missing
+    description: Any missing key causes E_RANGE
+    code: 'mapvalues(["a" -> 1, "b" -> 2], "a", "z")'
+    expect:
+      error: E_RANGE
+
+  - name: mapvalues_multi_key_int_keys
+    code: 'mapvalues([1 -> "one", 2 -> "two", 3 -> "three"], 2, 1)'
+    expect:
+      value: ["two", "one"]
+
+  - name: mapvalues_multi_key_case_sensitive
+    description: Multi-arg mapvalues uses case-sensitive lookup (hardcoded in C++ source)
+    code: 'mapvalues(["Foo" -> 1], "foo")'
+    expect:
+      error: E_RANGE
+
+  - name: mapvalues_empty_map_single_key
+    code: 'mapvalues([], "key")'
+    expect:
+      error: E_RANGE
+
+  # ===================================================================
+  # mapkeys() error cases
+  # ===================================================================
+
+  - name: mapkeys_wrong_type
+    code: 'mapkeys("not a map")'
+    expect:
+      error: E_TYPE
+
+  - name: mapkeys_too_many_args
+    code: 'mapkeys([1 -> 2], "extra")'
+    expect:
+      error: E_ARGS
+
+  - name: mapkeys_empty_map
+    code: 'mapkeys([])'
+    expect:
+      value: []
+
+  # ===================================================================
+  # mapdelete() additional cases
+  # ===================================================================
+
+  # Multi-key delete (list as 2nd argument)
+  - name: mapdelete_list_of_keys
+    description: When 2nd arg is a list, delete all keys in that list
+    statement: |
+      x = [1 -> "a", 2 -> "b", 3 -> "c", 4 -> "d"];
+      return mapdelete(x, {1, 3});
+    expect:
+      value: {2: "b", 4: "d"}
+
+  - name: mapdelete_list_of_keys_single
+    description: List with single element works same as single key
+    statement: |
+      x = [1 -> "a", 2 -> "b", 3 -> "c"];
+      return mapdelete(x, {2});
+    expect:
+      value: {1: "a", 3: "c"}
+
+  - name: mapdelete_list_of_all_keys
+    description: Delete all keys leaves empty map
+    statement: |
+      x = [1 -> "a", 2 -> "b"];
+      return mapdelete(x, {1, 2});
+    expect:
+      value: {}
+
+  - name: mapdelete_list_with_missing_key
+    description: Multi-delete fails on first missing key with E_RANGE
+    statement: |
+      x = [1 -> "a", 2 -> "b", 3 -> "c"];
+      return mapdelete(x, {1, 99, 3});
+    expect:
+      error: E_RANGE
+
+  - name: mapdelete_list_with_collection_key
+    description: Collection key in list causes E_TYPE
+    code: 'mapdelete([1 -> "a", 2 -> "b"], {{1}, 2})'
+    expect:
+      error: E_TYPE
+
+  # mapdelete error cases
+  - name: mapdelete_wrong_type_arg1
+    code: 'mapdelete("not a map", "key")'
+    expect:
+      error: E_TYPE
+
+  - name: mapdelete_wrong_type_arg1_list
+    code: 'mapdelete({1, 2, 3}, 1)'
+    expect:
+      error: E_TYPE
+
+  - name: mapdelete_from_empty_map
+    code: 'mapdelete([], "key")'
+    expect:
+      error: E_RANGE
+
+  # ===================================================================
+  # mapkeys() and mapvalues() on various map types
+  # ===================================================================
+
+  - name: mapkeys_mixed_int_str_float
+    description: Keys returned in sorted order across types (INT < FLOAT < STR by type enum, except INT vs FLOAT compared numerically)
+    statement: |
+      return mapkeys([1 -> "int", "z" -> "str", 3.14 -> "float", "a" -> "str2"]);
+    expect:
+      value: [1, 3.14, "a", "z"]
+
+  - name: mapvalues_mixed_int_str_float
+    description: Values in key-sorted order across types
+    statement: |
+      return mapvalues([1 -> "int", "z" -> "str", 3.14 -> "float", "a" -> "str2"]);
+    expect:
+      value: ["int", "float", "str2", "str"]
+
+  - name: mapkeys_single_entry
+    code: 'mapkeys(["only" -> 42])'
+    expect:
+      value: ["only"]
+
+  - name: mapvalues_single_entry
+    code: 'mapvalues(["only" -> 42])'
+    expect:
+      value: [42]
+
+  # ===================================================================
+  # Map + List interaction
+  # ===================================================================
+
+  - name: map_with_list_values
+    statement: |
+      x = ["a" -> {1, 2, 3}, "b" -> {4, 5}];
+      return x["a"];
+    expect:
+      value: [1, 2, 3]
+
+  - name: map_inside_list
+    statement: |
+      x = {[1 -> "one"], [2 -> "two"]};
+      return x[2];
+    expect:
+      value: {2: "two"}
+
+  - name: mapkeys_on_map_with_list_values
+    code: 'mapkeys(["a" -> {1, 2}, "b" -> {3, 4}])'
+    expect:
+      value: ["a", "b"]
+
+  - name: mapvalues_on_map_with_list_values
+    code: 'mapvalues(["a" -> {1, 2}, "b" -> {3, 4}])'
+    expect:
+      value: [[1, 2], [3, 4]]
+
+  - name: maphaskey_on_nested_map
+    code: 'maphaskey(["a" -> [1 -> 2]], "a")'
+    expect:
+      value: 1

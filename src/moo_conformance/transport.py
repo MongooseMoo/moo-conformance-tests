@@ -99,6 +99,71 @@ class MooTransport(ABC):
         self.disconnect()
 
 
+class TestConnection:
+    """Secondary socket connection for lifecycle testing.
+
+    Raw connection without PREFIX/SUFFIX markers - uses timeout-based read.
+    Starts unauthenticated, sends raw text without eval wrapping.
+    """
+
+    def __init__(self, host: str, port: int):
+        self.host = host
+        self.port = port
+        self.sock: socket.socket | None = None
+
+    def connect(self) -> list[str]:
+        """Open socket and return initial output (welcome message)."""
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock.settimeout(2.0)
+        self.sock.connect((self.host, self.port))
+        return self._receive_until_quiet()
+
+    def send(self, text: str) -> list[str]:
+        """Send raw text and return output lines."""
+        if self.sock is None:
+            raise RuntimeError("TestConnection not connected")
+        self.sock.sendall((text + "\r\n").encode('utf-8'))
+        return self._receive_until_quiet()
+
+    def close(self) -> None:
+        """Close the socket."""
+        if self.sock:
+            try:
+                self.sock.close()
+            except Exception:
+                pass
+            self.sock = None
+
+    def _receive_until_quiet(self, timeout: float = 0.5) -> list[str]:
+        """Receive until no data arrives within timeout."""
+        if self.sock is None:
+            return []
+
+        lines: list[str] = []
+        buffer = b""
+        self.sock.settimeout(timeout)
+
+        try:
+            while True:
+                try:
+                    data = self.sock.recv(4096)
+                    if not data:
+                        break
+                    clean = SocketTransport._strip_telnet_commands(data)
+                    buffer += clean
+                    self.sock.settimeout(0.1)  # Shorter after first data
+                except socket.timeout:
+                    break
+        finally:
+            self.sock.settimeout(2.0)
+
+        for line in buffer.decode('utf-8', errors='replace').split('\n'):
+            line = line.rstrip('\r')
+            if line:
+                lines.append(line)
+        return lines
+
+
 class SocketTransport(MooTransport):
     """TCP socket transport for remote MOO server.
 
@@ -257,6 +322,12 @@ class SocketTransport(MooTransport):
         self._send("SUFFIX -=!-v-!=-")
 
         self.current_user = user
+
+    def open_connection(self) -> "TestConnection":
+        """Open a new unauthenticated connection for lifecycle testing."""
+        conn = TestConnection(self.host, self.port)
+        conn.connect()
+        return conn
 
     def disconnect(self) -> None:
         """Close socket connection."""

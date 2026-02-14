@@ -6,6 +6,7 @@ requires:
 
 tests:
   - name: eval_requires_programmer
+    skip: "Test corrupts state - teardown can't run because eval requires programmer"
     permission: wizard
     setup:
       code: |

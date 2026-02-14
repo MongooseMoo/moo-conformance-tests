@@ -33,6 +33,44 @@ uv add moo-conformance-tests
    pytest --pyargs moo_conformance --moo-port=7777
    ```
 
+3. Lint for duplicate test definitions:
+   ```bash
+   moo-lint-duplicates
+   # or from source
+   uv run moo-lint-duplicates
+   ```
+
+   Auto-clean duplicate content definitions:
+   ```bash
+   # keep most descriptive test in each duplicate group (default strategy)
+   moo-lint-duplicates --only content --fix-content
+
+   # deterministic alternatives
+   moo-lint-duplicates --only content --fix-content --keep-strategy first
+   moo-lint-duplicates --only content --fix-content --keep-strategy last
+   moo-lint-duplicates --only content --fix-content --keep-strategy longest-name
+   ```
+
+   Duplicate matching is exact structural matching after normalization
+   (dictionary key order normalized; `name` ignored; `description` ignored by default).
+   It is not fuzzy semantic equivalence.
+
+   Semantic-lite duplicate checks (uses `moo-interp` parser/compiler):
+   ```bash
+   # run semantic check only
+   moo-lint-duplicates --only semantic
+
+   # run names/content checks plus semantic check
+   moo-lint-duplicates --semantic
+
+   # auto-clean semantic duplicates
+   moo-lint-duplicates --only semantic --fix-semantic
+   ```
+
+   Semantic mode is bytecode-equivalence based for runnable MOO snippets
+   (`code`, `statement`, `run` fields). It is stronger than text matching,
+   but still not full program-equivalence.
+
 ### From Source
 
 ```bash

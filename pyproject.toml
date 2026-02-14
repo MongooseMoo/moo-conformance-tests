@@ -23,6 +23,7 @@ classifiers = [
 dependencies = [
     "pyyaml>=6.0",
     "pytest>=7.0",
+    "moo-interp",
 ]
 
 [project.optional-dependencies]
@@ -35,6 +36,9 @@ dev = [
 Homepage = "https://github.com/MongooseMoo/moo-conformance-tests"
 Repository = "https://github.com/MongooseMoo/moo-conformance-tests"
 Issues = "https://github.com/MongooseMoo/moo-conformance-tests/issues"
+
+[project.scripts]
+moo-lint-duplicates = "moo_conformance.lint_duplicates:main"
 
 [project.entry-points.pytest11]
 moo_conformance = "moo_conformance.plugin"
@@ -63,3 +67,6 @@ target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I"]
+
+[tool.uv.sources]
+moo-interp = { git = "https://github.com/MongooseMoo/moo_interp.git" }

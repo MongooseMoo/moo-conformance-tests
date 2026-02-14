@@ -1,501 +1,482 @@
 name: create
 description: Tests for create() builtin function
-
 setup:
   permission: wizard
-  code: |
-    try delete_property(#0, "test_obj"); except (ANY) endtry
+  code: 'try delete_property(#0, "test_obj"); except (ANY) endtry
+
     try if (valid($test_obj)) recycle($test_obj); endif except (ANY) endtry
+
     add_property(#0, "test_obj", 0, {player, "rwc"});
+
     $test_obj = create($nothing);
+
     add_property($test_obj, "args", 0, {player, ""});
+
     add_verb($test_obj, {player, "x", "initialize"}, {"this", "none", "this"});
+
     set_verb_code($test_obj, "initialize", {"this.args = args;"});
 
+    '
 teardown:
   permission: wizard
-  code: |
-    recycle($test_obj);
+  code: 'recycle($test_obj);
+
     delete_property(#0, "test_obj");
 
+    '
 tests:
-  # Argument validation
-  - name: requires_argument
-    permission: programmer
-    code: "create()"
-    expect:
-      error: E_ARGS
-
-  - name: first_arg_rejects_integer
-    permission: wizard
-    code: "create(1)"
-    expect:
-      error: E_TYPE
-
-  - name: first_arg_rejects_list_of_integers
-    permission: wizard
-    code: "create({1})"
-    expect:
-      error: E_TYPE
-
-  - name: first_arg_accepts_object
-    permission: wizard
-    code: "create($nothing)"
-    expect:
-      type: obj
-
-  - name: first_arg_accepts_object_alt
-    permission: wizard
-    code: "create($object)"
-    expect:
-      type: obj
-
-  - name: first_arg_accepts_list_of_objects
-    permission: wizard
-    code: "create({#1, #2, #3})"
-    expect:
-      type: obj
-
-  # Second argument as owner
-  - name: second_arg_as_owner_accepts_object
-    permission: wizard
-    code: "create($nothing, #1)"
-    expect:
-      type: obj
-
-  - name: second_arg_as_owner_sets_owner_to_self
-    permission: wizard
-    statement: |
-      x = create($nothing, $nothing);
-      return x.owner == x;
-    expect:
-      value: 1
-
-  - name: second_arg_as_owner_sets_owner
-    permission: wizard
-    statement: |
-      x = create($nothing, $nothing);
-      y = create($nothing, x);
-      return y.owner == x;
-    expect:
-      value: 1
-
-  # Second argument as anonymous flag
-  - name: second_arg_as_int_accepts_anonymous_flag
-    permission: wizard
-    code: "create($nothing, 1)"
-    expect:
-      type: anon
-
-  - name: second_arg_1_creates_anonymous
-    permission: wizard
-    code: "typeof(create($nothing, 1))"
-    expect:
-      value: 12  # TYPE_ANON
-
-  - name: second_arg_0_creates_object
-    permission: wizard
-    code: "typeof(create($nothing, 0))"
-    expect:
-      value: 1  # TYPE_OBJ
-
-  # Second argument as initialize args
-  - name: second_arg_as_list_passes_empty_args
-    permission: wizard
-    code: "create($test_obj, {})"
-    expect:
-      type: obj
-
-  - name: second_arg_as_list_passes_args
-    permission: wizard
-    statement: |
-      x = create($test_obj, {1, 2, 3});
-      return x.args;
-    expect:
-      value: [1, 2, 3]
-
-  - name: second_arg_omitted_passes_empty_args
-    permission: wizard
-    statement: |
-      x = create($test_obj);
-      return x.args;
-    expect:
-      value: []
-
-  # Third argument as anonymous flag
-  - name: third_arg_as_int_accepts_anonymous_flag
-    permission: wizard
-    code: "create($nothing, #1, 1)"
-    expect:
-      type: anon
-
-  - name: third_arg_1_creates_anonymous
-    permission: wizard
-    code: "typeof(create($nothing, #1, 1))"
-    expect:
-      value: 12  # TYPE_ANON
-
-  - name: third_arg_0_creates_object
-    permission: wizard
-    code: "typeof(create($nothing, #1, 0))"
-    expect:
-      value: 1  # TYPE_OBJ
-
-  # Third argument as initialize args
-  - name: third_arg_as_list_passes_empty_args
-    permission: wizard
-    code: "create($test_obj, #1, {})"
-    expect:
-      type: obj
-
-  - name: third_arg_as_list_passes_args
-    permission: wizard
-    statement: |
-      x = create($test_obj, #1, {1.1, 2.0, 3});
-      return x.args;
-    expect:
-      value: [1.1, 2.0, 3]
-
-  - name: third_arg_as_empty_list_passes_empty_args
-    permission: wizard
-    statement: |
-      x = create($test_obj, #1, {});
-      return x.args;
-    expect:
-      value: []
-
-  # Fourth argument as anonymous flag
-  - name: fourth_arg_as_int_accepts_anonymous_flag
-    permission: wizard
-    code: "create($nothing, #1, {}, 1)"
-    expect:
-      type: anon
-
-  - name: fourth_arg_1_creates_anonymous
-    permission: wizard
-    code: "typeof(create($nothing, #1, {}, 1))"
-    expect:
-      value: 12  # TYPE_ANON
-
-  - name: fourth_arg_0_creates_object
-    permission: wizard
-    code: "typeof(create($nothing, #1, {}, 0))"
-    expect:
-      value: 1  # TYPE_OBJ
-
-  # Fourth argument as initialize args
-  - name: fourth_arg_as_list_passes_empty_args
-    permission: wizard
-    code: "create($test_obj, #1, 0, {})"
-    expect:
-      type: obj
-
-  - name: fourth_arg_as_list_passes_args
-    permission: wizard
-    statement: |
-      x = create($test_obj, #1, 0, {1.1, 2.0, 3});
-      return x.args;
-    expect:
-      value: [1.1, 2.0, 3]
-
-  - name: fourth_arg_as_empty_list_passes_empty_args
-    permission: wizard
-    statement: |
-      x = create($test_obj, #1, 0, {});
-      return x.args;
-    expect:
-      value: []
-
-  # Anonymous objects cannot be their own owner
-  - name: regular_object_can_be_own_owner
-    permission: wizard
-    code: "create($nothing, $nothing, 0)"
-    expect:
-      type: obj
-
-  - name: anonymous_cannot_be_own_owner
-    permission: wizard
-    code: "create($nothing, $nothing, 1)"
-    expect:
-      error: E_INVARG
-
-  # Various type errors
-  - name: type_error_int_list_obj
-    permission: wizard
-    code: "create($nothing, 1, $nothing)"
-    expect:
-      error: E_TYPE
-
-  - name: type_error_list_obj
-    permission: wizard
-    code: "create($nothing, {}, $nothing)"
-    expect:
-      error: E_TYPE
-
-  - name: type_error_obj_obj
-    permission: wizard
-    code: "create($nothing, $nothing, $nothing)"
-    expect:
-      error: E_TYPE
-
-  - name: type_error_obj_int_int
-    permission: wizard
-    code: "create($nothing, $nothing, 1, 1)"
-    expect:
-      error: E_TYPE
-
-  - name: type_error_obj_list_list
-    permission: wizard
-    code: "create($nothing, $nothing, {}, {})"
-    expect:
-      error: E_TYPE
-
-  - name: type_error_int_int
-    permission: wizard
-    code: "create($nothing, 1, 1)"
-    expect:
-      error: E_TYPE
-
-  - name: type_error_list_list
-    permission: wizard
-    code: "create($nothing, {}, {})"
-    expect:
-      error: E_TYPE
-
-  - name: type_error_obj_float
-    permission: wizard
-    code: "create($nothing, $object, 1.0)"
-    expect:
-      error: E_TYPE
-
-  - name: type_error_float_int
-    permission: wizard
-    code: "create($nothing, 1.0, 1)"
-    expect:
-      error: E_TYPE
-
-  - name: type_error_map
-    permission: wizard
-    code: "create($nothing, [])"
-    expect:
-      error: E_TYPE
-
-  - name: type_error_float
-    permission: wizard
-    code: "create($nothing, 1.0)"
-    expect:
-      error: E_TYPE
-
-  # Fertile flag tests
-  - name: wizard_can_set_fertile_flag
-    permission: wizard
-    statement: |
-      x = create($nothing);
-      chparent(x, #1);
-      x.f = 1;
-      return x.f;
-    expect:
-      value: 1
-
-  - name: owner_cannot_set_others_fertile_flag
-    permission: programmer
-    statement: |
-      x = create($nothing, #3);
-      x.f = 1;
-      return x.f;
-    expect:
-      error: E_PERM
-
-  - name: owner_can_set_own_fertile_flag
-    permission: programmer
-    statement: |
-      player.f = 1;
-      return player.f;
-    expect:
-      value: 1
-
-  # Anonymous flag tests
-  - name: wizard_can_set_anonymous_flag
-    permission: wizard
-    statement: |
-      x = create($nothing);
-      chparent(x, #1);
-      x.a = 1;
-      return x.a;
-    expect:
-      value: 1
-    teardown:
-      code: 'player.a = 0;'
-
-  - name: owner_cannot_set_others_anonymous_flag
-    permission: programmer
-    statement: |
-      x = create($nothing, #3);
-      x.a = 1;
-      return x.a;
-    expect:
-      error: E_PERM
-    teardown:
-      code: 'player.a = 0;'
-
-  - name: owner_can_set_own_anonymous_flag
-    permission: programmer
-    statement: |
-      player.a = 1;
-      return player.a;
-    expect:
-      value: 1
-    teardown:
-      code: 'player.a = 0;'
-
-  # Permissions tests
-  - name: wizard_creates_without_fertile_flag_system
-    permission: wizard
-    statement: |
-      return valid(create($sysobj, 0));
-    expect:
-      value: 1
-
-  - name: wizard_creates_without_fertile_flag_object
-    permission: wizard
-    statement: |
-      return valid(create($object, 0));
-    expect:
-      value: 1
-
-  - name: owner_creates_self_without_fertile_flag
-    permission: programmer
-    statement: |
-      return valid(create(player, 0));
-    expect:
-      value: 1
-
-  - name: owner_cannot_create_non_fertile_other
-    permission: programmer
-    code: "valid(create($anonymous, 0))"
-    expect:
-      error: E_PERM
-
-  - name: programmer_creates_with_fertile_flag
-    permission: programmer
-    code: "valid(create($object, 0))"
-    expect:
-      value: 1
-
-  - name: wizard_creates_anonymous_without_anonymous_flag_system
-    permission: wizard
-    code: "valid(create($sysobj, 1))"
-    expect:
-      value: 1
-
-  - name: wizard_creates_anonymous_without_anonymous_flag_anonymous
-    permission: wizard
-    code: "valid(create($anonymous, 1))"
-    expect:
-      value: 1
-
-  - name: owner_creates_anonymous_self_without_flag
-    permission: programmer
-    code: "valid(create(player, 1))"
-    expect:
-      value: 1
-
-  - name: owner_cannot_create_anonymous_other_without_flag
-    permission: programmer
-    code: "valid(create($object, 1))"
-    expect:
-      error: E_PERM
-
-  - name: programmer_creates_anonymous_with_flag
-    permission: programmer
-    code: "valid(create($anonymous, 1))"
-    expect:
-      value: 1
-
-  # Object type verification
-  - name: creates_object_type
-    permission: programmer
-    code: "typeof(create($object, 0))"
-    expect:
-      value: 1  # TYPE_OBJ
-
-  - name: creates_anonymous_type
-    permission: programmer
-    code: "typeof(create($anonymous, 1))"
-    expect:
-      value: 12  # TYPE_ANON
-
-  # max_object effects
-  - name: creating_object_increments_max_object
-    permission: programmer
-    statement: |
-      m = max_object();
-      create($object, 0);
-      return max_object() != m;
-    expect:
-      value: 1
-
-  - name: creating_anonymous_does_not_increment_max_object
-    permission: programmer
-    statement: |
-      m = max_object();
-      create($anonymous, 1);
-      return max_object() == m;
-    expect:
-      value: 1
-
-  # Initialize tests
-  - name: creating_object_calls_initialize
-    permission: programmer
-    code: "1"
-    expect:
-      value: 1
-
-  - name: creating_anonymous_calls_initialize
-    permission: programmer
-    code: "1"
-    expect:
-      value: 1
-
-  # Children tests
-  - name: object_appears_in_parent_children
-    permission: programmer
-    statement: |
-      a = create($object);
-      x = create(a, 0);
-      return length(children(a)) > 0;
-    expect:
-      value: 1
-
-  - name: anonymous_does_not_appear_in_parent_children
-    permission: programmer
-    statement: |
-      a = create($object);
-      x = create(a, 1);
-      return children(a);
-    expect:
-      value: []
-
-  # Multiple parents
-  - name: duplicate_parents_not_allowed_objects
-    permission: programmer
-    code: "create({$object, $object}, 0)"
-    expect:
-      error: E_INVARG
-
-  - name: duplicate_parents_not_allowed_anonymous
-    permission: programmer
-    code: "create({$anonymous, $anonymous}, 1)"
-    expect:
-      error: E_INVARG
-
-  - name: parents_cannot_have_same_property_name
-    permission: wizard
-    statement: |
-      a = create($nothing);
-      b = create($nothing);
-      add_property(a, "foo", 1, {a, ""});
-      add_property(b, "foo", 2, {b, ""});
-      return create({a, b}, 0);
-    expect:
-      error: E_INVARG
+- name: requires_argument
+  permission: programmer
+  code: create()
+  expect:
+    error: E_ARGS
+- name: first_arg_rejects_integer
+  permission: wizard
+  code: create(1)
+  expect:
+    error: E_TYPE
+- name: first_arg_rejects_list_of_integers
+  permission: wizard
+  code: create({1})
+  expect:
+    error: E_TYPE
+- name: first_arg_accepts_object
+  permission: wizard
+  code: create($nothing)
+  expect:
+    type: obj
+- name: first_arg_accepts_object_alt
+  permission: wizard
+  code: create($object)
+  expect:
+    type: obj
+- name: first_arg_accepts_list_of_objects
+  permission: wizard
+  code: 'create({#1, #2, #3})'
+  expect:
+    type: obj
+- name: second_arg_as_owner_accepts_object
+  permission: wizard
+  code: 'create($nothing, #1)'
+  expect:
+    type: obj
+- name: second_arg_as_owner_sets_owner_to_self
+  permission: wizard
+  statement: 'x = create($nothing, $nothing);
+
+    return x.owner == x;
+
+    '
+  expect:
+    value: 1
+- name: second_arg_as_owner_sets_owner
+  permission: wizard
+  statement: 'x = create($nothing, $nothing);
+
+    y = create($nothing, x);
+
+    return y.owner == x;
+
+    '
+  expect:
+    value: 1
+- name: second_arg_as_int_accepts_anonymous_flag
+  permission: wizard
+  code: create($nothing, 1)
+  expect:
+    type: anon
+- name: second_arg_1_creates_anonymous
+  permission: wizard
+  code: typeof(create($nothing, 1))
+  expect:
+    value: 12
+- name: second_arg_0_creates_object
+  permission: wizard
+  code: typeof(create($nothing, 0))
+  expect:
+    value: 1
+- name: second_arg_as_list_passes_empty_args
+  permission: wizard
+  code: create($test_obj, {})
+  expect:
+    type: obj
+- name: second_arg_as_list_passes_args
+  permission: wizard
+  statement: 'x = create($test_obj, {1, 2, 3});
+
+    return x.args;
+
+    '
+  expect:
+    value:
+    - 1
+    - 2
+    - 3
+- name: second_arg_omitted_passes_empty_args
+  permission: wizard
+  statement: 'x = create($test_obj);
+
+    return x.args;
+
+    '
+  expect:
+    value: []
+- name: third_arg_as_int_accepts_anonymous_flag
+  permission: wizard
+  code: 'create($nothing, #1, 1)'
+  expect:
+    type: anon
+- name: third_arg_1_creates_anonymous
+  permission: wizard
+  code: 'typeof(create($nothing, #1, 1))'
+  expect:
+    value: 12
+- name: third_arg_0_creates_object
+  permission: wizard
+  code: 'typeof(create($nothing, #1, 0))'
+  expect:
+    value: 1
+- name: third_arg_as_list_passes_empty_args
+  permission: wizard
+  code: 'create($test_obj, #1, {})'
+  expect:
+    type: obj
+- name: third_arg_as_list_passes_args
+  permission: wizard
+  statement: 'x = create($test_obj, #1, {1.1, 2.0, 3});
+
+    return x.args;
+
+    '
+  expect:
+    value:
+    - 1.1
+    - 2.0
+    - 3
+- name: third_arg_as_empty_list_passes_empty_args
+  permission: wizard
+  statement: 'x = create($test_obj, #1, {});
+
+    return x.args;
+
+    '
+  expect:
+    value: []
+- name: fourth_arg_as_int_accepts_anonymous_flag
+  permission: wizard
+  code: 'create($nothing, #1, {}, 1)'
+  expect:
+    type: anon
+- name: fourth_arg_1_creates_anonymous
+  permission: wizard
+  code: 'typeof(create($nothing, #1, {}, 1))'
+  expect:
+    value: 12
+- name: fourth_arg_0_creates_object
+  permission: wizard
+  code: 'typeof(create($nothing, #1, {}, 0))'
+  expect:
+    value: 1
+- name: fourth_arg_as_list_passes_empty_args
+  permission: wizard
+  code: 'create($test_obj, #1, 0, {})'
+  expect:
+    type: obj
+- name: fourth_arg_as_list_passes_args
+  permission: wizard
+  statement: 'x = create($test_obj, #1, 0, {1.1, 2.0, 3});
+
+    return x.args;
+
+    '
+  expect:
+    value:
+    - 1.1
+    - 2.0
+    - 3
+- name: fourth_arg_as_empty_list_passes_empty_args
+  permission: wizard
+  statement: 'x = create($test_obj, #1, 0, {});
+
+    return x.args;
+
+    '
+  expect:
+    value: []
+- name: regular_object_can_be_own_owner
+  permission: wizard
+  code: create($nothing, $nothing, 0)
+  expect:
+    type: obj
+- name: anonymous_cannot_be_own_owner
+  permission: wizard
+  code: create($nothing, $nothing, 1)
+  expect:
+    error: E_INVARG
+- name: type_error_int_list_obj
+  permission: wizard
+  code: create($nothing, 1, $nothing)
+  expect:
+    error: E_TYPE
+- name: type_error_list_obj
+  permission: wizard
+  code: create($nothing, {}, $nothing)
+  expect:
+    error: E_TYPE
+- name: type_error_obj_obj
+  permission: wizard
+  code: create($nothing, $nothing, $nothing)
+  expect:
+    error: E_TYPE
+- name: type_error_obj_int_int
+  permission: wizard
+  code: create($nothing, $nothing, 1, 1)
+  expect:
+    error: E_TYPE
+- name: type_error_obj_list_list
+  permission: wizard
+  code: create($nothing, $nothing, {}, {})
+  expect:
+    error: E_TYPE
+- name: type_error_int_int
+  permission: wizard
+  code: create($nothing, 1, 1)
+  expect:
+    error: E_TYPE
+- name: type_error_list_list
+  permission: wizard
+  code: create($nothing, {}, {})
+  expect:
+    error: E_TYPE
+- name: type_error_obj_float
+  permission: wizard
+  code: create($nothing, $object, 1.0)
+  expect:
+    error: E_TYPE
+- name: type_error_float_int
+  permission: wizard
+  code: create($nothing, 1.0, 1)
+  expect:
+    error: E_TYPE
+- name: type_error_map
+  permission: wizard
+  code: create($nothing, [])
+  expect:
+    error: E_TYPE
+- name: type_error_float
+  permission: wizard
+  code: create($nothing, 1.0)
+  expect:
+    error: E_TYPE
+- name: wizard_can_set_fertile_flag
+  permission: wizard
+  statement: 'x = create($nothing);
+
+    chparent(x, #1);
+
+    x.f = 1;
+
+    return x.f;
+
+    '
+  expect:
+    value: 1
+- name: owner_cannot_set_others_fertile_flag
+  permission: programmer
+  statement: 'x = create($nothing, #3);
+
+    x.f = 1;
+
+    return x.f;
+
+    '
+  expect:
+    error: E_PERM
+- name: owner_can_set_own_fertile_flag
+  permission: programmer
+  statement: 'player.f = 1;
+
+    return player.f;
+
+    '
+  expect:
+    value: 1
+- name: wizard_can_set_anonymous_flag
+  permission: wizard
+  statement: 'x = create($nothing);
+
+    chparent(x, #1);
+
+    x.a = 1;
+
+    return x.a;
+
+    '
+  expect:
+    value: 1
+  teardown:
+    code: player.a = 0;
+- name: owner_cannot_set_others_anonymous_flag
+  permission: programmer
+  statement: 'x = create($nothing, #3);
+
+    x.a = 1;
+
+    return x.a;
+
+    '
+  expect:
+    error: E_PERM
+  teardown:
+    code: player.a = 0;
+- name: owner_can_set_own_anonymous_flag
+  permission: programmer
+  statement: 'player.a = 1;
+
+    return player.a;
+
+    '
+  expect:
+    value: 1
+  teardown:
+    code: player.a = 0;
+- name: wizard_creates_without_fertile_flag_system
+  permission: wizard
+  statement: 'return valid(create($sysobj, 0));
+
+    '
+  expect:
+    value: 1
+- name: wizard_creates_without_fertile_flag_object
+  permission: wizard
+  statement: 'return valid(create($object, 0));
+
+    '
+  expect:
+    value: 1
+- name: owner_creates_self_without_fertile_flag
+  permission: programmer
+  statement: 'return valid(create(player, 0));
+
+    '
+  expect:
+    value: 1
+- name: owner_cannot_create_non_fertile_other
+  permission: programmer
+  code: valid(create($anonymous, 0))
+  expect:
+    error: E_PERM
+- name: programmer_creates_with_fertile_flag
+  permission: programmer
+  code: valid(create($object, 0))
+  expect:
+    value: 1
+- name: wizard_creates_anonymous_without_anonymous_flag_system
+  permission: wizard
+  code: valid(create($sysobj, 1))
+  expect:
+    value: 1
+- name: wizard_creates_anonymous_without_anonymous_flag_anonymous
+  permission: wizard
+  code: valid(create($anonymous, 1))
+  expect:
+    value: 1
+- name: owner_creates_anonymous_self_without_flag
+  permission: programmer
+  code: valid(create(player, 1))
+  expect:
+    value: 1
+- name: owner_cannot_create_anonymous_other_without_flag
+  permission: programmer
+  code: valid(create($object, 1))
+  expect:
+    error: E_PERM
+- name: programmer_creates_anonymous_with_flag
+  permission: programmer
+  code: valid(create($anonymous, 1))
+  expect:
+    value: 1
+- name: creates_object_type
+  permission: programmer
+  code: typeof(create($object, 0))
+  expect:
+    value: 1
+- name: creates_anonymous_type
+  permission: programmer
+  code: typeof(create($anonymous, 1))
+  expect:
+    value: 12
+- name: creating_object_increments_max_object
+  permission: programmer
+  statement: 'm = max_object();
+
+    create($object, 0);
+
+    return max_object() != m;
+
+    '
+  expect:
+    value: 1
+- name: creating_anonymous_does_not_increment_max_object
+  permission: programmer
+  statement: 'm = max_object();
+
+    create($anonymous, 1);
+
+    return max_object() == m;
+
+    '
+  expect:
+    value: 1
+- name: creating_anonymous_calls_initialize
+  permission: programmer
+  code: '1'
+  expect:
+    value: 1
+- name: object_appears_in_parent_children
+  permission: programmer
+  statement: 'a = create($object);
+
+    x = create(a, 0);
+
+    return length(children(a)) > 0;
+
+    '
+  expect:
+    value: 1
+- name: anonymous_does_not_appear_in_parent_children
+  permission: programmer
+  statement: 'a = create($object);
+
+    x = create(a, 1);
+
+    return children(a);
+
+    '
+  expect:
+    value: []
+- name: duplicate_parents_not_allowed_objects
+  permission: programmer
+  code: create({$object, $object}, 0)
+  expect:
+    error: E_INVARG
+- name: duplicate_parents_not_allowed_anonymous
+  permission: programmer
+  code: create({$anonymous, $anonymous}, 1)
+  expect:
+    error: E_INVARG
+- name: parents_cannot_have_same_property_name
+  permission: wizard
+  statement: 'a = create($nothing);
+
+    b = create($nothing);
+
+    add_property(a, "foo", 1, {a, ""});
+
+    add_property(b, "foo", 2, {b, ""});
+
+    return create({a, b}, 0);
+
+    '
+  expect:
+    error: E_INVARG

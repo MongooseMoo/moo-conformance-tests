@@ -1,430 +1,414 @@
 name: recycle_builtins
 description: Tests for recycle() builtin - destroying objects and anonymous objects
-
 requires:
-  builtins: [recycle, valid, create, add_property, add_verb, set_verb_code, typeof]
-
+  builtins:
+  - recycle
+  - valid
+  - create
+  - add_property
+  - add_verb
+  - set_verb_code
+  - typeof
 tests:
-  ## Argument validation tests
+- name: recycle_requires_argument
+  description: recycle() requires one argument
+  permission: programmer
+  code: recycle()
+  expect:
+    error: E_ARGS
+- name: recycle_rejects_int
+  description: recycle() rejects integer argument
+  permission: wizard
+  code: recycle(1)
+  expect:
+    error: E_TYPE
+- name: recycle_rejects_waif
+  description: recycle() rejects waif argument
+  permission: wizard
+  code: recycle({[]})
+  expect:
+    error: E_TYPE
+- name: recycle_accepts_nothing
+  description: recycle() accepts $nothing as valid object type (fails with E_INVARG
+    not E_TYPE)
+  permission: wizard
+  code: recycle(#-1)
+  expect:
+    error: E_INVARG
+- name: recycle_accepts_object
+  description: recycle() accepts regular object and returns 0
+  permission: wizard
+  statement: 'obj = create($object, 0);
 
-  - name: recycle_requires_argument
-    description: recycle() requires one argument
-    permission: programmer
-    code: "recycle()"
+    return recycle(obj);
+
+    '
+  expect:
+    value: 0
+- name: recycle_accepts_anonymous
+  description: recycle() accepts anonymous object and returns 0
+  permission: wizard
+  statement: 'obj = create($anonymous, 1);
+
+    return recycle(obj);
+
+    '
+  expect:
+    value: 0
+- name: recycle_rejects_float
+  description: recycle() rejects float argument
+  permission: wizard
+  code: recycle(1.0)
+  expect:
+    error: E_TYPE
+- name: recycle_rejects_list
+  description: recycle() rejects list argument
+  permission: wizard
+  code: recycle([])
+  expect:
+    error: E_TYPE
+- name: recycle_rejects_map
+  description: recycle() rejects map argument
+  permission: wizard
+  code: recycle({})
+  expect:
+    error: E_TYPE
+- name: recycle_rejects_string
+  description: recycle() rejects string argument
+  permission: wizard
+  code: recycle("foobar")
+  expect:
+    error: E_TYPE
+- name: recycle_invalid_already_recycled_object
+  description: recycle() fails with E_INVARG if object already recycled
+  permission: programmer
+  statement: 'x = create($object, 0);
+
+    recycle(x);
+
+    return recycle(x);
+
+    '
+  expect:
+    error: E_INVARG
+- name: recycle_invalid_already_recycled_anonymous
+  description: recycle() fails with E_INVARG if anonymous object already recycled
+  permission: programmer
+  statement: 'x = create($anonymous, 1);
+
+    recycle(x);
+
+    return recycle(x);
+
+    '
+  expect:
+    error: E_INVARG
+- name: wizard_can_recycle_non_wizard_object
+  description: Wizard can recycle non-wizard owned object
+  permission: wizard
+  steps:
+  - run: create($object, 0)
+    capture: m
+  - run: '{m}.w = 0'
+  - run: recycle({m})
     expect:
-      error: E_ARGS
-
-  - name: recycle_rejects_int
-    description: recycle() rejects integer argument
-    permission: wizard
-    code: "recycle(1)"
+      value: 0
+- name: wizard_can_recycle_wizard_object
+  description: Wizard can recycle wizard-owned object
+  permission: wizard
+  steps:
+  - run: create($object, 0)
+    capture: n
+  - run: '{n}.w = 1'
+  - run: recycle({n})
     expect:
-      error: E_TYPE
-
-  - name: recycle_rejects_waif
-    description: recycle() rejects waif argument
-    permission: wizard
-    code: "recycle({[]})"
+      value: 0
+- name: wizard_can_recycle_others_object
+  description: Wizard can recycle object owned by someone else
+  permission: wizard
+  steps:
+  - run: create($object, 0)
+    capture: parent
+  - run: '{parent}.w = 0'
+  - run: add_property({parent}, "x", 0, {player, "r"})
+  - run: '{parent}.x = create($object, 0)'
+  - run: '{parent}.x.w = 0'
+  - run: recycle({parent}.x)
     expect:
-      error: E_TYPE
+      value: 0
+  cleanup:
+  - run: recycle({parent})
+- name: wizard_can_recycle_others_anonymous
+  description: Wizard can recycle anonymous object owned by someone else
+  permission: wizard
+  steps:
+  - run: create($object, 0)
+    capture: parent
+  - run: '{parent}.w = 1'
+  - run: add_property({parent}, "y", 0, {player, "r"})
+  - run: '{parent}.y = create($anonymous, 1)'
+  - run: '{parent}.y.w = 1'
+  - run: recycle({parent}.y)
+    expect:
+      value: 0
+  cleanup:
+  - run: recycle({parent})
+- name: programmer_can_recycle_owned_object
+  description: Programmer can recycle object they own
+  permission: programmer
+  steps:
+  - run: create($object, 0)
+    capture: parent
+  - run: add_property({parent}, "i", 0, {player, "r"})
+  - run: '{parent}.i = create($object, 0)'
+  - run: recycle({parent}.i)
+    expect:
+      value: 0
+  cleanup:
+  - run: recycle({parent})
+- name: programmer_can_recycle_owned_anonymous
+  description: Programmer can recycle anonymous object they own
+  permission: programmer
+  steps:
+  - run: create($object, 0)
+    capture: parent
+  - run: add_property({parent}, "j", 0, {player, "r"})
+  - run: '{parent}.j = create($anonymous, 1)'
+  - run: recycle({parent}.j)
+    expect:
+      value: 0
+  cleanup:
+  - run: recycle({parent})
+- name: programmer_cannot_recycle_non_wizard_others_object
+  description: Programmer cannot recycle non-wizard object owned by someone else
+  permission: programmer
+  skip: Multi-user permission tests require complex test infrastructure
+- name: recycle_returns_zero
+  description: recycle() returns 0 on success
+  permission: programmer
+  statement: 'obj = create($object, 0);
 
-  - name: recycle_accepts_nothing
-    description: recycle() accepts $nothing as valid object type (fails with E_INVARG not E_TYPE)
-    permission: wizard
-    code: "recycle(#-1)"
+    return recycle(obj);
+
+    '
+  expect:
+    value: 0
+- name: valid_returns_false_after_recycle
+  description: valid() returns 0 after object is recycled
+  permission: programmer
+  statement: 'obj = create($object, 0);
+
+    recycle(obj);
+
+    return valid(obj);
+
+    '
+  expect:
+    value: 0
+- name: recycling_object_calls_recycle_verb
+  description: Recycling an object calls its :recycle verb
+  permission: programmer
+  steps:
+  - run: create($object)
+    capture: a
+  - run: add_property({a}, "recycle_called", 0, {player, ""})
+  - run: add_verb({a}, {player, "xd", "recycle"}, {"this", "none", "this"})
+  - run: set_verb_code({a}, "recycle", {"typeof(this) == OBJ || raise(E_INVARG);",
+      "{a}.recycle_called = {a}.recycle_called + 1;"})
+  - run: '{a}.recycle_called'
+    expect:
+      value: 0
+  - run: recycle(create({a}, 0))
+  - run: '{a}.recycle_called'
+    expect:
+      value: 1
+  cleanup:
+  - run: recycle({a})
+- name: recycling_anonymous_calls_recycle_verb
+  description: Recycling an anonymous object calls its :recycle verb
+  permission: programmer
+  steps:
+  - run: create($object)
+    capture: a
+  - run: add_property({a}, "recycle_called", 0, {player, ""})
+  - run: add_verb({a}, {player, "xd", "recycle"}, {"this", "none", "this"})
+  - run: set_verb_code({a}, "recycle", {"typeof(this) == ANON || raise(E_INVARG);",
+      "{a}.recycle_called = {a}.recycle_called + 1;"})
+  - run: '{a}.recycle_called'
+    expect:
+      value: 0
+  - run: recycle(create({a}, 1))
+  - run: '{a}.recycle_called'
+    expect:
+      value: 1
+  cleanup:
+  - run: recycle({a})
+- name: calling_recycle_in_recycle_verb_on_anonymous_fails
+  description: Calling recycle(this) inside :recycle verb on anonymous object fails
+  permission: programmer
+  steps:
+  - run: create($object)
+    capture: a
+  - run: add_property({a}, "recycle_called", 0, {player, ""})
+  - run: add_verb({a}, {player, "xd", "recycle"}, {"this", "none", "this"})
+  - run: set_verb_code({a}, "recycle", {"typeof(this) == ANON || raise(E_INVARG);",
+      "{a}.recycle_called = {a}.recycle_called + 1;", "recycle(this);"})
+  - run: '{a}.recycle_called'
+    expect:
+      value: 0
+  - run: recycle(create({a}, 1))
+  - run: '{a}.recycle_called'
+    expect:
+      value: 1
+  cleanup:
+  - run: recycle({a})
+- name: recycled_object_saved_in_verb_becomes_invalid
+  description: Object recycled and saved in :recycle verb becomes invalid
+  permission: programmer
+  steps:
+  - run: create($object)
+    capture: a
+  - run: add_property({a}, "keep", 0, {player, ""})
+  - run: add_verb({a}, {player, "xd", "recycle"}, {"this", "none", "this"})
+  - run: set_verb_code({a}, "recycle", {"typeof(this) == OBJ || raise(E_INVARG);",
+      "{a}.keep = this;"})
+  - run: typeof({a}.keep) == INT
+    expect:
+      value: 1
+  - run: recycle(create({a}, 0))
+    expect:
+      value: 0
+  - run: typeof({a}.keep) == OBJ
+    expect:
+      value: 1
+  - run: recycle({a}.keep)
     expect:
       error: E_INVARG
-
-  - name: recycle_accepts_object
-    description: recycle() accepts regular object and returns 0
-    permission: wizard
-    statement: |
-      obj = create($object, 0);
-      return recycle(obj);
+  - run: valid({a}.keep)
     expect:
       value: 0
-
-  - name: recycle_accepts_anonymous
-    description: recycle() accepts anonymous object and returns 0
-    permission: wizard
-    statement: |
-      obj = create($anonymous, 1);
-      return recycle(obj);
+  cleanup:
+  - run: recycle({a})
+- name: recycled_anonymous_saved_in_verb_becomes_invalid
+  description: Anonymous object recycled and saved in :recycle verb becomes invalid
+  permission: programmer
+  steps:
+  - run: create($object)
+    capture: a
+  - run: add_property({a}, "keep", 0, {player, ""})
+  - run: add_verb({a}, {player, "xd", "recycle"}, {"this", "none", "this"})
+  - run: set_verb_code({a}, "recycle", {"typeof(this) == ANON || raise(E_INVARG);",
+      "{a}.keep = this;"})
+  - run: typeof({a}.keep) == INT
+    expect:
+      value: 1
+  - run: recycle(create({a}, 1))
     expect:
       value: 0
-
-  - name: recycle_rejects_float
-    description: recycle() rejects float argument
-    permission: wizard
-    code: "recycle(1.0)"
+  - run: typeof({a}.keep) == ANON
     expect:
-      error: E_TYPE
-
-  - name: recycle_rejects_list
-    description: recycle() rejects list argument
-    permission: wizard
-    code: "recycle([])"
-    expect:
-      error: E_TYPE
-
-  - name: recycle_rejects_map
-    description: recycle() rejects map argument
-    permission: wizard
-    code: "recycle({})"
-    expect:
-      error: E_TYPE
-
-  - name: recycle_rejects_string
-    description: recycle() rejects string argument
-    permission: wizard
-    code: 'recycle("foobar")'
-    expect:
-      error: E_TYPE
-
-  - name: recycle_invalid_already_recycled_object
-    description: recycle() fails with E_INVARG if object already recycled
-    permission: programmer
-    statement: |
-      x = create($object, 0);
-      recycle(x);
-      return recycle(x);
+      value: 1
+  - run: recycle({a}.keep)
     expect:
       error: E_INVARG
-
-  - name: recycle_invalid_already_recycled_anonymous
-    description: recycle() fails with E_INVARG if anonymous object already recycled
-    permission: programmer
-    statement: |
-      x = create($anonymous, 1);
-      recycle(x);
-      return recycle(x);
-    expect:
-      error: E_INVARG
-
-  ## Permission tests
-
-  - name: wizard_can_recycle_non_wizard_object
-    description: Wizard can recycle non-wizard owned object
-    permission: wizard
-    steps:
-      - run: "create($object, 0)"
-        capture: m
-      - run: "{m}.w = 0"
-      - run: "recycle({m})"
-        expect:
-          value: 0
-
-  - name: wizard_can_recycle_wizard_object
-    description: Wizard can recycle wizard-owned object
-    permission: wizard
-    steps:
-      - run: "create($object, 0)"
-        capture: n
-      - run: "{n}.w = 1"
-      - run: "recycle({n})"
-        expect:
-          value: 0
-
-  - name: wizard_can_recycle_others_object
-    description: Wizard can recycle object owned by someone else
-    permission: wizard
-    steps:
-      - run: "create($object, 0)"
-        capture: parent
-      - run: "{parent}.w = 0"
-      - run: "add_property({parent}, \"x\", 0, {player, \"r\"})"
-      - run: "{parent}.x = create($object, 0)"
-      - run: "{parent}.x.w = 0"
-      - run: "recycle({parent}.x)"
-        expect:
-          value: 0
-    cleanup:
-      - run: "recycle({parent})"
-
-  - name: wizard_can_recycle_others_anonymous
-    description: Wizard can recycle anonymous object owned by someone else
-    permission: wizard
-    steps:
-      - run: "create($object, 0)"
-        capture: parent
-      - run: "{parent}.w = 1"
-      - run: "add_property({parent}, \"y\", 0, {player, \"r\"})"
-      - run: "{parent}.y = create($anonymous, 1)"
-      - run: "{parent}.y.w = 1"
-      - run: "recycle({parent}.y)"
-        expect:
-          value: 0
-    cleanup:
-      - run: "recycle({parent})"
-
-  - name: programmer_can_recycle_owned_object
-    description: Programmer can recycle object they own
-    permission: programmer
-    steps:
-      - run: "create($object, 0)"
-        capture: parent
-      - run: "add_property({parent}, \"i\", 0, {player, \"r\"})"
-      - run: "{parent}.i = create($object, 0)"
-      - run: "recycle({parent}.i)"
-        expect:
-          value: 0
-    cleanup:
-      - run: "recycle({parent})"
-
-  - name: programmer_can_recycle_owned_anonymous
-    description: Programmer can recycle anonymous object they own
-    permission: programmer
-    steps:
-      - run: "create($object, 0)"
-        capture: parent
-      - run: "add_property({parent}, \"j\", 0, {player, \"r\"})"
-      - run: "{parent}.j = create($anonymous, 1)"
-      - run: "recycle({parent}.j)"
-        expect:
-          value: 0
-    cleanup:
-      - run: "recycle({parent})"
-
-  - name: programmer_cannot_recycle_non_wizard_others_object
-    description: Programmer cannot recycle non-wizard object owned by someone else
-    permission: programmer
-    skip: "Multi-user permission tests require complex test infrastructure"
-
-  - name: programmer_cannot_recycle_others_anonymous
-    description: Programmer cannot recycle anonymous object owned by someone else
-    permission: programmer
-    skip: "Multi-user permission tests require complex test infrastructure"
-
-  - name: programmer_cannot_recycle_parent_non_wizard
-    description: Programmer cannot recycle non-wizard parent object
-    permission: programmer
-    skip: "Multi-user permission tests require complex test infrastructure"
-
-  - name: programmer_cannot_recycle_parent_wizard
-    description: Programmer cannot recycle wizard parent object
-    permission: programmer
-    skip: "Multi-user permission tests require complex test infrastructure"
-
-  ## Return value and valid() tests
-
-  - name: recycle_returns_zero
-    description: recycle() returns 0 on success
-    permission: programmer
-    statement: |
-      obj = create($object, 0);
-      return recycle(obj);
+  - run: valid({a}.keep)
     expect:
       value: 0
-
-  - name: valid_returns_false_after_recycle
-    description: valid() returns 0 after object is recycled
-    permission: programmer
-    statement: |
-      obj = create($object, 0);
-      recycle(obj);
-      return valid(obj);
+  cleanup:
+  - run: recycle({a})
+- name: recycling_object_recycles_property_values_on_object
+  description: Recycling an object also recycles anonymous objects stored in properties
+    defined on the object
+  permission: wizard
+  steps:
+  - run: create($object)
+    capture: a
+  - run: add_property({a}, "recycle_called", 0, {player, ""})
+  - run: add_verb({a}, {player, "xd", "recycle"}, {"this", "none", "this"})
+  - run: set_verb_code({a}, "recycle", {"{a}.recycle_called = {a}.recycle_called +
+      1;"})
+  - run: add_verb({a}, {player, "xd", "go"}, {"this", "none", "this"})
+  - run: set_verb_code({a}, "go", {"x = create({a}, 0);", "add_property(x, \"next\",
+      0, {player, \"\"});", "x.next = create({a}, 1);", "recycle(x);"})
+  - run: '{a}.recycle_called = 0'
+  - run: '{a}:go()'
+  - run: '{a}.recycle_called'
     expect:
-      value: 0
-
-  ## Recycle verb callback tests
-
-  - name: recycling_object_calls_recycle_verb
-    description: Recycling an object calls its :recycle verb
-    permission: programmer
-    steps:
-      - run: "create($object)"
-        capture: a
-      - run: "add_property({a}, \"recycle_called\", 0, {player, \"\"})"
-      - run: "add_verb({a}, {player, \"xd\", \"recycle\"}, {\"this\", \"none\", \"this\"})"
-      - run: "set_verb_code({a}, \"recycle\", {\"typeof(this) == OBJ || raise(E_INVARG);\", \"{a}.recycle_called = {a}.recycle_called + 1;\"})"
-      - run: "{a}.recycle_called"
-        expect:
-          value: 0
-      - run: "recycle(create({a}, 0))"
-      - run: "{a}.recycle_called"
-        expect:
-          value: 1
-    cleanup:
-      - run: "recycle({a})"
-
-  - name: recycling_anonymous_calls_recycle_verb
-    description: Recycling an anonymous object calls its :recycle verb
-    permission: programmer
-    steps:
-      - run: "create($object)"
-        capture: a
-      - run: "add_property({a}, \"recycle_called\", 0, {player, \"\"})"
-      - run: "add_verb({a}, {player, \"xd\", \"recycle\"}, {\"this\", \"none\", \"this\"})"
-      - run: "set_verb_code({a}, \"recycle\", {\"typeof(this) == ANON || raise(E_INVARG);\", \"{a}.recycle_called = {a}.recycle_called + 1;\"})"
-      - run: "{a}.recycle_called"
-        expect:
-          value: 0
-      - run: "recycle(create({a}, 1))"
-      - run: "{a}.recycle_called"
-        expect:
-          value: 1
-    cleanup:
-      - run: "recycle({a})"
-
-  - name: calling_recycle_in_recycle_verb_on_anonymous_fails
-    description: Calling recycle(this) inside :recycle verb on anonymous object fails
-    permission: programmer
-    steps:
-      - run: "create($object)"
-        capture: a
-      - run: "add_property({a}, \"recycle_called\", 0, {player, \"\"})"
-      - run: "add_verb({a}, {player, \"xd\", \"recycle\"}, {\"this\", \"none\", \"this\"})"
-      - run: "set_verb_code({a}, \"recycle\", {\"typeof(this) == ANON || raise(E_INVARG);\", \"{a}.recycle_called = {a}.recycle_called + 1;\", \"recycle(this);\"})"
-      - run: "{a}.recycle_called"
-        expect:
-          value: 0
-      - run: "recycle(create({a}, 1))"
-      - run: "{a}.recycle_called"
-        expect:
-          value: 1
-    cleanup:
-      - run: "recycle({a})"
-
-  - name: recycled_object_saved_in_verb_becomes_invalid
-    description: Object recycled and saved in :recycle verb becomes invalid
-    permission: programmer
-    steps:
-      - run: "create($object)"
-        capture: a
-      - run: "add_property({a}, \"keep\", 0, {player, \"\"})"
-      - run: "add_verb({a}, {player, \"xd\", \"recycle\"}, {\"this\", \"none\", \"this\"})"
-      - run: "set_verb_code({a}, \"recycle\", {\"typeof(this) == OBJ || raise(E_INVARG);\", \"{a}.keep = this;\"})"
-      - run: "typeof({a}.keep) == INT"
-        expect:
-          value: 1
-      - run: "recycle(create({a}, 0))"
-        expect:
-          value: 0
-      - run: "typeof({a}.keep) == OBJ"
-        expect:
-          value: 1
-      - run: "recycle({a}.keep)"
-        expect:
-          error: E_INVARG
-      - run: "valid({a}.keep)"
-        expect:
-          value: 0
-    cleanup:
-      - run: "recycle({a})"
-
-  - name: recycled_anonymous_saved_in_verb_becomes_invalid
-    description: Anonymous object recycled and saved in :recycle verb becomes invalid
-    permission: programmer
-    steps:
-      - run: "create($object)"
-        capture: a
-      - run: "add_property({a}, \"keep\", 0, {player, \"\"})"
-      - run: "add_verb({a}, {player, \"xd\", \"recycle\"}, {\"this\", \"none\", \"this\"})"
-      - run: "set_verb_code({a}, \"recycle\", {\"typeof(this) == ANON || raise(E_INVARG);\", \"{a}.keep = this;\"})"
-      - run: "typeof({a}.keep) == INT"
-        expect:
-          value: 1
-      - run: "recycle(create({a}, 1))"
-        expect:
-          value: 0
-      - run: "typeof({a}.keep) == ANON"
-        expect:
-          value: 1
-      - run: "recycle({a}.keep)"
-        expect:
-          error: E_INVARG
-      - run: "valid({a}.keep)"
-        expect:
-          value: 0
-    cleanup:
-      - run: "recycle({a})"
-
-  ## Cascading recycle tests
-
-  - name: recycling_object_recycles_property_values_on_object
-    description: Recycling an object also recycles anonymous objects stored in properties defined on the object
-    permission: wizard
-    steps:
-      - run: "create($object)"
-        capture: a
-      - run: "add_property({a}, \"recycle_called\", 0, {player, \"\"})"
-      - run: "add_verb({a}, {player, \"xd\", \"recycle\"}, {\"this\", \"none\", \"this\"})"
-      - run: "set_verb_code({a}, \"recycle\", {\"{a}.recycle_called = {a}.recycle_called + 1;\"})"
-      - run: "add_verb({a}, {player, \"xd\", \"go\"}, {\"this\", \"none\", \"this\"})"
-      - run: "set_verb_code({a}, \"go\", {\"x = create({a}, 0);\", \"add_property(x, \\\"next\\\", 0, {player, \\\"\\\"});\", \"x.next = create({a}, 1);\", \"recycle(x);\"})"
-      - run: "{a}.recycle_called = 0"
-      - run: "{a}:go()"
-      - run: "{a}.recycle_called"
-        expect:
-          value: 2
-    cleanup:
-      - run: "recycle({a})"
-
-  - name: recycling_object_recycles_property_values_on_parent
-    description: Recycling an object also recycles anonymous objects stored in properties defined on the parent
-    permission: wizard
-    steps:
-      - run: "create($object)"
-        capture: a
-      - run: "add_property({a}, \"next\", 0, {player, \"\"})"
-      - run: "add_property({a}, \"recycle_called\", 0, {player, \"\"})"
-      - run: "add_verb({a}, {player, \"xd\", \"recycle\"}, {\"this\", \"none\", \"this\"})"
-      - run: "set_verb_code({a}, \"recycle\", {\"{a}.recycle_called = {a}.recycle_called + 1;\"})"
-      - run: "add_verb({a}, {player, \"xd\", \"go\"}, {\"this\", \"none\", \"this\"})"
-      - run: "set_verb_code({a}, \"go\", {\"x = create({a}, 0);\", \"x.next = create({a}, 1);\", \"recycle(x);\"})"
-      - run: "{a}.recycle_called = 0"
-      - run: "{a}:go()"
-      - run: "{a}.recycle_called"
-        expect:
-          value: 2
-    cleanup:
-      - run: "recycle({a})"
-
-  - name: recycling_anonymous_recycles_property_values_on_object
-    description: Recycling an anonymous object also recycles anonymous objects stored in properties defined on the object
-    permission: wizard
-    steps:
-      - run: "create($object)"
-        capture: a
-      - run: "add_property({a}, \"recycle_called\", 0, {player, \"\"})"
-      - run: "add_verb({a}, {player, \"xd\", \"recycle\"}, {\"this\", \"none\", \"this\"})"
-      - run: "set_verb_code({a}, \"recycle\", {\"{a}.recycle_called = {a}.recycle_called + 1;\"})"
-      - run: "add_verb({a}, {player, \"xd\", \"go\"}, {\"this\", \"none\", \"this\"})"
-      - run: "set_verb_code({a}, \"go\", {\"x = create({a}, 1);\", \"add_property(x, \\\"next\\\", 0, {player, \\\"\\\"});\", \"x.next = create({a}, 1);\", \"args || recycle(x);\"})"
-      - run: "{a}.recycle_called = 0"
-      - run: "{a}:go()"
-      - run: "{a}.recycle_called"
-        expect:
-          value: 2
-      - run: "{a}.recycle_called = 0"
-      - run: "{a}:go(1)"
-      - run: "{a}.recycle_called"
-        expect:
-          value: 2
-    cleanup:
-      - run: "recycle({a})"
-
-  - name: recycling_anonymous_recycles_property_values_on_parent
-    description: Recycling an anonymous object also recycles anonymous objects stored in properties defined on the parent
-    permission: wizard
-    steps:
-      - run: "create($object)"
-        capture: a
-      - run: "add_property({a}, \"next\", 0, {player, \"\"})"
-      - run: "add_property({a}, \"recycle_called\", 0, {player, \"\"})"
-      - run: "add_verb({a}, {player, \"xd\", \"recycle\"}, {\"this\", \"none\", \"this\"})"
-      - run: "set_verb_code({a}, \"recycle\", {\"{a}.recycle_called = {a}.recycle_called + 1;\"})"
-      - run: "add_verb({a}, {player, \"xd\", \"go\"}, {\"this\", \"none\", \"this\"})"
-      - run: "set_verb_code({a}, \"go\", {\"x = create({a}, 1);\", \"x.next = create({a}, 1);\", \"args || recycle(x);\"})"
-      - run: "{a}.recycle_called = 0"
-      - run: "{a}:go()"
-      - run: "{a}.recycle_called"
-        expect:
-          value: 2
-      - run: "{a}.recycle_called = 0"
-      - run: "{a}:go(1)"
-      - run: "{a}.recycle_called"
-        expect:
-          value: 2
-    cleanup:
-      - run: "recycle({a})"
+      value: 2
+  cleanup:
+  - run: recycle({a})
+- name: recycling_object_recycles_property_values_on_parent
+  description: Recycling an object also recycles anonymous objects stored in properties
+    defined on the parent
+  permission: wizard
+  steps:
+  - run: create($object)
+    capture: a
+  - run: add_property({a}, "next", 0, {player, ""})
+  - run: add_property({a}, "recycle_called", 0, {player, ""})
+  - run: add_verb({a}, {player, "xd", "recycle"}, {"this", "none", "this"})
+  - run: set_verb_code({a}, "recycle", {"{a}.recycle_called = {a}.recycle_called +
+      1;"})
+  - run: add_verb({a}, {player, "xd", "go"}, {"this", "none", "this"})
+  - run: set_verb_code({a}, "go", {"x = create({a}, 0);", "x.next = create({a}, 1);",
+      "recycle(x);"})
+  - run: '{a}.recycle_called = 0'
+  - run: '{a}:go()'
+  - run: '{a}.recycle_called'
+    expect:
+      value: 2
+  cleanup:
+  - run: recycle({a})
+- name: recycling_anonymous_recycles_property_values_on_object
+  description: Recycling an anonymous object also recycles anonymous objects stored
+    in properties defined on the object
+  permission: wizard
+  steps:
+  - run: create($object)
+    capture: a
+  - run: add_property({a}, "recycle_called", 0, {player, ""})
+  - run: add_verb({a}, {player, "xd", "recycle"}, {"this", "none", "this"})
+  - run: set_verb_code({a}, "recycle", {"{a}.recycle_called = {a}.recycle_called +
+      1;"})
+  - run: add_verb({a}, {player, "xd", "go"}, {"this", "none", "this"})
+  - run: set_verb_code({a}, "go", {"x = create({a}, 1);", "add_property(x, \"next\",
+      0, {player, \"\"});", "x.next = create({a}, 1);", "args || recycle(x);"})
+  - run: '{a}.recycle_called = 0'
+  - run: '{a}:go()'
+  - run: '{a}.recycle_called'
+    expect:
+      value: 2
+  - run: '{a}.recycle_called = 0'
+  - run: '{a}:go(1)'
+  - run: '{a}.recycle_called'
+    expect:
+      value: 2
+  cleanup:
+  - run: recycle({a})
+- name: recycling_anonymous_recycles_property_values_on_parent
+  description: Recycling an anonymous object also recycles anonymous objects stored
+    in properties defined on the parent
+  permission: wizard
+  steps:
+  - run: create($object)
+    capture: a
+  - run: add_property({a}, "next", 0, {player, ""})
+  - run: add_property({a}, "recycle_called", 0, {player, ""})
+  - run: add_verb({a}, {player, "xd", "recycle"}, {"this", "none", "this"})
+  - run: set_verb_code({a}, "recycle", {"{a}.recycle_called = {a}.recycle_called +
+      1;"})
+  - run: add_verb({a}, {player, "xd", "go"}, {"this", "none", "this"})
+  - run: set_verb_code({a}, "go", {"x = create({a}, 1);", "x.next = create({a}, 1);",
+      "args || recycle(x);"})
+  - run: '{a}.recycle_called = 0'
+  - run: '{a}:go()'
+  - run: '{a}.recycle_called'
+    expect:
+      value: 2
+  - run: '{a}.recycle_called = 0'
+  - run: '{a}:go(1)'
+  - run: '{a}.recycle_called'
+    expect:
+      value: 2
+  cleanup:
+  - run: recycle({a})

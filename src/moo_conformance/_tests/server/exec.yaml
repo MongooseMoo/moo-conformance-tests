@@ -1,158 +1,116 @@
 name: exec
 description: Tests for exec() builtin - external process execution
-
 requires:
-  builtins: [exec, queued_tasks, kill_task, resume, task_stack]
-  features: [exec_support, forking, tasks]
-
+  builtins:
+  - exec
+  - queued_tasks
+  - kill_task
+  - resume
+  - task_stack
+  features:
+  - exec_support
+  - forking
+  - tasks
 tests:
-  - name: exec_fails_for_non_wizards
-    permission: programmer
-    code: 'exec({"foobar"})'
-    expect:
-      error: E_INVARG
-
-  - name: exec_fails_for_nonexistent_executables
-    permission: wizard
-    code: 'exec({"test_does_not_exist"})'
-    expect:
-      error: E_INVARG
-
-  - name: exec_fails_for_absolute_paths
-    permission: wizard
-    code: 'exec({"/test_io"})'
-    expect:
-      error: E_INVARG
-
-  - name: exec_fails_for_dot_slash_paths
-    permission: wizard
-    code: 'exec({"./test_io"})'
-    expect:
-      error: E_INVARG
-
-  - name: exec_fails_for_parent_dir_paths
-    permission: wizard
-    code: 'exec({"../test_io"})'
-    expect:
-      error: E_INVARG
-
-  - name: exec_fails_for_path_traversal
-    permission: wizard
-    code: 'exec({"foo/../../test_io"})'
-    expect:
-      error: E_INVARG
-
-  - name: exec_io_works
-    permission: wizard
-    code: 'exec({"test_io"}, "Hello, world!")'
-    expect:
-      value: [0, "Hello, world!", "Hello, world!"]
-
-  - name: exec_args_works
-    permission: wizard
-    code: 'exec({"test_args", "one", "two", "three"}, "")'
-    expect:
-      value: [0, "one two three", ""]
-
-  - name: exec_exit_status_works
-    permission: wizard
-    code: 'exec({"test_exit_status", "2"}, "")'
-    expect:
-      value: [2, "", ""]
-
-  - name: exec_with_sleep_works
-    permission: wizard
-    skip: "Test binary test_with_sleep not available on all servers"
-    code: 'exec({"test_with_sleep"}, "")'
-    expect:
-      value: [0, "1~0A2~0A3~0A", ""]
-
-  - name: exec_rejects_invalid_binary_string
-    permission: wizard
-    code: 'exec({"test_io"}, "1~ZZ23~0A")'
-    expect:
-      error: E_INVARG
-
-  - name: queued_tasks_shows_suspended_exec
-    permission: wizard
-    statement: |
-      task_id = 0;
-      fork go (0)
-        exec({"sleep", "5"});
-      endfork
-      suspend(0);
-      return queued_tasks();
-    expect:
-      type: list
-
-  - name: kill_task_works_on_suspended_exec
-    permission: wizard
-    statement: |
-      task_id = 0;
-      fork go (0)
-        exec({"sleep", "5"});
-      endfork
-      suspend(0);
-      result = kill_task(go);
-      return result;
-    expect:
-      value: 0
-
-  - name: kill_task_fails_on_already_killed
-    permission: wizard
-    statement: |
-      task_id = 0;
-      fork go (0)
-        exec({"sleep", "5"});
-      endfork
-      suspend(0);
-      kill_task(go);
-      return kill_task(go);
-    expect:
-      error: E_INVARG
-
-  - name: resume_fails_on_suspended_exec
-    permission: wizard
-    statement: |
-      task_id = 0;
-      fork go (0)
-        exec({"sleep", "5"});
-      endfork
-      suspend(0);
-      return resume(go);
-    expect:
-      error: E_INVARG
-
-  - name: suspended_exec_task_stack_matches_suspended_task
-    permission: wizard
-    statement: |
-      task_id1 = 0;
-      task_id2 = 0;
-      fork go1 (0)
-        suspend(5);
-      endfork
-      fork go2 (0)
-        exec({"sleep", "5"});
-      endfork
-      suspend(0);
-      stack1 = task_stack(go1);
-      stack2 = task_stack(go2);
-      return stack1 == stack2;
-    expect:
-      value: 1
-
-  - name: multiple_simultaneous_execs_work
-    permission: wizard
-    skip: "TODO: implement test code"
-
-  - name: randomly_timed_execs_work
-    permission: wizard
-    skip: "TODO: implement test code"
-
-  - name: multiple_fast_execs_work
-    permission: wizard
-    skip: "TODO: implement test code"
-
-  - name: fuzzy_input_does_not_break_exec
-    permission: wizard
-    skip: "TODO: implement test code"
+- name: exec_fails_for_non_wizards
+  permission: programmer
+  code: exec({"foobar"})
+  expect:
+    error: E_PERM
+- name: exec_fails_for_nonexistent_executables
+  permission: wizard
+  code: exec({"test_does_not_exist"})
+  expect:
+    error: E_INVARG
+- name: exec_fails_for_absolute_paths
+  permission: wizard
+  code: exec({"/test_io"})
+  expect:
+    error: E_INVARG
+- name: exec_fails_for_dot_slash_paths
+  permission: wizard
+  code: exec({"./test_io"})
+  expect:
+    error: E_INVARG
+- name: exec_fails_for_parent_dir_paths
+  permission: wizard
+  code: exec({"../test_io"})
+  expect:
+    error: E_INVARG
+- name: exec_fails_for_path_traversal
+  permission: wizard
+  code: exec({"foo/../../test_io"})
+  expect:
+    error: E_INVARG
+- name: exec_io_works
+  permission: wizard
+  code: exec({"test_io"}, "Hello, world!")
+  expect:
+    value:
+    - 0
+    - Hello, world!
+    - Hello, world!
+- name: exec_args_works
+  permission: wizard
+  code: exec({"test_args", "one", "two", "three"}, "")
+  expect:
+    value:
+    - 0
+    - one two three
+    - ''
+- name: exec_exit_status_works
+  permission: wizard
+  code: exec({"test_exit_status", "2"}, "")
+  expect:
+    value:
+    - 2
+    - ''
+    - ''
+- name: exec_with_sleep_works
+  permission: wizard
+  skip: Test binary test_with_sleep not available on all servers
+  code: exec({"test_with_sleep"}, "")
+  expect:
+    value:
+    - 0
+    - 1~0A2~0A3~0A
+    - ''
+- name: exec_rejects_invalid_binary_string
+  permission: wizard
+  code: exec({"test_io"}, "1~ZZ23~0A")
+  expect:
+    error: E_INVARG
+- name: queued_tasks_shows_suspended_exec
+  permission: wizard
+  statement: "task_id = 0;\nfork go (0)\n  exec({\"sleep\", \"5\"});\nendfork\nsuspend(0);\n\
+    return queued_tasks();\n"
+  expect:
+    type: list
+- name: kill_task_works_on_suspended_exec
+  permission: wizard
+  statement: "task_id = 0;\nfork go (0)\n  exec({\"sleep\", \"5\"});\nendfork\nsuspend(0);\n\
+    result = kill_task(go);\nreturn result;\n"
+  expect:
+    value: 0
+- name: kill_task_fails_on_already_killed
+  permission: wizard
+  statement: "task_id = 0;\nfork go (0)\n  exec({\"sleep\", \"5\"});\nendfork\nsuspend(0);\n\
+    kill_task(go);\nreturn kill_task(go);\n"
+  expect:
+    error: E_INVARG
+- name: resume_fails_on_suspended_exec
+  permission: wizard
+  statement: "task_id = 0;\nfork go (0)\n  exec({\"sleep\", \"5\"});\nendfork\nsuspend(0);\n\
+    return resume(go);\n"
+  expect:
+    error: E_INVARG
+- name: suspended_exec_task_stack_matches_suspended_task
+  permission: wizard
+  statement: "task_id1 = 0;\ntask_id2 = 0;\nfork go1 (0)\n  suspend(5);\nendfork\n\
+    fork go2 (0)\n  exec({\"sleep\", \"5\"});\nendfork\nsuspend(0);\nstack1 = task_stack(go1);\n\
+    stack2 = task_stack(go2);\nreturn stack1 == stack2;\n"
+  expect:
+    value: 1
+- name: multiple_simultaneous_execs_work
+  permission: wizard
+  skip: 'TODO: implement test code'

@@ -1,466 +1,1024 @@
 name: stress::objects
-description: Stress tests for object hierarchy operations - ancestor/descendant operations on deep hierarchies and complex parent-child relationships
-
+description: Stress tests for object hierarchy operations - ancestor/descendant operations
+  on deep hierarchies and complex parent-child relationships
 requires:
-  builtins: [create, recycle, parent, parents, chparent, chparents, children, ancestors, descendants, valid, typeof, add_property, delete_property, property_info, set_property_info]
-
+  builtins:
+  - create
+  - recycle
+  - parent
+  - parents
+  - chparent
+  - chparents
+  - children
+  - ancestors
+  - descendants
+  - valid
+  - typeof
+  - add_property
+  - delete_property
+  - property_info
+  - set_property_info
 tests:
-  # Type checking for ancestors/descendants
-  - name: ancestors_type_int
-    permission: programmer
-    code: "ancestors(1)"
-    expect:
-      error: E_TYPE
+- name: ancestors_type_int
+  permission: programmer
+  code: ancestors(1)
+  expect:
+    error: E_TYPE
+- name: ancestors_type_float
+  permission: programmer
+  code: ancestors(1.1)
+  expect:
+    error: E_TYPE
+- name: ancestors_type_string
+  permission: programmer
+  code: ancestors("1")
+  expect:
+    error: E_TYPE
+- name: descendants_type_int
+  permission: programmer
+  code: descendants(1)
+  expect:
+    error: E_TYPE
+- name: descendants_type_float
+  permission: programmer
+  code: descendants(1.1)
+  expect:
+    error: E_TYPE
+- name: descendants_type_string
+  permission: programmer
+  code: descendants("1")
+  expect:
+    error: E_TYPE
+- name: ancestors_include_self_true
+  permission: programmer
+  statement: 'd = create($nothing);
 
-  - name: ancestors_type_float
-    permission: programmer
-    code: "ancestors(1.1)"
-    expect:
-      error: E_TYPE
+    return {d} == ancestors(d, 1);
 
-  - name: ancestors_type_string
-    permission: programmer
-    code: 'ancestors("1")'
-    expect:
-      error: E_TYPE
+    '
+  expect:
+    value: 1
+- name: ancestors_exclude_self_false
+  permission: programmer
+  statement: 'd = create($nothing);
 
-  - name: descendants_type_int
-    permission: programmer
-    code: "descendants(1)"
-    expect:
-      error: E_TYPE
+    return {} == ancestors(d, 0);
 
-  - name: descendants_type_float
-    permission: programmer
-    code: "descendants(1.1)"
-    expect:
-      error: E_TYPE
+    '
+  expect:
+    value: 1
+- name: descendants_include_self_true
+  permission: programmer
+  statement: 'd = create($nothing);
 
-  - name: descendants_type_string
-    permission: programmer
-    code: 'descendants("1")'
-    expect:
-      error: E_TYPE
+    return {d} == descendants(d, 1);
 
-  # ancestors/descendants include_self flag
-  - name: ancestors_include_self_true
-    permission: programmer
-    statement: |
-      d = create($nothing);
-      return {d} == ancestors(d, 1);
-    expect:
-      value: 1
+    '
+  expect:
+    value: 1
+- name: descendants_exclude_self_false
+  permission: programmer
+  statement: 'd = create($nothing);
 
-  - name: ancestors_exclude_self_false
-    permission: programmer
-    statement: |
-      d = create($nothing);
-      return {} == ancestors(d, 0);
-    expect:
-      value: 1
+    return {} == descendants(d, 0);
 
-  - name: descendants_include_self_true
-    permission: programmer
-    statement: |
-      d = create($nothing);
-      return {d} == descendants(d, 1);
-    expect:
-      value: 1
+    '
+  expect:
+    value: 1
+- name: chparent_linear_chain
+  permission: wizard
+  statement: 'a = create($nothing);
 
-  - name: descendants_exclude_self_false
-    permission: programmer
-    statement: |
-      d = create($nothing);
-      return {} == descendants(d, 0);
-    expect:
-      value: 1
+    b = create($nothing);
 
-  # Complex chparent/chparents stress tests
-  - name: chparent_linear_chain
-    permission: wizard
-    statement: |
-      a = create($nothing);
-      b = create($nothing);
-      c = create($nothing);
-      chparent(b, c);
-      chparent(a, b);
-      return {parent(a) == b, parent(b) == c, parent(c) == $nothing};
-    expect:
-      value: [1, 1, 1]
+    c = create($nothing);
 
-  - name: chparent_linear_children
-    permission: wizard
-    statement: |
-      a = create($nothing);
-      b = create($nothing);
-      c = create($nothing);
-      chparent(b, c);
-      chparent(a, b);
-      return {children(a) == {}, children(b) == {a}, children(c) == {b}};
-    expect:
-      value: [1, 1, 1]
+    chparent(b, c);
 
-  - name: chparent_reparenting
-    permission: wizard
-    statement: |
-      a = create($nothing);
-      b = create($nothing);
-      c = create($nothing);
-      chparent(b, c);
-      chparent(a, b);
-      chparent(a, c);
-      return {parent(a) == c, parent(b) == c, children(c) == {b, a}};
-    expect:
-      value: [1, 1, 1]
+    chparent(a, b);
 
-  - name: chparents_multiple_inheritance_setup
-    permission: wizard
-    statement: |
-      a = create($nothing);
-      b = create($nothing);
-      c = create($nothing);
-      chparent(a, $nothing);
-      chparent(b, $nothing);
-      chparent(c, $nothing);
-      chparents(a, {b, c});
-      chparents(b, {c});
-      chparents(c, {});
-      return {parents(a) == {b, c}, parents(b) == {c}, parents(c) == {}};
-    expect:
-      value: [1, 1, 1]
+    return {parent(a) == b, parent(b) == c, parent(c) == $nothing};
 
-  - name: chparents_ancestors_descendants
-    permission: wizard
-    statement: |
-      a = create($nothing);
-      b = create($nothing);
-      c = create($nothing);
-      chparents(c, {});
-      chparents(b, {c});
-      chparents(a, {b, c});
-      anc_check = ancestors(a) == {b, c} && ancestors(b) == {c} && ancestors(c) == {};
-      desc_check = descendants(a) == {} && descendants(b) == {a} && descendants(c) == {b, a};
-      return anc_check && desc_check;
-    expect:
-      value: 1
+    '
+  expect:
+    value:
+    - 1
+    - 1
+    - 1
+- name: chparent_linear_children
+  permission: wizard
+  statement: 'a = create($nothing);
 
-  - name: chparents_complex_reparenting
-    permission: wizard
-    statement: |
-      a = create($nothing);
-      b = create($nothing);
-      c = create($nothing);
-      chparent(a, $nothing);
-      chparent(b, $nothing);
-      chparent(c, $nothing);
-      chparents(c, {});
-      chparents(b, {c});
-      chparents(a, {b, c});
-      chparents(a, {c});
-      return {ancestors(a) == {c}, ancestors(b) == {c}, children(c) == {b, a}};
-    expect:
-      value: [1, 1, 1]
+    b = create($nothing);
 
-  - name: chparent_property_reset_on_reparent
-    permission: wizard
-    statement: |
-      a = create($nothing);
-      b = create($nothing);
-      c = create($nothing);
-      add_property(a, "foo", "foo", {player, "c"});
-      add_property(b, "foo", "foo", {b, ""});
-      chparent(c, a);
-      c.foo = "bar";
-      result_before = c.foo;
-      chparent(c, b);
-      pi = property_info(c, "foo");
-      return {pi[1] == b && pi[2] == "", c.foo == "foo", result_before == "bar"};
-    expect:
-      value: [1, 1, 1]
+    c = create($nothing);
 
-  - name: chparents_property_reset_multi
-    permission: wizard
-    statement: |
-      a = create($nothing);
-      b = create($nothing);
-      c = create($nothing);
-      m = create($nothing);
-      n = create($nothing);
-      add_property(a, "foo", "foo", {player, "c"});
-      add_property(b, "foo", "foo", {b, ""});
-      chparents(c, {m, n, a});
-      c.foo = "bar";
-      result_before = c.foo;
-      chparents(c, {b, m, n});
-      pi = property_info(c, "foo");
-      return {pi[1] == b && pi[2] == "", c.foo == "foo", result_before == "bar"};
-    expect:
-      value: [1, 1, 1]
+    chparent(b, c);
 
-  - name: chparent_property_conflict_child_defines
-    permission: wizard
-    statement: |
-      a = create($nothing);
-      b = create($nothing);
-      m = create($nothing);
-      n = create($nothing);
-      add_property(a, "foo", "foo", {a, ""});
-      add_property(b, "foo", "foo", {b, ""});
-      add_property(n, "foo", "foo", {n, "rw"});
-      chparent(a, m);
-      return chparent(m, n);
-    expect:
-      error: E_INVARG
+    chparent(a, b);
 
-  - name: chparent_property_conflict_second_parent_defines
-    permission: wizard
-    statement: |
-      a = create($nothing);
-      b = create($nothing);
-      m = create($nothing);
-      n = create($nothing);
-      add_property(a, "foo", "foo", {a, ""});
-      add_property(b, "foo", "foo", {b, ""});
-      add_property(n, "foo", "foo", {n, "rw"});
-      chparent(b, m);
-      return chparent(m, n);
-    expect:
-      error: E_INVARG
+    return {children(a) == {}, children(b) == {a}, children(c) == {b}};
 
-  - name: chparents_property_conflict_single
-    permission: wizard
-    statement: |
-      a = create($nothing);
-      m = create($nothing);
-      n = create($nothing);
-      add_property(a, "foo", "foo", {a, ""});
-      add_property(n, "foo", "foo", {n, "rw"});
-      chparent(a, m);
-      return chparents(m, {n});
-    expect:
-      error: E_INVARG
+    '
+  expect:
+    value:
+    - 1
+    - 1
+    - 1
+- name: chparent_reparenting
+  permission: wizard
+  statement: 'a = create($nothing);
 
-  # parent/chparent parameter errors
-  - name: parent_no_args
-    permission: wizard
-    code: "parent()"
-    expect:
-      error: E_ARGS
+    b = create($nothing);
 
-  - name: parent_too_many_args
-    permission: wizard
-    code: "parent(1, 2)"
-    expect:
-      error: E_ARGS
+    c = create($nothing);
 
-  - name: parent_type_int
-    permission: wizard
-    code: "parent(1)"
-    expect:
-      error: E_TYPE
+    chparent(b, c);
 
-  - name: parent_type_string
-    permission: wizard
-    code: 'parent("1")'
-    expect:
-      error: E_TYPE
+    chparent(a, b);
 
-  - name: chparent_no_args
-    permission: wizard
-    code: "chparent()"
-    expect:
-      error: E_ARGS
+    chparent(a, c);
 
-  - name: chparent_one_arg
-    permission: wizard
-    code: "chparent(1)"
-    expect:
-      error: E_ARGS
+    return {parent(a) == c, parent(b) == c, children(c) == {b, a}};
 
-  - name: chparent_too_many_args
-    permission: wizard
-    code: "chparent(1, 2, 3, 4)"
-    expect:
-      error: E_ARGS
+    '
+  expect:
+    value:
+    - 1
+    - 1
+    - 1
+- name: chparents_multiple_inheritance_setup
+  permission: wizard
+  statement: 'a = create($nothing);
 
-  - name: chparent_type_first_arg_int
-    permission: wizard
-    code: "chparent(1, 2)"
-    expect:
-      error: E_TYPE
+    b = create($nothing);
 
-  - name: chparent_type_second_arg_int
-    permission: wizard
-    code: "chparent($object, 2)"
-    expect:
-      error: E_TYPE
+    c = create($nothing);
 
-  - name: chparent_type_second_arg_string
-    permission: wizard
-    code: 'chparent($object, "2")'
-    expect:
-      error: E_TYPE
+    chparent(a, $nothing);
 
-  - name: chparent_self_reference
-    permission: wizard
-    code: "chparent($object, $object)"
-    expect:
-      error: E_RECMOVE
+    chparent(b, $nothing);
 
-  - name: chparents_self_reference
-    permission: wizard
-    code: "chparents($object, {$object})"
-    expect:
-      error: E_RECMOVE
+    chparent(c, $nothing);
 
-  # parent() maps parents() correctly
-  - name: parent_maps_multiple_parents
-    permission: programmer
-    statement: |
-      x = create($nothing);
-      y = create($nothing);
-      z = create($nothing);
-      a = create({x, y, z});
-      return parent(a) == x;
-    expect:
-      value: 1
+    chparents(a, {b, c});
 
-  - name: parent_maps_single_parent
-    permission: programmer
-    statement: |
-      x = create($nothing);
-      b = create({x});
-      return parent(b) == x;
-    expect:
-      value: 1
+    chparents(b, {c});
 
-  - name: parent_maps_empty_parents
-    permission: programmer
-    statement: |
-      c = create({});
-      return parent(c) == $nothing;
-    expect:
-      value: 1
+    chparents(c, {});
 
-  # Recycling parent affects children
-  - name: recycle_parent_removes_from_parents_list
-    permission: programmer
-    statement: |
-      a = create({});
-      b = create({});
-      c = create({});
-      m = create({a, b, c});
-      recycle(b);
-      return parents(m) == {a, c};
-    expect:
-      value: 1
+    return {parents(a) == {b, c}, parents(b) == {c}, parents(c) == {}};
 
-  - name: recycle_parent_merges_grandparents
-    permission: programmer
-    statement: |
-      a = create($object);
-      b = create({a});
-      c = create({});
-      d = create({});
-      e = create($nothing);
-      m = create({d, e});
-      x = create({a, b, c, m});
-      recycle(b);
-      return parents(x) == {a, c, m};
-    expect:
-      value: 1
+    '
+  expect:
+    value:
+    - 1
+    - 1
+    - 1
+- name: chparents_ancestors_descendants
+  permission: wizard
+  statement: 'a = create($nothing);
 
-  - name: recycle_parent_merges_deeply
-    permission: programmer
-    statement: |
-      a = create($object);
-      b = create({a});
-      c = create({});
-      d = create({});
-      e = create($nothing);
-      m = create({d, e});
-      x = create({a, b, c, m});
-      recycle(b);
-      recycle(m);
-      recycle(e);
-      return parents(x) == {a, c, d};
-    expect:
-      value: 1
+    b = create($nothing);
 
-  # object_bytes builtin
-  - name: object_bytes_permission_denied
-    permission: programmer
-    description: "object_bytes() is accessible to programmers in Toast, not wizard-only"
-    statement: |
-      return object_bytes($object) > 0;
-    expect:
-      value: 1
+    c = create($nothing);
 
-  - name: object_bytes_wizard_allowed
-    permission: wizard
-    statement: |
-      return object_bytes($object) > 0;
-    expect:
-      value: 1
+    chparents(c, {});
 
-  - name: object_bytes_type_int
-    permission: wizard
-    code: "object_bytes(1)"
-    expect:
-      error: E_TYPE
+    chparents(b, {c});
 
-  - name: object_bytes_type_float
-    permission: wizard
-    code: "object_bytes(1.1)"
-    expect:
-      error: E_TYPE
+    chparents(a, {b, c});
 
-  - name: object_bytes_type_string
-    permission: wizard
-    code: 'object_bytes("1")'
-    expect:
-      error: E_TYPE
+    anc_check = ancestors(a) == {b, c} && ancestors(b) == {c} && ancestors(c) == {};
 
-  - name: object_bytes_recycled_object
-    permission: wizard
-    statement: |
-      o = create($object);
-      recycle(o);
-      return object_bytes(o);
-    expect:
-      error: E_INVIND
+    desc_check = descendants(a) == {} && descendants(b) == {a} && descendants(c) ==
+    {b, a};
 
-  - name: object_bytes_created_objects
-    permission: wizard
-    statement: |
-      o = create($object);
-      result = object_bytes(o) > 0;
-      recycle(o);
-      return result;
-    expect:
-      value: 1
+    return anc_check && desc_check;
 
-  # Recursive move prevention
-  - name: chparent_circular_prevention
-    permission: wizard
-    statement: |
-      a = create($nothing);
-      b = create($nothing);
-      c = create($nothing);
-      chparent(a, b);
-      chparent(b, c);
-      return chparent(c, a);
-    expect:
-      error: E_RECMOVE
+    '
+  expect:
+    value: 1
+- name: chparents_complex_reparenting
+  permission: wizard
+  statement: 'a = create($nothing);
 
-  - name: chparents_circular_prevention
-    permission: wizard
-    statement: |
-      a = create($nothing);
-      b = create($nothing);
-      c = create($nothing);
-      chparent(a, b);
-      chparent(b, c);
-      return chparents(c, {a, b});
-    expect:
-      error: E_RECMOVE
+    b = create($nothing);
+
+    c = create($nothing);
+
+    chparent(a, $nothing);
+
+    chparent(b, $nothing);
+
+    chparent(c, $nothing);
+
+    chparents(c, {});
+
+    chparents(b, {c});
+
+    chparents(a, {b, c});
+
+    chparents(a, {c});
+
+    return {ancestors(a) == {c}, ancestors(b) == {c}, children(c) == {b, a}};
+
+    '
+  expect:
+    value:
+    - 1
+    - 1
+    - 1
+- name: chparent_property_reset_on_reparent
+  permission: wizard
+  statement: 'a = create($nothing);
+
+    b = create($nothing);
+
+    c = create($nothing);
+
+    add_property(a, "foo", "foo", {player, "c"});
+
+    add_property(b, "foo", "foo", {b, ""});
+
+    chparent(c, a);
+
+    c.foo = "bar";
+
+    result_before = c.foo;
+
+    chparent(c, b);
+
+    pi = property_info(c, "foo");
+
+    return {pi[1] == b && pi[2] == "", c.foo == "foo", result_before == "bar"};
+
+    '
+  expect:
+    value:
+    - 1
+    - 1
+    - 1
+- name: chparents_property_reset_multi
+  permission: wizard
+  statement: 'a = create($nothing);
+
+    b = create($nothing);
+
+    c = create($nothing);
+
+    m = create($nothing);
+
+    n = create($nothing);
+
+    add_property(a, "foo", "foo", {player, "c"});
+
+    add_property(b, "foo", "foo", {b, ""});
+
+    chparents(c, {m, n, a});
+
+    c.foo = "bar";
+
+    result_before = c.foo;
+
+    chparents(c, {b, m, n});
+
+    pi = property_info(c, "foo");
+
+    return {pi[1] == b && pi[2] == "", c.foo == "foo", result_before == "bar"};
+
+    '
+  expect:
+    value:
+    - 1
+    - 1
+    - 1
+- name: chparent_property_conflict_child_defines
+  permission: wizard
+  statement: 'a = create($nothing);
+
+    b = create($nothing);
+
+    m = create($nothing);
+
+    n = create($nothing);
+
+    add_property(a, "foo", "foo", {a, ""});
+
+    add_property(b, "foo", "foo", {b, ""});
+
+    add_property(n, "foo", "foo", {n, "rw"});
+
+    chparent(a, m);
+
+    return chparent(m, n);
+
+    '
+  expect:
+    error: E_INVARG
+- name: chparent_property_conflict_second_parent_defines
+  permission: wizard
+  statement: 'a = create($nothing);
+
+    b = create($nothing);
+
+    m = create($nothing);
+
+    n = create($nothing);
+
+    add_property(a, "foo", "foo", {a, ""});
+
+    add_property(b, "foo", "foo", {b, ""});
+
+    add_property(n, "foo", "foo", {n, "rw"});
+
+    chparent(b, m);
+
+    return chparent(m, n);
+
+    '
+  expect:
+    error: E_INVARG
+- name: chparents_property_conflict_single
+  permission: wizard
+  statement: 'a = create($nothing);
+
+    m = create($nothing);
+
+    n = create($nothing);
+
+    add_property(a, "foo", "foo", {a, ""});
+
+    add_property(n, "foo", "foo", {n, "rw"});
+
+    chparent(a, m);
+
+    return chparents(m, {n});
+
+    '
+  expect:
+    error: E_INVARG
+- name: parent_no_args
+  permission: wizard
+  code: parent()
+  expect:
+    error: E_ARGS
+- name: parent_too_many_args
+  permission: wizard
+  code: parent(1, 2)
+  expect:
+    error: E_ARGS
+- name: parent_type_int
+  permission: wizard
+  code: parent(1)
+  expect:
+    error: E_TYPE
+- name: parent_type_string
+  permission: wizard
+  code: parent("1")
+  expect:
+    error: E_TYPE
+- name: chparent_no_args
+  permission: wizard
+  code: chparent()
+  expect:
+    error: E_ARGS
+- name: chparent_one_arg
+  permission: wizard
+  code: chparent(1)
+  expect:
+    error: E_ARGS
+- name: chparent_too_many_args
+  permission: wizard
+  code: chparent(1, 2, 3, 4)
+  expect:
+    error: E_ARGS
+- name: chparent_type_first_arg_int
+  permission: wizard
+  code: chparent(1, 2)
+  expect:
+    error: E_TYPE
+- name: chparent_type_second_arg_int
+  permission: wizard
+  code: chparent($object, 2)
+  expect:
+    error: E_TYPE
+- name: chparent_type_second_arg_string
+  permission: wizard
+  code: chparent($object, "2")
+  expect:
+    error: E_TYPE
+- name: chparent_self_reference
+  permission: wizard
+  code: chparent($object, $object)
+  expect:
+    error: E_RECMOVE
+- name: chparents_self_reference
+  permission: wizard
+  code: chparents($object, {$object})
+  expect:
+    error: E_RECMOVE
+- name: parent_maps_multiple_parents
+  permission: programmer
+  statement: 'x = create($nothing);
+
+    y = create($nothing);
+
+    z = create($nothing);
+
+    a = create({x, y, z});
+
+    return parent(a) == x;
+
+    '
+  expect:
+    value: 1
+- name: parent_maps_empty_parents
+  permission: programmer
+  statement: 'c = create({});
+
+    return parent(c) == $nothing;
+
+    '
+  expect:
+    value: 1
+- name: recycle_parent_merges_grandparents
+  permission: programmer
+  statement: 'a = create($object);
+
+    b = create({a});
+
+    c = create({});
+
+    d = create({});
+
+    e = create($nothing);
+
+    m = create({d, e});
+
+    x = create({a, b, c, m});
+
+    recycle(b);
+
+    return parents(x) == {a, c, m};
+
+    '
+  expect:
+    value: 1
+- name: object_bytes_permission_denied
+  permission: programmer
+  description: object_bytes() requires wizard permissions
+  statement: 'return object_bytes($object) > 0;
+
+    '
+  expect:
+    error: E_PERM
+- name: object_bytes_wizard_allowed
+  permission: wizard
+  statement: 'return object_bytes($object) > 0;
+
+    '
+  expect:
+    value: 1
+- name: object_bytes_type_int
+  permission: wizard
+  code: object_bytes(1)
+  expect:
+    error: E_TYPE
+- name: object_bytes_type_float
+  permission: wizard
+  code: object_bytes(1.1)
+  expect:
+    error: E_TYPE
+- name: object_bytes_type_string
+  permission: wizard
+  code: object_bytes("1")
+  expect:
+    error: E_TYPE
+- name: object_bytes_recycled_object
+  permission: wizard
+  statement: 'o = create($object);
+
+    recycle(o);
+
+    return object_bytes(o);
+
+    '
+  expect:
+    error: E_INVIND
+- name: object_bytes_created_objects
+  permission: wizard
+  statement: 'o = create($object);
+
+    result = object_bytes(o) > 0;
+
+    recycle(o);
+
+    return result;
+
+    '
+  expect:
+    value: 1
+- name: chparent_circular_prevention
+  permission: wizard
+  statement: 'a = create($nothing);
+
+    b = create($nothing);
+
+    c = create($nothing);
+
+    chparent(a, b);
+
+    chparent(b, c);
+
+    return chparent(c, a);
+
+    '
+  expect:
+    error: E_RECMOVE
+- name: chparents_circular_prevention
+  permission: wizard
+  statement: 'a = create($nothing);
+
+    b = create($nothing);
+
+    c = create($nothing);
+
+    chparent(a, b);
+
+    chparent(b, c);
+
+    return chparents(c, {a, b});
+
+    '
+  expect:
+    error: E_RECMOVE
+- name: parent_invalid_object_nothing
+  permission: wizard
+  code: parent($nothing)
+  expect:
+    error: E_INVARG
+- name: chparent_invalid_child_nothing
+  permission: wizard
+  code: chparent($nothing, $object)
+  expect:
+    error: E_INVARG
+- name: chparents_invalid_child_nothing
+  permission: wizard
+  code: chparents($object, {$nothing})
+  expect:
+    error: E_INVARG
+- name: chparents_duplicate_properties_conflict
+  permission: wizard
+  statement: 'd = create($nothing);
+
+    e = create($nothing);
+
+    f = create($nothing);
+
+    add_property(d, "foo", 123, {player, ""});
+
+    add_property(e, "foo", "abc", {player, ""});
+
+    return chparents(f, {d, e});
+
+    '
+  expect:
+    error: E_INVARG
+- name: chparents_duplicate_parents_not_allowed
+  permission: wizard
+  statement: 'd = create($nothing);
+
+    f = create($nothing);
+
+    return chparents(f, {d, d});
+
+    '
+  expect:
+    error: E_INVARG
+- name: chparent_invalid_parent_object
+  permission: wizard
+  statement: 'o = create($nothing);
+
+    r = recycle(o);
+
+    return chparent($object, o);
+
+    '
+  expect:
+    error: E_INVARG
+- name: chparents_invalid_parent_object
+  permission: wizard
+  statement: 'o = create($nothing);
+
+    r = recycle(o);
+
+    return chparents($object, {o});
+
+    '
+  expect:
+    error: E_INVARG
+- name: chparent_third_arg_type_check
+  permission: wizard
+  statement: 'o = create($nothing);
+
+    return chparent(o, $object, 123);
+
+    '
+  expect:
+    error: E_TYPE
+- name: parents_to_parent_multiple
+  permission: programmer
+  statement: 'x = create($nothing);
+
+    y = create($nothing);
+
+    z = create($nothing);
+
+    a = create({x, y, z});
+
+    b = create({x});
+
+    c = create({});
+
+    return {parents(a) == {x, y, z}, parents(b) == {x}, parents(c) == {}};
+
+    '
+  expect:
+    value:
+    - 1
+    - 1
+    - 1
+- name: chparents_clear_all_parents
+  permission: wizard
+  statement: 'a = create($nothing);
+
+    b = create($nothing);
+
+    c = create($nothing);
+
+    chparents(a, {b, c});
+
+    chparents(a, {});
+
+    return {parent(a) == $nothing, parents(a) == {}, children(a) == {}, children(b)
+    == {}, children(c) == {}};
+
+    '
+  expect:
+    value:
+    - 1
+    - 1
+    - 1
+    - 1
+    - 1
+- name: parent_invalid_recycled_object
+  permission: wizard
+  statement: 'o = create($nothing);
+
+    recycle(o);
+
+    return parent(o);
+
+    '
+  expect:
+    error: E_INVARG
+- name: chparent_three_args_wrong_types
+  permission: wizard
+  code: chparent(1, 2, 3)
+  expect:
+    error: E_TYPE
+- name: chparents_type_errors
+  permission: wizard
+  code: chparents(1, 2)
+  expect:
+    error: E_TYPE
+- name: chparents_second_arg_not_list
+  permission: wizard
+  code: chparents($object, 123)
+  expect:
+    error: E_TYPE
+- name: chparent_complex_hierarchy_clear
+  permission: wizard
+  statement: 'a = create($nothing);
+
+    b = create($nothing);
+
+    c = create($nothing);
+
+    chparent(b, c);
+
+    chparent(a, b);
+
+    chparent(a, $nothing);
+
+    chparent(b, $nothing);
+
+    chparent(c, $nothing);
+
+    return {parent(a) == $nothing, parent(b) == $nothing, parent(c) == $nothing, parents(a)
+    == {}, parents(b) == {}, parents(c) == {}, children(a) == {}, children(b) == {},
+    children(c) == {}};
+
+    '
+  expect:
+    value:
+    - 1
+    - 1
+    - 1
+    - 1
+    - 1
+    - 1
+    - 1
+    - 1
+    - 1
+- name: ancestors_descendants_deep_hierarchy
+  permission: wizard
+  statement: 'a = create($nothing);
+
+    b = create($nothing);
+
+    c = create($nothing);
+
+    chparent(c, b);
+
+    chparent(b, a);
+
+    anc_a = ancestors(a);
+
+    anc_b = ancestors(b);
+
+    anc_c = ancestors(c);
+
+    desc_a = descendants(a);
+
+    desc_b = descendants(b);
+
+    desc_c = descendants(c);
+
+    return {anc_a == {}, anc_b == {a}, anc_c == {b, a}, desc_a == {b, c}, desc_b ==
+    {c}, desc_c == {}};
+
+    '
+  expect:
+    value:
+    - 1
+    - 1
+    - 1
+    - 1
+    - 1
+    - 1
+- name: chparent_nothing_vs_chparents_empty
+  permission: wizard
+  statement: 'a = create($object);
+
+    b = create($object);
+
+    chparent(a, $nothing);
+
+    chparents(b, {});
+
+    return {parent(a) == $nothing, parent(b) == $nothing, parents(a) == {}, parents(b)
+    == {}};
+
+    '
+  expect:
+    value:
+    - 1
+    - 1
+    - 1
+    - 1
+- name: chparent_with_multiple_children
+  permission: wizard
+  statement: 'root = create($nothing);
+
+    branch1 = create(root);
+
+    branch2 = create(root);
+
+    leaf1 = create(branch1);
+
+    leaf2 = create(branch2);
+
+    chparent(branch1, branch2);
+
+    kids_root = children(root);
+
+    kids_branch2 = children(branch2);
+
+    kids_branch1 = children(branch1);
+
+    return {parent(branch1) == branch2, parent(branch2) == root, parent(leaf1) ==
+    branch1, length(kids_root) == 1, length(kids_branch2) == 2, kids_branch1 == {leaf1}};
+
+    '
+  expect:
+    value:
+    - 1
+    - 1
+    - 1
+    - 1
+    - 1
+    - 1
+- name: property_inheritance_after_chparent
+  permission: wizard
+  statement: 'a = create($nothing);
+
+    b = create($nothing);
+
+    c = create($nothing);
+
+    add_property(a, "prop_a", 1, {player, "r"});
+
+    add_property(b, "prop_b", 2, {player, "r"});
+
+    chparent(c, a);
+
+    parent_a = parent(c);
+
+    val_a = c.prop_a;
+
+    chparent(c, b);
+
+    parent_b = parent(c);
+
+    val_b = c.prop_b;
+
+    return {parent_a == a, val_a == 1, parent_b == b, val_b == 2};
+
+    '
+  expect:
+    value:
+    - 1
+    - 1
+    - 1
+    - 1
+- name: children_list_maintains_order
+  permission: wizard
+  statement: 'root = create($nothing);
+
+    child1 = create(root);
+
+    child2 = create(root);
+
+    child3 = create(root);
+
+    kids = children(root);
+
+    return {length(kids) == 3, kids[1] == child1, kids[2] == child2, kids[3] == child3};
+
+    '
+  expect:
+    value:
+    - 1
+    - 1
+    - 1
+    - 1
+- name: chparents_list_with_nothing_fails
+  permission: wizard
+  statement: 'o = create($object);
+
+    return chparents(o, {$object, $nothing});
+
+    '
+  expect:
+    error: E_INVARG
+- name: recycle_one_parent_in_multi_parent
+  permission: programmer
+  statement: 'a = create({});
+
+    b = create({});
+
+    c = create({});
+
+    d = create({});
+
+    m = create({a, b, c, d});
+
+    recycle(b);
+
+    recycle(d);
+
+    return parents(m) == {a, c};
+
+    '
+  expect:
+    value: 1
+- name: ancestors_descendants_multi_parent
+  permission: wizard
+  statement: 'a = create($nothing);
+
+    b = create($nothing);
+
+    c = create($nothing);
+
+    d = create({a, b, c});
+
+    anc_d = ancestors(d);
+
+    desc_a = descendants(a);
+
+    desc_b = descendants(b);
+
+    desc_c = descendants(c);
+
+    return {length(anc_d) == 3, length(desc_a) == 1, length(desc_b) == 1, length(desc_c)
+    == 1};
+
+    '
+  expect:
+    value:
+    - 1
+    - 1
+    - 1
+    - 1
+- name: recycle_parent_updates_children_list
+  permission: programmer
+  statement: 'a = create($nothing);
+
+    b = create(a);
+
+    c = create(a);
+
+    kids_before = children(a);
+
+    recycle(b);
+
+    kids_after = children(a);
+
+    return {length(kids_before) == 2, kids_after == {c}};
+
+    '
+  expect:
+    value:
+    - 1
+    - 1
+- name: chparents_args_validation
+  permission: wizard
+  code: chparents($object)
+  expect:
+    error: E_ARGS
+- name: parent_object_with_no_parents
+  permission: programmer
+  statement: 'o = create({});
+
+    return parent(o) == $nothing;
+
+    '
+  expect:
+    value: 1
+- name: descendants_include_self_multi_level
+  permission: wizard
+  statement: 'a = create($nothing);
+
+    b = create(a);
+
+    c = create(b);
+
+    desc_with_self = descendants(a, 1);
+
+    desc_without_self = descendants(a, 0);
+
+    return {length(desc_with_self) == 3, length(desc_without_self) == 2};
+
+    '
+  expect:
+    value:
+    - 1
+    - 1
+- name: ancestors_include_self_multi_level
+  permission: wizard
+  statement: 'a = create($nothing);
+
+    b = create(a);
+
+    c = create(b);
+
+    anc_with_self = ancestors(c, 1);
+
+    anc_without_self = ancestors(c, 0);
+
+    return {length(anc_with_self) == 3, length(anc_without_self) == 2};
+
+    '
+  expect:
+    value:
+    - 1
+    - 1
+- name: object_bytes_valid_objects
+  permission: wizard
+  statement: 'o1 = create($object);
+
+    bytes1 = object_bytes(o1);
+
+    bytes2 = object_bytes($object);
+
+    recycle(o1);
+
+    return {bytes1 > 0, bytes2 > 0};
+
+    '
+  expect:
+    value:
+    - 1
+    - 1

@@ -176,6 +176,19 @@ class VerbSetup:
 
 
 @dataclass
+class NewConnection:
+    """Open a new socket connection (for lifecycle testing)."""
+    capture: str          # Variable name to store connection handle
+
+
+@dataclass
+class SendOnConnection:
+    """Send raw text on a specific connection."""
+    text: str             # Raw text to send
+    connection: str       # Connection variable name
+
+
+@dataclass
 class TestStep:
     """A single step in a multi-step test.
 
@@ -186,13 +199,19 @@ class TestStep:
     - run: MOO code to execute (wrapped in ; prefix)
     - command: Raw command to send (for testing command parser)
     - verb_setup: Declarative verb creation
+    - new_connection: Open a new socket connection
+    - send: Send raw text on a specific connection
+    - close_connection: Close a connection
     """
-    run: str | None = None                # MOO code to execute
-    command: str | None = None            # Raw command (no ; prefix)
-    verb_setup: VerbSetup | None = None   # Declarative verb creation
-    capture: str | None = None            # Variable name to store result
-    as_: str | None = None                # Permission for this step (wizard, programmer)
-    expect: Expectation | None = None     # Optional assertion on this step's result
+    run: str | None = None                      # MOO code to execute
+    command: str | None = None                  # Raw command (no ; prefix)
+    verb_setup: VerbSetup | None = None         # Declarative verb creation
+    new_connection: NewConnection | None = None # Open new connection
+    send: SendOnConnection | None = None        # Send on specific connection
+    close_connection: str | None = None         # Close a connection by name
+    capture: str | None = None                  # Variable name to store result
+    as_: str | None = None                      # Permission for this step (wizard, programmer)
+    expect: Expectation | None = None           # Optional assertion on this step's result
 
 
 @dataclass
@@ -425,15 +444,22 @@ def _parse_expectation(data: dict) -> Expectation:
 
 def _parse_test_step(data: dict) -> TestStep:
     """Parse a single test step from YAML data."""
-    # Must have exactly one of 'run', 'command', or 'verb_setup'
+    # Must have exactly one action type
     has_run = 'run' in data
     has_command = 'command' in data
     has_verb_setup = 'verb_setup' in data
+    has_new_connection = 'new_connection' in data
+    has_send = 'send' in data
+    has_close_connection = 'close_connection' in data
 
-    if not (has_run or has_command or has_verb_setup):
-        raise ValueError("Test step must have 'run', 'command', or 'verb_setup' field")
-    if sum([has_run, has_command, has_verb_setup]) > 1:
-        raise ValueError("Test step must have exactly one of 'run', 'command', or 'verb_setup'")
+    action_count = sum([has_run, has_command, has_verb_setup,
+                        has_new_connection, has_send, has_close_connection])
+
+    if action_count == 0:
+        raise ValueError("Test step must have an action field (run, command, verb_setup, "
+                        "new_connection, send, or close_connection)")
+    if action_count > 1:
+        raise ValueError("Test step must have exactly one action field")
 
     expect = None
     if 'expect' in data:
@@ -450,10 +476,32 @@ def _parse_test_step(data: dict) -> TestStep:
             code=vs_data['code'],
         )
 
+    # Parse new_connection if present
+    new_connection = None
+    if 'new_connection' in data:
+        nc_data = data['new_connection']
+        if isinstance(nc_data, dict):
+            new_connection = NewConnection(capture=nc_data.get('capture', 'conn'))
+        else:
+            # Simple string form: new_connection: conn1
+            new_connection = NewConnection(capture=nc_data)
+
+    # Parse send if present
+    send = None
+    if 'send' in data:
+        s_data = data['send']
+        send = SendOnConnection(
+            text=s_data['text'],
+            connection=s_data['connection'],
+        )
+
     return TestStep(
         run=data.get('run'),
         command=data.get('command'),
         verb_setup=verb_setup,
+        new_connection=new_connection,
+        send=send,
+        close_connection=data.get('close_connection'),
         capture=data.get('capture'),
         as_=data.get('as'),
         expect=expect,

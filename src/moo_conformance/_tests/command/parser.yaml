@@ -96,7 +96,7 @@ tests:
         expect:
           output: "WAVED"
     cleanup:
-      - run: 'delete_verb(player, "wave")'
+      - run: 'delete_verb(player, "wave");'
         as: wizard
 
   - name: dobj_resolution_to_object
@@ -116,7 +116,7 @@ tests:
           output:
             match: "DOBJ:#\\d+"
     cleanup:
-      - run: 'delete_verb(player, "grab")'
+      - run: 'delete_verb(player, "grab");'
         as: wizard
       - run: "recycle({ball})"
         as: wizard
@@ -150,7 +150,7 @@ tests:
         expect:
           output: "PLAYER"
     cleanup:
-      - run: 'delete_verb(player, "kick")'
+      - run: 'delete_verb(player, "kick");'
         as: wizard
       - run: "recycle({ball})"
         as: wizard
@@ -216,7 +216,7 @@ tests:
         expect:
           output: "LOCATION"
     cleanup:
-      - run: 'delete_verb({room}, "shout")'
+      - run: 'delete_verb({room}, "shout");'
         as: wizard
 
   - name: dispatch_player_before_location
@@ -235,9 +235,9 @@ tests:
         expect:
           output: "PLAYER"
     cleanup:
-      - run: 'delete_verb(player, "yell")'
+      - run: 'delete_verb(player, "yell");'
         as: wizard
-      - run: 'delete_verb({room}, "yell")'
+      - run: 'delete_verb({room}, "yell");'
         as: wizard
 
   # ============================================
@@ -258,7 +258,7 @@ tests:
         expect:
           output: "EXAMINE"
     cleanup:
-      - run: 'delete_verb(player, "examine")'
+      - run: 'delete_verb(player, "examine");'
         as: wizard
 
   - name: verb_alias_short_match
@@ -273,7 +273,7 @@ tests:
         expect:
           output: "EXAMINE"
     cleanup:
-      - run: 'delete_verb(player, "examine")'
+      - run: 'delete_verb(player, "examine");'
         as: wizard
 
   - name: verb_alias_partial_match
@@ -288,7 +288,7 @@ tests:
         expect:
           output: "LOOK"
     cleanup:
-      - run: 'delete_verb(player, "look")'
+      - run: 'delete_verb(player, "look");'
         as: wizard
 
   - name: verb_alias_single_letter
@@ -303,7 +303,7 @@ tests:
         expect:
           output: "INVENTORY"
     cleanup:
-      - run: 'delete_verb(player, "inventory")'
+      - run: 'delete_verb(player, "inventory");'
         as: wizard
 
   - name: verb_multiple_aliases
@@ -318,7 +318,7 @@ tests:
         expect:
           output: "QUIT"
     cleanup:
-      - run: 'delete_verb(player, "quit")'
+      - run: 'delete_verb(player, "quit");'
         as: wizard
 
   # ============================================
@@ -340,7 +340,7 @@ tests:
         expect:
           output: "HUH:xyzzy"
     cleanup:
-      - run: 'delete_verb({room}, "huh")'
+      - run: 'delete_verb({room}, "huh");'
         as: wizard
 
   - name: huh_receives_parsed_command
@@ -357,7 +357,7 @@ tests:
         expect:
           output: "ARGSTR:the widget"
     cleanup:
-      - run: 'delete_verb({room}, "huh")'
+      - run: 'delete_verb({room}, "huh");'
         as: wizard
 
   # ============================================
@@ -378,7 +378,7 @@ tests:
         expect:
           output: "SAY:hello world"
     cleanup:
-      - run: 'delete_verb(player, "say")'
+      - run: 'delete_verb(player, "say");'
         as: wizard
 
   - name: emote_shortcut_colon
@@ -393,7 +393,7 @@ tests:
         expect:
           output: "EMOTE:waves"
     cleanup:
-      - run: 'delete_verb(player, "emote")'
+      - run: 'delete_verb(player, "emote");'
         as: wizard
 
   - name: emote_with_spaces
@@ -408,5 +408,5 @@ tests:
         expect:
           output: "EMOTE:waves happily"
     cleanup:
-      - run: 'delete_verb(player, "emote")'
+      - run: 'delete_verb(player, "emote");'
         as: wizard

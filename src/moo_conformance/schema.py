@@ -211,6 +211,18 @@ class FileAssertion:
 
 
 @dataclass
+class WriteFile:
+    """Write a file to disk on the test host.
+
+    Used with the write_file step type to create test fixtures before
+    running MOO code that reads from files. The path is relative to
+    the server's working directory (server_dir).
+    """
+    path: str        # Path relative to server_dir
+    content: str     # File contents to write
+
+
+@dataclass
 class TestStep:
     """A single step in a multi-step test.
 
@@ -227,6 +239,7 @@ class TestStep:
     - wait: Pause for N milliseconds (no socket communication)
     - assert_log: Verify server log contains expected text
     - assert_file: Verify file existence and contents on disk
+    - write_file: Create a file on the test host
     """
     run: str | None = None                      # MOO code to execute
     command: str | None = None                  # Raw command (no ; prefix)
@@ -237,6 +250,7 @@ class TestStep:
     wait: int | None = None                     # Pause for N milliseconds
     assert_log: LogAssertion | None = None      # Verify server log content
     assert_file: FileAssertion | None = None    # Verify file on disk
+    write_file: WriteFile | None = None         # Create file on test host
     capture: str | None = None                  # Variable name to store result
     as_: str | None = None                      # Permission for this step (wizard, programmer)
     expect: Expectation | None = None           # Optional assertion on this step's result
@@ -488,15 +502,17 @@ def _parse_test_step(data: dict) -> TestStep:
     has_wait = 'wait' in data
     has_assert_log = 'assert_log' in data
     has_assert_file = 'assert_file' in data
+    has_write_file = 'write_file' in data
 
     action_count = sum([has_run, has_command, has_verb_setup,
                         has_new_connection, has_send, has_close_connection,
-                        has_wait, has_assert_log, has_assert_file])
+                        has_wait, has_assert_log, has_assert_file,
+                        has_write_file])
 
     if action_count == 0:
         raise ValueError("Test step must have an action field (run, command, verb_setup, "
                         "new_connection, send, close_connection, wait, assert_log, "
-                        "or assert_file)")
+                        "assert_file, or write_file)")
     if action_count > 1:
         raise ValueError("Test step must have exactly one action field")
 
@@ -552,6 +568,15 @@ def _parse_test_step(data: dict) -> TestStep:
             contains=af_data.get('contains'),
         )
 
+    # Parse write_file if present
+    write_file = None
+    if 'write_file' in data:
+        wf_data = data['write_file']
+        write_file = WriteFile(
+            path=wf_data['path'],
+            content=wf_data['content'],
+        )
+
     return TestStep(
         run=data.get('run'),
         command=data.get('command'),
@@ -562,6 +587,7 @@ def _parse_test_step(data: dict) -> TestStep:
         wait=data.get('wait'),
         assert_log=assert_log,
         assert_file=assert_file,
+        write_file=write_file,
         capture=data.get('capture'),
         as_=data.get('as'),
         expect=expect,

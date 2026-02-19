@@ -1,0 +1,26 @@
+name: fileio_host_write
+description: >
+  Integration test for the write_file step type. Writes a file from the test
+  host, then verifies MOO can read it via file_open/file_readline. Cleans up
+  with file_remove afterwards.
+requires:
+  builtins: [file_open]
+  config: [server_dir]
+tests:
+  - name: host_write_moo_read
+    permission: wizard
+    steps:
+      - write_file:
+          path: "files/__host_written.txt"
+          content: "written_from_host_side"
+      - run: |
+          h = file_open("__host_written.txt", "r-tn");
+          data = file_readline(h);
+          file_close(h);
+          return data;
+        expect:
+          value: "written_from_host_side"
+      - run: |
+          return file_remove("__host_written.txt");
+        expect:
+          value: 0

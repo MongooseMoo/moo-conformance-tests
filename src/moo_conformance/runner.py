@@ -9,7 +9,7 @@ import time
 from typing import Any
 
 from .transport import MooTransport, ExecutionResult, TestConnection
-from .schema import MooTestSuite, MooTestCase, Expectation, TestStep, LogAssertion, FileAssertion
+from .schema import MooTestSuite, MooTestCase, Expectation, TestStep, LogAssertion, FileAssertion, WriteFile
 from .moo_types import MooError, TYPE_NAMES
 
 
@@ -206,6 +206,11 @@ class YamlTestRunner:
                 # Handle assert_file step
                 if step.assert_file:
                     self._execute_assert_file(step.assert_file, test.name)
+                    continue
+
+                # Handle write_file step
+                if step.write_file:
+                    self._execute_write_file(step.write_file, test.name)
                     continue
 
                 # Check if this is a verb_setup step
@@ -432,6 +437,50 @@ class YamlTestRunner:
                     f"{assertion.contains!r}, but it was not found.\n"
                     f"File content:\n{excerpt}"
                 )
+
+    def _execute_write_file(self, write_file: WriteFile, test_name: str) -> None:
+        """Write a file to disk on the test host.
+
+        Creates the file (and any parent directories) at a path relative to
+        server_dir. Uses the same path safety checks as assert_file.
+
+        Args:
+            write_file: WriteFile with path and content
+            test_name: Name of the test (for error messages)
+
+        Raises:
+            AssertionError: If server_dir is not configured or path escapes
+                server_dir
+        """
+        if self.server_dir is None:
+            raise AssertionError(
+                f"Test '{test_name}' uses write_file but no server directory is configured "
+                f"(use --moo-server-dir)"
+            )
+
+        # Resolve the path relative to server_dir
+        base = os.path.realpath(self.server_dir)
+        target = os.path.realpath(os.path.join(base, write_file.path))
+
+        # Path safety: ensure resolved path is inside server_dir
+        if not target.startswith(base + os.sep) and target != base:
+            raise AssertionError(
+                f"Test '{test_name}' write_file: path {write_file.path!r} resolves to "
+                f"{target!r} which is outside server directory {base!r}"
+            )
+
+        # Create parent directories if they don't exist
+        parent = os.path.dirname(target)
+        os.makedirs(parent, exist_ok=True)
+
+        # Write the file
+        try:
+            with open(target, "w", encoding="utf-8") as f:
+                f.write(write_file.content)
+        except OSError as e:
+            raise AssertionError(
+                f"Test '{test_name}' write_file: could not write file {write_file.path!r}: {e}"
+            )
 
     def _verify_expectation(self, expect: Expectation, result: ExecutionResult, context: str) -> None:
         """Verify a single expectation against a result.

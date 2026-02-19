@@ -92,6 +92,16 @@ def pytest_addoption(parser):
         default=None,
         help="Path to database file for managed server (default: bundled Test.db)",
     )
+    parser.addoption(
+        "--moo-server-dir",
+        default=None,
+        help="Path to the MOO server's working directory (auto-detected with --server-command)",
+    )
+    parser.addoption(
+        "--moo-log-file",
+        default=None,
+        help="Path to the MOO server's log file (auto-detected with --server-command)",
+    )
 
 
 @pytest.fixture(scope="session")
@@ -124,6 +134,46 @@ def managed_server(request) -> Iterator[ManagedServer | None]:
         yield server
     finally:
         server.stop()
+
+
+@pytest.fixture(scope="session")
+def moo_server_dir(request, managed_server) -> str | None:
+    """Get the MOO server's working directory.
+
+    Priority: explicit --moo-server-dir > auto-detect from managed server.
+    """
+    explicit = request.config.getoption("--moo-server-dir")
+    if explicit is not None:
+        return explicit
+    if managed_server is not None and managed_server._temp_dir is not None:
+        return managed_server._temp_dir
+    return None
+
+
+@pytest.fixture(scope="session")
+def moo_log_file(request, managed_server) -> str | None:
+    """Get the MOO server's log file path.
+
+    Priority: explicit --moo-log-file > auto-detect from managed server.
+    """
+    explicit = request.config.getoption("--moo-log-file")
+    if explicit is not None:
+        return explicit
+    if managed_server is not None and managed_server.log_path is not None:
+        return managed_server.log_path
+    return None
+
+
+@pytest.fixture(scope="session")
+def moo_config(moo_server_dir, moo_log_file) -> dict[str, str | None]:
+    """Aggregate config values available for requires.config checks.
+
+    Returns a dict mapping config key names to their values (or None if unavailable).
+    """
+    return {
+        "server_dir": moo_server_dir,
+        "log_file": moo_log_file,
+    }
 
 
 @pytest.fixture(scope="session")

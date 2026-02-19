@@ -288,6 +288,7 @@ class Requirements:
     builtins: list[str] = field(default_factory=list)
     features: list[str] = field(default_factory=list)
     min_version: str | None = None
+    config: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -357,10 +358,15 @@ def validate_test_suite(data: dict) -> MooTestSuite:
 
     # Build requirements
     requires_data = data.get('requires', {})
+    config_val = requires_data.get('config', [])
+    # Allow single string: config: server_dir
+    if isinstance(config_val, str):
+        config_val = [config_val]
     requires = Requirements(
         builtins=requires_data.get('builtins', []),
         features=requires_data.get('features', []),
         min_version=requires_data.get('min_version'),
+        config=config_val,
     )
 
     # Build suite-level setup/teardown

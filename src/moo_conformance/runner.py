@@ -3,12 +3,13 @@
 Executes test cases defined in YAML format against a MOO transport.
 """
 
+import os
 import re
 import time
 from typing import Any
 
 from .transport import MooTransport, ExecutionResult, TestConnection
-from .schema import MooTestSuite, MooTestCase, Expectation, TestStep
+from .schema import MooTestSuite, MooTestCase, Expectation, TestStep, LogAssertion
 from .moo_types import MooError, TYPE_NAMES
 
 
@@ -20,9 +21,11 @@ class AssertionError(Exception):
 class YamlTestRunner:
     """Executes YAML-defined test cases."""
 
-    def __init__(self, transport: MooTransport):
+    def __init__(self, transport: MooTransport, log_file_path: str | None = None):
         self.transport = transport
+        self.log_file_path = log_file_path
         self._suites_setup_done: set[str] = set()
+        self._log_offset: int = 0
 
     def run_suite_setup(self, suite: MooTestSuite) -> None:
         """Run suite-level setup.
@@ -74,6 +77,9 @@ class YamlTestRunner:
         if test.permission:
             self.transport.switch_user(test.permission)
 
+        # Record log file offset for assert_log steps
+        self._snapshot_log_offset()
+
         try:
             # Check if this is a multi-step test
             if test.has_steps():
@@ -105,6 +111,36 @@ class YamlTestRunner:
             if test.teardown:
                 for code in test.teardown.code_lines:
                     self.transport.execute(code)
+
+    def _snapshot_log_offset(self) -> None:
+        """Record the current end-of-file position of the log file.
+
+        Called at the start of each test so that assert_log only checks
+        log entries written during this test.
+        """
+        if self.log_file_path is None:
+            self._log_offset = 0
+            return
+        try:
+            self._log_offset = os.path.getsize(self.log_file_path)
+        except OSError:
+            self._log_offset = 0
+
+    def _read_log_since_offset(self) -> str:
+        """Read log file content from saved offset to current end.
+
+        Returns:
+            New log content since the offset was recorded, or empty string
+            if log file is unavailable.
+        """
+        if self.log_file_path is None:
+            return ""
+        try:
+            with open(self.log_file_path, "r", encoding="utf-8", errors="replace") as f:
+                f.seek(self._log_offset)
+                return f.read()
+        except OSError:
+            return ""
 
     def _execute_steps(self, test: MooTestCase) -> None:
         """Execute a multi-step test.
@@ -158,6 +194,11 @@ class YamlTestRunner:
                 # Handle wait step (pause for N milliseconds)
                 if step.wait is not None:
                     time.sleep(step.wait / 1000)
+                    continue
+
+                # Handle assert_log step
+                if step.assert_log:
+                    self._execute_assert_log(step.assert_log, test.name)
                     continue
 
                 # Check if this is a verb_setup step
@@ -289,6 +330,36 @@ class YamlTestRunner:
             f'return set_verb_code({obj}, "{name}", {code_list_str});'
         )
         return self.transport.execute(combined_code)
+
+    def _execute_assert_log(self, assertion: LogAssertion, test_name: str) -> None:
+        """Verify that the server log contains expected text.
+
+        Reads log content written since the offset was recorded at test start.
+
+        Args:
+            assertion: LogAssertion with the text to search for
+            test_name: Name of the test (for error messages)
+
+        Raises:
+            AssertionError: If the log file is not configured or the text is not found
+        """
+        if self.log_file_path is None:
+            raise AssertionError(
+                f"Test '{test_name}' uses assert_log but no log file is configured "
+                f"(use --moo-log-file)"
+            )
+
+        new_content = self._read_log_since_offset()
+        if assertion.contains not in new_content:
+            # Truncate log excerpt for readability
+            excerpt = new_content[:500]
+            if len(new_content) > 500:
+                excerpt += f"... ({len(new_content)} bytes total)"
+            raise AssertionError(
+                f"Test '{test_name}' assert_log: expected log to contain "
+                f"{assertion.contains!r}, but it was not found in new log entries.\n"
+                f"Log content since test start:\n{excerpt}"
+            )
 
     def _verify_expectation(self, expect: Expectation, result: ExecutionResult, context: str) -> None:
         """Verify a single expectation against a result.

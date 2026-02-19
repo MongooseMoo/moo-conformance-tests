@@ -1,0 +1,37 @@
+name: server_log
+description: >
+  Tests for server_log() builtin that verify log entries actually appear
+  in the server's log file. Uses assert_log to check log content.
+requires:
+  builtins:
+    - server_log
+  config: [log_file]
+tests:
+  - name: server_log_basic
+    permission: wizard
+    steps:
+      - run: |
+          return server_log("CONFORMANCE_LOG_TEST_BASIC");
+        expect:
+          value: 0
+      - wait: 200
+      - assert_log:
+          contains: "CONFORMANCE_LOG_TEST_BASIC"
+
+  - name: server_log_with_level
+    permission: wizard
+    steps:
+      - run: |
+          return server_log("CONFORMANCE_LOG_LEVEL_TEST", 1);
+        expect:
+          value: 0
+      - wait: 200
+      - assert_log:
+          contains: "CONFORMANCE_LOG_LEVEL_TEST"
+
+  - name: server_log_requires_wizard
+    permission: programmer
+    code: |
+      return server_log("should_not_appear");
+    expect:
+      error: E_PERM

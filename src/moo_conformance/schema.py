@@ -189,6 +189,16 @@ class SendOnConnection:
 
 
 @dataclass
+class LogAssertion:
+    """Assert that the server log contains expected text.
+
+    Used with the assert_log step type to verify server_log() output.
+    Only checks log entries written since the current test started.
+    """
+    contains: str         # Text to search for in recent log entries
+
+
+@dataclass
 class TestStep:
     """A single step in a multi-step test.
 
@@ -203,6 +213,7 @@ class TestStep:
     - send: Send raw text on a specific connection
     - close_connection: Close a connection
     - wait: Pause for N milliseconds (no socket communication)
+    - assert_log: Verify server log contains expected text
     """
     run: str | None = None                      # MOO code to execute
     command: str | None = None                  # Raw command (no ; prefix)
@@ -211,6 +222,7 @@ class TestStep:
     send: SendOnConnection | None = None        # Send on specific connection
     close_connection: str | None = None         # Close a connection by name
     wait: int | None = None                     # Pause for N milliseconds
+    assert_log: LogAssertion | None = None      # Verify server log content
     capture: str | None = None                  # Variable name to store result
     as_: str | None = None                      # Permission for this step (wizard, programmer)
     expect: Expectation | None = None           # Optional assertion on this step's result
@@ -460,14 +472,15 @@ def _parse_test_step(data: dict) -> TestStep:
     has_send = 'send' in data
     has_close_connection = 'close_connection' in data
     has_wait = 'wait' in data
+    has_assert_log = 'assert_log' in data
 
     action_count = sum([has_run, has_command, has_verb_setup,
                         has_new_connection, has_send, has_close_connection,
-                        has_wait])
+                        has_wait, has_assert_log])
 
     if action_count == 0:
         raise ValueError("Test step must have an action field (run, command, verb_setup, "
-                        "new_connection, send, close_connection, or wait)")
+                        "new_connection, send, close_connection, wait, or assert_log)")
     if action_count > 1:
         raise ValueError("Test step must have exactly one action field")
 
@@ -505,6 +518,14 @@ def _parse_test_step(data: dict) -> TestStep:
             connection=s_data['connection'],
         )
 
+    # Parse assert_log if present
+    assert_log = None
+    if 'assert_log' in data:
+        al_data = data['assert_log']
+        assert_log = LogAssertion(
+            contains=al_data['contains'],
+        )
+
     return TestStep(
         run=data.get('run'),
         command=data.get('command'),
@@ -513,6 +534,7 @@ def _parse_test_step(data: dict) -> TestStep:
         send=send,
         close_connection=data.get('close_connection'),
         wait=data.get('wait'),
+        assert_log=assert_log,
         capture=data.get('capture'),
         as_=data.get('as'),
         expect=expect,

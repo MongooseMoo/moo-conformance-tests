@@ -1,0 +1,30 @@
+name: fileio_errors
+description: >
+  Tests for file I/O error conditions: nonexistent files, closed handles,
+  and path traversal attempts.
+requires:
+  builtins:
+    - file_open
+tests:
+  - name: file_open_nonexistent_read
+    permission: wizard
+    code: |
+      return file_open("__nonexistent_file.txt", "r-tn");
+    expect:
+      error: E_FILE
+
+  - name: file_write_closed_handle
+    permission: wizard
+    statement: |
+      h = file_open("__test_closed.txt", "w-tn");
+      file_close(h);
+      file_writeline(h, "should_fail");
+    expect:
+      error: E_INVARG
+
+  - name: file_path_traversal_blocked
+    permission: wizard
+    code: |
+      return file_open("../../../etc/passwd", "r-tn");
+    expect:
+      error: E_INVARG

@@ -1,0 +1,34 @@
+name: dump_database
+description: >
+  Tests for dump_database() builtin. Since Toast is started with NUL as dump
+  target, we cannot verify checkpoint files on disk. Tests verify return value,
+  checkpoint logging via assert_log, and wizard-only permission.
+requires:
+  builtins:
+    - dump_database
+  config: [log_file]
+tests:
+  - name: dump_database_succeeds
+    permission: wizard
+    code: |
+      return dump_database();
+    expect:
+      value: 0
+
+  - name: dump_database_logs_checkpoint
+    permission: wizard
+    steps:
+      - run: |
+          return dump_database();
+        expect:
+          value: 0
+      - wait: 1000
+      - assert_log:
+          contains: "CHECKPOINTING"
+
+  - name: dump_database_requires_wizard
+    permission: programmer
+    code: |
+      return dump_database();
+    expect:
+      error: E_PERM

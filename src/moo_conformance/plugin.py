@@ -205,9 +205,10 @@ def transport(request, managed_server) -> Iterator[MooTransport]:
 
 
 @pytest.fixture(scope="session")
-def runner(transport, moo_log_file) -> YamlTestRunner:
+def runner(transport, moo_log_file, moo_server_dir) -> YamlTestRunner:
     """Create a test runner with the configured transport."""
-    return YamlTestRunner(transport, log_file_path=moo_log_file)
+    return YamlTestRunner(transport, log_file_path=moo_log_file,
+                          server_dir=moo_server_dir)
 
 
 def discover_yaml_tests(test_dir: Path | None = None) -> list[tuple[Path, MooTestSuite, MooTestCase]]:

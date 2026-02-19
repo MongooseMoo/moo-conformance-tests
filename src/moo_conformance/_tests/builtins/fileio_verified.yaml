@@ -1,0 +1,93 @@
+name: fileio_verified
+description: >
+  Tests for file I/O builtins that verify both MOO return values and actual
+  disk state using assert_file. Requires server_dir to resolve file paths.
+  All file operations use wizard permission and close handles in the same
+  eval to avoid Windows "Permission denied" on remove.
+requires:
+  builtins:
+    - file_open
+  config: [server_dir]
+tests:
+  - name: file_write_read_roundtrip
+    permission: wizard
+    statement: |
+      h = file_open("__test_roundtrip.txt", "w-tn");
+      file_writeline(h, "conformance_test_data");
+      file_close(h);
+      h = file_open("__test_roundtrip.txt", "r-tn");
+      data = file_readline(h);
+      file_close(h);
+      file_remove("__test_roundtrip.txt");
+      return data;
+    expect:
+      value: "conformance_test_data"
+
+  - name: file_write_persists_to_disk
+    permission: wizard
+    steps:
+      - run: |
+          h = file_open("__test_persist.txt", "w-tn");
+          file_writeline(h, "disk_verification");
+          file_close(h);
+          return 1;
+        expect:
+          value: 1
+      - assert_file:
+          path: "files/__test_persist.txt"
+          exists: true
+          contains: "disk_verification"
+      - run: |
+          file_remove("__test_persist.txt");
+          return 1;
+        expect:
+          value: 1
+
+  - name: file_remove_deletes_from_disk
+    permission: wizard
+    steps:
+      - run: |
+          h = file_open("__test_delete.txt", "w-tn");
+          file_writeline(h, "to_be_deleted");
+          file_close(h);
+          file_remove("__test_delete.txt");
+          return 1;
+        expect:
+          value: 1
+      - assert_file:
+          path: "files/__test_delete.txt"
+          exists: false
+
+  - name: file_list_directory
+    permission: wizard
+    statement: |
+      h = file_open("__test_list.txt", "w-tn");
+      file_writeline(h, "list_test");
+      file_close(h);
+      result = file_list(".");
+      file_remove("__test_list.txt");
+      return result;
+    expect:
+      contains: "__test_list.txt"
+
+  - name: file_mkdir_rmdir
+    permission: wizard
+    statement: |
+      file_mkdir("__test_dir");
+      result = file_stat("__test_dir");
+      file_rmdir("__test_dir");
+      return result[2];
+    expect:
+      value: "dir"
+
+  - name: file_stat_regular_file
+    permission: wizard
+    statement: |
+      h = file_open("__test_stat.txt", "w-tn");
+      file_writeline(h, "stat_test_data");
+      file_close(h);
+      result = file_stat("__test_stat.txt");
+      file_remove("__test_stat.txt");
+      return result[2];
+    expect:
+      value: "reg"

@@ -199,6 +199,18 @@ class LogAssertion:
 
 
 @dataclass
+class FileAssertion:
+    """Assert that a file on disk has expected state.
+
+    Used with the assert_file step type to verify file existence and contents.
+    The path is relative to the server's working directory (server_dir).
+    """
+    path: str                      # Path relative to server_dir
+    exists: bool = True            # Whether the file should exist
+    contains: str | None = None    # Optional substring to find in file contents
+
+
+@dataclass
 class TestStep:
     """A single step in a multi-step test.
 
@@ -214,6 +226,7 @@ class TestStep:
     - close_connection: Close a connection
     - wait: Pause for N milliseconds (no socket communication)
     - assert_log: Verify server log contains expected text
+    - assert_file: Verify file existence and contents on disk
     """
     run: str | None = None                      # MOO code to execute
     command: str | None = None                  # Raw command (no ; prefix)
@@ -223,6 +236,7 @@ class TestStep:
     close_connection: str | None = None         # Close a connection by name
     wait: int | None = None                     # Pause for N milliseconds
     assert_log: LogAssertion | None = None      # Verify server log content
+    assert_file: FileAssertion | None = None    # Verify file on disk
     capture: str | None = None                  # Variable name to store result
     as_: str | None = None                      # Permission for this step (wizard, programmer)
     expect: Expectation | None = None           # Optional assertion on this step's result
@@ -473,14 +487,16 @@ def _parse_test_step(data: dict) -> TestStep:
     has_close_connection = 'close_connection' in data
     has_wait = 'wait' in data
     has_assert_log = 'assert_log' in data
+    has_assert_file = 'assert_file' in data
 
     action_count = sum([has_run, has_command, has_verb_setup,
                         has_new_connection, has_send, has_close_connection,
-                        has_wait, has_assert_log])
+                        has_wait, has_assert_log, has_assert_file])
 
     if action_count == 0:
         raise ValueError("Test step must have an action field (run, command, verb_setup, "
-                        "new_connection, send, close_connection, wait, or assert_log)")
+                        "new_connection, send, close_connection, wait, assert_log, "
+                        "or assert_file)")
     if action_count > 1:
         raise ValueError("Test step must have exactly one action field")
 
@@ -526,6 +542,16 @@ def _parse_test_step(data: dict) -> TestStep:
             contains=al_data['contains'],
         )
 
+    # Parse assert_file if present
+    assert_file = None
+    if 'assert_file' in data:
+        af_data = data['assert_file']
+        assert_file = FileAssertion(
+            path=af_data['path'],
+            exists=af_data.get('exists', True),
+            contains=af_data.get('contains'),
+        )
+
     return TestStep(
         run=data.get('run'),
         command=data.get('command'),
@@ -535,6 +561,7 @@ def _parse_test_step(data: dict) -> TestStep:
         close_connection=data.get('close_connection'),
         wait=data.get('wait'),
         assert_log=assert_log,
+        assert_file=assert_file,
         capture=data.get('capture'),
         as_=data.get('as'),
         expect=expect,

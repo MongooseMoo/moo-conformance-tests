@@ -9,7 +9,7 @@ import time
 from typing import Any
 
 from .transport import MooTransport, ExecutionResult, TestConnection
-from .schema import MooTestSuite, MooTestCase, Expectation, TestStep, LogAssertion
+from .schema import MooTestSuite, MooTestCase, Expectation, TestStep, LogAssertion, FileAssertion
 from .moo_types import MooError, TYPE_NAMES
 
 
@@ -21,9 +21,11 @@ class AssertionError(Exception):
 class YamlTestRunner:
     """Executes YAML-defined test cases."""
 
-    def __init__(self, transport: MooTransport, log_file_path: str | None = None):
+    def __init__(self, transport: MooTransport, log_file_path: str | None = None,
+                 server_dir: str | None = None):
         self.transport = transport
         self.log_file_path = log_file_path
+        self.server_dir = server_dir
         self._suites_setup_done: set[str] = set()
         self._log_offset: int = 0
 
@@ -201,6 +203,11 @@ class YamlTestRunner:
                     self._execute_assert_log(step.assert_log, test.name)
                     continue
 
+                # Handle assert_file step
+                if step.assert_file:
+                    self._execute_assert_file(step.assert_file, test.name)
+                    continue
+
                 # Check if this is a verb_setup step
                 if step.verb_setup:
                     result = self._execute_verb_setup(step.verb_setup, variables)
@@ -360,6 +367,71 @@ class YamlTestRunner:
                 f"{assertion.contains!r}, but it was not found in new log entries.\n"
                 f"Log content since test start:\n{excerpt}"
             )
+
+    def _execute_assert_file(self, assertion: FileAssertion, test_name: str) -> None:
+        """Verify that a file on disk has expected state.
+
+        The assertion path is resolved relative to server_dir. Path safety
+        checks prevent directory traversal outside server_dir.
+
+        Args:
+            assertion: FileAssertion with path, exists, and optional contains
+            test_name: Name of the test (for error messages)
+
+        Raises:
+            AssertionError: If server_dir is not configured, path escapes
+                server_dir, or file state doesn't match expectations
+        """
+        if self.server_dir is None:
+            raise AssertionError(
+                f"Test '{test_name}' uses assert_file but no server directory is configured "
+                f"(use --moo-server-dir)"
+            )
+
+        # Resolve the path relative to server_dir
+        base = os.path.realpath(self.server_dir)
+        target = os.path.realpath(os.path.join(base, assertion.path))
+
+        # Path safety: ensure resolved path is inside server_dir
+        if not target.startswith(base + os.sep) and target != base:
+            raise AssertionError(
+                f"Test '{test_name}' assert_file: path {assertion.path!r} resolves to "
+                f"{target!r} which is outside server directory {base!r}"
+            )
+
+        file_exists = os.path.exists(target)
+
+        if assertion.exists and not file_exists:
+            raise AssertionError(
+                f"Test '{test_name}' assert_file: expected file {assertion.path!r} to exist "
+                f"but it does not (resolved: {target!r})"
+            )
+
+        if not assertion.exists and file_exists:
+            raise AssertionError(
+                f"Test '{test_name}' assert_file: expected file {assertion.path!r} to NOT exist "
+                f"but it does (resolved: {target!r})"
+            )
+
+        # Content check (only if file exists and contains is specified)
+        if assertion.exists and assertion.contains is not None and file_exists:
+            try:
+                with open(target, "r", encoding="utf-8", errors="replace") as f:
+                    content = f.read()
+            except OSError as e:
+                raise AssertionError(
+                    f"Test '{test_name}' assert_file: could not read file {assertion.path!r}: {e}"
+                )
+
+            if assertion.contains not in content:
+                excerpt = content[:500]
+                if len(content) > 500:
+                    excerpt += f"... ({len(content)} bytes total)"
+                raise AssertionError(
+                    f"Test '{test_name}' assert_file: expected file {assertion.path!r} to contain "
+                    f"{assertion.contains!r}, but it was not found.\n"
+                    f"File content:\n{excerpt}"
+                )
 
     def _verify_expectation(self, expect: Expectation, result: ExecutionResult, context: str) -> None:
         """Verify a single expectation against a result.

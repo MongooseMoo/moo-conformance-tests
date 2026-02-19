@@ -1,0 +1,87 @@
+name: fork_timing
+description: |
+  Tests fork timing behavior: zero-delay execution, delayed task visibility
+  in queued_tasks(), and kill_task() preventing execution.
+
+  Uses the `wait` step type to pause between steps, allowing forked tasks
+  time to execute (or confirming they don't execute when killed).
+version: "1.0"
+assumes: [queued_tasks]
+
+tests:
+  - name: fork_zero_delay_executes
+    description: |
+      Fork with 0 delay executes immediately. After forking, wait 500ms,
+      then verify the forked code set the property.
+    permission: wizard
+    steps:
+      - run: |
+          add_property(#0, "__ft_zero", 0, {#2, "r"});
+          return "setup_done";
+      - run: |
+          fork (0)
+            #0.__ft_zero = 42;
+          endfork
+          return "forked";
+        expect:
+          value: "forked"
+      - wait: 500
+      - run: "return #0.__ft_zero;"
+        expect:
+          value: 42
+    cleanup:
+      - run: "delete_property(#0, \"__ft_zero\");"
+        as: wizard
+
+  - name: fork_delayed_appears_in_queue
+    description: |
+      Fork with a long delay (30s) creates a task visible in queued_tasks().
+      After verifying the task appears, kill it to clean up.
+    permission: wizard
+    steps:
+      - run: |
+          fork t (30)
+            1 + 1;
+          endfork
+          return t;
+        capture: task_id
+      - run: |
+          tasks = queued_tasks();
+          for t in (tasks)
+            if (t[1] == {task_id})
+              return 1;
+            endif
+          endfor
+          return 0;
+        expect:
+          value: 1
+    cleanup:
+      - run: "kill_task({task_id});"
+        as: wizard
+
+  - name: fork_killed_does_not_execute
+    description: |
+      Fork with delay, kill it, wait, verify property was NOT changed.
+      The forked code would set the property to 999, but since we kill
+      the task, the property should remain at its initial value.
+    permission: wizard
+    steps:
+      - run: |
+          add_property(#0, "__ft_kill", 0, {#2, "r"});
+          return "setup_done";
+      - run: |
+          fork t (2)
+            #0.__ft_kill = 999;
+          endfork
+          return t;
+        capture: task_id
+      - run: "return kill_task({task_id});"
+        expect:
+          value: 0
+      - wait: 3000
+      - run: "return #0.__ft_kill;"
+        expect:
+          value: 0
+    cleanup:
+      - run: "delete_property(#0, \"__ft_kill\");"
+        as: wizard

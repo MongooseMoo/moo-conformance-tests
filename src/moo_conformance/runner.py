@@ -4,6 +4,7 @@ Executes test cases defined in YAML format against a MOO transport.
 """
 
 import re
+import time
 from typing import Any
 
 from .transport import MooTransport, ExecutionResult, TestConnection
@@ -152,6 +153,11 @@ class YamlTestRunner:
                     if conn_name in connections:
                         connections[conn_name].close()
                         del connections[conn_name]
+                    continue
+
+                # Handle wait step (pause for N milliseconds)
+                if step.wait is not None:
+                    time.sleep(step.wait / 1000)
                     continue
 
                 # Check if this is a verb_setup step

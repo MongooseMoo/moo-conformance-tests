@@ -202,6 +202,7 @@ class TestStep:
     - new_connection: Open a new socket connection
     - send: Send raw text on a specific connection
     - close_connection: Close a connection
+    - wait: Pause for N milliseconds (no socket communication)
     """
     run: str | None = None                      # MOO code to execute
     command: str | None = None                  # Raw command (no ; prefix)
@@ -209,6 +210,7 @@ class TestStep:
     new_connection: NewConnection | None = None # Open new connection
     send: SendOnConnection | None = None        # Send on specific connection
     close_connection: str | None = None         # Close a connection by name
+    wait: int | None = None                     # Pause for N milliseconds
     capture: str | None = None                  # Variable name to store result
     as_: str | None = None                      # Permission for this step (wizard, programmer)
     expect: Expectation | None = None           # Optional assertion on this step's result
@@ -451,13 +453,15 @@ def _parse_test_step(data: dict) -> TestStep:
     has_new_connection = 'new_connection' in data
     has_send = 'send' in data
     has_close_connection = 'close_connection' in data
+    has_wait = 'wait' in data
 
     action_count = sum([has_run, has_command, has_verb_setup,
-                        has_new_connection, has_send, has_close_connection])
+                        has_new_connection, has_send, has_close_connection,
+                        has_wait])
 
     if action_count == 0:
         raise ValueError("Test step must have an action field (run, command, verb_setup, "
-                        "new_connection, send, or close_connection)")
+                        "new_connection, send, close_connection, or wait)")
     if action_count > 1:
         raise ValueError("Test step must have exactly one action field")
 
@@ -502,6 +506,7 @@ def _parse_test_step(data: dict) -> TestStep:
         new_connection=new_connection,
         send=send,
         close_connection=data.get('close_connection'),
+        wait=data.get('wait'),
         capture=data.get('capture'),
         as_=data.get('as'),
         expect=expect,

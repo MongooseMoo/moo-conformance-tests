@@ -38,6 +38,7 @@ Repository = "https://github.com/MongooseMoo/moo-conformance-tests"
 Issues = "https://github.com/MongooseMoo/moo-conformance-tests/issues"
 
 [project.scripts]
+moo-conformance = "moo_conformance.cli:main"
 moo-lint-duplicates = "moo_conformance.lint_duplicates:main"
 
 [project.entry-points.pytest11]

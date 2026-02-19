@@ -30,8 +30,21 @@ uv add moo-conformance-tests
 
 2. Run the conformance tests:
    ```bash
+   moo-conformance --moo-port=7777
+
+   # or via pytest directly
    pytest --pyargs moo_conformance --moo-port=7777
    ```
+
+### Run Without Installing
+
+```bash
+# Run directly from PyPI (no install needed)
+uv tool run moo-conformance-tests --moo-port=7777
+
+# Or from a local checkout
+uv run moo-conformance --moo-port=7777
+```
 
 3. Lint for duplicate test definitions:
    ```bash
@@ -103,10 +116,10 @@ Tests are organized by category:
 Run specific categories:
 ```bash
 # Run only arithmetic tests
-pytest --pyargs moo_conformance -k "arithmetic" --moo-port=7777
+moo-conformance -k "arithmetic" --moo-port=7777
 
 # Run all builtin tests
-pytest --pyargs moo_conformance -k "builtins" --moo-port=7777
+moo-conformance -k "builtins" --moo-port=7777
 ```
 
 ## Running Against Toaststunt
@@ -119,7 +132,7 @@ cd /path/to/toaststunt
 ./moo Test.db Test.out.db 9898
 
 # Run tests
-pytest --pyargs moo_conformance --moo-port=9898 -v
+moo-conformance --moo-port=9898 -v
 ```
 
 See [docs/TOASTSTUNT.md](docs/TOASTSTUNT.md) for detailed setup instructions.

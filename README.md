@@ -93,12 +93,34 @@ uv sync
 uv run pytest tests/ --moo-port=7777
 ```
 
+## Managed Server Mode
+
+Instead of starting a server yourself, pass `--server-command` and the tool handles the lifecycle automatically. Use `{port}` and `{db}` placeholders in the command template:
+
+```bash
+# Toaststunt (positional args: db logfile port)
+moo-conformance --server-command "./moo {db} /dev/null {port}" -v
+
+# Barn (flag args)
+moo-conformance --server-command "./barn -db {db} -port {port}" -v
+
+# With a specific port
+moo-conformance --server-command "./moo {db} /dev/null {port}" --moo-port 9898 -v
+
+# With a custom database file
+moo-conformance --server-command "./moo {db} /dev/null {port}" --server-db ./MyTest.db -v
+```
+
+The tool copies the database to a temp directory (servers write checkpoints alongside it), starts the server, waits for it to accept connections, runs the tests, and cleans everything up on exit. When `--moo-port` is omitted, a free port is selected automatically.
+
 ## Command Line Options
 
 | Option | Default | Description |
 |--------|---------|-------------|
 | `--moo-host` | `localhost` | MOO server hostname |
 | `--moo-port` | `7777` | MOO server port |
+| `--server-command` | *(none)* | Shell command to start a MOO server (`{port}` and `{db}` placeholders) |
+| `--server-db` | bundled `Test.db` | Database file for managed server |
 
 ## Test Categories
 

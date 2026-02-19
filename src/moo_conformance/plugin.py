@@ -28,6 +28,7 @@ from .transport import MooTransport, SocketTransport
 from .schema import validate_test_suite, MooTestSuite, MooTestCase
 from .runner import YamlTestRunner
 from .capabilities import CapabilityManager, CapabilityState
+from .server import ManagedServer
 
 # Global capability manager (session-scoped)
 capability_manager = CapabilityManager()
@@ -73,15 +74,64 @@ def pytest_addoption(parser):
     )
     parser.addoption(
         "--moo-port",
-        default=7777,
+        default=None,
         type=int,
         help="MOO server port (default: 7777)"
+    )
+    parser.addoption(
+        "--server-command",
+        default=None,
+        help=(
+            "Shell command to start a MOO server. "
+            "Supports {port} and {db} placeholders. "
+            "When set, the server is started/stopped automatically."
+        ),
+    )
+    parser.addoption(
+        "--server-db",
+        default=None,
+        help="Path to database file for managed server (default: bundled Test.db)",
     )
 
 
 @pytest.fixture(scope="session")
-def transport(request) -> Iterator[MooTransport]:
+def managed_server(request) -> Iterator[ManagedServer | None]:
+    """Start a managed MOO server if --server-command is provided."""
+    command = request.config.getoption("--server-command")
+    if command is None:
+        yield None
+        return
+
+    host = request.config.getoption("--moo-host")
+    if host != "localhost":
+        raise pytest.UsageError(
+            "--server-command cannot be used with a non-localhost --moo-host"
+        )
+
+    port = request.config.getoption("--moo-port")
+
+    db_option = request.config.getoption("--server-db")
+    if db_option is not None:
+        db_path = Path(db_option)
+        if not db_path.exists():
+            raise pytest.UsageError(f"Database file not found: {db_path}")
+    else:
+        db_path = get_db_path()
+
+    server = ManagedServer(command, db_path, port=port, host=host)
+    try:
+        server.start()
+        yield server
+    finally:
+        server.stop()
+
+
+@pytest.fixture(scope="session")
+def transport(request, managed_server) -> Iterator[MooTransport]:
     """Create socket transport based on command line options.
+
+    If a managed server is running, uses its port. Otherwise uses
+    --moo-host/--moo-port (external server mode).
 
     Usage in tests:
         def test_something(transport):
@@ -89,7 +139,12 @@ def transport(request) -> Iterator[MooTransport]:
             result = transport.execute("1 + 1")
     """
     host = request.config.getoption("--moo-host")
-    port = request.config.getoption("--moo-port")
+    if managed_server is not None:
+        port = managed_server.port
+    else:
+        port = request.config.getoption("--moo-port")
+        if port is None:
+            port = 7777
     t = SocketTransport(host, port)
     t.connect("wizard")  # Connect ONCE at session start
 

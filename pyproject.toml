@@ -1,5 +1,5 @@
 [project]
-name = "moo-conformance-tests"
+name = "moo-conformance"
 version = "0.1.0"
 description = "Conformance test suite for MOO language implementations"
 readme = "README.md"

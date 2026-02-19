@@ -1,0 +1,686 @@
+name: builtin_presence_extensions
+description: |
+  Conformance presence checks for extension builtins covered by this suite
+  (compile-time/config-dependent modules such as fileio/sqlite/pcre/curl).
+  
+  These are required conformance checks; implementations are expected to provide
+  this functionality to pass the full builtins conformance suite.
+
+tests:
+  - name: argon2_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        argon2(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: argon2_verify_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        argon2_verify(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: curl_exists_in_runtime
+    skip_if: "missing builtin.curl"
+    permission: programmer
+    statement: |
+      try
+        curl(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: file_chmod_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        file_chmod(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: file_close_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        file_close(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: file_count_lines_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        file_count_lines(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: file_eof_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        file_eof(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: file_flush_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        file_flush(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: file_grep_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        file_grep(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: file_handles_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        file_handles(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: file_last_access_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        file_last_access(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: file_last_change_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        file_last_change(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: file_last_modify_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        file_last_modify(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: file_list_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        file_list(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: file_mkdir_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        file_mkdir(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: file_mode_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        file_mode(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: file_name_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        file_name(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: file_open_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        file_open(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: file_openmode_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        file_openmode(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: file_read_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        file_read(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: file_readline_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        file_readline(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: file_readlines_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        file_readlines(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: file_remove_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        file_remove(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: file_rename_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        file_rename(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: file_rmdir_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        file_rmdir(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: file_seek_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        file_seek(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: file_size_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        file_size(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: file_stat_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        file_stat(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: file_tell_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        file_tell(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: file_type_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        file_type(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: file_write_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        file_write(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: file_writeline_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        file_writeline(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: pcre_cache_stats_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        pcre_cache_stats(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: pcre_match_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        pcre_match(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: pcre_replace_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        pcre_replace(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: read_stdin_exists_in_runtime
+    skip_if: "missing builtin.read_stdin"
+    permission: programmer
+    statement: |
+      try
+        read_stdin(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: spellcheck_exists_in_runtime
+    skip_if: "missing builtin.spellcheck"
+    permission: programmer
+    statement: |
+      try
+        spellcheck(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: sqlite_close_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        sqlite_close(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: sqlite_execute_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        sqlite_execute(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: sqlite_handles_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        sqlite_handles(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: sqlite_info_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        sqlite_info(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: sqlite_interrupt_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        sqlite_interrupt(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: sqlite_last_insert_row_id_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        sqlite_last_insert_row_id(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: sqlite_limit_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        sqlite_limit(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: sqlite_open_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        sqlite_open(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: sqlite_query_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        sqlite_query(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: url_decode_exists_in_runtime
+    skip_if: "missing builtin.url_decode"
+    permission: programmer
+    statement: |
+      try
+        url_decode(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: url_encode_exists_in_runtime
+    skip_if: "missing builtin.url_encode"
+    permission: programmer
+    statement: |
+      try
+        url_encode(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+

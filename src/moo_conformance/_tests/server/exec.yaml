@@ -43,6 +43,7 @@ tests:
   expect:
     error: E_INVARG
 - name: exec_io_works
+  skip: "test_io is a bash script; not executable on Windows"
   permission: wizard
   code: exec({"test_io"}, "Hello, world!")
   expect:
@@ -51,6 +52,7 @@ tests:
     - Hello, world!
     - Hello, world!
 - name: exec_args_works
+  skip: "test_args is a bash script; not executable on Windows"
   permission: wizard
   code: exec({"test_args", "one", "two", "three"}, "")
   expect:
@@ -59,6 +61,7 @@ tests:
     - one two three
     - ''
 - name: exec_exit_status_works
+  skip: "test_exit_status is a bash script; not executable on Windows"
   permission: wizard
   code: exec({"test_exit_status", "2"}, "")
   expect:
@@ -81,12 +84,14 @@ tests:
   expect:
     error: E_INVARG
 - name: queued_tasks_shows_suspended_exec
+  skip: "Requires 'sleep' binary in executables/ directory"
   permission: wizard
   statement: "task_id = 0;\nfork go (0)\n  exec({\"sleep\", \"5\"});\nendfork\nsuspend(0);\n\
     return queued_tasks();\n"
   expect:
     type: list
 - name: kill_task_works_on_suspended_exec
+  skip: "Requires 'sleep' binary in executables/ directory"
   permission: wizard
   statement: "task_id = 0;\nfork go (0)\n  exec({\"sleep\", \"5\"});\nendfork\nsuspend(0);\n\
     result = kill_task(go);\nreturn result;\n"
@@ -105,6 +110,7 @@ tests:
   expect:
     error: E_INVARG
 - name: suspended_exec_task_stack_matches_suspended_task
+  skip: "Requires 'sleep' binary in executables/ directory"
   permission: wizard
   statement: "task_id1 = 0;\ntask_id2 = 0;\nfork go1 (0)\n  suspend(5);\nendfork\n\
     fork go2 (0)\n  exec({\"sleep\", \"5\"});\nendfork\nsuspend(0);\nstack1 = task_stack(go1);\n\

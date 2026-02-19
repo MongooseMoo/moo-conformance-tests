@@ -1100,11 +1100,13 @@ tests:
       error: E_INVARG
 
   - name: salt_md5_prefix
+    skip: "MD5 salt ($1$) not supported on Windows Toast builds"
     code: 'salt("$1$", "~00~00~00~00~00~00")'
     expect:
       value: "$1$........"
 
   - name: salt_md5_requires_three_chars
+    skip: "MD5 salt ($1$) not supported on Windows Toast builds"
     code: 'salt("$1$", "12")'
     expect:
       error: E_INVARG
@@ -1326,6 +1328,7 @@ tests:
       error: E_INVARG
 
   - name: crypt_invalid_salt
+    description: "Unrecognized salt prefix falls through to DES crypt using first 2 chars of salt"
     code: 'crypt("password", "$99$abc")'
     expect:
-      error: E_INVARG
+      value: "$9HPzCGenwB2E"

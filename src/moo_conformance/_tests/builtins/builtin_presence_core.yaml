@@ -1,0 +1,698 @@
+name: builtin_presence_core
+description: |
+  Conformance presence checks for core builtins required by the shared test suite.
+  
+  Each test deliberately calls the builtin with invalid arity/types and asserts
+  that the result is NOT E_VERBNF. This keeps behavior deterministic while
+  proving that the builtin exists in the server runtime.
+
+tests:
+  - name: acosh_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        acosh(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: all_members_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        all_members(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: asinh_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        asinh(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: atan2_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        atan2(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: atanh_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        atanh(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: background_test_exists_in_runtime
+    skip_if: "missing builtin.background_test"
+    permission: programmer
+    statement: |
+      try
+        background_test(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: buffered_output_length_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        buffered_output_length(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: call_function_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        call_function(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: cbrt_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        cbrt(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: chr_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        chr(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: connection_options_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        connection_options(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: db_disk_size_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        db_disk_size(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: distance_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        distance(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: dump_database_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        dump_database(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: finished_tasks_exists_in_runtime
+    skip_if: "missing builtin.finished_tasks"
+    permission: programmer
+    statement: |
+      try
+        finished_tasks(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: flush_input_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        flush_input(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: force_input_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        force_input(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: frandom_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        frandom(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: function_info_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        function_info(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: listen_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        listen(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: locate_by_name_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        locate_by_name(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: locations_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        locations(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: log_cache_stats_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        log_cache_stats(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: malloc_stats_exists_in_runtime
+    skip_if: "missing builtin.malloc_stats"
+    permission: programmer
+    statement: |
+      try
+        malloc_stats(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: memory_usage_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        memory_usage(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: next_recycled_object_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        next_recycled_object(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: open_network_connection_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        open_network_connection(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: output_delimiters_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        output_delimiters(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: owned_objects_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        owned_objects(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: parse_ansi_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        parse_ansi(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: queue_info_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        queue_info(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: read_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        read(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: recreate_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        recreate(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: recycled_objects_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        recycled_objects(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: relative_heading_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        relative_heading(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: remove_ansi_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        remove_ansi(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: reseed_random_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        reseed_random(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: reset_max_object_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        reset_max_object(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: round_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        round(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: set_thread_mode_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        set_thread_mode(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: shutdown_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        shutdown(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: simplex_noise_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        simplex_noise(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: task_perms_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        task_perms(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: thread_pool_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        thread_pool(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: threads_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        threads(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: unlisten_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        unlisten(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: usage_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        usage(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: verb_cache_stats_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        verb_cache_stats(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: waif_stats_exists_in_runtime
+    permission: programmer
+    statement: |
+      try
+        waif_stats(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+

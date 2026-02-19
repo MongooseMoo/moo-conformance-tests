@@ -284,11 +284,11 @@ tests:
       value: 1
 
   - name: queue_info_no_args_contains_player
-    description: "The connected wizard player should appear in queue_info()"
+    description: "The connected wizard player should appear in queue_info(); MOO 'in' returns index (>0 if found)"
     permission: wizard
     statement: |
       info = queue_info();
-      return player in info;
+      return (player in info) > 0;
     expect:
       value: 1
 

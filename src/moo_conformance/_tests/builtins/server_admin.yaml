@@ -216,7 +216,8 @@ tests:
   expect:
     value: 4
 - name: connected_players_includes_self
-  statement: 'return player in connected_players();
+  description: "MOO 'in' returns index (>0 if found, 0 if not)"
+  statement: 'return (player in connected_players()) > 0;
 
     '
   expect:

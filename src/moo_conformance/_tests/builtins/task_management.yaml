@@ -639,6 +639,157 @@ tests:
     expect:
       error: E_INVARG
 
+  - name: task_stack_current_task_is_invalid
+    description: "task_stack() on the currently running task raises E_INVARG (task must be suspended)"
+    permission: wizard
+    code: "task_stack(task_id())"
+    expect:
+      error: E_INVARG
+
+  - name: task_stack_suspended_returns_list
+    description: "task_stack() on a suspended task returns a list of frames"
+    permission: wizard
+    steps:
+      - run: |
+          o = create($nothing);
+          add_verb(o, {player, "rxd", "suspender"}, {"this", "none", "this"});
+          set_verb_code(o, "suspender", {"suspend(100);", "return 42;"});
+          return o;
+        capture: obj
+      - run: |
+          fork id (0)
+            {obj}:suspender();
+          endfork
+          suspend(0);
+          s = task_stack(id);
+          kill_task(id);
+          return typeof(s);
+        expect:
+          value: 4
+    cleanup:
+      - run: "recycle({obj});"
+        as: wizard
+
+  - name: task_stack_suspended_has_frames
+    description: "task_stack() on a suspended task returns non-empty list of frames"
+    permission: wizard
+    steps:
+      - run: |
+          o = create($nothing);
+          add_verb(o, {player, "rxd", "suspender"}, {"this", "none", "this"});
+          set_verb_code(o, "suspender", {"suspend(100);", "return 42;"});
+          return o;
+        capture: obj
+      - run: |
+          fork id (0)
+            {obj}:suspender();
+          endfork
+          suspend(0);
+          s = task_stack(id);
+          kill_task(id);
+          return length(s) >= 2;
+        expect:
+          value: 1
+    cleanup:
+      - run: "recycle({obj});"
+        as: wizard
+
+  - name: task_stack_frame_has_five_elements
+    description: "Without line numbers, each task_stack frame has 5 elements"
+    permission: wizard
+    steps:
+      - run: |
+          o = create($nothing);
+          add_verb(o, {player, "rxd", "suspender"}, {"this", "none", "this"});
+          set_verb_code(o, "suspender", {"suspend(100);", "return 42;"});
+          return o;
+        capture: obj
+      - run: |
+          fork id (0)
+            {obj}:suspender();
+          endfork
+          suspend(0);
+          s = task_stack(id);
+          kill_task(id);
+          return {length(s[1]), length(s[2])};
+        expect:
+          value: [5, 5]
+    cleanup:
+      - run: "recycle({obj});"
+        as: wizard
+
+  - name: task_stack_with_line_numbers_frame_has_six_elements
+    description: "With line numbers (2nd arg = 1), each task_stack frame has 6 elements"
+    permission: wizard
+    steps:
+      - run: |
+          o = create($nothing);
+          add_verb(o, {player, "rxd", "suspender"}, {"this", "none", "this"});
+          set_verb_code(o, "suspender", {"suspend(100);", "return 42;"});
+          return o;
+        capture: obj
+      - run: |
+          fork id (0)
+            {obj}:suspender();
+          endfork
+          suspend(0);
+          s = task_stack(id, 1);
+          kill_task(id);
+          return {length(s[1]), length(s[2])};
+        expect:
+          value: [6, 6]
+    cleanup:
+      - run: "recycle({obj});"
+        as: wizard
+
+  - name: task_stack_frame_verb_name
+    description: "The first frame's verb name (element 2) matches the suspended verb"
+    permission: wizard
+    steps:
+      - run: |
+          o = create($nothing);
+          add_verb(o, {player, "rxd", "suspender"}, {"this", "none", "this"});
+          set_verb_code(o, "suspender", {"suspend(100);", "return 42;"});
+          return o;
+        capture: obj
+      - run: |
+          fork id (0)
+            {obj}:suspender();
+          endfork
+          suspend(0);
+          s = task_stack(id);
+          kill_task(id);
+          return s[1][2];
+        expect:
+          value: "suspender"
+    cleanup:
+      - run: "recycle({obj});"
+        as: wizard
+
+  - name: task_stack_line_number_value
+    description: "With line numbers, the line number of the suspended frame is 1 (suspend is line 1)"
+    permission: wizard
+    steps:
+      - run: |
+          o = create($nothing);
+          add_verb(o, {player, "rxd", "suspender"}, {"this", "none", "this"});
+          set_verb_code(o, "suspender", {"suspend(100);", "return 42;"});
+          return o;
+        capture: obj
+      - run: |
+          fork id (0)
+            {obj}:suspender();
+          endfork
+          suspend(0);
+          s = task_stack(id, 1);
+          kill_task(id);
+          return s[1][6];
+        expect:
+          value: 1
+    cleanup:
+      - run: "recycle({obj});"
+        as: wizard
+
   # ===================================================================
   # queued_tasks() -- new scenarios only
   # Existing: 4 in queued_tasks.yaml, 3 in fork_observation.yaml

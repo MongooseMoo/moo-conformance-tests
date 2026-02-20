@@ -1,0 +1,260 @@
+name: call_stack
+description: Tests for callers(), callers(1), and caller_perms() builtins
+
+requires:
+  builtins: [callers, caller_perms, call_function]
+
+tests:
+  # --- callers() frame content tests ---
+  # All use a 2-verb chain: outer calls inner, inner returns callers()
+
+  - name: callers_frame_verb_names
+    description: Verify verb name field (index 2) in immediate caller frame
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "inner"}, {"this", "none", "this"});
+        set_verb_code(o, "inner", {"return callers();"});
+        add_verb(o, {player, "xd", "outer"}, {"this", "none", "this"});
+        set_verb_code(o, "outer", {"return this:inner();"});
+    statement: |
+      c = o:outer();
+      return c[1][2];
+    expect:
+      value: "outer"
+    teardown:
+      code: "recycle(o);"
+
+  - name: callers_frame_this_is_target_object
+    description: Verify this field (index 1) is the call target
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "inner"}, {"this", "none", "this"});
+        set_verb_code(o, "inner", {"return callers();"});
+        add_verb(o, {player, "xd", "outer"}, {"this", "none", "this"});
+        set_verb_code(o, "outer", {"return this:inner();"});
+    statement: |
+      c = o:outer();
+      return c[1][1] == o;
+    expect:
+      value: 1
+    teardown:
+      code: "recycle(o);"
+
+  - name: callers_frame_vloc_is_defining_object
+    description: Verify vloc field (index 4) is where verb lives
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "inner"}, {"this", "none", "this"});
+        set_verb_code(o, "inner", {"return callers();"});
+        add_verb(o, {player, "xd", "outer"}, {"this", "none", "this"});
+        set_verb_code(o, "outer", {"return this:inner();"});
+    statement: |
+      c = o:outer();
+      return c[1][4] == o;
+    expect:
+      value: 1
+    teardown:
+      code: "recycle(o);"
+
+  - name: callers_frame_progr_is_verb_owner
+    description: Verify progr field (index 3) is verb owner
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "inner"}, {"this", "none", "this"});
+        set_verb_code(o, "inner", {"return callers();"});
+        add_verb(o, {player, "xd", "outer"}, {"this", "none", "this"});
+        set_verb_code(o, "outer", {"return this:inner();"});
+    statement: |
+      c = o:outer();
+      return c[1][3] == player;
+    expect:
+      value: 1
+    teardown:
+      code: "recycle(o);"
+
+  - name: callers_frame_player_is_connected
+    description: Verify player field (index 5) is connected player
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "inner"}, {"this", "none", "this"});
+        set_verb_code(o, "inner", {"return callers();"});
+        add_verb(o, {player, "xd", "outer"}, {"this", "none", "this"});
+        set_verb_code(o, "outer", {"return this:inner();"});
+    statement: |
+      c = o:outer();
+      return c[1][5] == player;
+    expect:
+      value: 1
+    teardown:
+      code: "recycle(o);"
+
+  - name: callers_all_five_fields
+    description: Comprehensive check of all 5 fields together
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "inner"}, {"this", "none", "this"});
+        set_verb_code(o, "inner", {"return callers();"});
+        add_verb(o, {player, "xd", "outer"}, {"this", "none", "this"});
+        set_verb_code(o, "outer", {"return this:inner();"});
+    statement: |
+      c = o:outer();
+      return c[1] == {o, "outer", player, o, player};
+    expect:
+      value: 1
+    teardown:
+      code: "recycle(o);"
+
+  # --- callers() chain depth and ordering ---
+
+  - name: callers_three_deep_verb_names
+    description: 3-verb chain a->b->c, names in correct order (most recent first)
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "c"}, {"this", "none", "this"});
+        set_verb_code(o, "c", {"return callers();"});
+        add_verb(o, {player, "xd", "b"}, {"this", "none", "this"});
+        set_verb_code(o, "b", {"return this:c();"});
+        add_verb(o, {player, "xd", "a"}, {"this", "none", "this"});
+        set_verb_code(o, "a", {"return this:b();"});
+    statement: |
+      c = o:a();
+      return {c[1][2], c[2][2]};
+    expect:
+      value: ["b", "a"]
+    teardown:
+      code: "recycle(o);"
+
+  - name: callers_three_deep_frame_count
+    description: Frame count for 3-deep chain has at least 2 verb frames
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "c"}, {"this", "none", "this"});
+        set_verb_code(o, "c", {"return callers();"});
+        add_verb(o, {player, "xd", "b"}, {"this", "none", "this"});
+        set_verb_code(o, "b", {"return this:c();"});
+        add_verb(o, {player, "xd", "a"}, {"this", "none", "this"});
+        set_verb_code(o, "a", {"return this:b();"});
+    statement: |
+      c = o:a();
+      return length(c) >= 2;
+    expect:
+      value: 1
+    teardown:
+      code: "recycle(o);"
+
+  # --- callers() line numbers ---
+
+  - name: callers_with_line_numbers_has_six_elements
+    description: callers(1) frames have a 6th element (line number)
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "inner"}, {"this", "none", "this"});
+        set_verb_code(o, "inner", {"return callers(1);"});
+        add_verb(o, {player, "xd", "outer"}, {"this", "none", "this"});
+        set_verb_code(o, "outer", {"return this:inner();"});
+    statement: |
+      c = o:outer();
+      return length(c[1]);
+    expect:
+      value: 6
+    teardown:
+      code: "recycle(o);"
+
+  - name: callers_line_numbers_are_positive_integers
+    description: Line number is an integer greater than 0
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "inner"}, {"this", "none", "this"});
+        set_verb_code(o, "inner", {"return callers(1);"});
+        add_verb(o, {player, "xd", "outer"}, {"this", "none", "this"});
+        set_verb_code(o, "outer", {"return this:inner();"});
+    statement: |
+      c = o:outer();
+      return typeof(c[1][6]) == INT && c[1][6] > 0;
+    expect:
+      value: 1
+    teardown:
+      code: "recycle(o);"
+
+  - name: callers_line_number_reflects_call_site
+    description: Multi-line verb call site line number matches actual location
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "inner_ln"}, {"this", "none", "this"});
+        set_verb_code(o, "inner_ln", {"return callers(1);"});
+        add_verb(o, {player, "xd", "outer_ln"}, {"this", "none", "this"});
+        set_verb_code(o, "outer_ln", {"x = 1;", "y = 2;", "return this:inner_ln();"});
+    statement: |
+      c = o:outer_ln();
+      return c[1][6];
+    expect:
+      value: 3
+    teardown:
+      code: "recycle(o);"
+
+  # --- caller_perms() across verb boundaries ---
+
+  - name: caller_perms_returns_caller_verb_owner
+    description: caller_perms() returns owner of the calling verb
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "inner"}, {"this", "none", "this"});
+        set_verb_code(o, "inner", {"return caller_perms();"});
+        add_verb(o, {player, "xd", "outer"}, {"this", "none", "this"});
+        set_verb_code(o, "outer", {"return this:inner();"});
+    statement: |
+      return o:outer() == player;
+    expect:
+      value: 1
+    teardown:
+      code: "recycle(o);"
+
+  - name: caller_perms_different_owners
+    description: Verbs owned by different objects return correct caller_perms
+    permission: wizard
+    setup:
+      code: |
+        o = create($nothing);
+        p2 = create($nothing);
+        p2.programmer = 1;
+        add_verb(o, {player, "xd", "cp_mixed_inner"}, {"this", "none", "this"});
+        set_verb_code(o, "cp_mixed_inner", {"return caller_perms();"});
+        add_verb(o, {p2, "xd", "cp_mixed_outer"}, {"this", "none", "this"});
+        set_verb_code(o, "cp_mixed_outer", {"return this:cp_mixed_inner();"});
+    statement: |
+      result = o:cp_mixed_outer();
+      return result == p2;
+    expect:
+      value: 1
+    teardown:
+      code: |
+        recycle(o);
+        recycle(p2);
+
+  # --- call_function() interaction ---
+
+  - name: call_function_does_not_add_frame
+    description: call_function("callers") produces same depth as callers()
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "cf_test"}, {"this", "none", "this"});
+        set_verb_code(o, "cf_test", {"a = callers();", "b = call_function(\"callers\");", "return length(a) == length(b);"});
+    statement: |
+      return o:cf_test();
+    expect:
+      value: 1
+    teardown:
+      code: "recycle(o);"

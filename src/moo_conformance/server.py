@@ -34,6 +34,7 @@ class ManagedServer:
         self._temp_dir: str | None = None
         self._log_path: str | None = None
         self._log_file = None
+        self._db_copy_path: Path | None = None
 
     @property
     def port(self) -> int:
@@ -47,16 +48,23 @@ class ManagedServer:
 
     def start(self) -> None:
         """Start the server subprocess and wait for it to accept connections."""
-        # Pick a port
-        if self._requested_port is not None:
-            self._port = self._requested_port
-        else:
-            self._port = self._find_free_port()
+        # Pick a port once (or use explicitly requested port).
+        if self._port is None:
+            if self._requested_port is not None:
+                self._port = self._requested_port
+            else:
+                self._port = self._find_free_port()
 
-        # Create temp directory and copy database into it
-        self._temp_dir = tempfile.mkdtemp(prefix="moo_conformance_")
-        db_dest = Path(self._temp_dir, self.db_path.name)
-        shutil.copy2(self.db_path, db_dest)
+        # Create temp directory and copy database into it once.
+        if self._temp_dir is None:
+            self._temp_dir = tempfile.mkdtemp(prefix="moo_conformance_")
+            db_dest = Path(self._temp_dir, self.db_path.name)
+            shutil.copy2(self.db_path, db_dest)
+            self._db_copy_path = db_dest
+        else:
+            if self._db_copy_path is None:
+                raise RuntimeError("Managed server temp directory exists but DB copy path is missing")
+            db_dest = self._db_copy_path
 
         # Use forward slashes so shlex.split doesn't eat backslashes
         db_posix = db_dest.as_posix()
@@ -69,7 +77,7 @@ class ManagedServer:
 
         # Open log file for server output
         self._log_path = os.path.join(self._temp_dir, "server.log")
-        self._log_file = open(self._log_path, "w")
+        self._log_file = open(self._log_path, "a")
 
         # Start server process
         self._process = subprocess.Popen(
@@ -82,8 +90,8 @@ class ManagedServer:
         # Wait for the server to accept connections
         self._wait_for_port(timeout=30.0)
 
-    def stop(self) -> None:
-        """Stop the server and clean up temp directory."""
+    def stop(self, preserve_temp: bool = False) -> None:
+        """Stop the server and optionally clean up temp directory."""
         if self._process is not None:
             try:
                 self._process.terminate()
@@ -97,9 +105,48 @@ class ManagedServer:
             self._log_file.close()
             self._log_file = None
 
-        if self._temp_dir is not None:
+        if not preserve_temp and self._temp_dir is not None:
             shutil.rmtree(self._temp_dir, ignore_errors=True)
             self._temp_dir = None
+            self._db_copy_path = None
+
+    def restart(self) -> None:
+        """Restart the server process in-place, preserving the working database."""
+        self.stop(preserve_temp=True)
+        self._sync_checkpoint_output()
+        self.start()
+
+    def _sync_checkpoint_output(self) -> None:
+        """Adopt common external checkpoint outputs back into the input DB path.
+
+        Some servers (e.g., ToastStunt) write checkpoints to a separate output
+        file (often `{db}.new`) rather than replacing the input DB in-place.
+        For restart-based persistence tests, promote the newest known output
+        file to the managed input DB path if present.
+        """
+        if self._db_copy_path is None:
+            return
+
+        src = self._db_copy_path
+        candidates = [
+            Path(str(src) + ".new"),
+            src.with_suffix(src.suffix + ".new"),
+            src.with_suffix(".out.db"),
+            src.with_suffix(".new.db"),
+        ]
+
+        best: Path | None = None
+        best_mtime = -1.0
+        for cand in candidates:
+            if not cand.exists() or cand.is_dir():
+                continue
+            mtime = cand.stat().st_mtime
+            if mtime > best_mtime:
+                best = cand
+                best_mtime = mtime
+
+        if best is not None:
+            shutil.copy2(best, src)
 
     def _find_free_port(self) -> int:
         """Find an available TCP port."""
@@ -115,9 +162,18 @@ class ManagedServer:
         while time.monotonic() < deadline:
             # Check if process died
             if self._process is not None and self._process.poll() is not None:
+                # Read log before raising so it's in the error message
+                log_content = ""
+                if self._log_path and os.path.exists(self._log_path):
+                    try:
+                        with open(self._log_path) as f:
+                            log_content = f.read()
+                    except OSError:
+                        log_content = "(could not read log)"
                 raise RuntimeError(
                     f"Server process exited with code {self._process.returncode} "
-                    f"before accepting connections. Log: {self._log_path}"
+                    f"before accepting connections. Log: {self._log_path}\n"
+                    f"--- server output ---\n{log_content}\n--- end server output ---"
                 )
 
             try:

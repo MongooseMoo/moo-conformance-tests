@@ -1,0 +1,233 @@
+name: verb_context_variables
+description: >
+  Tests that built-in verb context variables (dobj, iobj, dobjstr, iobjstr,
+  argstr, prepstr, verb, player, caller, this, args) are properly populated
+  in all execution contexts: eval, verb calls, and nested verb calls.
+
+tests:
+  # ===========================================================================
+  # Eval context - command variables default to #-1 / ""
+  # ===========================================================================
+
+  - name: eval_dobj_is_nothing
+    description: dobj is #-1 in eval context
+    statement: return dobj;
+    expect:
+      value: "#-1"
+      type: obj
+
+  - name: eval_iobj_is_nothing
+    description: iobj is #-1 in eval context
+    statement: return iobj;
+    expect:
+      value: "#-1"
+      type: obj
+
+  - name: eval_dobjstr_is_empty
+    description: dobjstr is empty string in eval context
+    statement: return dobjstr;
+    expect:
+      value: ""
+
+  - name: eval_iobjstr_is_empty
+    description: iobjstr is empty string in eval context
+    statement: return iobjstr;
+    expect:
+      value: ""
+
+  - name: eval_prepstr_is_empty
+    description: prepstr is empty string in eval context
+    statement: return prepstr;
+    expect:
+      value: ""
+
+  - name: eval_argstr_is_empty
+    description: argstr is empty string in eval context
+    statement: return argstr;
+    expect:
+      value: ""
+
+  # ===========================================================================
+  # Verb-to-verb call propagation - nested verb inherits command context
+  # ===========================================================================
+
+  - name: nested_verb_inherits_dobj
+    description: A verb called from another verb can access dobj
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "inner"}, {"this", "none", "this"});
+        set_verb_code(o, "inner", {"return dobj;"});
+        add_verb(o, {player, "xd", "outer"}, {"this", "none", "this"});
+        set_verb_code(o, "outer", {"return this:inner();"});
+    statement: return o:outer();
+    expect:
+      value: "#-1"
+      type: obj
+    teardown:
+      code: "recycle(o);"
+
+  - name: nested_verb_inherits_iobj
+    description: A verb called from another verb can access iobj
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "inner"}, {"this", "none", "this"});
+        set_verb_code(o, "inner", {"return iobj;"});
+        add_verb(o, {player, "xd", "outer"}, {"this", "none", "this"});
+        set_verb_code(o, "outer", {"return this:inner();"});
+    statement: return o:outer();
+    expect:
+      value: "#-1"
+      type: obj
+    teardown:
+      code: "recycle(o);"
+
+  - name: nested_verb_inherits_dobjstr
+    description: A verb called from another verb can access dobjstr
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "inner"}, {"this", "none", "this"});
+        set_verb_code(o, "inner", {"return dobjstr;"});
+        add_verb(o, {player, "xd", "outer"}, {"this", "none", "this"});
+        set_verb_code(o, "outer", {"return this:inner();"});
+    statement: return o:outer();
+    expect:
+      value: ""
+    teardown:
+      code: "recycle(o);"
+
+  - name: nested_verb_inherits_iobjstr
+    description: A verb called from another verb can access iobjstr
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "inner"}, {"this", "none", "this"});
+        set_verb_code(o, "inner", {"return iobjstr;"});
+        add_verb(o, {player, "xd", "outer"}, {"this", "none", "this"});
+        set_verb_code(o, "outer", {"return this:inner();"});
+    statement: return o:outer();
+    expect:
+      value: ""
+    teardown:
+      code: "recycle(o);"
+
+  - name: nested_verb_inherits_argstr
+    description: A verb called from another verb can access argstr
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "inner"}, {"this", "none", "this"});
+        set_verb_code(o, "inner", {"return argstr;"});
+        add_verb(o, {player, "xd", "outer"}, {"this", "none", "this"});
+        set_verb_code(o, "outer", {"return this:inner();"});
+    statement: return o:outer();
+    expect:
+      value: ""
+    teardown:
+      code: "recycle(o);"
+
+  - name: nested_verb_inherits_prepstr
+    description: A verb called from another verb can access prepstr
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "inner"}, {"this", "none", "this"});
+        set_verb_code(o, "inner", {"return prepstr;"});
+        add_verb(o, {player, "xd", "outer"}, {"this", "none", "this"});
+        set_verb_code(o, "outer", {"return this:inner();"});
+    statement: return o:outer();
+    expect:
+      value: ""
+    teardown:
+      code: "recycle(o);"
+
+  # ===========================================================================
+  # Scatter with command context variables as implicit defaults
+  # ===========================================================================
+  # This is the real-world pattern: {?who = player, ?dobj, ?iobj} = args
+  # When the list is short, ?dobj should keep the current value of dobj
+  # (which is #-1 in non-command context), NOT raise E_VARNF.
+
+  - name: scatter_with_dobj_as_implicit_default
+    description: Scatter ?dobj keeps dobj value when element is missing
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "test_scatter"}, {"this", "none", "this"});
+        set_verb_code(o, "test_scatter", {
+          "{?x = dobj} = {};",
+          "return x;"
+        });
+    statement: return o:test_scatter();
+    expect:
+      value: "#-1"
+      type: obj
+    teardown:
+      code: "recycle(o);"
+
+  - name: scatter_with_iobj_as_implicit_default
+    description: Scatter ?iobj keeps iobj value when element is missing
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "test_scatter"}, {"this", "none", "this"});
+        set_verb_code(o, "test_scatter", {
+          "{?x = iobj} = {};",
+          "return x;"
+        });
+    statement: return o:test_scatter();
+    expect:
+      value: "#-1"
+      type: obj
+    teardown:
+      code: "recycle(o);"
+
+  # ===========================================================================
+  # Command-dispatched verb context propagation
+  # ===========================================================================
+  # When a command dispatches a verb, that verb calls another verb,
+  # the inner verb should still see the command context variables.
+
+  - name: command_verb_context_propagates_to_nested_call
+    description: Nested verb call from command-dispatched verb inherits command variables
+    steps:
+      - run: |
+          o = create($nothing);
+          o.name = "widget";
+          move(o, player);
+          box = create($nothing);
+          box.name = "box";
+          move(box, player);
+          add_verb(box, {player, "xd", "get_context"}, {"this", "none", "this"});
+          set_verb_code(box, "get_context", {"return {dobjstr, prepstr, iobjstr};"});
+          add_verb(box, {player, "xd", "put"}, {"any", "in", "this"});
+          set_verb_code(box, "put", {"return this:get_context();"});
+          return {o, box};
+        capture: objs
+        as: wizard
+      # We can't easily capture return value from a command dispatch,
+      # so we use notify to report the nested call's result
+      - run: |
+          o = {objs}[1];
+          box = {objs}[2];
+          set_verb_code(box, "put", {
+            "ctx = this:get_context();",
+            "notify(player, \"DOBJSTR:\" + ctx[1]);",
+            "notify(player, \"PREPSTR:\" + ctx[2]);",
+            "notify(player, \"IOBJSTR:\" + ctx[3]);"
+          });
+          return 1;
+        as: wizard
+      - command: "put widget in box"
+        expect:
+          output:
+            - "DOBJSTR:widget"
+            - "PREPSTR:in"
+            - "IOBJSTR:box"
+    cleanup:
+      - run: |
+          recycle({{objs}[1]});
+          recycle({{objs}[2]});
+        as: wizard

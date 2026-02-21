@@ -105,6 +105,33 @@ tests:
     expect:
       error: E_VARNF
 
+  - name: scatter_optional_no_default_keeps_existing_value
+    description: Optional without default keeps the variable's prior value
+    statement: |
+      b = 42;
+      {a, ?b} = {1};
+      return b;
+    expect:
+      value: 42
+
+  - name: scatter_optional_no_default_keeps_existing_string
+    description: Optional without default keeps prior string value
+    statement: |
+      b = "hello";
+      {a, ?b} = {1};
+      return b;
+    expect:
+      value: "hello"
+
+  - name: scatter_optional_no_default_present_overwrites
+    description: Optional without default gets list value when element is present
+    statement: |
+      b = 42;
+      {a, ?b} = {1, 2};
+      return b;
+    expect:
+      value: 2
+
   # ===========================================================================
   # Error cases
   # ===========================================================================

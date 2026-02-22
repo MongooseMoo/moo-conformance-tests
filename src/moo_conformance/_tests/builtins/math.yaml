@@ -1046,11 +1046,11 @@ tests:
     expect:
       match: "^\\w{3} \\w{3} .+ \\d{4}"
 
-  - name: ctime_with_int_arg_is_invarg
-    description: "ctime(0) is E_INVARG - ctime takes no arguments"
-    code: "ctime(0)"
+  - name: ctime_with_int_arg
+    description: "ctime(time()) accepts an integer timestamp and returns a string"
+    code: "ctime(time())"
     expect:
-      error: E_INVARG
+      type: str
 
   - name: ctime_type_error_float
     code: "ctime(1.0)"

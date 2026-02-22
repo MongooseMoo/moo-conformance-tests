@@ -680,3 +680,42 @@ tests:
   code: set_connection_option(player, "nonexistent_option_xyz", 1)
   expect:
     error: E_INVARG
+
+# shutdown() security - do NOT test as wizard (would stop the server)
+- name: shutdown_requires_wizard
+  permission: programmer
+  code: shutdown()
+  expect:
+    error: E_PERM
+- name: shutdown_with_message_requires_wizard
+  permission: programmer
+  code: 'shutdown("test")'
+  expect:
+    error: E_PERM
+
+# open_network_connection() security
+- name: open_network_connection_requires_wizard
+  permission: programmer
+  code: 'open_network_connection("localhost", 1)'
+  expect:
+    error: E_PERM
+
+# boot_player() security - self-boot IS allowed for programmers,
+# but booting another player requires wizard
+- name: boot_player_other_requires_wizard
+  permission: programmer
+  code: boot_player(#2)
+  expect:
+    error: E_PERM
+
+# listen/unlisten security
+- name: listen_requires_wizard
+  permission: programmer
+  code: 'listen(player, 0)'
+  expect:
+    error: E_PERM
+- name: unlisten_requires_wizard
+  permission: programmer
+  code: unlisten(0)
+  expect:
+    error: E_PERM

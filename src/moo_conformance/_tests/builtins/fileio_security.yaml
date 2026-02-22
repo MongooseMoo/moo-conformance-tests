@@ -1,0 +1,370 @@
+name: fileio_security
+description: |
+  Security boundary tests for MOO file I/O builtins.
+  Tests path traversal prevention, mode enforcement, invalid handles,
+  and mode string validation. Goes beyond the original Ruby test suite
+  which only tests wizard permission requirements.
+
+requires:
+  builtins: [file_open, file_close, file_remove, file_rename, file_mkdir, file_rmdir, file_list, file_type, file_chmod, file_size, file_stat, file_read, file_write, file_readline, file_writeline, file_seek, file_tell, file_eof]
+
+tests:
+  # ============================================================
+  # Path traversal: file_open
+  # file_verify_path blocks: starts with "..", contains "/."
+  # ============================================================
+  - name: traversal_open_dotdot_start
+    permission: wizard
+    code: 'return file_open("..", "r-tn");'
+    expect:
+      error: E_INVARG
+
+  - name: traversal_open_dotdot_slash
+    permission: wizard
+    code: 'return file_open("../foo", "r-tn");'
+    expect:
+      error: E_INVARG
+
+  - name: traversal_open_mid_dotdot
+    permission: wizard
+    code: 'return file_open("foo/../bar", "r-tn");'
+    expect:
+      error: E_INVARG
+
+  - name: traversal_open_deep
+    permission: wizard
+    code: 'return file_open("foo/bar/../../baz", "r-tn");'
+    expect:
+      error: E_INVARG
+
+  - name: traversal_open_hidden_file
+    permission: wizard
+    code: 'return file_open("foo/.hidden", "r-tn");'
+    expect:
+      error: E_INVARG
+
+  - name: traversal_open_dot_segment
+    permission: wizard
+    code: 'return file_open("foo/./bar", "r-tn");'
+    expect:
+      error: E_INVARG
+
+  # ============================================================
+  # Path traversal: file_remove
+  # ============================================================
+  - name: traversal_remove_dotdot
+    permission: wizard
+    code: 'return file_remove("../foo");'
+    expect:
+      error: E_INVARG
+
+  - name: traversal_remove_mid_dotdot
+    permission: wizard
+    code: 'return file_remove("foo/../bar");'
+    expect:
+      error: E_INVARG
+
+  # ============================================================
+  # Path traversal: file_rename (both src and dst validated)
+  # ============================================================
+  - name: traversal_rename_src
+    permission: wizard
+    description: |
+      Toast's bf_file_rename wraps file_resolve_path in str_dup, which
+      may not propagate NULL correctly. The traversal is still blocked -
+      the rename fails with E_FILE rather than E_INVARG.
+    code: 'return file_rename("../foo", "bar");'
+    expect:
+      error: E_FILE
+
+  - name: traversal_rename_dst
+    permission: wizard
+    statement: |
+      fh = file_open("__test_sec_ren.tmp", "w-tn");
+      file_close(fh);
+      try file_rename("__test_sec_ren.tmp", "../escaped"); except e (ANY) file_remove("__test_sec_ren.tmp"); raise(e[1]); endtry
+      file_remove("__test_sec_ren.tmp");
+      return 1;
+    expect:
+      error: E_INVARG
+
+  # ============================================================
+  # Path traversal: file_mkdir / file_rmdir
+  # ============================================================
+  - name: traversal_mkdir_dotdot
+    permission: wizard
+    code: 'return file_mkdir("../escape_dir");'
+    expect:
+      error: E_INVARG
+
+  - name: traversal_rmdir_dotdot
+    permission: wizard
+    code: 'return file_rmdir("../escape_dir");'
+    expect:
+      error: E_INVARG
+
+  # ============================================================
+  # Path traversal: file_list
+  # ============================================================
+  - name: traversal_list_dotdot
+    permission: wizard
+    code: 'return file_list("../");'
+    expect:
+      error: E_INVARG
+
+  - name: traversal_list_mid_dotdot
+    permission: wizard
+    code: 'return file_list("foo/../..");'
+    expect:
+      error: E_INVARG
+
+  # ============================================================
+  # Path traversal: file_type, file_chmod, file_size, file_stat
+  # ============================================================
+  - name: traversal_type_dotdot
+    permission: wizard
+    code: 'return file_type("../foo");'
+    expect:
+      error: E_INVARG
+
+  - name: traversal_chmod_dotdot
+    permission: wizard
+    code: 'return file_chmod("../foo", "777");'
+    expect:
+      error: E_INVARG
+
+  - name: traversal_size_dotdot
+    permission: wizard
+    code: 'return file_size("../foo");'
+    expect:
+      error: E_INVARG
+
+  - name: traversal_stat_dotdot
+    permission: wizard
+    code: 'return file_stat("../foo");'
+    expect:
+      error: E_INVARG
+
+  # ============================================================
+  # Mode enforcement: read-only vs write-only
+  # ============================================================
+  - name: write_to_readonly_file
+    permission: wizard
+    statement: |
+      fh = file_open("__test_sec_ro.tmp", "w-tn");
+      file_writeline(fh, "data");
+      file_close(fh);
+      fh = file_open("__test_sec_ro.tmp", "r-tn");
+      try file_writeline(fh, "nope"); except e (ANY) file_close(fh); file_remove("__test_sec_ro.tmp"); raise(e[1]); endtry
+      file_close(fh);
+      file_remove("__test_sec_ro.tmp");
+      return 1;
+    expect:
+      error: E_INVARG
+
+  - name: read_from_writeonly_file
+    permission: wizard
+    statement: |
+      fh = file_open("__test_sec_wo.tmp", "w-tn");
+      try file_readline(fh); except e (ANY) file_close(fh); file_remove("__test_sec_wo.tmp"); raise(e[1]); endtry
+      file_close(fh);
+      file_remove("__test_sec_wo.tmp");
+      return 1;
+    expect:
+      error: E_INVARG
+
+  - name: binary_write_to_readonly
+    permission: wizard
+    statement: |
+      fh = file_open("__test_sec_bro.tmp", "w-bn");
+      file_write(fh, "data");
+      file_close(fh);
+      fh = file_open("__test_sec_bro.tmp", "r-bn");
+      try file_write(fh, "nope"); except e (ANY) file_close(fh); file_remove("__test_sec_bro.tmp"); raise(e[1]); endtry
+      file_close(fh);
+      file_remove("__test_sec_bro.tmp");
+      return 1;
+    expect:
+      error: E_INVARG
+
+  - name: binary_read_from_writeonly
+    permission: wizard
+    statement: |
+      fh = file_open("__test_sec_bwo.tmp", "w-bn");
+      try file_read(fh, 1); except e (ANY) file_close(fh); file_remove("__test_sec_bwo.tmp"); raise(e[1]); endtry
+      file_close(fh);
+      file_remove("__test_sec_bwo.tmp");
+      return 1;
+    expect:
+      error: E_INVARG
+
+  # ============================================================
+  # Invalid file handles
+  # ============================================================
+  - name: read_invalid_handle
+    permission: wizard
+    code: "return file_readline(99999);"
+    expect:
+      error: E_INVARG
+
+  - name: write_invalid_handle
+    permission: wizard
+    code: 'return file_writeline(99999, "data");'
+    expect:
+      error: E_INVARG
+
+  - name: close_invalid_handle
+    permission: wizard
+    code: "return file_close(99999);"
+    expect:
+      error: E_INVARG
+
+  - name: seek_invalid_handle
+    permission: wizard
+    code: 'return file_seek(99999, 0, "SEEK_SET");'
+    expect:
+      error: E_INVARG
+
+  - name: tell_invalid_handle
+    permission: wizard
+    code: "return file_tell(99999);"
+    expect:
+      error: E_INVARG
+
+  - name: eof_invalid_handle
+    permission: wizard
+    code: "return file_eof(99999);"
+    expect:
+      error: E_INVARG
+
+  - name: name_invalid_handle
+    permission: wizard
+    code: "return file_name(99999);"
+    expect:
+      error: E_INVARG
+
+  - name: openmode_invalid_handle
+    permission: wizard
+    code: "return file_openmode(99999);"
+    expect:
+      error: E_INVARG
+
+  # ============================================================
+  # Invalid mode strings for file_open
+  # ============================================================
+  - name: open_invalid_mode_too_short
+    permission: wizard
+    code: 'return file_open("__test_sec_mode1.tmp", "r");'
+    expect:
+      error: E_INVARG
+
+  - name: open_invalid_mode_too_long
+    permission: wizard
+    code: 'return file_open("__test_sec_mode2.tmp", "r-tnx");'
+    expect:
+      error: E_INVARG
+
+  - name: open_invalid_mode_bad_rw
+    permission: wizard
+    code: 'return file_open("__test_sec_mode3.tmp", "x-tn");'
+    expect:
+      error: E_INVARG
+
+  - name: open_invalid_mode_bad_type
+    permission: wizard
+    code: 'return file_open("__test_sec_mode4.tmp", "r-xn");'
+    expect:
+      error: E_INVARG
+
+  - name: open_invalid_mode_bad_flush
+    permission: wizard
+    code: 'return file_open("__test_sec_mode5.tmp", "r-tx");'
+    expect:
+      error: E_INVARG
+
+  - name: open_invalid_mode_empty
+    permission: wizard
+    code: 'return file_open("__test_sec_mode6.tmp", "");'
+    expect:
+      error: E_INVARG
+
+  # ============================================================
+  # Invalid chmod mode strings
+  # ============================================================
+  - name: chmod_invalid_mode_too_short
+    permission: wizard
+    statement: |
+      fh = file_open("__test_sec_chmod1.tmp", "w-tn");
+      file_close(fh);
+      try file_chmod("__test_sec_chmod1.tmp", "77"); except e (ANY) file_remove("__test_sec_chmod1.tmp"); raise(e[1]); endtry
+      file_remove("__test_sec_chmod1.tmp");
+      return 1;
+    expect:
+      error: E_INVARG
+
+  - name: chmod_invalid_mode_bad_digit
+    permission: wizard
+    statement: |
+      fh = file_open("__test_sec_chmod2.tmp", "w-tn");
+      file_close(fh);
+      try file_chmod("__test_sec_chmod2.tmp", "999"); except e (ANY) file_remove("__test_sec_chmod2.tmp"); raise(e[1]); endtry
+      file_remove("__test_sec_chmod2.tmp");
+      return 1;
+    expect:
+      error: E_INVARG
+
+  # ============================================================
+  # Invalid seek whence string
+  # ============================================================
+  - name: seek_invalid_whence
+    permission: wizard
+    statement: |
+      fh = file_open("__test_sec_whence.tmp", "w-tn");
+      file_writeline(fh, "data");
+      file_close(fh);
+      fh = file_open("__test_sec_whence.tmp", "r-tn");
+      try file_seek(fh, 0, "INVALID"); except e (ANY) file_close(fh); file_remove("__test_sec_whence.tmp"); raise(e[1]); endtry
+      file_close(fh);
+      file_remove("__test_sec_whence.tmp");
+      return 1;
+    expect:
+      error: E_INVARG
+
+  # ============================================================
+  # Negative file handles
+  # ============================================================
+  - name: read_negative_handle
+    permission: wizard
+    code: "return file_readline(-1);"
+    expect:
+      error: E_INVARG
+
+  - name: close_negative_handle
+    permission: wizard
+    code: "return file_close(-1);"
+    expect:
+      error: E_INVARG
+
+  # ============================================================
+  # Backslash traversal (Windows-specific concern)
+  # file_verify_path only checks for "/." not "\."
+  # If these return E_INVARG, the server handles backslashes.
+  # If they return something else, there may be a security gap.
+  # ============================================================
+  - name: traversal_backslash_dotdot
+    permission: wizard
+    description: |
+      Tests if backslash path traversal is blocked. file_verify_path
+      in Toast only checks for "/." not "\.". On Windows where "\" is
+      a valid path separator, this could be a traversal vector.
+    code: "return file_open(\"..\\\\foo\", \"r-tn\");"
+    expect:
+      error: E_INVARG
+
+  - name: traversal_backslash_mid
+    permission: wizard
+    description: |
+      Tests mid-path backslash traversal.
+    code: "return file_open(\"foo\\\\..\\\\bar\", \"r-tn\");"
+    expect:
+      error: E_INVARG

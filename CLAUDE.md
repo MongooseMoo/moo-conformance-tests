@@ -76,19 +76,36 @@ The barn project includes `moo_client.exe` - a proper MOO client that handles te
 
 ## Running Tests
 
+The test suite supports two modes: **managed** (auto-starts/stops the server) and **external** (connects to an already-running server).
+
+### Managed mode (recommended)
+
+The `--server-command` flag starts and stops the server automatically. It uses the bundled Test.db and picks a free port.
+
 ```bash
-# Start ToastStunt
+# Auto-managed ToastStunt
+uv run moo-conformance --server-command="~/src/toaststunt/test/moo.exe {db} NUL {port}" -v
+
+# Specific category
+uv run moo-conformance --server-command="~/src/toaststunt/test/moo.exe {db} NUL {port}" -k "arithmetic" -v
+
+# Stop on first failure
+uv run moo-conformance --server-command="~/src/toaststunt/test/moo.exe {db} NUL {port}" -x -v
+```
+
+Managed mode also auto-detects `--moo-server-dir` (needed for fileio_verified, fileio_host_write tests).
+
+### External mode
+
+Connect to a server you started yourself:
+
+```bash
+# Start ToastStunt manually
 cd /c/Users/Q/src/toaststunt/test
 ./moo.exe Test.db NUL 9898
 
-# Run all conformance tests
+# Run against it
 uv run moo-conformance --moo-port=9898 -v
-
-# Run specific category
-uv run moo-conformance -k "arithmetic" --moo-port=9898 -v
-
-# Stop on first failure
-uv run moo-conformance --moo-port=9898 -x -v
 
 # Or via pytest directly
 uv run pytest --pyargs moo_conformance --moo-port=9898 -v

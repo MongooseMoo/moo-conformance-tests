@@ -466,3 +466,99 @@ tests:
       return length(data);
     expect:
       value: 10000
+
+  # --- Append mode tests ---
+
+  - name: append_mode_text
+    description: >
+      Append mode opens for writing at end of file. Writing to an append-mode
+      file adds content after existing data.
+    permission: wizard
+    statement: |
+      fh = file_open("__test_append.tmp", "w-tn");
+      file_writeline(fh, "hello");
+      file_close(fh);
+      fh = file_open("__test_append.tmp", "a-tn");
+      file_writeline(fh, "world");
+      file_close(fh);
+      fh = file_open("__test_append.tmp", "r-tn");
+      lines = file_readlines(fh, 1, 100);
+      file_close(fh);
+      file_remove("__test_append.tmp");
+      return lines;
+    expect:
+      value: ["hello", "world"]
+
+  # --- Read-write mode tests ---
+
+  - name: readwrite_mode_read_then_write
+    description: >
+      The r+ mode opens a file for both reading and writing. Reading first,
+      then writing appends after the read position.
+    permission: wizard
+    statement: |
+      fh = file_open("__test_rplus.tmp", "w-tn");
+      file_writeline(fh, "original");
+      file_close(fh);
+      fh = file_open("__test_rplus.tmp", "r+tn");
+      first = file_readline(fh);
+      file_writeline(fh, "appended");
+      file_close(fh);
+      fh = file_open("__test_rplus.tmp", "r-tn");
+      lines = file_readlines(fh, 1, 100);
+      file_close(fh);
+      file_remove("__test_rplus.tmp");
+      return lines;
+    expect:
+      value: ["original", "appended"]
+
+  - name: readwrite_mode_openmode_returns_correct_mode
+    description: >
+      file_openmode on a r+ handle returns the mode string "r+tn".
+    permission: wizard
+    statement: |
+      fh = file_open("__test_rw_mode.tmp", "w-tn");
+      file_writeline(fh, "test");
+      file_close(fh);
+      fh = file_open("__test_rw_mode.tmp", "r+tn");
+      mode = file_openmode(fh);
+      file_close(fh);
+      file_remove("__test_rw_mode.tmp");
+      return mode;
+    expect:
+      value: "r+tn"
+
+  - name: write_plus_mode_write_then_seek_read
+    description: >
+      The w+ mode opens for writing and reading. After writing, seek back
+      to start and read back what was written.
+    permission: wizard
+    statement: |
+      fh = file_open("__test_wplus.tmp", "w+tn");
+      file_writeline(fh, "written");
+      file_seek(fh, 0, "SEEK_SET");
+      first = file_readline(fh);
+      file_close(fh);
+      file_remove("__test_wplus.tmp");
+      return first;
+    expect:
+      value: "written"
+
+  - name: append_plus_mode_read_and_append
+    description: >
+      The a+ mode opens for appending and reading. Writing adds to end,
+      and seeking to start allows reading everything.
+    permission: wizard
+    statement: |
+      fh = file_open("__test_aplus.tmp", "w-tn");
+      file_writeline(fh, "existing");
+      file_close(fh);
+      fh = file_open("__test_aplus.tmp", "a+tn");
+      file_writeline(fh, "appended");
+      file_seek(fh, 0, "SEEK_SET");
+      lines = file_readlines(fh, 1, 100);
+      file_close(fh);
+      file_remove("__test_aplus.tmp");
+      return lines;
+    expect:
+      value: ["existing", "appended"]

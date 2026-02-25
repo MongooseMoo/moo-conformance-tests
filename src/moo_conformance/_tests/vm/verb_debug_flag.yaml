@@ -1,0 +1,185 @@
+name: verb_debug_flag
+description: |
+  Tests for the verb debug flag (d) behavior. When a verb has the d flag set,
+  runtime errors are raised as exceptions that propagate to callers. Without the
+  d flag, runtime errors are caught and pushed as error values (like E_PROPNF),
+  and execution continues on the next line.
+
+requires:
+  builtins: [add_verb, set_verb_code, verb_info]
+
+tests:
+  # --- Non-debug verb: errors become values ---
+
+  - name: error_in_non_debug_verb_returns_error_value
+    description: >
+      A verb without the d flag returns E_PROPNF as a value when
+      accessing a nonexistent property, instead of raising an exception.
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "x", "test_no_debug"}, {"this", "none", "this"});
+        set_verb_code(o, "test_no_debug", {"return this.nonexistent_property_xyz;"});
+    code: 'o:test_no_debug()'
+    expect:
+      value: "E_PROPNF"
+    teardown:
+      code: "recycle(o);"
+
+  - name: error_in_debug_verb_raises_exception
+    description: >
+      A verb with the d flag raises E_PROPNF as an exception when
+      accessing a nonexistent property.
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "test_debug"}, {"this", "none", "this"});
+        set_verb_code(o, "test_debug", {"return this.nonexistent_property_xyz;"});
+    code: 'o:test_debug()'
+    expect:
+      error: E_PROPNF
+    teardown:
+      code: "recycle(o);"
+
+  - name: verbnf_in_non_debug_verb_returns_error_value
+    description: >
+      A verb without the d flag returns E_VERBNF as a value when
+      calling a nonexistent verb.
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "x", "test_no_debug_vn"}, {"this", "none", "this"});
+        set_verb_code(o, "test_no_debug_vn", {"return this:nonexistent_verb_xyz();"});
+    code: 'o:test_no_debug_vn()'
+    expect:
+      value: "E_VERBNF"
+    teardown:
+      code: "recycle(o);"
+
+  - name: verbnf_in_debug_verb_raises_exception
+    description: >
+      A verb with the d flag raises E_VERBNF as an exception when
+      calling a nonexistent verb.
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "test_debug_vn"}, {"this", "none", "this"});
+        set_verb_code(o, "test_debug_vn", {"return this:nonexistent_verb_xyz();"});
+    code: 'o:test_debug_vn()'
+    expect:
+      error: E_VERBNF
+    teardown:
+      code: "recycle(o);"
+
+  - name: type_error_in_non_debug_verb_returns_error_value
+    description: >
+      A verb without the d flag returns E_TYPE as a value when
+      performing an invalid operation like 1 + "foo".
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "x", "test_no_debug_te"}, {"this", "none", "this"});
+        set_verb_code(o, "test_no_debug_te", {"return 1 + \"foo\";"});
+    code: 'o:test_no_debug_te()'
+    expect:
+      value: "E_TYPE"
+    teardown:
+      code: "recycle(o);"
+
+  - name: type_error_in_debug_verb_raises_exception
+    description: >
+      A verb with the d flag raises E_TYPE as an exception when
+      performing an invalid operation like 1 + "foo".
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "test_debug_te"}, {"this", "none", "this"});
+        set_verb_code(o, "test_debug_te", {"return 1 + \"foo\";"});
+    code: 'o:test_debug_te()'
+    expect:
+      error: E_TYPE
+    teardown:
+      code: "recycle(o);"
+
+  # --- Explicit raise() is also affected by debug flag ---
+
+  - name: raise_in_non_debug_verb_becomes_value
+    description: >
+      In a non-debug verb, raise(E_PERM) is caught as a value and
+      execution continues. The variable captures E_PERM and the verb
+      can return it.
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "x", "test_no_debug_raise"}, {"this", "none", "this"});
+        set_verb_code(o, "test_no_debug_raise", {"x = raise(E_PERM);", "return {\"continued\", x};"});
+    code: 'o:test_no_debug_raise()'
+    expect:
+      value: ["continued", "E_PERM"]
+    teardown:
+      code: "recycle(o);"
+
+  - name: raise_in_debug_verb_raises_exception
+    description: >
+      In a debug verb, raise(E_PERM) propagates as an exception.
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "test_debug_raise"}, {"this", "none", "this"});
+        set_verb_code(o, "test_debug_raise", {"raise(E_PERM);"});
+    code: 'o:test_debug_raise()'
+    expect:
+      error: E_PERM
+    teardown:
+      code: "recycle(o);"
+
+  # --- Cross-verb interaction ---
+
+  - name: non_debug_verb_error_does_not_propagate_to_caller
+    description: >
+      Debug verb A calls non-debug verb B. B triggers E_PROPNF which
+      is caught as a value (not propagated). B continues and returns 1.
+      A receives 1.
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "test_chain_a"}, {"this", "none", "this"});
+        set_verb_code(o, "test_chain_a", {"return this:test_chain_b();"});
+        add_verb(o, {player, "x", "test_chain_b"}, {"this", "none", "this"});
+        set_verb_code(o, "test_chain_b", {"x = this.nonexistent_xyz;", "return 1;"});
+    code: 'o:test_chain_a()'
+    expect:
+      value: 1
+    teardown:
+      code: "recycle(o);"
+
+  - name: try_except_in_non_debug_verb_not_triggered
+    description: >
+      In a non-debug verb, a runtime error (1 + "foo") is caught as a
+      value, not raised as an exception. Therefore try/except does NOT
+      trigger and "not caught" is returned.
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "x", "test_no_debug_try"}, {"this", "none", "this"});
+        set_verb_code(o, "test_no_debug_try", {"try", "x = 1 + \"foo\";", "except e (ANY)", "return \"caught\";", "endtry", "return \"not caught\";"});
+    code: 'o:test_no_debug_try()'
+    expect:
+      value: "not caught"
+    teardown:
+      code: "recycle(o);"
+
+  - name: try_except_in_debug_verb_catches_error
+    description: >
+      In a debug verb, a runtime error (1 + "foo") is raised as an
+      exception, so try/except DOES trigger and "caught" is returned.
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "test_debug_try"}, {"this", "none", "this"});
+        set_verb_code(o, "test_debug_try", {"try", "x = 1 + \"foo\";", "except e (ANY)", "return \"caught\";", "endtry", "return \"not caught\";"});
+    code: 'o:test_debug_try()'
+    expect:
+      value: "caught"
+    teardown:
+      code: "recycle(o);"

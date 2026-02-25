@@ -681,6 +681,45 @@ tests:
   expect:
     error: E_INVARG
 
+# --- Connection option functional tests ---
+
+- name: connection_option_binary_default
+  description: Default value of the binary connection option is 0
+  permission: wizard
+  code: connection_options(player, "binary")
+  expect:
+    value: 0
+
+- name: set_connection_option_flush_command_accepted
+  description: Setting flush-command succeeds and returns 0
+  permission: wizard
+  code: set_connection_option(player, "flush-command", ".testflush")
+  expect:
+    value: 0
+
+- name: set_connection_option_keep_alive_accepted
+  description: Setting keep-alive succeeds and returns 0
+  permission: wizard
+  code: set_connection_option(player, "keep-alive", 1)
+  expect:
+    value: 0
+
+- name: connection_option_flush_command_roundtrip
+  description: Setting flush-command and reading it back returns the new value
+  permission: wizard
+  statement: |
+    set_connection_option(player, "flush-command", ".myroundtrip");
+    return connection_options(player, "flush-command");
+  expect:
+    value: ".myroundtrip"
+
+- name: connection_option_hold_input_default
+  description: Default value of the hold-input connection option is 0
+  permission: wizard
+  code: connection_options(player, "hold-input")
+  expect:
+    value: 0
+
 # shutdown() security - do NOT test as wizard (would stop the server)
 - name: shutdown_requires_wizard
   permission: programmer

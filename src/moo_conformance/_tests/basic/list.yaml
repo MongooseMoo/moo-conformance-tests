@@ -46,3 +46,77 @@ tests:
     code: "setadd({1, 2}, 2)"
     expect:
       value: [1, 2]
+
+  # list + operator (concatenation and append)
+
+  - name: list_plus_list_concat
+    description: "list + list concatenates the two lists"
+    code: "{1, 2} + {3, 4}"
+    expect:
+      value: [1, 2, 3, 4]
+
+  - name: list_plus_nonlist_append
+    description: "list + non-list appends the element"
+    code: "{1, 2} + 3"
+    expect:
+      value: [1, 2, 3]
+
+  - name: empty_list_plus_list
+    description: "empty list + list returns the second list"
+    code: "{} + {1, 2}"
+    expect:
+      value: [1, 2]
+
+  - name: empty_list_plus_nonlist
+    description: "empty list + non-list returns singleton list"
+    code: "{} + 1"
+    expect:
+      value: [1]
+
+  - name: empty_list_plus_empty_list
+    description: "empty list + empty list returns empty list"
+    code: "{} + {}"
+    expect:
+      value: []
+
+  - name: list_plus_nested_list_concat
+    description: "nested lists are concatenated, not flattened"
+    code: "{{1, 2}} + {{3, 4}}"
+    expect:
+      value: [[1, 2], [3, 4]]
+
+  - name: list_plus_string_append
+    description: "list + string appends the string"
+    code: '{1, 2} + "abc"'
+    expect:
+      value: [1, 2, "abc"]
+
+  - name: list_plus_object_append
+    description: "list + object appends the object"
+    code: "{1, 2} + #0"
+    expect:
+      value: [1, 2, "#0"]
+
+  - name: list_plus_float_append
+    description: "list + float appends the float"
+    code: "{1, 2} + 3.14"
+    expect:
+      value: [1, 2, 3.14]
+
+  - name: string_list_plus_string_list_concat
+    description: "string list + string list concatenates"
+    code: '{"a", "b"} + {"c"}'
+    expect:
+      value: ["a", "b", "c"]
+
+  - name: int_plus_list_error
+    description: "int + list is a type error"
+    code: "3 + {1, 2}"
+    expect:
+      error: E_TYPE
+
+  - name: string_plus_list_error
+    description: "string + list is a type error"
+    code: '"abc" + {1}'
+    expect:
+      error: E_TYPE

@@ -1,0 +1,239 @@
+name: sqlite
+description: |
+  Behavioral tests for ToastStunt SQLite builtins.
+  Covers handle lifecycle, invalid handles, query and execute result shapes,
+  parameter binding, last_insert_row_id, limits, info, handles, and interrupt.
+
+requires:
+  builtins:
+    - sqlite_open
+    - sqlite_close
+    - sqlite_handles
+    - sqlite_info
+    - sqlite_query
+    - sqlite_execute
+    - sqlite_last_insert_row_id
+    - sqlite_limit
+    - sqlite_interrupt
+
+tests:
+  - name: sqlite_exists_in_runtime
+    permission: wizard
+    provides: sqlite
+    statement: |
+      try
+        sqlite_open(1, 2, 3, 4, 5, 6, 7, 8, 9);
+        return 1;
+      except (E_VERBNF)
+        return 0;
+      except (ANY)
+        return 1;
+      endtry
+    expect:
+      value: 1
+
+  - name: sqlite_open_close_tracks_handles_and_info
+    permission: wizard
+    assumes: [sqlite]
+    steps:
+      - run: 'sqlite_open(":memory:")'
+        capture: h
+        expect:
+          range: [1, 2147483647]
+      - run: |
+          info = sqlite_info({h});
+          handles = sqlite_handles();
+          return {
+            ({h} in handles) > 0,
+            info["path"] == ":memory:",
+            info["parse_types"] == 1,
+            info["parse_objects"] == 1,
+            info["sanitize_strings"] == 0,
+            info["locks"] == 0
+          };
+        expect:
+          value: [1, 1, 1, 1, 1, 1]
+    cleanup:
+      - run: "sqlite_close({h});"
+        as: wizard
+
+  - name: sqlite_execute_insert_updates_last_insert_row_id
+    permission: wizard
+    assumes: [sqlite]
+    steps:
+      - run: 'sqlite_open(":memory:")'
+        capture: h
+        expect:
+          range: [1, 2147483647]
+      - run: |
+          sqlite_query({h}, "CREATE TABLE t(id INTEGER PRIMARY KEY, n INTEGER, x REAL, obj TEXT, label TEXT)");
+          inserted = sqlite_execute({h}, "INSERT INTO t(n, x, obj, label) VALUES (?, ?, ?, ?)", {42, 3.5, #0, "alpha"});
+          row_id = sqlite_last_insert_row_id({h});
+          rows = sqlite_query({h}, "SELECT id, n, x, obj, label FROM t");
+          return {
+            typeof(inserted) == LIST,
+            length(inserted) == 0,
+            row_id == 1,
+            rows[1]
+          };
+        expect:
+          value:
+            - 1
+            - 1
+            - 1
+            - [1, 42, 3.5, "#0", "alpha"]
+    cleanup:
+      - run: "sqlite_close({h});"
+        as: wizard
+
+  - name: sqlite_execute_select_returns_rows
+    permission: wizard
+    assumes: [sqlite]
+    steps:
+      - run: 'sqlite_open(":memory:")'
+        capture: h
+        expect:
+          range: [1, 2147483647]
+      - run: |
+          rows = sqlite_execute({h}, "SELECT ?, ?, ?, ?", {42, 3.5, #0, "alpha"});
+          return {
+            typeof(rows) == LIST,
+            length(rows) == 1,
+            rows[1]
+          };
+        expect:
+          value:
+            - 1
+            - 1
+            - [42, 3.5, "#0", "alpha"]
+    cleanup:
+      - run: "sqlite_close({h});"
+        as: wizard
+
+  - name: sqlite_query_with_headers_returns_column_names
+    permission: wizard
+    assumes: [sqlite]
+    steps:
+      - run: 'sqlite_open(":memory:")'
+        capture: h
+        expect:
+          range: [1, 2147483647]
+      - run: |
+          sqlite_query({h}, "CREATE TABLE t(x INTEGER, y TEXT)");
+          sqlite_execute({h}, "INSERT INTO t(x, y) VALUES (?, ?)", {7, "beta"});
+          rows = sqlite_query({h}, "SELECT x AS first, y FROM t", 1);
+          return rows;
+        expect:
+          value:
+            - [["first", 7], ["y", "beta"]]
+    cleanup:
+      - run: "sqlite_close({h});"
+        as: wizard
+
+  - name: sqlite_limit_returns_prior_value_and_updates_current
+    permission: wizard
+    assumes: [sqlite]
+    steps:
+      - run: 'sqlite_open(":memory:")'
+        capture: h
+        expect:
+          range: [1, 2147483647]
+      - run: |
+          name_limit = sqlite_limit({h}, "LIMIT_COLUMN", -1);
+          number_limit = sqlite_limit({h}, 2, -1);
+          if (name_limit <= 0)
+            return 0;
+          endif
+          prev = sqlite_limit({h}, 2, name_limit - 1);
+          current = sqlite_limit({h}, "LIMIT_COLUMN", -1);
+          restored = sqlite_limit({h}, "LIMIT_COLUMN", name_limit);
+          final = sqlite_limit({h}, 2, -1);
+          return {
+            name_limit == number_limit,
+            prev == name_limit,
+            current == name_limit - 1,
+            restored == name_limit - 1,
+            final == name_limit
+          };
+        expect:
+          value: [1, 1, 1, 1, 1]
+    cleanup:
+      - run: "sqlite_close({h});"
+        as: wizard
+
+  - name: sqlite_limit_invalid_category
+    permission: wizard
+    assumes: [sqlite]
+    steps:
+      - run: 'sqlite_open(":memory:")'
+        capture: h
+        expect:
+          range: [1, 2147483647]
+      - run: |
+          try
+            sqlite_limit({h}, "LIMIT_NOT_REAL", -1);
+            return 1;
+          except e (ANY)
+            return e[1];
+          endtry
+        expect:
+          value: E_INVARG
+    cleanup:
+      - run: "sqlite_close({h});"
+        as: wizard
+
+  - name: sqlite_close_invalid_handle
+    permission: wizard
+    assumes: [sqlite]
+    code: "sqlite_close(999999)"
+    expect:
+      error: E_INVARG
+
+  - name: sqlite_query_invalid_handle
+    permission: wizard
+    assumes: [sqlite]
+    code: 'sqlite_query(999999, "SELECT 1")'
+    expect:
+      error: E_INVARG
+
+  - name: sqlite_execute_invalid_handle
+    permission: wizard
+    assumes: [sqlite]
+    code: 'sqlite_execute(999999, "SELECT 1", {})'
+    expect:
+      error: E_INVARG
+
+  - name: sqlite_info_invalid_handle
+    permission: wizard
+    assumes: [sqlite]
+    code: "sqlite_info(999999)"
+    expect:
+      error: E_INVARG
+
+  - name: sqlite_interrupt_invalid_handle
+    permission: wizard
+    assumes: [sqlite]
+    code: "sqlite_interrupt(999999)"
+    expect:
+      error: E_INVARG
+
+  - name: sqlite_interrupt_aborts_long_running_query
+    permission: wizard
+    assumes: [sqlite]
+    steps:
+      - run: 'sqlite_open(":memory:")'
+        capture: h
+        expect:
+          range: [1, 2147483647]
+      - run: |
+          fork (1)
+            suspend(1);
+            sqlite_interrupt({h});
+          endfork
+          result = sqlite_query({h}, "WITH RECURSIVE cnt(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM cnt WHERE x < 1000) SELECT count(*) FROM cnt AS a, cnt AS b, cnt AS c, cnt AS d;");
+          return result;
+        expect:
+          contains: interrupt
+    cleanup:
+      - run: "sqlite_close({h});"
+        as: wizard

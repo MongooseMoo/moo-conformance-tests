@@ -7,7 +7,8 @@ description: 'Behavioral tests for server & admin builtins: server_version, func
 
   connected_seconds, idle_seconds, buffered_output_length, boot_player,
 
-  db_disk_size, dump_database, usage, connection_options, set_connection_option.
+  connection_name_lookup, db_disk_size, dump_database, usage, connection_options,
+  set_connection_option.
 
   '
 requires:
@@ -27,6 +28,7 @@ requires:
   - idle_seconds
   - buffered_output_length
   - boot_player
+  - connection_name_lookup
   - db_disk_size
   - dump_database
   - usage
@@ -370,6 +372,27 @@ tests:
     '
   expect:
     value: 1
+- name: connection_name_lookup_records_result
+  description: connection_name_lookup() can rewrite the saved connection name
+  permission: wizard
+  steps:
+    - run: |
+        port = listeners()[1]["port"];
+        return open_network_connection("localhost", port);
+      capture: conn
+      expect:
+        type: obj
+    - run: |
+        lookup = connection_name_lookup({conn}, 1);
+        saved = connection_name({conn});
+        return (length(lookup) > 0) && (saved == lookup);
+      expect:
+        value: 1
+  cleanup:
+    - run: |
+        boot_player({conn});
+        return 1;
+      as: wizard
 - name: connection_info_returns_map
   description: 'VERIFY: typeof(map) value -- scout used 10 based on _TYPE_MAP enum'
   permission: wizard
@@ -499,6 +522,61 @@ tests:
     '
   expect:
     value: 1
+- name: listeners_listen_unlisten_roundtrip
+  description: Creating a listener should add exactly one entry and unlisten should remove it
+  permission: wizard
+  steps:
+    - run: |
+        state = ["before_count" -> length(listeners()),
+                 "before_self_count" -> length(listeners(#0)),
+                 "new_port" -> listen(#0, 0, ["print-messages" -> 1])];
+        return state;
+      capture: state
+      expect:
+        type: map
+    - run: |
+        before_count = {state}["before_count"];
+        before_self_count = {state}["before_self_count"];
+        new_port = {state}["new_port"];
+        after = listeners();
+        after_self = listeners(#0);
+        found = 0;
+        for l in (after)
+          if (l["object"] == #0 && l["port"] == new_port && l["print-messages"] == 1)
+            found = 1;
+          endif
+        endfor
+        return (length(after) == before_count + 1) && (length(after_self) == before_self_count + 1) && found;
+      expect:
+        value: 1
+    - run: |
+        unlisten({state}["new_port"]);
+        return 1;
+      expect:
+        value: 1
+    - run: |
+        before_count = {state}["before_count"];
+        before_self_count = {state}["before_self_count"];
+        new_port = {state}["new_port"];
+        after = listeners();
+        after_self = listeners(#0);
+        found = 0;
+        for l in (after)
+          if (l["port"] == new_port)
+            found = 1;
+          endif
+        endfor
+        return (length(after) == before_count) && (length(after_self) == before_self_count) && !found;
+      expect:
+        value: 1
+  cleanup:
+    - run: |
+        try
+          unlisten({state}["new_port"]);
+        except (ANY)
+        endtry
+        return 1;
+      as: wizard
 - name: connected_seconds_returns_int
   code: typeof(connected_seconds(player))
   expect:
@@ -554,6 +632,30 @@ tests:
   code: typeof(buffered_output_length(player))
   expect:
     value: 0
+- name: buffered_output_length_increases_after_notify
+  description: Notifying the current connection should increase its pending output
+  permission: wizard
+  steps:
+    - run: |
+        port = listeners()[1]["port"];
+        return open_network_connection("localhost", port);
+      capture: conn
+      expect:
+        type: obj
+    - run: |
+        before = buffered_output_length({conn});
+        for i in [1..5]
+          notify({conn}, "buffered_output_length probe");
+        endfor
+        after = buffered_output_length({conn});
+        return after > before;
+      expect:
+        value: 1
+  cleanup:
+    - run: |
+        boot_player({conn});
+        return 1;
+      as: wizard
 - name: boot_player_wrong_type
   permission: wizard
   code: boot_player("not_an_obj")
@@ -569,6 +671,35 @@ tests:
   statement: boot_player(player, player);
   expect:
     error: E_ARGS
+- name: boot_player_disconnects_open_connection
+  description: boot_player() should disconnect a separately opened connection
+  permission: wizard
+  steps:
+    - run: |
+        port = listeners()[1]["port"];
+        return open_network_connection("localhost", port);
+      capture: conn
+      expect:
+        type: obj
+    - run: |
+        return ({conn} in connected_players(1)) > 0;
+      expect:
+        value: 1
+    - run: |
+        boot_player({conn});
+        return 1;
+      expect:
+        value: 1
+    - wait: 100
+    - run: |
+        return ({conn} in connected_players(1)) > 0;
+      expect:
+        value: 0
+  cleanup:
+    - run: |
+        boot_player({conn});
+        return 1;
+      as: wizard
 - name: db_disk_size_returns_int
   code: typeof(db_disk_size())
   expect:
@@ -712,6 +843,32 @@ tests:
     return connection_options(player, "flush-command");
   expect:
     value: ".myroundtrip"
+
+- name: connection_option_keep_alive_map_roundtrip
+  description: keep-alive accepts a map and reports the updated socket settings
+  permission: wizard
+  steps:
+    - run: |
+        state = ["original" -> connection_options(player, "keep-alive")];
+        set_connection_option(player, "keep-alive", ["enabled" -> 1, "idle" -> 1, "interval" -> 1, "count" -> 1]);
+        state["updated"] = connection_options(player, "keep-alive");
+        return state;
+      capture: state
+      expect:
+        type: map
+    - run: |
+        updated = {state}["updated"];
+        return updated["enabled"] == 1 && updated["idle"] == 1 && updated["interval"] == 1 && updated["count"] == 1;
+      expect:
+        value: 1
+  cleanup:
+    - run: |
+        try
+          set_connection_option(player, "keep-alive", {state}["original"]);
+        except (ANY)
+        endtry
+        return 1;
+      as: wizard
 
 - name: connection_option_hold_input_default
   description: Default value of the hold-input connection option is 0

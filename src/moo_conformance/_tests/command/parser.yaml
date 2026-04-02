@@ -370,13 +370,12 @@ tests:
   # ============================================
   # Verb Dispatch Order Tests
   # ============================================
-  # MOO searches for verbs in this order:
+  # ToastStunt searches for verbs in this order:
   # 1. player
   # 2. player.location
   # 3. dobj
   # 4. iobj
-  # 5. dobj.location (if different from player.location)
-  # 6. iobj.location (if different)
+  # It does not continue into dobj.location or iobj.location.
 
   - name: dispatch_player_before_dobj
     description: Verb on player is found before verb on dobj
@@ -484,6 +483,175 @@ tests:
       - run: 'delete_verb(player, "yell");'
         as: wizard
       - run: 'delete_verb({room}, "yell");'
+        as: wizard
+
+  - name: dispatch_dobj_location_is_not_searched
+    description: dobj.location is not searched by ToastStunt's command parser
+    steps:
+      - run: |
+          room = player.location;
+
+          box = create($nothing);
+          box.name = "box";
+          move(box, room);
+
+          ball = create($nothing);
+          ball.name = "ball";
+          move(ball, box);
+
+          add_verb(box, {player, "xd", "poke"}, {"any", "none", "none"});
+          set_verb_code(box, "poke", {"notify(player, \"DOBJ_LOCATION\");"});
+          return {box, ball};
+        capture: objs
+        as: wizard
+      - command: "poke ball"
+        expect:
+          output:
+            contains: "couldn't understand"
+    cleanup:
+      - run: 'delete_verb({objs}[1], "poke");'
+        as: wizard
+      - run: "recycle({objs}[2]);"
+        as: wizard
+      - run: "recycle({objs}[1]);"
+        as: wizard
+
+  - name: dispatch_iobj_location_is_not_searched
+    description: iobj.location is not searched by ToastStunt's command parser
+    steps:
+      - run: |
+          room = player.location;
+
+          ball = create($nothing);
+          ball.name = "ball";
+          move(ball, player);
+
+          crate = create($nothing);
+          crate.name = "crate";
+          move(crate, room);
+
+          bucket = create($nothing);
+          bucket.name = "bucket";
+          move(bucket, crate);
+
+          add_verb(crate, {player, "xd", "place"}, {"any", "in", "any"});
+          set_verb_code(crate, "place", {"notify(player, \"IOBJ_LOCATION\");"});
+          return {ball, crate, bucket};
+        capture: objs
+        as: wizard
+      - command: "place ball in bucket"
+        expect:
+          output:
+            contains: "couldn't understand"
+    cleanup:
+      - run: 'delete_verb({objs}[2], "place");'
+        as: wizard
+      - run: "recycle({objs}[3]);"
+        as: wizard
+      - run: "recycle({objs}[2]);"
+        as: wizard
+      - run: "recycle({objs}[1]);"
+        as: wizard
+
+  - name: preposition_whitespace_and_quoting_match
+    description: Extra whitespace and quoted multiword objects still parse correctly
+    steps:
+      - run: |
+          box = create($nothing);
+          box.name = "box";
+          move(box, player);
+
+          ball = create($nothing);
+          ball.name = "red ball";
+          move(ball, player);
+
+          add_verb(box, {player, "xd", "put"}, {"any", "in", "this"});
+          set_verb_code(box, "put", {
+            "notify(player, \"DOBJSTR:\" + dobjstr);",
+            "notify(player, \"PREPSTR:\" + prepstr);",
+            "notify(player, \"IOBJSTR:\" + iobjstr);"
+          });
+          return {box, ball};
+        capture: objs
+        as: wizard
+      - command: '   put   "red ball"    in    box   '
+        expect:
+          output:
+            - "DOBJSTR:red ball"
+            - "PREPSTR:in"
+            - "IOBJSTR:box"
+    cleanup:
+      - run: 'delete_verb({objs}[1], "put");'
+        as: wizard
+      - run: "recycle({objs}[2]);"
+        as: wizard
+      - run: "recycle({objs}[1]);"
+        as: wizard
+
+  - name: do_command_sees_normalized_wordlist_before_parsing
+    description: do_command receives the normalized command word list and false allows parsing to continue
+    steps:
+      - run: |
+          try
+            add_property(#0, "cmdlog", {}, {#0, "w"});
+          except (E_INVARG)
+          endtry
+          try
+            add_verb(#0, {#0, "rxd", "do_command"}, {"this", "none", "this"});
+          except (E_INVARG)
+          endtry
+          set_verb_code(#0, "do_command", {
+            "if (args[1] != \";\")",
+            "  #0.cmdlog = args;",
+            "endif",
+            "return 0;"
+          });
+
+          box = create($nothing);
+          box.name = "box";
+          move(box, player);
+
+          ball = create($nothing);
+          ball.name = "red ball";
+          move(ball, player);
+
+          add_verb(box, {player, "xd", "put"}, {"any", "in", "this"});
+          set_verb_code(box, "put", {
+            "notify(player, \"DOBJSTR:\" + dobjstr);",
+            "notify(player, \"PREPSTR:\" + prepstr);",
+            "notify(player, \"IOBJSTR:\" + iobjstr);"
+          });
+          return {box, ball};
+        capture: objs
+        as: wizard
+      - command: '   put   "red ball"    in    box   '
+        expect:
+          output:
+            - "DOBJSTR:red ball"
+            - "PREPSTR:in"
+            - "IOBJSTR:box"
+      - run: "return #0.cmdlog;"
+        as: wizard
+        expect:
+          value: ["put", "red ball", "in", "box"]
+    cleanup:
+      - run: |
+          try
+            delete_verb(#0, "do_command");
+          except (ANY)
+          endtry
+        as: wizard
+      - run: |
+          try
+            delete_property(#0, "cmdlog");
+          except (ANY)
+          endtry
+        as: wizard
+      - run: 'delete_verb({objs}[1], "put");'
+        as: wizard
+      - run: "recycle({objs}[2]);"
+        as: wizard
+      - run: "recycle({objs}[1]);"
         as: wizard
 
   # ============================================

@@ -122,6 +122,252 @@ tests:
         as: wizard
 
   # ============================================
+  # Object Matching Semantics
+  # ============================================
+
+  - name: me_resolves_to_player
+    description: The special object name "me" resolves to the current player
+    steps:
+      - run: |
+          add_verb(player, {player, "xd", "inspect"}, {"any", "none", "none"});
+          set_verb_code(player, "inspect", {"notify(player, \"ISME:\" + tostr(dobj == player));"});
+          return 1;
+        as: wizard
+      - command: "inspect me"
+        expect:
+          output: "ISME:1"
+    cleanup:
+      - run: 'delete_verb(player, "inspect");'
+        as: wizard
+
+  - name: here_resolves_to_player_location
+    description: The special object name "here" resolves to the player's location
+    steps:
+      - run: |
+          add_verb(player, {player, "xd", "inspect"}, {"any", "none", "none"});
+          set_verb_code(player, "inspect", {"notify(player, \"ISHERE:\" + tostr(dobj == player.location));"});
+          return 1;
+        as: wizard
+      - command: "inspect here"
+        expect:
+          output: "ISHERE:1"
+    cleanup:
+      - run: 'delete_verb(player, "inspect");'
+        as: wizard
+
+  - name: exact_match_preferred_over_partial_match
+    description: Exact object name matches win over partial matches
+    steps:
+      - run: |
+          exact = create($nothing);
+          exact.name = "ball";
+          move(exact, player);
+          partial = create($nothing);
+          partial.name = "balloon";
+          move(partial, player);
+          add_verb(player, {player, "xd", "grab"}, {"any", "none", "none"});
+          set_verb_code(player, "grab", {"notify(player, \"NAME:\" + dobj.name);"});
+          return {exact, partial};
+        capture: objs
+        as: wizard
+      - command: "grab ball"
+        expect:
+          output: "NAME:ball"
+    cleanup:
+      - run: 'delete_verb(player, "grab");'
+        as: wizard
+      - run: "recycle({objs}[1]);"
+        as: wizard
+      - run: "recycle({objs}[2]);"
+        as: wizard
+
+  - name: unique_partial_match_resolves_to_object
+    description: A unique partial object name resolves successfully
+    steps:
+      - run: |
+          obj = create($nothing);
+          obj.name = "lantern";
+          move(obj, player);
+          add_verb(player, {player, "xd", "grab"}, {"any", "none", "none"});
+          set_verb_code(player, "grab", {"notify(player, \"NAME:\" + dobj.name);"});
+          return obj;
+        capture: lantern
+        as: wizard
+      - command: "grab lan"
+        expect:
+          output: "NAME:lantern"
+    cleanup:
+      - run: 'delete_verb(player, "grab");'
+        as: wizard
+      - run: "recycle({lantern})"
+        as: wizard
+
+  - name: ambiguous_partial_match_is_minus_2
+    description: Ambiguous partial object names resolve to #-2
+    steps:
+      - run: |
+          first = create($nothing);
+          first.name = "book";
+          move(first, player);
+          second = create($nothing);
+          second.name = "box";
+          move(second, player);
+          add_verb(player, {player, "xd", "grab"}, {"any", "none", "none"});
+          set_verb_code(player, "grab", {"notify(player, \"DOBJ:\" + toliteral(dobj));"});
+          return {first, second};
+        capture: objs
+        as: wizard
+      - command: "grab bo"
+        expect:
+          output: "DOBJ:#-2"
+    cleanup:
+      - run: 'delete_verb(player, "grab");'
+        as: wizard
+      - run: "recycle({objs}[1]);"
+        as: wizard
+      - run: "recycle({objs}[2]);"
+        as: wizard
+
+  - name: duplicate_exact_matches_are_ambiguous
+    description: Matching exact names in inventory and room produce #-2
+    steps:
+      - run: |
+          inv = create($nothing);
+          inv.name = "coin";
+          move(inv, player);
+          room = create($nothing);
+          room.name = "coin";
+          move(room, player.location);
+          add_verb(player, {player, "xd", "grab"}, {"any", "none", "none"});
+          set_verb_code(player, "grab", {"notify(player, \"DOBJ:\" + toliteral(dobj));"});
+          return {inv, room};
+        capture: objs
+        as: wizard
+      - command: "grab coin"
+        expect:
+          output: "DOBJ:#-2"
+    cleanup:
+      - run: 'delete_verb(player, "grab");'
+        as: wizard
+      - run: "recycle({objs}[1]);"
+        as: wizard
+      - run: "recycle({objs}[2]);"
+        as: wizard
+
+  - name: invalid_numeric_object_reference_is_failed_match
+    description: Invalid #object references resolve to FAILED_MATCH
+    steps:
+      - run: |
+          add_verb(player, {player, "xd", "grab"}, {"any", "none", "none"});
+          set_verb_code(player, "grab", {"notify(player, \"DOBJ:\" + toliteral(dobj));"});
+          return 1;
+        as: wizard
+      - command: "grab #999999"
+        expect:
+          output: "DOBJ:#-3"
+    cleanup:
+      - run: 'delete_verb(player, "grab");'
+        as: wizard
+
+  - name: numeric_object_reference_bypasses_visibility
+    description: Valid #object references resolve even when the object is not in inventory or room
+    steps:
+      - run: |
+          hidden = create($nothing);
+          hidden.name = "hidden";
+          add_verb(player, {player, "xd", "grab"}, {"any", "none", "none"});
+          set_verb_code(player, "grab", {"notify(player, \"NAME:\" + dobj.name);"});
+          return hidden;
+        capture: hidden
+        as: wizard
+      - command: "grab {hidden}"
+        expect:
+          output: "NAME:hidden"
+    cleanup:
+      - run: 'delete_verb(player, "grab");'
+        as: wizard
+      - run: "recycle({hidden})"
+        as: wizard
+
+  - name: nested_contents_are_not_matched
+    description: Objects inside other objects are not considered during direct matching
+    steps:
+      - run: |
+          container = create($nothing);
+          container.name = "box";
+          move(container, player);
+          hidden = create($nothing);
+          hidden.name = "gem";
+          move(hidden, container);
+          add_verb(player, {player, "xd", "grab"}, {"any", "none", "none"});
+          set_verb_code(player, "grab", {"notify(player, \"DOBJ:\" + toliteral(dobj));"});
+          return {container, hidden};
+        capture: objs
+        as: wizard
+      - command: "grab gem"
+        expect:
+          output: "DOBJ:#-3"
+    cleanup:
+      - run: 'delete_verb(player, "grab");'
+        as: wizard
+      - run: "recycle({objs}[2]);"
+        as: wizard
+      - run: "recycle({objs}[1]);"
+        as: wizard
+
+  - name: quoted_multiword_name_matches_single_object
+    description: Quoted object names are preserved for matching
+    steps:
+      - run: |
+          obj = create($nothing);
+          obj.name = "red ball";
+          move(obj, player);
+          add_verb(player, {player, "xd", "grab"}, {"any", "none", "none"});
+          set_verb_code(player, "grab", {"notify(player, \"NAME:\" + dobj.name);"});
+          return obj;
+        capture: ball
+        as: wizard
+      - command: 'grab "red ball"'
+        expect:
+          output: "NAME:red ball"
+    cleanup:
+      - run: 'delete_verb(player, "grab");'
+        as: wizard
+      - run: "recycle({ball})"
+        as: wizard
+
+  - name: ambiguous_iobj_match_is_minus_2
+    description: Ambiguous indirect object names resolve to #-2
+    steps:
+      - run: |
+          ball = create($nothing);
+          ball.name = "ball";
+          move(ball, player);
+          box = create($nothing);
+          box.name = "book";
+          move(box, player);
+          book = create($nothing);
+          book.name = "box";
+          move(book, player);
+          add_verb(player, {player, "xd", "put"}, {"any", "in", "any"});
+          set_verb_code(player, "put", {"notify(player, \"IOBJ:\" + toliteral(iobj));"});
+          return {ball, box, book};
+        capture: objs
+        as: wizard
+      - command: "put ball in bo"
+        expect:
+          output: "IOBJ:#-2"
+    cleanup:
+      - run: 'delete_verb(player, "put");'
+        as: wizard
+      - run: "recycle({objs}[1]);"
+        as: wizard
+      - run: "recycle({objs}[2]);"
+        as: wizard
+      - run: "recycle({objs}[3]);"
+        as: wizard
+
+  # ============================================
   # Verb Dispatch Order Tests
   # ============================================
   # MOO searches for verbs in this order:

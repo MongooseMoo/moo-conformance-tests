@@ -1,0 +1,75 @@
+name: argon2
+description: Argon2id password hashing builtin behavior
+
+tests:
+  - name: argon2_non_wizard_denied
+    permission: programmer
+    code: 'argon2("password", "saltsalt")'
+    expect:
+      error: E_PERM
+
+  - name: argon2_no_args
+    permission: wizard
+    code: 'argon2()'
+    expect:
+      error: E_ARGS
+
+  - name: argon2_password_type_error
+    permission: wizard
+    code: 'argon2(1, "saltsalt")'
+    expect:
+      error: E_TYPE
+
+  - name: argon2_salt_type_error
+    permission: wizard
+    code: 'argon2("password", 1)'
+    expect:
+      error: E_TYPE
+
+  - name: argon2_iterations_type_error
+    permission: wizard
+    code: 'argon2("password", "saltsalt", "two")'
+    expect:
+      error: E_TYPE
+
+  - name: argon2_known_vector
+    permission: wizard
+    code: 'argon2("password", "saltsalt", 2, 1024, 1)'
+    expect:
+      value: "$argon2id$v=19$m=1024,t=2,p=1$c2FsdHNhbHQ$gg7MDf+O0u4Yh4jYvTjXJps6cRjBIQvJ4r7MQOv1A58"
+
+  - name: argon2_verify_non_wizard_denied
+    permission: programmer
+    code: 'argon2_verify("$argon2id$v=19$m=1024,t=2,p=1$c2FsdHNhbHQ$gg7MDf+O0u4Yh4jYvTjXJps6cRjBIQvJ4r7MQOv1A58", "password")'
+    expect:
+      error: E_PERM
+
+  - name: argon2_verify_no_args
+    permission: wizard
+    code: 'argon2_verify()'
+    expect:
+      error: E_ARGS
+
+  - name: argon2_verify_hash_type_error
+    permission: wizard
+    code: 'argon2_verify(1, "password")'
+    expect:
+      error: E_TYPE
+
+  - name: argon2_verify_password_type_error
+    permission: wizard
+    code: 'argon2_verify("$argon2id$v=19$m=1024,t=2,p=1$c2FsdHNhbHQ$gg7MDf+O0u4Yh4jYvTjXJps6cRjBIQvJ4r7MQOv1A58", 1)'
+    expect:
+      error: E_TYPE
+
+  - name: argon2_verify_known_hash
+    permission: wizard
+    code: 'argon2_verify("$argon2id$v=19$m=1024,t=2,p=1$c2FsdHNhbHQ$gg7MDf+O0u4Yh4jYvTjXJps6cRjBIQvJ4r7MQOv1A58", "password")'
+    expect:
+      value: 1
+
+  - name: argon2_verify_wrong_password
+    permission: wizard
+    code: 'argon2_verify("$argon2id$v=19$m=1024,t=2,p=1$c2FsdHNhbHQ$gg7MDf+O0u4Yh4jYvTjXJps6cRjBIQvJ4r7MQOv1A58", "wrong-password")'
+    expect:
+      value: 0

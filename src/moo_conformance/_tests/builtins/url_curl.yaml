@@ -1,0 +1,67 @@
+name: url_curl
+description: URL encoding, decoding, and curl builtin argument coverage
+
+tests:
+  - name: url_encode_no_args
+    skip_if: "missing builtin.url_encode"
+    code: 'url_encode()'
+    expect:
+      error: E_ARGS
+
+  - name: url_encode_type_error
+    skip_if: "missing builtin.url_encode"
+    code: 'url_encode(1)'
+    expect:
+      error: E_TYPE
+
+  - name: url_encode_reserved_characters
+    skip_if: "missing builtin.url_encode"
+    code: 'url_encode("a b/c?d=e&f")'
+    expect:
+      value: "a%20b%2Fc%3Fd%3De%26f"
+
+  - name: url_decode_no_args
+    skip_if: "missing builtin.url_decode"
+    code: 'url_decode()'
+    expect:
+      error: E_ARGS
+
+  - name: url_decode_type_error
+    skip_if: "missing builtin.url_decode"
+    code: 'url_decode(1)'
+    expect:
+      error: E_TYPE
+
+  - name: url_decode_percent_encoding
+    skip_if: "missing builtin.url_decode"
+    code: 'url_decode("a%20b%2Fc%3Fd%3De%26f")'
+    expect:
+      value: "a b/c?d=e&f"
+
+  - name: curl_non_wizard_denied
+    skip_if: "missing builtin.curl"
+    permission: programmer
+    code: 'curl("http://example.com")'
+    expect:
+      error: E_PERM
+
+  - name: curl_no_args
+    skip_if: "missing builtin.curl"
+    permission: wizard
+    code: 'curl()'
+    expect:
+      error: E_ARGS
+
+  - name: curl_url_type_error
+    skip_if: "missing builtin.curl"
+    permission: wizard
+    code: 'curl(1)'
+    expect:
+      error: E_TYPE
+
+  - name: curl_header_flag_type_error
+    skip_if: "missing builtin.curl"
+    permission: wizard
+    code: 'curl("http://example.com", 0, "nope")'
+    expect:
+      error: E_TYPE

@@ -2,7 +2,7 @@ name: http
 description: HTTP request/response parsing builtin (read_http)
 
 requires:
-  builtins: [read_http, force_input, set_connection_option]
+  builtins: [read_http, read, force_input, set_connection_option, kill_task, boot_player]
 
 tests:
   - name: non_wizard_cannot_call_no_arg_version
@@ -412,3 +412,168 @@ tests:
         - 200
         - {Content-Type: "text/plain", Transfer-Encoding: "chunked"}
         - "This is the data in the first chunk~0D~0Aand this is the second one~0D~0A"
+
+  - name: read_http_read_conflicts_with_read_on_same_connection
+    description: read() fails when the same connection is already blocked in read_http()
+    permission: wizard
+    steps:
+      - run: |
+          try
+            add_property(#0, "__http_lifecycle_conn", #-1, {#0, "rw"});
+          except (ANY)
+          endtry
+          return 1;
+      - new_connection:
+          capture: conn1
+      - send:
+          connection: conn1
+          text: "connect Wizard"
+      - send:
+          connection: conn1
+          text: ";#0.__http_lifecycle_conn = player;"
+      - run: |
+          conn = #0.__http_lifecycle_conn;
+          set_connection_option(conn, "hold-input", 1);
+          set_connection_option(conn, "binary", 1);
+          fork task (0)
+            read_http("request", conn);
+            set_connection_option(conn, "hold-input", 0);
+            set_connection_option(conn, "binary", 0);
+          endfork;
+          fork (0)
+            suspend();
+          endfork;
+          return task;
+      - run: "return read(#0.__http_lifecycle_conn);"
+        expect:
+          error: E_INVARG
+      - close_connection: conn1
+    cleanup:
+      - run: |
+          try
+            delete_property(#0, "__http_lifecycle_conn");
+          except (ANY)
+          endtry
+          return 1;
+        as: wizard
+
+  - name: read_http_killed_task_allows_fresh_reads
+    description: Killing a suspended read_http task leaves the connection usable
+    permission: wizard
+    steps:
+      - run: |
+          try
+            add_property(#0, "__http_lifecycle_conn", #-1, {#0, "rw"});
+          except (ANY)
+          endtry
+          return 1;
+      - new_connection:
+          capture: conn1
+      - send:
+          connection: conn1
+          text: "connect Wizard"
+      - send:
+          connection: conn1
+          text: ";#0.__http_lifecycle_conn = player;"
+      - run: |
+          conn = #0.__http_lifecycle_conn;
+          set_connection_option(conn, "hold-input", 1);
+          set_connection_option(conn, "binary", 1);
+          fork task (0)
+            force_input(conn, "GET /1~0D~0Aone: two~0D~0A");
+            read_http("request", conn);
+            set_connection_option(conn, "hold-input", 0);
+            set_connection_option(conn, "binary", 0);
+          endfork;
+          fork (0)
+            suspend();
+          endfork;
+          return task;
+        capture: http_task
+      - run: "return kill_task({http_task});"
+        expect:
+          value: 0
+      - run: |
+          conn = #0.__http_lifecycle_conn;
+          set_connection_option(conn, "hold-input", 1);
+          set_connection_option(conn, "binary", 1);
+          force_input(conn, "GET /2~0D~0Afoo: bar~0D~0A~0D~0A");
+          result = read_http("request", conn);
+          set_connection_option(conn, "hold-input", 0);
+          set_connection_option(conn, "binary", 0);
+          return {result["method"], result["uri"], result["headers"]};
+        expect:
+          value:
+            - "GET"
+            - "/2"
+            - {foo: "bar"}
+      - run: |
+          conn = #0.__http_lifecycle_conn;
+          set_connection_option(conn, "hold-input", 1);
+          set_connection_option(conn, "binary", 1);
+          force_input(conn, "HTTP/1.1 500 Error~0D~0Afoo: bar~0D~0A~0D~0A");
+          result = read_http("response", conn);
+          set_connection_option(conn, "hold-input", 0);
+          set_connection_option(conn, "binary", 0);
+          return {result["status"], result["headers"]};
+        expect:
+          value:
+            - 500
+            - {foo: "bar"}
+      - close_connection: conn1
+    cleanup:
+      - run: |
+          try
+            delete_property(#0, "__http_lifecycle_conn");
+          except (ANY)
+          endtry
+          return 1;
+        as: wizard
+
+  - name: read_http_abrupt_close_while_pending
+    description: Closing a connection while read_http() is pending does not hang
+    permission: wizard
+    steps:
+      - run: |
+          try
+            add_property(#0, "__http_lifecycle_conn", #-1, {#0, "rw"});
+          except (ANY)
+          endtry
+          return 1;
+      - new_connection:
+          capture: conn1
+      - send:
+          connection: conn1
+          text: "connect Wizard"
+      - send:
+          connection: conn1
+          text: ";#0.__http_lifecycle_conn = player;"
+      - run: |
+          conn = #0.__http_lifecycle_conn;
+          set_connection_option(conn, "hold-input", 1);
+          set_connection_option(conn, "binary", 1);
+          fork task (0)
+            force_input(conn, "GET /1~0D~0Aone: two~0D~0A");
+            read_http("request", conn);
+            set_connection_option(conn, "hold-input", 0);
+            set_connection_option(conn, "binary", 0);
+          endfork;
+          fork (0)
+            suspend();
+          endfork;
+          return task;
+        capture: http_task
+      - run: |
+          boot_player(#0.__http_lifecycle_conn);
+          return 1;
+        expect:
+          value: 1
+      - close_connection: conn1
+    cleanup:
+      - run: |
+          try
+            delete_property(#0, "__http_lifecycle_conn");
+          except (ANY)
+          endtry
+          return 1;
+        as: wizard

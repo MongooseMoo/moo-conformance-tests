@@ -86,7 +86,13 @@ class ManagedServer:
 
         if self._db_copy_path is None:
             raise RuntimeError("Managed server DB copy path is missing")
-        shutil.copy2(self.db_path, self._db_copy_path)
+
+        # On the initial start, or when explicitly switching suites to a
+        # different source database, refresh the managed working copy from the
+        # selected input DB. A plain restart should preserve the current working
+        # copy so restart-based persistence tests observe the checkpointed state.
+        if self._temp_dir is None or db_path is not None or not self._db_copy_path.exists():
+            shutil.copy2(self.db_path, self._db_copy_path)
         db_dest = self._db_copy_path
 
         # Use forward slashes so shlex.split doesn't eat backslashes

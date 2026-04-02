@@ -1,23 +1,16 @@
 name: http
 description: HTTP request/response parsing builtin (read_http)
 
-# NOTE: Most tests from test_http.rb require connection infrastructure:
-# - force_input() to inject HTTP data into connection buffer
-# - set_connection_option() to control input buffering
-# - A suspended task to feed messages to the connection
-#
-# These tests cover permission checks and argument validation.
-# Full HTTP parsing tests require integration test infrastructure.
+requires:
+  builtins: [read_http, force_input, set_connection_option]
 
 tests:
-  # Permission checks
   - name: non_wizard_cannot_call_no_arg_version
     permission: programmer
     code: 'read_http("request")'
     expect:
-      error: E_PERM  # Permission checked before args
+      error: E_PERM
 
-  # Argument validation
   - name: read_http_no_args_fails
     permission: wizard
     code: 'read_http()'
@@ -36,7 +29,6 @@ tests:
     expect:
       error: E_INVARG
 
-  # Type validation for arguments
   - name: read_http_type_arg_not_string
     permission: wizard
     code: 'read_http(1)'
@@ -49,42 +41,374 @@ tests:
     expect:
       error: E_TYPE
 
-# NOTE: Testing read_http("request") or read_http("response") with valid
-# arguments but no data causes the task to suspend waiting for input.
-# This cannot be tested in the simple conformance framework.
-# Full HTTP parsing tests require integration infrastructure with
-# force_input() and connection state management.
+  - name: read_http_forced_invalid_input_returns_zero
+    description: Invalid forced input is ignored and read_http returns 0
+    permission: wizard
+    statement: |
+      set_connection_option(player, "hold-input", 1);
+      set_connection_option(player, "binary", 1);
+      fork (0)
+        force_input(player, "~ZZ~!!");
+      endfork;
+      result = read_http("request");
+      set_connection_option(player, "hold-input", 0);
+      set_connection_option(player, "binary", 0);
+      return result;
+    expect:
+      value: 0
 
-# Integration tests that require connection infrastructure (NOT CONVERTED):
-#
-# From test_http.rb - these need force_input() and connection state:
-# - test_that_forcing_bad_input_fails_gracefully
-# - test_that_bad_requests_fail
-# - test_that_bad_responses_fail
-# - test_that_it_is_invalid_to_read_from_a_connection_that_is_already_being_read
-# - test_that_we_can_kill_a_task_but_still_read_more_http_on_the_connection
-# - test_that_we_can_abruptly_close_a_reading_connection
-# - test_that_chopped_up_requests_work
-# - test_that_chopped_up_responses_work
-# - test_that_curl_get_request_works
-# - test_that_firefox_get_request_works
-# - test_that_chrome_get_request_works
-# - test_that_no_headers_no_body_request_works
-# - test_that_one_header_no_body_request_works
-# - test_that_funky_content_length_request_works
-# - test_that_chunked_all_your_base_request_works
-# - test_that_line_folding_in_header_request_works
-# - test_that_no_headers_no_body_response_works
-# - test_that_no_reason_phrase_response_works
-# - test_that_trailing_space_on_chunked_body_works
-#
-# These tests verify HTTP parsing logic but require:
-# 1. A connection object with buffered input
-# 2. force_input() to inject HTTP bytes (with ~0D~0A escape sequences)
-# 3. set_connection_option(conn, "hold-input", 1) to buffer
-# 4. A task infrastructure to manage the connection state
-#
-# To test these properly, we would need to either:
-# - Implement a mock connection system in the conformance framework
-# - Write integration tests that set up real connections
-# - Extract the HTTP parsing logic into a testable pure function
+  - name: read_http_bad_request_invalid_method
+    description: Malformed request lines report INVALID_METHOD
+    permission: wizard
+    statement: |
+      set_connection_option(player, "hold-input", 1);
+      set_connection_option(player, "binary", 1);
+      fork (0)
+        force_input(player, "foobar~0D~0A");
+      endfork;
+      result = read_http("request");
+      set_connection_option(player, "hold-input", 0);
+      set_connection_option(player, "binary", 0);
+      return result["error"][1];
+    expect:
+      value: "INVALID_METHOD"
+
+  - name: read_http_bad_request_invalid_path
+    description: Invalid request paths report INVALID_PATH
+    permission: wizard
+    statement: |
+      set_connection_option(player, "hold-input", 1);
+      set_connection_option(player, "binary", 1);
+      fork (0)
+        force_input(player, "GET /~FFbad HTTP/1.1~0D~0A");
+      endfork;
+      result = read_http("request");
+      set_connection_option(player, "hold-input", 0);
+      set_connection_option(player, "binary", 0);
+      return result["error"][1];
+    expect:
+      value: "INVALID_PATH"
+
+  - name: read_http_bad_request_invalid_header_token
+    description: Invalid request headers report INVALID_HEADER_TOKEN
+    permission: wizard
+    statement: |
+      set_connection_option(player, "hold-input", 1);
+      set_connection_option(player, "binary", 1);
+      fork (0)
+        force_input(player, "GET /bad HTTP/1.1~0D~0A");
+        force_input(player, "foo~00bar~0D~0A");
+      endfork;
+      result = read_http("request");
+      set_connection_option(player, "hold-input", 0);
+      set_connection_option(player, "binary", 0);
+      return result["error"][1];
+    expect:
+      value: "INVALID_HEADER_TOKEN"
+
+  - name: read_http_bad_response_invalid_constant
+    description: Malformed response constants report INVALID_CONSTANT
+    permission: wizard
+    statement: |
+      set_connection_option(player, "hold-input", 1);
+      set_connection_option(player, "binary", 1);
+      fork (0)
+        force_input(player, "foobar~0D~0A");
+      endfork;
+      result = read_http("response");
+      set_connection_option(player, "hold-input", 0);
+      set_connection_option(player, "binary", 0);
+      return result["error"][1];
+    expect:
+      value: "INVALID_CONSTANT"
+
+  - name: read_http_bad_response_invalid_status
+    description: Invalid response status fields report INVALID_STATUS
+    permission: wizard
+    statement: |
+      set_connection_option(player, "hold-input", 1);
+      set_connection_option(player, "binary", 1);
+      fork (0)
+        force_input(player, "HTTP/1.1 2~00~00 Yow~0D~0A");
+      endfork;
+      result = read_http("response");
+      set_connection_option(player, "hold-input", 0);
+      set_connection_option(player, "binary", 0);
+      return result["error"][1];
+    expect:
+      value: "INVALID_STATUS"
+
+  - name: read_http_bad_response_invalid_header_token
+    description: Invalid response headers report INVALID_HEADER_TOKEN
+    permission: wizard
+    statement: |
+      set_connection_option(player, "hold-input", 1);
+      set_connection_option(player, "binary", 1);
+      fork (0)
+        force_input(player, "HTTP/1.1 404 Not Found~0D~0A");
+        force_input(player, "foo~FFbar~0D~0A");
+      endfork;
+      result = read_http("response");
+      set_connection_option(player, "hold-input", 0);
+      set_connection_option(player, "binary", 0);
+      return result["error"][1];
+    expect:
+      value: "INVALID_HEADER_TOKEN"
+
+  - name: read_http_chopped_up_requests_work
+    description: Chopped-up requests parse correctly
+    permission: wizard
+    statement: |
+      set_connection_option(player, "hold-input", 1);
+      set_connection_option(player, "binary", 1);
+      fork (0)
+        for piece in ({
+          "G", "E", "T", " ", "/", "t", "e", "s", "t", " ", "H", "T", "T", "P", "/", "1", ".", "1",
+          "~0D~0A", "h", "e", "a", "d", "e", "r", ":", " ", "t", "e", "s", "t", "~0D~0A", "~0D~0A"
+        })
+          force_input(player, piece);
+        endfor
+      endfork;
+      result = read_http("request");
+      set_connection_option(player, "hold-input", 0);
+      set_connection_option(player, "binary", 0);
+      body = #-1;
+      if ("body" in mapkeys(result))
+        body = result["body"];
+      endif
+      return {result["method"], result["uri"], result["headers"], body};
+    expect:
+      value:
+        - "GET"
+        - "/test"
+        - {header: "test"}
+        - "#-1"
+
+  - name: read_http_chopped_up_responses_work
+    description: Chopped-up responses parse correctly
+    permission: wizard
+    statement: |
+      set_connection_option(player, "hold-input", 1);
+      set_connection_option(player, "binary", 1);
+      fork (0)
+        for piece in ({
+          "H", "T", "T", "P", "/", "1", ".", "1", " ", "2", "0", "0", " ", "O", "K",
+          "~0D~0A", "h", "e", "a", "d", "e", "r", ":", " ", "t", "e", "s", "t", "~0D~0A", "~0D~0A"
+        })
+          force_input(player, piece);
+        endfor
+      endfork;
+      result = read_http("response");
+      set_connection_option(player, "hold-input", 0);
+      set_connection_option(player, "binary", 0);
+      body = #-1;
+      if ("body" in mapkeys(result))
+        body = result["body"];
+      endif
+      return {result["status"], result["headers"], body};
+    expect:
+      value:
+        - 200
+        - {header: "test"}
+        - "#-1"
+
+  - name: read_http_no_headers_no_body_request_works
+    description: Simple requests without headers or body parse correctly
+    permission: wizard
+    statement: |
+      set_connection_option(player, "hold-input", 1);
+      set_connection_option(player, "binary", 1);
+      fork (0)
+        force_input(player, "GET /get_no_headers_no_body/world HTTP/1.1~0D~0A");
+        force_input(player, "~0D~0A");
+      endfork;
+      result = read_http("request");
+      set_connection_option(player, "hold-input", 0);
+      set_connection_option(player, "binary", 0);
+      body = #-1;
+      if ("body" in mapkeys(result))
+        body = result["body"];
+      endif
+      return {result["method"], result["uri"], result["headers"], body};
+    expect:
+      value:
+        - "GET"
+        - "/get_no_headers_no_body/world"
+        - {}
+        - "#-1"
+
+  - name: read_http_one_header_no_body_request_works
+    description: Requests with a single header and no body parse correctly
+    permission: wizard
+    statement: |
+      set_connection_option(player, "hold-input", 1);
+      set_connection_option(player, "binary", 1);
+      fork (0)
+        force_input(player, "GET /get_one_header_no_body HTTP/1.1~0D~0A");
+        force_input(player, "Accept: */*~0D~0A");
+        force_input(player, "~0D~0A");
+      endfork;
+      result = read_http("request");
+      set_connection_option(player, "hold-input", 0);
+      set_connection_option(player, "binary", 0);
+      body = #-1;
+      if ("body" in mapkeys(result))
+        body = result["body"];
+      endif
+      return {result["method"], result["uri"], result["headers"], body};
+    expect:
+      value:
+        - "GET"
+        - "/get_one_header_no_body"
+        - {Accept: "*/*"}
+        - "#-1"
+
+  - name: read_http_funky_content_length_request_works
+    description: Content-Length is honored even on HTTP/1.0 requests
+    permission: wizard
+    statement: |
+      set_connection_option(player, "hold-input", 1);
+      set_connection_option(player, "binary", 1);
+      fork (0)
+        force_input(player, "GET /get_funky_content_length_body_hello HTTP/1.0~0D~0A");
+        force_input(player, "conTENT-Length: 5~0D~0A");
+        force_input(player, "~0D~0A");
+        force_input(player, "HELLO");
+      endfork;
+      result = read_http("request");
+      set_connection_option(player, "hold-input", 0);
+      set_connection_option(player, "binary", 0);
+      return {result["method"], result["uri"], result["headers"], result["body"]};
+    expect:
+      value:
+        - "GET"
+        - "/get_funky_content_length_body_hello"
+        - {conTENT-Length: "5"}
+        - "HELLO"
+
+  - name: read_http_chunked_all_your_base_request_works
+    description: Chunked requests are decoded and concatenated correctly
+    permission: wizard
+    statement: |
+      set_connection_option(player, "hold-input", 1);
+      set_connection_option(player, "binary", 1);
+      fork (0)
+        force_input(player, "POST /post_chunked_all_your_base HTTP/1.1~0D~0A");
+        force_input(player, "Transfer-Encoding: chunked~0D~0A");
+        force_input(player, "~0D~0A");
+        force_input(player, "1e~0D~0Aall your base are belong to us~0D~0A");
+        force_input(player, "0~0D~0A");
+        force_input(player, "~0D~0A");
+      endfork;
+      result = read_http("request");
+      set_connection_option(player, "hold-input", 0);
+      set_connection_option(player, "binary", 0);
+      return {result["method"], result["uri"], result["headers"], result["body"]};
+    expect:
+      value:
+        - "POST"
+        - "/post_chunked_all_your_base"
+        - {Transfer-Encoding: "chunked"}
+        - "all your base are belong to us"
+
+  - name: read_http_line_folding_in_header_request_works
+    description: Folded request headers are unfolded correctly
+    permission: wizard
+    statement: |
+      set_connection_option(player, "hold-input", 1);
+      set_connection_option(player, "binary", 1);
+      fork (0)
+        force_input(player, "GET / HTTP/1.1~0D~0A");
+        force_input(player, "Line1:   abc~0D~0A");
+        force_input(player, "~09def~0D~0A");
+        force_input(player, " ghi~0D~0A");
+        force_input(player, "~09~09jkl~0D~0A");
+        force_input(player, "  mno ~0D~0A");
+        force_input(player, "~09 ~09qrs~0D~0A");
+        force_input(player, "Line2: ~09 line2~09~0D~0A");
+        force_input(player, "~0D~0A");
+      endfork;
+      result = read_http("request");
+      set_connection_option(player, "hold-input", 0);
+      set_connection_option(player, "binary", 0);
+      return {result["headers"]["Line1"], result["headers"]["Line2"]};
+    expect:
+      value:
+        - "abcdefghijklmno qrs"
+        - "line2~09"
+
+  - name: read_http_no_headers_no_body_response_works
+    description: Simple responses without headers or body parse correctly
+    permission: wizard
+    statement: |
+      set_connection_option(player, "hold-input", 1);
+      set_connection_option(player, "binary", 1);
+      fork (0)
+        force_input(player, "HTTP/1.1 404 Not Found~0D~0A~0D~0A");
+      endfork;
+      result = read_http("response");
+      set_connection_option(player, "hold-input", 0);
+      set_connection_option(player, "binary", 0);
+      body = #-1;
+      if ("body" in mapkeys(result))
+        body = result["body"];
+      endif
+      return {result["status"], result["headers"], body};
+    expect:
+      value:
+        - 404
+        - {}
+        - "#-1"
+
+  - name: read_http_no_reason_phrase_response_works
+    description: Responses without a reason phrase still parse
+    permission: wizard
+    statement: |
+      set_connection_option(player, "hold-input", 1);
+      set_connection_option(player, "binary", 1);
+      fork (0)
+        force_input(player, "HTTP/1.1 301~0D~0A~0D~0A");
+      endfork;
+      result = read_http("response");
+      set_connection_option(player, "hold-input", 0);
+      set_connection_option(player, "binary", 0);
+      body = #-1;
+      if ("body" in mapkeys(result))
+        body = result["body"];
+      endif
+      return {result["status"], result["headers"], body};
+    expect:
+      value:
+        - 301
+        - {}
+        - "#-1"
+
+  - name: read_http_trailing_space_on_chunked_body_works
+    description: Trailing whitespace on chunk sizes is tolerated
+    permission: wizard
+    statement: |
+      set_connection_option(player, "hold-input", 1);
+      set_connection_option(player, "binary", 1);
+      fork (0)
+        force_input(player, "HTTP/1.1 200 OK~0D~0A");
+        force_input(player, "Content-Type: text/plain~0D~0A");
+        force_input(player, "Transfer-Encoding: chunked~0D~0A");
+        force_input(player, "~0D~0A");
+        force_input(player, "25  ~0D~0A");
+        force_input(player, "This is the data in the first chunk~0D~0A");
+        force_input(player, "~0D~0A");
+        force_input(player, "1C~0D~0A");
+        force_input(player, "and this is the second one~0D~0A");
+        force_input(player, "~0D~0A");
+        force_input(player, "0  ~0D~0A");
+        force_input(player, "~0D~0A");
+      endfork;
+      result = read_http("response");
+      set_connection_option(player, "hold-input", 0);
+      set_connection_option(player, "binary", 0);
+      return {result["status"], result["headers"], result["body"]};
+    expect:
+      value:
+        - 200
+        - {Content-Type: "text/plain", Transfer-Encoding: "chunked"}
+        - "This is the data in the first chunk~0D~0Aand this is the second one~0D~0A"

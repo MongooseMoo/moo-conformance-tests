@@ -1,0 +1,41 @@
+# Generated from actual Toast source for builtin new_waif().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\waif.cc
+# implementation: bf_new_waif
+# implementation_file: C:\Users\Q\src\toaststunt\src\waif.cc
+# arg_type_tokens: []
+# arg_type_names: []
+# arg_type_codes: []
+# inferred_success_type_names: ['waif']
+# inferred_raised_error_codes: ['E_INVARG', 'E_INVIND']
+# unresolved_returns: []
+name: generated_builtin_signature_new_waif
+description: Generated conformance tests for new_waif() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - new_waif
+tests:
+- name: new_waif_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("new_waif")
+  expect:
+    value:
+    - new_waif
+    - 0
+    - 0
+    - []
+- name: new_waif_too_many_args
+  permission: wizard
+  code: new_waif(1)
+  expect:
+    error: E_ARGS
+- name: new_waif_runtime_outcome_matches_inferred_types
+  permission: wizard
+  statement: "try\n  result = new_waif();\n  return typeof(result) == WAIF;\nexcept\
+    \ e (E_INVARG, E_INVIND)\n  return 1;\nendtry\n"
+  expect:
+    value: 1

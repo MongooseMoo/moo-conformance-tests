@@ -1,0 +1,69 @@
+# Generated from actual Toast source for builtin argon2().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\argon2.cc
+# implementation: bf_argon2
+# implementation_file: C:\Users\Q\src\toaststunt\src\argon2.cc
+# arg_type_tokens: ['TYPE_STR', 'TYPE_STR', 'TYPE_INT', 'TYPE_INT', 'TYPE_INT']
+# arg_type_names: ['str', 'str', 'int', 'int', 'int']
+# arg_type_codes: [2, 2, 0, 0, 0]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_PERM']
+# unresolved_returns: ['background_thread(argon2_thread_callback, &arglist)', 'make_var_pack(ret)']
+name: generated_builtin_signature_argon2
+description: Generated conformance tests for argon2() builtin signature, derived from
+  Toast source.
+requires:
+  builtins:
+  - function_info
+  - argon2
+tests:
+- name: argon2_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("argon2")
+  expect:
+    value:
+    - argon2
+    - 2
+    - 5
+    - - 2
+      - 2
+      - 0
+      - 0
+      - 0
+- name: argon2_too_few_args
+  permission: wizard
+  code: argon2()
+  expect:
+    error: E_ARGS
+- name: argon2_too_many_args
+  permission: wizard
+  code: argon2("x", "x", 1, 1, 1, 1)
+  expect:
+    error: E_ARGS
+- name: argon2_arg_1_rejects_wrong_type
+  permission: wizard
+  code: argon2(1, "x")
+  expect:
+    error: E_TYPE
+- name: argon2_arg_2_rejects_wrong_type
+  permission: wizard
+  code: argon2("x", 1)
+  expect:
+    error: E_TYPE
+- name: argon2_arg_3_rejects_wrong_type
+  permission: wizard
+  code: argon2("x", "x", "x")
+  expect:
+    error: E_TYPE
+- name: argon2_arg_4_rejects_wrong_type
+  permission: wizard
+  code: argon2("x", "x", 1, "x")
+  expect:
+    error: E_TYPE
+- name: argon2_arg_5_rejects_wrong_type
+  permission: wizard
+  code: argon2("x", "x", 1, 1, "x")
+  expect:
+    error: E_TYPE

@@ -1,0 +1,41 @@
+# Generated from actual Toast source for builtin verb_info().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\verbs.cc
+# implementation: bf_verb_info
+# implementation_file: C:\Users\Q\src\toaststunt\src\verbs.cc
+# arg_type_tokens: ['TYPE_ANY', 'TYPE_ANY']
+# arg_type_names: ['any', 'any']
+# arg_type_codes: [-1, -1]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_PERM', 'E_TYPE', 'E_VERBNF']
+# unresolved_returns: ['make_error_pack(e)', 'make_var_pack(r)']
+name: generated_builtin_signature_verb_info
+description: Generated conformance tests for verb_info() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - verb_info
+tests:
+- name: verb_info_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("verb_info")
+  expect:
+    value:
+    - verb_info
+    - 2
+    - 2
+    - - -1
+      - -1
+- name: verb_info_too_few_args
+  permission: wizard
+  code: verb_info()
+  expect:
+    error: E_ARGS
+- name: verb_info_too_many_args
+  permission: wizard
+  code: verb_info(1, 1, 1)
+  expect:
+    error: E_ARGS

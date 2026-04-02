@@ -1,0 +1,35 @@
+# Generated from actual Toast source for builtin players().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\objects.cc
+# implementation: bf_players
+# implementation_file: C:\Users\Q\src\toaststunt\src\objects.cc
+# arg_type_tokens: []
+# arg_type_names: []
+# arg_type_codes: []
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['make_var_pack(var_ref(db_all_users()))']
+name: generated_builtin_signature_players
+description: Generated conformance tests for players() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - players
+tests:
+- name: players_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("players")
+  expect:
+    value:
+    - players
+    - 0
+    - 0
+    - []
+- name: players_too_many_args
+  permission: wizard
+  code: players(1)
+  expect:
+    error: E_ARGS

@@ -1,0 +1,41 @@
+# Generated from actual Toast source for builtin reseed_random().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\numbers.cc
+# implementation: bf_reseed_random
+# implementation_file: C:\Users\Q\src\toaststunt\src\numbers.cc
+# arg_type_tokens: []
+# arg_type_names: []
+# arg_type_codes: []
+# inferred_success_type_names: ['int']
+# inferred_raised_error_codes: ['E_PERM']
+# unresolved_returns: []
+name: generated_builtin_signature_reseed_random
+description: Generated conformance tests for reseed_random() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - reseed_random
+tests:
+- name: reseed_random_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("reseed_random")
+  expect:
+    value:
+    - reseed_random
+    - 0
+    - 0
+    - []
+- name: reseed_random_too_many_args
+  permission: wizard
+  code: reseed_random(1)
+  expect:
+    error: E_ARGS
+- name: reseed_random_runtime_outcome_matches_inferred_types
+  permission: wizard
+  statement: "try\n  result = reseed_random();\n  return typeof(result) == INT;\n\
+    except e (E_PERM)\n  return 1;\nendtry\n"
+  expect:
+    value: 1

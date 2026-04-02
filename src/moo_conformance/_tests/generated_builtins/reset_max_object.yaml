@@ -1,0 +1,41 @@
+# Generated from actual Toast source for builtin reset_max_object().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\server.cc
+# implementation: bf_reset_max_object
+# implementation_file: C:\Users\Q\src\toaststunt\src\server.cc
+# arg_type_tokens: []
+# arg_type_names: []
+# arg_type_codes: []
+# inferred_success_type_names: ['int']
+# inferred_raised_error_codes: ['E_PERM']
+# unresolved_returns: []
+name: generated_builtin_signature_reset_max_object
+description: Generated conformance tests for reset_max_object() builtin signature,
+  derived from Toast source.
+requires:
+  builtins:
+  - function_info
+  - reset_max_object
+tests:
+- name: reset_max_object_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("reset_max_object")
+  expect:
+    value:
+    - reset_max_object
+    - 0
+    - 0
+    - []
+- name: reset_max_object_too_many_args
+  permission: wizard
+  code: reset_max_object(1)
+  expect:
+    error: E_ARGS
+- name: reset_max_object_runtime_outcome_matches_inferred_types
+  permission: wizard
+  statement: "try\n  result = reset_max_object();\n  return typeof(result) == INT;\n\
+    except e (E_PERM)\n  return 1;\nendtry\n"
+  expect:
+    value: 1

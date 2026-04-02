@@ -1,0 +1,46 @@
+# Generated from actual Toast source for builtin all_members().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\list.cc
+# implementation: bf_all_members
+# implementation_file: C:\Users\Q\src\toaststunt\src\list.cc
+# arg_type_tokens: ['TYPE_ANY', 'TYPE_LIST']
+# arg_type_names: ['any', 'list']
+# arg_type_codes: [-1, 4]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['background_thread(all_members_thread_callback, &arglist)']
+name: generated_builtin_signature_all_members
+description: Generated conformance tests for all_members() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - all_members
+tests:
+- name: all_members_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("all_members")
+  expect:
+    value:
+    - all_members
+    - 2
+    - 2
+    - - -1
+      - 4
+- name: all_members_too_few_args
+  permission: wizard
+  code: all_members()
+  expect:
+    error: E_ARGS
+- name: all_members_too_many_args
+  permission: wizard
+  code: all_members(1, {}, 1)
+  expect:
+    error: E_ARGS
+- name: all_members_arg_2_rejects_wrong_type
+  permission: wizard
+  code: all_members(1, 1)
+  expect:
+    error: E_TYPE

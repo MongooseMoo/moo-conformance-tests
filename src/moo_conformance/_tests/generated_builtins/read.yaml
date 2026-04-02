@@ -1,0 +1,41 @@
+# Generated from actual Toast source for builtin read().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\execute.cc
+# implementation: bf_read
+# implementation_file: C:\Users\Q\src\toaststunt\src\execute.cc
+# arg_type_tokens: ['TYPE_OBJ', 'TYPE_ANY']
+# arg_type_names: ['obj', 'any']
+# arg_type_codes: [1, -1]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_PERM']
+# unresolved_returns: ['make_error_pack(r.v.err)', 'make_suspend_pack(make_reading_task, &connection)', 'make_var_pack(r)']
+name: generated_builtin_signature_read
+description: Generated conformance tests for read() builtin signature, derived from
+  Toast source.
+requires:
+  builtins:
+  - function_info
+  - read
+tests:
+- name: read_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("read")
+  expect:
+    value:
+    - read
+    - 0
+    - 2
+    - - 1
+      - -1
+- name: read_too_many_args
+  permission: wizard
+  code: read(#0, 1, 1)
+  expect:
+    error: E_ARGS
+- name: read_arg_1_rejects_wrong_type
+  permission: wizard
+  code: read("x")
+  expect:
+    error: E_TYPE

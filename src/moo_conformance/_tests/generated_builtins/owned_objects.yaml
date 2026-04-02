@@ -1,0 +1,45 @@
+# Generated from actual Toast source for builtin owned_objects().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\objects.cc
+# implementation: bf_owned_objects
+# implementation_file: C:\Users\Q\src\toaststunt\src\objects.cc
+# arg_type_tokens: ['TYPE_OBJ']
+# arg_type_names: ['obj']
+# arg_type_codes: [1]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_INVIND']
+# unresolved_returns: ['make_var_pack(ret)']
+name: generated_builtin_signature_owned_objects
+description: Generated conformance tests for owned_objects() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - owned_objects
+tests:
+- name: owned_objects_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("owned_objects")
+  expect:
+    value:
+    - owned_objects
+    - 1
+    - 1
+    - - 1
+- name: owned_objects_too_few_args
+  permission: wizard
+  code: owned_objects()
+  expect:
+    error: E_ARGS
+- name: owned_objects_too_many_args
+  permission: wizard
+  code: owned_objects(#0, 1)
+  expect:
+    error: E_ARGS
+- name: owned_objects_arg_1_rejects_wrong_type
+  permission: wizard
+  code: owned_objects("x")
+  expect:
+    error: E_TYPE

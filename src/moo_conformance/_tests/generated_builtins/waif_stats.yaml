@@ -1,0 +1,35 @@
+# Generated from actual Toast source for builtin waif_stats().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\waif.cc
+# implementation: bf_waif_stats
+# implementation_file: C:\Users\Q\src\toaststunt\src\waif.cc
+# arg_type_tokens: []
+# arg_type_names: []
+# arg_type_codes: []
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['make_var_pack(r)']
+name: generated_builtin_signature_waif_stats
+description: Generated conformance tests for waif_stats() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - waif_stats
+tests:
+- name: waif_stats_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("waif_stats")
+  expect:
+    value:
+    - waif_stats
+    - 0
+    - 0
+    - []
+- name: waif_stats_too_many_args
+  permission: wizard
+  code: waif_stats(1)
+  expect:
+    error: E_ARGS

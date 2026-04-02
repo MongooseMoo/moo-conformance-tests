@@ -1,0 +1,52 @@
+# Generated from actual Toast source for builtin set_connection_option().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\server.cc
+# implementation: bf_set_connection_option
+# implementation_file: C:\Users\Q\src\toaststunt\src\server.cc
+# arg_type_tokens: ['TYPE_OBJ', 'TYPE_STR', 'TYPE_ANY']
+# arg_type_names: ['obj', 'str', 'any']
+# arg_type_codes: [1, 2, -1]
+# inferred_success_type_names: ['int']
+# inferred_raised_error_codes: []
+# unresolved_returns: ['make_error_pack(e)']
+name: generated_builtin_signature_set_connection_option
+description: Generated conformance tests for set_connection_option() builtin signature,
+  derived from Toast source.
+requires:
+  builtins:
+  - function_info
+  - set_connection_option
+tests:
+- name: set_connection_option_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("set_connection_option")
+  expect:
+    value:
+    - set_connection_option
+    - 3
+    - 3
+    - - 1
+      - 2
+      - -1
+- name: set_connection_option_too_few_args
+  permission: wizard
+  code: set_connection_option()
+  expect:
+    error: E_ARGS
+- name: set_connection_option_too_many_args
+  permission: wizard
+  code: set_connection_option(#0, "x", 1, 1)
+  expect:
+    error: E_ARGS
+- name: set_connection_option_arg_1_rejects_wrong_type
+  permission: wizard
+  code: set_connection_option("x", "x", 1)
+  expect:
+    error: E_TYPE
+- name: set_connection_option_arg_2_rejects_wrong_type
+  permission: wizard
+  code: set_connection_option(#0, 1, 1)
+  expect:
+    error: E_TYPE

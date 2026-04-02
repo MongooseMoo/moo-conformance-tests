@@ -1,0 +1,57 @@
+# Generated from actual Toast source for builtin file_seek().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\fileio.cc
+# implementation: bf_file_seek
+# implementation_file: C:\Users\Q\src\toaststunt\src\fileio.cc
+# arg_type_tokens: ['TYPE_INT', 'TYPE_INT', 'TYPE_STR']
+# arg_type_names: ['int', 'int', 'str']
+# arg_type_codes: [0, 0, 2]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['r']
+name: generated_builtin_signature_file_seek
+description: Generated conformance tests for file_seek() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - file_seek
+tests:
+- name: file_seek_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("file_seek")
+  expect:
+    value:
+    - file_seek
+    - 3
+    - 3
+    - - 0
+      - 0
+      - 2
+- name: file_seek_too_few_args
+  permission: wizard
+  code: file_seek()
+  expect:
+    error: E_ARGS
+- name: file_seek_too_many_args
+  permission: wizard
+  code: file_seek(1, 1, "x", 1)
+  expect:
+    error: E_ARGS
+- name: file_seek_arg_1_rejects_wrong_type
+  permission: wizard
+  code: file_seek("x", 1, "x")
+  expect:
+    error: E_TYPE
+- name: file_seek_arg_2_rejects_wrong_type
+  permission: wizard
+  code: file_seek(1, "x", "x")
+  expect:
+    error: E_TYPE
+- name: file_seek_arg_3_rejects_wrong_type
+  permission: wizard
+  code: file_seek(1, 1, 1)
+  expect:
+    error: E_TYPE

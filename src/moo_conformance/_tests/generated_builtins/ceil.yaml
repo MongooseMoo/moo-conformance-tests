@@ -1,0 +1,45 @@
+# Generated from actual Toast source for builtin ceil().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\numbers.cc
+# implementation: bf_ceil
+# implementation_file: None
+# arg_type_tokens: ['TYPE_FLOAT']
+# arg_type_names: ['float']
+# arg_type_codes: [9]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['implementation body not found']
+name: generated_builtin_signature_ceil
+description: Generated conformance tests for ceil() builtin signature, derived from
+  Toast source.
+requires:
+  builtins:
+  - function_info
+  - ceil
+tests:
+- name: ceil_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("ceil")
+  expect:
+    value:
+    - ceil
+    - 1
+    - 1
+    - - 9
+- name: ceil_too_few_args
+  permission: wizard
+  code: ceil()
+  expect:
+    error: E_ARGS
+- name: ceil_too_many_args
+  permission: wizard
+  code: ceil(1.5, 1)
+  expect:
+    error: E_ARGS
+- name: ceil_arg_1_rejects_wrong_type
+  permission: wizard
+  code: ceil("x")
+  expect:
+    error: E_TYPE

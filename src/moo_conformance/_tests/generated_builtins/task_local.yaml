@@ -1,0 +1,35 @@
+# Generated from actual Toast source for builtin task_local().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\tasks.cc
+# implementation: bf_task_local
+# implementation_file: C:\Users\Q\src\toaststunt\src\tasks.cc
+# arg_type_tokens: []
+# arg_type_names: []
+# arg_type_codes: []
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_PERM']
+# unresolved_returns: ['make_var_pack(v)']
+name: generated_builtin_signature_task_local
+description: Generated conformance tests for task_local() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - task_local
+tests:
+- name: task_local_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("task_local")
+  expect:
+    value:
+    - task_local
+    - 0
+    - 0
+    - []
+- name: task_local_too_many_args
+  permission: wizard
+  code: task_local(1)
+  expect:
+    error: E_ARGS

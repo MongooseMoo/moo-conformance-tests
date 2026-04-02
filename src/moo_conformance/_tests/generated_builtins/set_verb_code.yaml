@@ -1,0 +1,47 @@
+# Generated from actual Toast source for builtin set_verb_code().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\verbs.cc
+# implementation: bf_set_verb_code
+# implementation_file: C:\Users\Q\src\toaststunt\src\verbs.cc
+# arg_type_tokens: ['TYPE_ANY', 'TYPE_ANY', 'TYPE_LIST']
+# arg_type_names: ['any', 'any', 'list']
+# arg_type_codes: [-1, -1, 4]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_PERM', 'E_TYPE', 'E_VERBNF']
+# unresolved_returns: ['make_error_pack(e)', 'make_var_pack(errors)']
+name: generated_builtin_signature_set_verb_code
+description: Generated conformance tests for set_verb_code() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - set_verb_code
+tests:
+- name: set_verb_code_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("set_verb_code")
+  expect:
+    value:
+    - set_verb_code
+    - 3
+    - 3
+    - - -1
+      - -1
+      - 4
+- name: set_verb_code_too_few_args
+  permission: wizard
+  code: set_verb_code()
+  expect:
+    error: E_ARGS
+- name: set_verb_code_too_many_args
+  permission: wizard
+  code: set_verb_code(1, 1, {}, 1)
+  expect:
+    error: E_ARGS
+- name: set_verb_code_arg_3_rejects_wrong_type
+  permission: wizard
+  code: set_verb_code(1, 1, 1)
+  expect:
+    error: E_TYPE

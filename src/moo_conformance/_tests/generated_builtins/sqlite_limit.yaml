@@ -1,0 +1,52 @@
+# Generated from actual Toast source for builtin sqlite_limit().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\sqlite.cc
+# implementation: bf_sqlite_limit
+# implementation_file: C:\Users\Q\src\toaststunt\src\sqlite.cc
+# arg_type_tokens: ['TYPE_INT', 'TYPE_ANY', 'TYPE_INT']
+# arg_type_names: ['int', 'any', 'int']
+# arg_type_codes: [0, -1, 0]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_INVARG', 'E_PERM']
+# unresolved_returns: ['make_var_pack(r)']
+name: generated_builtin_signature_sqlite_limit
+description: Generated conformance tests for sqlite_limit() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - sqlite_limit
+tests:
+- name: sqlite_limit_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("sqlite_limit")
+  expect:
+    value:
+    - sqlite_limit
+    - 3
+    - 3
+    - - 0
+      - -1
+      - 0
+- name: sqlite_limit_too_few_args
+  permission: wizard
+  code: sqlite_limit()
+  expect:
+    error: E_ARGS
+- name: sqlite_limit_too_many_args
+  permission: wizard
+  code: sqlite_limit(1, 1, 1, 1)
+  expect:
+    error: E_ARGS
+- name: sqlite_limit_arg_1_rejects_wrong_type
+  permission: wizard
+  code: sqlite_limit("x", 1, 1)
+  expect:
+    error: E_TYPE
+- name: sqlite_limit_arg_3_rejects_wrong_type
+  permission: wizard
+  code: sqlite_limit(1, 1, "x")
+  expect:
+    error: E_TYPE

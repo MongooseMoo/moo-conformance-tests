@@ -1,0 +1,41 @@
+# Generated from actual Toast source for builtin log_cache_stats().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\extensions.cc
+# implementation: bf_log_cache_stats
+# implementation_file: C:\Users\Q\src\toaststunt\src\extensions.cc
+# arg_type_tokens: []
+# arg_type_names: []
+# arg_type_codes: []
+# inferred_success_type_names: ['int']
+# inferred_raised_error_codes: ['E_PERM']
+# unresolved_returns: []
+name: generated_builtin_signature_log_cache_stats
+description: Generated conformance tests for log_cache_stats() builtin signature,
+  derived from Toast source.
+requires:
+  builtins:
+  - function_info
+  - log_cache_stats
+tests:
+- name: log_cache_stats_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("log_cache_stats")
+  expect:
+    value:
+    - log_cache_stats
+    - 0
+    - 0
+    - []
+- name: log_cache_stats_too_many_args
+  permission: wizard
+  code: log_cache_stats(1)
+  expect:
+    error: E_ARGS
+- name: log_cache_stats_runtime_outcome_matches_inferred_types
+  permission: wizard
+  statement: "try\n  result = log_cache_stats();\n  return typeof(result) == INT;\n\
+    except e (E_PERM)\n  return 1;\nendtry\n"
+  expect:
+    value: 1

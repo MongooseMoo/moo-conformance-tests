@@ -1,0 +1,45 @@
+# Generated from actual Toast source for builtin sqlite_info().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\sqlite.cc
+# implementation: bf_sqlite_info
+# implementation_file: C:\Users\Q\src\toaststunt\src\sqlite.cc
+# arg_type_tokens: ['TYPE_INT']
+# arg_type_names: ['int']
+# arg_type_codes: [0]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_INVARG', 'E_PERM']
+# unresolved_returns: ['make_var_pack(ret)']
+name: generated_builtin_signature_sqlite_info
+description: Generated conformance tests for sqlite_info() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - sqlite_info
+tests:
+- name: sqlite_info_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("sqlite_info")
+  expect:
+    value:
+    - sqlite_info
+    - 1
+    - 1
+    - - 0
+- name: sqlite_info_too_few_args
+  permission: wizard
+  code: sqlite_info()
+  expect:
+    error: E_ARGS
+- name: sqlite_info_too_many_args
+  permission: wizard
+  code: sqlite_info(1, 1)
+  expect:
+    error: E_ARGS
+- name: sqlite_info_arg_1_rejects_wrong_type
+  permission: wizard
+  code: sqlite_info("x")
+  expect:
+    error: E_TYPE

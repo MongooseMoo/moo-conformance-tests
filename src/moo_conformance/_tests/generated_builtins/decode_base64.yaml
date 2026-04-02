@@ -1,0 +1,46 @@
+# Generated from actual Toast source for builtin decode_base64().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\base64.cc
+# implementation: bf_decode_base64
+# implementation_file: C:\Users\Q\src\toaststunt\src\base64.cc
+# arg_type_tokens: ['TYPE_STR', 'TYPE_ANY']
+# arg_type_names: ['str', 'any']
+# arg_type_codes: [2, -1]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['make_var_pack(ret)', 'pack']
+name: generated_builtin_signature_decode_base64
+description: Generated conformance tests for decode_base64() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - decode_base64
+tests:
+- name: decode_base64_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("decode_base64")
+  expect:
+    value:
+    - decode_base64
+    - 1
+    - 2
+    - - 2
+      - -1
+- name: decode_base64_too_few_args
+  permission: wizard
+  code: decode_base64()
+  expect:
+    error: E_ARGS
+- name: decode_base64_too_many_args
+  permission: wizard
+  code: decode_base64("x", 1, 1)
+  expect:
+    error: E_ARGS
+- name: decode_base64_arg_1_rejects_wrong_type
+  permission: wizard
+  code: decode_base64(1)
+  expect:
+    error: E_TYPE

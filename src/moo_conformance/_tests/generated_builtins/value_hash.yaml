@@ -1,0 +1,47 @@
+# Generated from actual Toast source for builtin value_hash().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\crypto.cc
+# implementation: bf_value_hash
+# implementation_file: C:\Users\Q\src\toaststunt\src\crypto.cc
+# arg_type_tokens: ['TYPE_ANY', 'TYPE_STR', 'TYPE_ANY']
+# arg_type_names: ['any', 'str', 'any']
+# arg_type_codes: [-1, 2, -1]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['p']
+name: generated_builtin_signature_value_hash
+description: Generated conformance tests for value_hash() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - value_hash
+tests:
+- name: value_hash_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("value_hash")
+  expect:
+    value:
+    - value_hash
+    - 1
+    - 3
+    - - -1
+      - 2
+      - -1
+- name: value_hash_too_few_args
+  permission: wizard
+  code: value_hash()
+  expect:
+    error: E_ARGS
+- name: value_hash_too_many_args
+  permission: wizard
+  code: value_hash(1, "x", 1, 1)
+  expect:
+    error: E_ARGS
+- name: value_hash_arg_2_rejects_wrong_type
+  permission: wizard
+  code: value_hash(1, 1)
+  expect:
+    error: E_TYPE

@@ -1,0 +1,45 @@
+# Generated from actual Toast source for builtin kill_task().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\tasks.cc
+# implementation: bf_kill_task
+# implementation_file: C:\Users\Q\src\toaststunt\src\tasks.cc
+# arg_type_tokens: ['TYPE_INT']
+# arg_type_names: ['int']
+# arg_type_codes: [0]
+# inferred_success_type_names: ['int']
+# inferred_raised_error_codes: []
+# unresolved_returns: ['make_abort_pack(ABORT_KILL)', 'make_error_pack(e)']
+name: generated_builtin_signature_kill_task
+description: Generated conformance tests for kill_task() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - kill_task
+tests:
+- name: kill_task_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("kill_task")
+  expect:
+    value:
+    - kill_task
+    - 1
+    - 1
+    - - 0
+- name: kill_task_too_few_args
+  permission: wizard
+  code: kill_task()
+  expect:
+    error: E_ARGS
+- name: kill_task_too_many_args
+  permission: wizard
+  code: kill_task(1, 1)
+  expect:
+    error: E_ARGS
+- name: kill_task_arg_1_rejects_wrong_type
+  permission: wizard
+  code: kill_task("x")
+  expect:
+    error: E_TYPE

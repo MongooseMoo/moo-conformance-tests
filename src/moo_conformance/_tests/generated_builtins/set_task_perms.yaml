@@ -1,0 +1,51 @@
+# Generated from actual Toast source for builtin set_task_perms().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\execute.cc
+# implementation: bf_set_task_perms
+# implementation_file: C:\Users\Q\src\toaststunt\src\execute.cc
+# arg_type_tokens: ['TYPE_OBJ']
+# arg_type_names: ['obj']
+# arg_type_codes: [1]
+# inferred_success_type_names: ['int']
+# inferred_raised_error_codes: ['E_PERM']
+# unresolved_returns: []
+name: generated_builtin_signature_set_task_perms
+description: Generated conformance tests for set_task_perms() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - set_task_perms
+tests:
+- name: set_task_perms_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("set_task_perms")
+  expect:
+    value:
+    - set_task_perms
+    - 1
+    - 1
+    - - 1
+- name: set_task_perms_too_few_args
+  permission: wizard
+  code: set_task_perms()
+  expect:
+    error: E_ARGS
+- name: set_task_perms_too_many_args
+  permission: wizard
+  code: set_task_perms(#0, 1)
+  expect:
+    error: E_ARGS
+- name: set_task_perms_arg_1_rejects_wrong_type
+  permission: wizard
+  code: set_task_perms("x")
+  expect:
+    error: E_TYPE
+- name: set_task_perms_runtime_outcome_matches_inferred_types
+  permission: wizard
+  statement: "try\n  result = set_task_perms(#0);\n  return typeof(result) == INT;\n\
+    except e (E_PERM)\n  return 1;\nendtry\n"
+  expect:
+    value: 1

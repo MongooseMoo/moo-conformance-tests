@@ -1,0 +1,41 @@
+# Generated from actual Toast source for builtin run_gc().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\garbage.cc
+# implementation: bf_run_gc
+# implementation_file: C:\Users\Q\src\toaststunt\src\garbage.cc
+# arg_type_tokens: []
+# arg_type_names: []
+# arg_type_codes: []
+# inferred_success_type_names: ['int']
+# inferred_raised_error_codes: ['E_PERM']
+# unresolved_returns: []
+name: generated_builtin_signature_run_gc
+description: Generated conformance tests for run_gc() builtin signature, derived from
+  Toast source.
+requires:
+  builtins:
+  - function_info
+  - run_gc
+tests:
+- name: run_gc_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("run_gc")
+  expect:
+    value:
+    - run_gc
+    - 0
+    - 0
+    - []
+- name: run_gc_too_many_args
+  permission: wizard
+  code: run_gc(1)
+  expect:
+    error: E_ARGS
+- name: run_gc_runtime_outcome_matches_inferred_types
+  permission: wizard
+  statement: "try\n  result = run_gc();\n  return typeof(result) == INT;\nexcept e\
+    \ (E_PERM)\n  return 1;\nendtry\n"
+  expect:
+    value: 1

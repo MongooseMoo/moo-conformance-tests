@@ -1,0 +1,51 @@
+# Generated from actual Toast source for builtin sqlite_interrupt().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\sqlite.cc
+# implementation: bf_sqlite_interrupt
+# implementation_file: C:\Users\Q\src\toaststunt\src\sqlite.cc
+# arg_type_tokens: ['TYPE_INT']
+# arg_type_names: ['int']
+# arg_type_codes: [0]
+# inferred_success_type_names: ['int']
+# inferred_raised_error_codes: ['E_INVARG', 'E_PERM']
+# unresolved_returns: []
+name: generated_builtin_signature_sqlite_interrupt
+description: Generated conformance tests for sqlite_interrupt() builtin signature,
+  derived from Toast source.
+requires:
+  builtins:
+  - function_info
+  - sqlite_interrupt
+tests:
+- name: sqlite_interrupt_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("sqlite_interrupt")
+  expect:
+    value:
+    - sqlite_interrupt
+    - 1
+    - 1
+    - - 0
+- name: sqlite_interrupt_too_few_args
+  permission: wizard
+  code: sqlite_interrupt()
+  expect:
+    error: E_ARGS
+- name: sqlite_interrupt_too_many_args
+  permission: wizard
+  code: sqlite_interrupt(1, 1)
+  expect:
+    error: E_ARGS
+- name: sqlite_interrupt_arg_1_rejects_wrong_type
+  permission: wizard
+  code: sqlite_interrupt("x")
+  expect:
+    error: E_TYPE
+- name: sqlite_interrupt_runtime_outcome_matches_inferred_types
+  permission: wizard
+  statement: "try\n  result = sqlite_interrupt(1);\n  return typeof(result) == INT;\n\
+    except e (E_INVARG, E_PERM)\n  return 1;\nendtry\n"
+  expect:
+    value: 1

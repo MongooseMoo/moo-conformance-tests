@@ -1,0 +1,46 @@
+# Generated from actual Toast source for builtin ftime().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\numbers.cc
+# implementation: bf_ftime
+# implementation_file: C:\Users\Q\src\toaststunt\src\numbers.cc
+# arg_type_tokens: ['TYPE_INT']
+# arg_type_names: ['int']
+# arg_type_codes: [0]
+# inferred_success_type_names: ['float']
+# inferred_raised_error_codes: []
+# unresolved_returns: []
+name: generated_builtin_signature_ftime
+description: Generated conformance tests for ftime() builtin signature, derived from
+  Toast source.
+requires:
+  builtins:
+  - function_info
+  - ftime
+tests:
+- name: ftime_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("ftime")
+  expect:
+    value:
+    - ftime
+    - 0
+    - 1
+    - - 0
+- name: ftime_too_many_args
+  permission: wizard
+  code: ftime(1, 1)
+  expect:
+    error: E_ARGS
+- name: ftime_arg_1_rejects_wrong_type
+  permission: wizard
+  code: ftime("x")
+  expect:
+    error: E_TYPE
+- name: ftime_runtime_outcome_matches_inferred_types
+  permission: wizard
+  statement: "try\n  result = ftime();\n  return typeof(result) == FLOAT;\nexcept\
+    \ e (ANY)\n  return 0;\nendtry\n"
+  expect:
+    value: 1

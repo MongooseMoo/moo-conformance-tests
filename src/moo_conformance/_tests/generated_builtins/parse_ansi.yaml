@@ -1,0 +1,45 @@
+# Generated from actual Toast source for builtin parse_ansi().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\list.cc
+# implementation: bf_parse_ansi
+# implementation_file: C:\Users\Q\src\toaststunt\src\list.cc
+# arg_type_tokens: ['TYPE_STR']
+# arg_type_names: ['str']
+# arg_type_codes: [2]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['make_var_pack(r)']
+name: generated_builtin_signature_parse_ansi
+description: Generated conformance tests for parse_ansi() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - parse_ansi
+tests:
+- name: parse_ansi_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("parse_ansi")
+  expect:
+    value:
+    - parse_ansi
+    - 1
+    - 1
+    - - 2
+- name: parse_ansi_too_few_args
+  permission: wizard
+  code: parse_ansi()
+  expect:
+    error: E_ARGS
+- name: parse_ansi_too_many_args
+  permission: wizard
+  code: parse_ansi("x", 1)
+  expect:
+    error: E_ARGS
+- name: parse_ansi_arg_1_rejects_wrong_type
+  permission: wizard
+  code: parse_ansi(1)
+  expect:
+    error: E_TYPE

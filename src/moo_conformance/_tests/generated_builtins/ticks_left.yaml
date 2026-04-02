@@ -1,0 +1,35 @@
+# Generated from actual Toast source for builtin ticks_left().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\execute.cc
+# implementation: bf_ticks_left
+# implementation_file: C:\Users\Q\src\toaststunt\src\execute.cc
+# arg_type_tokens: []
+# arg_type_names: []
+# arg_type_codes: []
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['make_var_pack(r)']
+name: generated_builtin_signature_ticks_left
+description: Generated conformance tests for ticks_left() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - ticks_left
+tests:
+- name: ticks_left_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("ticks_left")
+  expect:
+    value:
+    - ticks_left
+    - 0
+    - 0
+    - []
+- name: ticks_left_too_many_args
+  permission: wizard
+  code: ticks_left(1)
+  expect:
+    error: E_ARGS

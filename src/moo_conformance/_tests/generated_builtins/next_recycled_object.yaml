@@ -1,0 +1,40 @@
+# Generated from actual Toast source for builtin next_recycled_object().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\objects.cc
+# implementation: bf_next_recycled_object
+# implementation_file: C:\Users\Q\src\toaststunt\src\objects.cc
+# arg_type_tokens: ['TYPE_OBJ']
+# arg_type_names: ['obj']
+# arg_type_codes: [1]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_INVARG']
+# unresolved_returns: ['ret']
+name: generated_builtin_signature_next_recycled_object
+description: Generated conformance tests for next_recycled_object() builtin signature,
+  derived from Toast source.
+requires:
+  builtins:
+  - function_info
+  - next_recycled_object
+tests:
+- name: next_recycled_object_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("next_recycled_object")
+  expect:
+    value:
+    - next_recycled_object
+    - 0
+    - 1
+    - - 1
+- name: next_recycled_object_too_many_args
+  permission: wizard
+  code: next_recycled_object(#0, 1)
+  expect:
+    error: E_ARGS
+- name: next_recycled_object_arg_1_rejects_wrong_type
+  permission: wizard
+  code: next_recycled_object("x")
+  expect:
+    error: E_TYPE

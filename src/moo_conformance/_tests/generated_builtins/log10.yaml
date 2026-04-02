@@ -1,0 +1,45 @@
+# Generated from actual Toast source for builtin log10().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\numbers.cc
+# implementation: bf_log10
+# implementation_file: None
+# arg_type_tokens: ['TYPE_FLOAT']
+# arg_type_names: ['float']
+# arg_type_codes: [9]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['implementation body not found']
+name: generated_builtin_signature_log10
+description: Generated conformance tests for log10() builtin signature, derived from
+  Toast source.
+requires:
+  builtins:
+  - function_info
+  - log10
+tests:
+- name: log10_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("log10")
+  expect:
+    value:
+    - log10
+    - 1
+    - 1
+    - - 9
+- name: log10_too_few_args
+  permission: wizard
+  code: log10()
+  expect:
+    error: E_ARGS
+- name: log10_too_many_args
+  permission: wizard
+  code: log10(1.5, 1)
+  expect:
+    error: E_ARGS
+- name: log10_arg_1_rejects_wrong_type
+  permission: wizard
+  code: log10("x")
+  expect:
+    error: E_TYPE

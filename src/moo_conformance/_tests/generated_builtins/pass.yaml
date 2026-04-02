@@ -1,0 +1,30 @@
+# Generated from actual Toast source for builtin pass().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\execute.cc
+# implementation: bf_pass
+# implementation_file: C:\Users\Q\src\toaststunt\src\execute.cc
+# arg_type_tokens: []
+# arg_type_names: []
+# arg_type_codes: []
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['make_error_pack(e)', 'make_x_not_found_pack(e, RUN_ACTIV.verb, RUN_ACTIV.recv)', 'tail_call_pack()']
+name: generated_builtin_signature_pass
+description: Generated conformance tests for pass() builtin signature, derived from
+  Toast source.
+requires:
+  builtins:
+  - function_info
+  - pass
+tests:
+- name: pass_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("pass")
+  expect:
+    value:
+    - pass
+    - 0
+    - -1
+    - []

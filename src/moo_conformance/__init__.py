@@ -30,6 +30,7 @@ from .schema import (
 )
 from .moo_types import MooError, MooType, ERROR_CODES, TYPE_NAMES
 from .plugin import get_tests_dir, get_db_path, discover_yaml_tests
+from .builtin_io_generator import extract_builtin_specs, generate_builtin_io_yamls
 
 __version__ = "0.1.0"
 
@@ -55,4 +56,6 @@ __all__ = [
     "get_tests_dir",
     "get_db_path",
     "discover_yaml_tests",
+    "extract_builtin_specs",
+    "generate_builtin_io_yamls",
 ]

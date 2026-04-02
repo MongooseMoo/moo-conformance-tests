@@ -1,0 +1,58 @@
+# Generated from actual Toast source for builtin yin().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\execute.cc
+# implementation: bf_yield_if_needed
+# implementation_file: C:\Users\Q\src\toaststunt\src\execute.cc
+# arg_type_tokens: ['TYPE_NUMERIC', 'TYPE_INT', 'TYPE_INT']
+# arg_type_names: ['numeric', 'int', 'int']
+# arg_type_codes: [-2, 0, 0]
+# inferred_success_type_names: ['int']
+# inferred_raised_error_codes: ['E_INVARG']
+# unresolved_returns: ['make_suspend_pack(enqueue_suspended_task, secondsp)']
+name: generated_builtin_signature_yin
+description: Generated conformance tests for yin() builtin signature, derived from
+  Toast source.
+requires:
+  builtins:
+  - function_info
+  - yin
+tests:
+- name: yin_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("yin")
+  expect:
+    value:
+    - yin
+    - 0
+    - 3
+    - - -2
+      - 0
+      - 0
+- name: yin_too_many_args
+  permission: wizard
+  code: yin(1, 1, 1, 1)
+  expect:
+    error: E_ARGS
+- name: yin_arg_1_rejects_wrong_type
+  permission: wizard
+  code: yin("x")
+  expect:
+    error: E_TYPE
+- name: yin_arg_2_rejects_wrong_type
+  permission: wizard
+  code: yin(1, "x")
+  expect:
+    error: E_TYPE
+- name: yin_arg_3_rejects_wrong_type
+  permission: wizard
+  code: yin(1, 1, "x")
+  expect:
+    error: E_TYPE
+- name: yin_runtime_outcome_matches_inferred_types
+  permission: wizard
+  statement: "try\n  result = yin();\n  return typeof(result) == INT;\nexcept e (E_INVARG)\n\
+    \  return 1;\nendtry\n"
+  expect:
+    value: 1

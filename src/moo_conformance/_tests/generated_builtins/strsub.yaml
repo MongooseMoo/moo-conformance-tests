@@ -1,0 +1,58 @@
+# Generated from actual Toast source for builtin strsub().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\list.cc
+# implementation: bf_strsub
+# implementation_file: C:\Users\Q\src\toaststunt\src\list.cc
+# arg_type_tokens: ['TYPE_STR', 'TYPE_STR', 'TYPE_STR', 'TYPE_ANY']
+# arg_type_names: ['str', 'str', 'str', 'any']
+# arg_type_codes: [2, 2, 2, -1]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_INVARG']
+# unresolved_returns: ['p']
+name: generated_builtin_signature_strsub
+description: Generated conformance tests for strsub() builtin signature, derived from
+  Toast source.
+requires:
+  builtins:
+  - function_info
+  - strsub
+tests:
+- name: strsub_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("strsub")
+  expect:
+    value:
+    - strsub
+    - 3
+    - 4
+    - - 2
+      - 2
+      - 2
+      - -1
+- name: strsub_too_few_args
+  permission: wizard
+  code: strsub()
+  expect:
+    error: E_ARGS
+- name: strsub_too_many_args
+  permission: wizard
+  code: strsub("x", "x", "x", 1, 1)
+  expect:
+    error: E_ARGS
+- name: strsub_arg_1_rejects_wrong_type
+  permission: wizard
+  code: strsub(1, "x", "x")
+  expect:
+    error: E_TYPE
+- name: strsub_arg_2_rejects_wrong_type
+  permission: wizard
+  code: strsub("x", 1, "x")
+  expect:
+    error: E_TYPE
+- name: strsub_arg_3_rejects_wrong_type
+  permission: wizard
+  code: strsub("x", "x", 1)
+  expect:
+    error: E_TYPE

@@ -1,0 +1,63 @@
+# Generated from actual Toast source for builtin pcre_match().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\pcre_moo.cc
+# implementation: bf_pcre_match
+# implementation_file: C:\Users\Q\src\toaststunt\src\pcre_moo.cc
+# arg_type_tokens: ['TYPE_STR', 'TYPE_STR', 'TYPE_INT', 'TYPE_INT']
+# arg_type_names: ['str', 'str', 'int', 'int']
+# arg_type_codes: [2, 2, 0, 0]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_INVARG', 'E_MAXREC', 'E_QUOTA']
+# unresolved_returns: ['make_var_pack(ret)', 'r']
+name: generated_builtin_signature_pcre_match
+description: Generated conformance tests for pcre_match() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - pcre_match
+tests:
+- name: pcre_match_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("pcre_match")
+  expect:
+    value:
+    - pcre_match
+    - 2
+    - 4
+    - - 2
+      - 2
+      - 0
+      - 0
+- name: pcre_match_too_few_args
+  permission: wizard
+  code: pcre_match()
+  expect:
+    error: E_ARGS
+- name: pcre_match_too_many_args
+  permission: wizard
+  code: pcre_match("x", "x", 1, 1, 1)
+  expect:
+    error: E_ARGS
+- name: pcre_match_arg_1_rejects_wrong_type
+  permission: wizard
+  code: pcre_match(1, "x")
+  expect:
+    error: E_TYPE
+- name: pcre_match_arg_2_rejects_wrong_type
+  permission: wizard
+  code: pcre_match("x", 1)
+  expect:
+    error: E_TYPE
+- name: pcre_match_arg_3_rejects_wrong_type
+  permission: wizard
+  code: pcre_match("x", "x", "x")
+  expect:
+    error: E_TYPE
+- name: pcre_match_arg_4_rejects_wrong_type
+  permission: wizard
+  code: pcre_match("x", "x", 1, "x")
+  expect:
+    error: E_TYPE

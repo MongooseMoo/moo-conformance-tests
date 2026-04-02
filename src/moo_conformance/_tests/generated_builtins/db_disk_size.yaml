@@ -1,0 +1,35 @@
+# Generated from actual Toast source for builtin db_disk_size().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\server.cc
+# implementation: bf_db_disk_size
+# implementation_file: C:\Users\Q\src\toaststunt\src\server.cc
+# arg_type_tokens: []
+# arg_type_names: []
+# arg_type_codes: []
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_QUOTA']
+# unresolved_returns: ['make_var_pack(v)']
+name: generated_builtin_signature_db_disk_size
+description: Generated conformance tests for db_disk_size() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - db_disk_size
+tests:
+- name: db_disk_size_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("db_disk_size")
+  expect:
+    value:
+    - db_disk_size
+    - 0
+    - 0
+    - []
+- name: db_disk_size_too_many_args
+  permission: wizard
+  code: db_disk_size(1)
+  expect:
+    error: E_ARGS

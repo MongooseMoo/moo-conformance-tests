@@ -1,0 +1,46 @@
+# Generated from actual Toast source for builtin property_info().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\property.cc
+# implementation: bf_prop_info
+# implementation_file: C:\Users\Q\src\toaststunt\src\property.cc
+# arg_type_tokens: ['TYPE_ANY', 'TYPE_STR']
+# arg_type_names: ['any', 'str']
+# arg_type_codes: [-1, 2]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_INVARG', 'E_PERM', 'E_PROPNF', 'E_TYPE']
+# unresolved_returns: ['make_var_pack(r)']
+name: generated_builtin_signature_property_info
+description: Generated conformance tests for property_info() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - property_info
+tests:
+- name: property_info_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("property_info")
+  expect:
+    value:
+    - property_info
+    - 2
+    - 2
+    - - -1
+      - 2
+- name: property_info_too_few_args
+  permission: wizard
+  code: property_info()
+  expect:
+    error: E_ARGS
+- name: property_info_too_many_args
+  permission: wizard
+  code: property_info(1, "x", 1)
+  expect:
+    error: E_ARGS
+- name: property_info_arg_2_rejects_wrong_type
+  permission: wizard
+  code: property_info(1, 1)
+  expect:
+    error: E_TYPE

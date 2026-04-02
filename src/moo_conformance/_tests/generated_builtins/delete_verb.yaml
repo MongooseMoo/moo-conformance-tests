@@ -1,0 +1,41 @@
+# Generated from actual Toast source for builtin delete_verb().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\verbs.cc
+# implementation: bf_delete_verb
+# implementation_file: C:\Users\Q\src\toaststunt\src\verbs.cc
+# arg_type_tokens: ['TYPE_ANY', 'TYPE_ANY']
+# arg_type_names: ['any', 'any']
+# arg_type_codes: [-1, -1]
+# inferred_success_type_names: ['int']
+# inferred_raised_error_codes: []
+# unresolved_returns: ['make_error_pack(e)']
+name: generated_builtin_signature_delete_verb
+description: Generated conformance tests for delete_verb() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - delete_verb
+tests:
+- name: delete_verb_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("delete_verb")
+  expect:
+    value:
+    - delete_verb
+    - 2
+    - 2
+    - - -1
+      - -1
+- name: delete_verb_too_few_args
+  permission: wizard
+  code: delete_verb()
+  expect:
+    error: E_ARGS
+- name: delete_verb_too_many_args
+  permission: wizard
+  code: delete_verb(1, 1, 1)
+  expect:
+    error: E_ARGS

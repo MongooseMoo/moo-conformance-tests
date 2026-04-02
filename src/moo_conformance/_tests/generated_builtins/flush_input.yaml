@@ -1,0 +1,52 @@
+# Generated from actual Toast source for builtin flush_input().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\tasks.cc
+# implementation: bf_flush_input
+# implementation_file: C:\Users\Q\src\toaststunt\src\tasks.cc
+# arg_type_tokens: ['TYPE_OBJ', 'TYPE_ANY']
+# arg_type_names: ['obj', 'any']
+# arg_type_codes: [1, -1]
+# inferred_success_type_names: ['int']
+# inferred_raised_error_codes: ['E_PERM']
+# unresolved_returns: []
+name: generated_builtin_signature_flush_input
+description: Generated conformance tests for flush_input() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - flush_input
+tests:
+- name: flush_input_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("flush_input")
+  expect:
+    value:
+    - flush_input
+    - 1
+    - 2
+    - - 1
+      - -1
+- name: flush_input_too_few_args
+  permission: wizard
+  code: flush_input()
+  expect:
+    error: E_ARGS
+- name: flush_input_too_many_args
+  permission: wizard
+  code: flush_input(#0, 1, 1)
+  expect:
+    error: E_ARGS
+- name: flush_input_arg_1_rejects_wrong_type
+  permission: wizard
+  code: flush_input("x")
+  expect:
+    error: E_TYPE
+- name: flush_input_runtime_outcome_matches_inferred_types
+  permission: wizard
+  statement: "try\n  result = flush_input(#0);\n  return typeof(result) == INT;\n\
+    except e (E_PERM)\n  return 1;\nendtry\n"
+  expect:
+    value: 1

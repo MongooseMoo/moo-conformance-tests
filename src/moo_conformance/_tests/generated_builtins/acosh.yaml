@@ -1,0 +1,45 @@
+# Generated from actual Toast source for builtin acosh().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\numbers.cc
+# implementation: bf_acosh
+# implementation_file: None
+# arg_type_tokens: ['TYPE_FLOAT']
+# arg_type_names: ['float']
+# arg_type_codes: [9]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['implementation body not found']
+name: generated_builtin_signature_acosh
+description: Generated conformance tests for acosh() builtin signature, derived from
+  Toast source.
+requires:
+  builtins:
+  - function_info
+  - acosh
+tests:
+- name: acosh_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("acosh")
+  expect:
+    value:
+    - acosh
+    - 1
+    - 1
+    - - 9
+- name: acosh_too_few_args
+  permission: wizard
+  code: acosh()
+  expect:
+    error: E_ARGS
+- name: acosh_too_many_args
+  permission: wizard
+  code: acosh(1.5, 1)
+  expect:
+    error: E_ARGS
+- name: acosh_arg_1_rejects_wrong_type
+  permission: wizard
+  code: acosh("x")
+  expect:
+    error: E_TYPE

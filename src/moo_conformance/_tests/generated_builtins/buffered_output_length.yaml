@@ -1,0 +1,40 @@
+# Generated from actual Toast source for builtin buffered_output_length().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\server.cc
+# implementation: bf_buffered_output_length
+# implementation_file: C:\Users\Q\src\toaststunt\src\server.cc
+# arg_type_tokens: ['TYPE_OBJ']
+# arg_type_names: ['obj']
+# arg_type_codes: [1]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_INVARG', 'E_PERM']
+# unresolved_returns: ['make_var_pack(r)']
+name: generated_builtin_signature_buffered_output_length
+description: Generated conformance tests for buffered_output_length() builtin signature,
+  derived from Toast source.
+requires:
+  builtins:
+  - function_info
+  - buffered_output_length
+tests:
+- name: buffered_output_length_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("buffered_output_length")
+  expect:
+    value:
+    - buffered_output_length
+    - 0
+    - 1
+    - - 1
+- name: buffered_output_length_too_many_args
+  permission: wizard
+  code: buffered_output_length(#0, 1)
+  expect:
+    error: E_ARGS
+- name: buffered_output_length_arg_1_rejects_wrong_type
+  permission: wizard
+  code: buffered_output_length("x")
+  expect:
+    error: E_TYPE

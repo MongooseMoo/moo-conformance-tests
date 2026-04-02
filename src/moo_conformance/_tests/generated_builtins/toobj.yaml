@@ -1,0 +1,40 @@
+# Generated from actual Toast source for builtin toobj().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\objects.cc
+# implementation: bf_toobj
+# implementation_file: C:\Users\Q\src\toaststunt\src\objects.cc
+# arg_type_tokens: ['TYPE_ANY']
+# arg_type_names: ['any']
+# arg_type_codes: [-1]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['make_error_pack(e)', 'make_var_pack(r)']
+name: generated_builtin_signature_toobj
+description: Generated conformance tests for toobj() builtin signature, derived from
+  Toast source.
+requires:
+  builtins:
+  - function_info
+  - toobj
+tests:
+- name: toobj_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("toobj")
+  expect:
+    value:
+    - toobj
+    - 1
+    - 1
+    - - -1
+- name: toobj_too_few_args
+  permission: wizard
+  code: toobj()
+  expect:
+    error: E_ARGS
+- name: toobj_too_many_args
+  permission: wizard
+  code: toobj(1, 1)
+  expect:
+    error: E_ARGS

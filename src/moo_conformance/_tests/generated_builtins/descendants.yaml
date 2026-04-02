@@ -1,0 +1,41 @@
+# Generated from actual Toast source for builtin descendants().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\objects.cc
+# implementation: bf_descendants
+# implementation_file: C:\Users\Q\src\toaststunt\src\objects.cc
+# arg_type_tokens: ['TYPE_ANY', 'TYPE_ANY']
+# arg_type_names: ['any', 'any']
+# arg_type_codes: [-1, -1]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_INVARG', 'E_TYPE']
+# unresolved_returns: ['make_var_pack(r)']
+name: generated_builtin_signature_descendants
+description: Generated conformance tests for descendants() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - descendants
+tests:
+- name: descendants_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("descendants")
+  expect:
+    value:
+    - descendants
+    - 1
+    - 2
+    - - -1
+      - -1
+- name: descendants_too_few_args
+  permission: wizard
+  code: descendants()
+  expect:
+    error: E_ARGS
+- name: descendants_too_many_args
+  permission: wizard
+  code: descendants(1, 1, 1)
+  expect:
+    error: E_ARGS

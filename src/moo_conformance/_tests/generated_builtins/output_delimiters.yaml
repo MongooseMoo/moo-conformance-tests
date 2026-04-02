@@ -1,0 +1,45 @@
+# Generated from actual Toast source for builtin output_delimiters().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\tasks.cc
+# implementation: bf_output_delimiters
+# implementation_file: C:\Users\Q\src\toaststunt\src\tasks.cc
+# arg_type_tokens: ['TYPE_OBJ']
+# arg_type_names: ['obj']
+# arg_type_codes: [1]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_INVARG', 'E_PERM']
+# unresolved_returns: ['make_var_pack(r)']
+name: generated_builtin_signature_output_delimiters
+description: Generated conformance tests for output_delimiters() builtin signature,
+  derived from Toast source.
+requires:
+  builtins:
+  - function_info
+  - output_delimiters
+tests:
+- name: output_delimiters_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("output_delimiters")
+  expect:
+    value:
+    - output_delimiters
+    - 1
+    - 1
+    - - 1
+- name: output_delimiters_too_few_args
+  permission: wizard
+  code: output_delimiters()
+  expect:
+    error: E_ARGS
+- name: output_delimiters_too_many_args
+  permission: wizard
+  code: output_delimiters(#0, 1)
+  expect:
+    error: E_ARGS
+- name: output_delimiters_arg_1_rejects_wrong_type
+  permission: wizard
+  code: output_delimiters("x")
+  expect:
+    error: E_TYPE

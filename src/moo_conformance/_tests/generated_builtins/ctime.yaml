@@ -1,0 +1,40 @@
+# Generated from actual Toast source for builtin ctime().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\numbers.cc
+# implementation: bf_ctime
+# implementation_file: C:\Users\Q\src\toaststunt\src\numbers.cc
+# arg_type_tokens: ['TYPE_INT']
+# arg_type_names: ['int']
+# arg_type_codes: [0]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_INVARG']
+# unresolved_returns: ['make_var_pack(r)']
+name: generated_builtin_signature_ctime
+description: Generated conformance tests for ctime() builtin signature, derived from
+  Toast source.
+requires:
+  builtins:
+  - function_info
+  - ctime
+tests:
+- name: ctime_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("ctime")
+  expect:
+    value:
+    - ctime
+    - 0
+    - 1
+    - - 0
+- name: ctime_too_many_args
+  permission: wizard
+  code: ctime(1, 1)
+  expect:
+    error: E_ARGS
+- name: ctime_arg_1_rejects_wrong_type
+  permission: wizard
+  code: ctime("x")
+  expect:
+    error: E_TYPE

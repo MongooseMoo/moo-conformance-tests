@@ -1,0 +1,52 @@
+# Generated from actual Toast source for builtin binary_hash().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\crypto.cc
+# implementation: bf_binary_hash
+# implementation_file: C:\Users\Q\src\toaststunt\src\crypto.cc
+# arg_type_tokens: ['TYPE_STR', 'TYPE_STR', 'TYPE_ANY']
+# arg_type_names: ['str', 'str', 'any']
+# arg_type_codes: [2, 2, -1]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['p']
+name: generated_builtin_signature_binary_hash
+description: Generated conformance tests for binary_hash() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - binary_hash
+tests:
+- name: binary_hash_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("binary_hash")
+  expect:
+    value:
+    - binary_hash
+    - 1
+    - 3
+    - - 2
+      - 2
+      - -1
+- name: binary_hash_too_few_args
+  permission: wizard
+  code: binary_hash()
+  expect:
+    error: E_ARGS
+- name: binary_hash_too_many_args
+  permission: wizard
+  code: binary_hash("x", "x", 1, 1)
+  expect:
+    error: E_ARGS
+- name: binary_hash_arg_1_rejects_wrong_type
+  permission: wizard
+  code: binary_hash(1)
+  expect:
+    error: E_TYPE
+- name: binary_hash_arg_2_rejects_wrong_type
+  permission: wizard
+  code: binary_hash("x", 1)
+  expect:
+    error: E_TYPE

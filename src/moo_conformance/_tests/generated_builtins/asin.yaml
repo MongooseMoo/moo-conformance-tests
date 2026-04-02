@@ -1,0 +1,45 @@
+# Generated from actual Toast source for builtin asin().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\numbers.cc
+# implementation: bf_asin
+# implementation_file: None
+# arg_type_tokens: ['TYPE_FLOAT']
+# arg_type_names: ['float']
+# arg_type_codes: [9]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['implementation body not found']
+name: generated_builtin_signature_asin
+description: Generated conformance tests for asin() builtin signature, derived from
+  Toast source.
+requires:
+  builtins:
+  - function_info
+  - asin
+tests:
+- name: asin_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("asin")
+  expect:
+    value:
+    - asin
+    - 1
+    - 1
+    - - 9
+- name: asin_too_few_args
+  permission: wizard
+  code: asin()
+  expect:
+    error: E_ARGS
+- name: asin_too_many_args
+  permission: wizard
+  code: asin(1.5, 1)
+  expect:
+    error: E_ARGS
+- name: asin_arg_1_rejects_wrong_type
+  permission: wizard
+  code: asin("x")
+  expect:
+    error: E_TYPE

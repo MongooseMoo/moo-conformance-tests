@@ -1,0 +1,52 @@
+# Generated from actual Toast source for builtin listappend().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\list.cc
+# implementation: bf_listappend
+# implementation_file: C:\Users\Q\src\toaststunt\src\list.cc
+# arg_type_tokens: ['TYPE_LIST', 'TYPE_ANY', 'TYPE_INT']
+# arg_type_names: ['list', 'any', 'int']
+# arg_type_codes: [4, -1, 0]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['insert_or_append(arglist, 1)']
+name: generated_builtin_signature_listappend
+description: Generated conformance tests for listappend() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - listappend
+tests:
+- name: listappend_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("listappend")
+  expect:
+    value:
+    - listappend
+    - 2
+    - 3
+    - - 4
+      - -1
+      - 0
+- name: listappend_too_few_args
+  permission: wizard
+  code: listappend()
+  expect:
+    error: E_ARGS
+- name: listappend_too_many_args
+  permission: wizard
+  code: listappend({}, 1, 1, 1)
+  expect:
+    error: E_ARGS
+- name: listappend_arg_1_rejects_wrong_type
+  permission: wizard
+  code: listappend(1, 1)
+  expect:
+    error: E_TYPE
+- name: listappend_arg_3_rejects_wrong_type
+  permission: wizard
+  code: listappend({}, 1, "x")
+  expect:
+    error: E_TYPE

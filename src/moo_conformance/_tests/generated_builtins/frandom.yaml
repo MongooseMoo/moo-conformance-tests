@@ -1,0 +1,51 @@
+# Generated from actual Toast source for builtin frandom().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\numbers.cc
+# implementation: bf_frandom
+# implementation_file: C:\Users\Q\src\toaststunt\src\numbers.cc
+# arg_type_tokens: ['TYPE_FLOAT', 'TYPE_FLOAT']
+# arg_type_names: ['float', 'float']
+# arg_type_codes: [9, 9]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['make_var_pack(ret)']
+name: generated_builtin_signature_frandom
+description: Generated conformance tests for frandom() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - frandom
+tests:
+- name: frandom_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("frandom")
+  expect:
+    value:
+    - frandom
+    - 1
+    - 2
+    - - 9
+      - 9
+- name: frandom_too_few_args
+  permission: wizard
+  code: frandom()
+  expect:
+    error: E_ARGS
+- name: frandom_too_many_args
+  permission: wizard
+  code: frandom(1.5, 1.5, 1)
+  expect:
+    error: E_ARGS
+- name: frandom_arg_1_rejects_wrong_type
+  permission: wizard
+  code: frandom("x")
+  expect:
+    error: E_TYPE
+- name: frandom_arg_2_rejects_wrong_type
+  permission: wizard
+  code: frandom(1.5, "x")
+  expect:
+    error: E_TYPE

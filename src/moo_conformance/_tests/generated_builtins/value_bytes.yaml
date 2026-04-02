@@ -1,0 +1,40 @@
+# Generated from actual Toast source for builtin value_bytes().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\list.cc
+# implementation: bf_value_bytes
+# implementation_file: C:\Users\Q\src\toaststunt\src\list.cc
+# arg_type_tokens: ['TYPE_ANY']
+# arg_type_names: ['any']
+# arg_type_codes: [-1]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['make_var_pack(r)']
+name: generated_builtin_signature_value_bytes
+description: Generated conformance tests for value_bytes() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - value_bytes
+tests:
+- name: value_bytes_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("value_bytes")
+  expect:
+    value:
+    - value_bytes
+    - 1
+    - 1
+    - - -1
+- name: value_bytes_too_few_args
+  permission: wizard
+  code: value_bytes()
+  expect:
+    error: E_ARGS
+- name: value_bytes_too_many_args
+  permission: wizard
+  code: value_bytes(1, 1)
+  expect:
+    error: E_ARGS

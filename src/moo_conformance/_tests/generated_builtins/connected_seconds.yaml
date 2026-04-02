@@ -1,0 +1,45 @@
+# Generated from actual Toast source for builtin connected_seconds().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\server.cc
+# implementation: bf_connected_seconds
+# implementation_file: C:\Users\Q\src\toaststunt\src\server.cc
+# arg_type_tokens: ['TYPE_OBJ']
+# arg_type_names: ['obj']
+# arg_type_codes: [1]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_INVARG']
+# unresolved_returns: ['make_var_pack(r)']
+name: generated_builtin_signature_connected_seconds
+description: Generated conformance tests for connected_seconds() builtin signature,
+  derived from Toast source.
+requires:
+  builtins:
+  - function_info
+  - connected_seconds
+tests:
+- name: connected_seconds_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("connected_seconds")
+  expect:
+    value:
+    - connected_seconds
+    - 1
+    - 1
+    - - 1
+- name: connected_seconds_too_few_args
+  permission: wizard
+  code: connected_seconds()
+  expect:
+    error: E_ARGS
+- name: connected_seconds_too_many_args
+  permission: wizard
+  code: connected_seconds(#0, 1)
+  expect:
+    error: E_ARGS
+- name: connected_seconds_arg_1_rejects_wrong_type
+  permission: wizard
+  code: connected_seconds("x")
+  expect:
+    error: E_TYPE

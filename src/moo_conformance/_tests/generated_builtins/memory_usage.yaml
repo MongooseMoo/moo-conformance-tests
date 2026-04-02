@@ -1,0 +1,35 @@
+# Generated from actual Toast source for builtin memory_usage().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\server.cc
+# implementation: bf_memory_usage
+# implementation_file: C:\Users\Q\src\toaststunt\src\server.cc
+# arg_type_tokens: []
+# arg_type_names: []
+# arg_type_codes: []
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_FILE', 'E_NACC']
+# unresolved_returns: ['make_var_pack(s)']
+name: generated_builtin_signature_memory_usage
+description: Generated conformance tests for memory_usage() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - memory_usage
+tests:
+- name: memory_usage_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("memory_usage")
+  expect:
+    value:
+    - memory_usage
+    - 0
+    - 0
+    - []
+- name: memory_usage_too_many_args
+  permission: wizard
+  code: memory_usage(1)
+  expect:
+    error: E_ARGS

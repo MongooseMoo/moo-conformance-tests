@@ -1,0 +1,57 @@
+# Generated from actual Toast source for builtin recreate().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function_with_read_write
+# registration_file: C:\Users\Q\src\toaststunt\src\objects.cc
+# implementation: bf_recreate
+# implementation_file: C:\Users\Q\src\toaststunt\src\objects.cc
+# arg_type_tokens: ['TYPE_OBJ', 'TYPE_OBJ', 'TYPE_OBJ']
+# arg_type_names: ['obj', 'obj', 'obj']
+# arg_type_codes: [1, 1, 1]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_INVARG', 'E_PERM', 'E_QUOTA']
+# unresolved_returns: ['make_call_pack(2, data)', 'make_error_pack(e)', 'make_var_pack(r)']
+name: generated_builtin_signature_recreate
+description: Generated conformance tests for recreate() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - recreate
+tests:
+- name: recreate_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("recreate")
+  expect:
+    value:
+    - recreate
+    - 2
+    - 3
+    - - 1
+      - 1
+      - 1
+- name: recreate_too_few_args
+  permission: wizard
+  code: recreate()
+  expect:
+    error: E_ARGS
+- name: recreate_too_many_args
+  permission: wizard
+  code: 'recreate(#0, #0, #0, 1)'
+  expect:
+    error: E_ARGS
+- name: recreate_arg_1_rejects_wrong_type
+  permission: wizard
+  code: 'recreate("x", #0)'
+  expect:
+    error: E_TYPE
+- name: recreate_arg_2_rejects_wrong_type
+  permission: wizard
+  code: recreate(#0, "x")
+  expect:
+    error: E_TYPE
+- name: recreate_arg_3_rejects_wrong_type
+  permission: wizard
+  code: 'recreate(#0, #0, "x")'
+  expect:
+    error: E_TYPE

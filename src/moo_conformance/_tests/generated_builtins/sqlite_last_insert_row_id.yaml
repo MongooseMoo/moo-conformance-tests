@@ -1,0 +1,45 @@
+# Generated from actual Toast source for builtin sqlite_last_insert_row_id().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\sqlite.cc
+# implementation: bf_sqlite_last_insert_row_id
+# implementation_file: C:\Users\Q\src\toaststunt\src\sqlite.cc
+# arg_type_tokens: ['TYPE_INT']
+# arg_type_names: ['int']
+# arg_type_codes: [0]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_INVARG', 'E_PERM']
+# unresolved_returns: ['make_var_pack(r)']
+name: generated_builtin_signature_sqlite_last_insert_row_id
+description: Generated conformance tests for sqlite_last_insert_row_id() builtin signature,
+  derived from Toast source.
+requires:
+  builtins:
+  - function_info
+  - sqlite_last_insert_row_id
+tests:
+- name: sqlite_last_insert_row_id_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("sqlite_last_insert_row_id")
+  expect:
+    value:
+    - sqlite_last_insert_row_id
+    - 1
+    - 1
+    - - 0
+- name: sqlite_last_insert_row_id_too_few_args
+  permission: wizard
+  code: sqlite_last_insert_row_id()
+  expect:
+    error: E_ARGS
+- name: sqlite_last_insert_row_id_too_many_args
+  permission: wizard
+  code: sqlite_last_insert_row_id(1, 1)
+  expect:
+    error: E_ARGS
+- name: sqlite_last_insert_row_id_arg_1_rejects_wrong_type
+  permission: wizard
+  code: sqlite_last_insert_row_id("x")
+  expect:
+    error: E_TYPE

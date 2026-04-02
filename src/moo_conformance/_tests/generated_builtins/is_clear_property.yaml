@@ -1,0 +1,46 @@
+# Generated from actual Toast source for builtin is_clear_property().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\property.cc
+# implementation: bf_is_clear_prop
+# implementation_file: C:\Users\Q\src\toaststunt\src\property.cc
+# arg_type_tokens: ['TYPE_ANY', 'TYPE_STR']
+# arg_type_names: ['any', 'str']
+# arg_type_codes: [-1, 2]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['make_error_pack(e)', 'make_var_pack(r)']
+name: generated_builtin_signature_is_clear_property
+description: Generated conformance tests for is_clear_property() builtin signature,
+  derived from Toast source.
+requires:
+  builtins:
+  - function_info
+  - is_clear_property
+tests:
+- name: is_clear_property_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("is_clear_property")
+  expect:
+    value:
+    - is_clear_property
+    - 2
+    - 2
+    - - -1
+      - 2
+- name: is_clear_property_too_few_args
+  permission: wizard
+  code: is_clear_property()
+  expect:
+    error: E_ARGS
+- name: is_clear_property_too_many_args
+  permission: wizard
+  code: is_clear_property(1, "x", 1)
+  expect:
+    error: E_ARGS
+- name: is_clear_property_arg_2_rejects_wrong_type
+  permission: wizard
+  code: is_clear_property(1, 1)
+  expect:
+    error: E_TYPE

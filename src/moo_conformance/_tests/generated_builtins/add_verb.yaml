@@ -1,0 +1,52 @@
+# Generated from actual Toast source for builtin add_verb().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\verbs.cc
+# implementation: bf_add_verb
+# implementation_file: C:\Users\Q\src\toaststunt\src\verbs.cc
+# arg_type_tokens: ['TYPE_ANY', 'TYPE_LIST', 'TYPE_LIST']
+# arg_type_names: ['any', 'list', 'list']
+# arg_type_codes: [-1, 4, 4]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['make_error_pack(e)', 'make_var_pack(result)']
+name: generated_builtin_signature_add_verb
+description: Generated conformance tests for add_verb() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - add_verb
+tests:
+- name: add_verb_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("add_verb")
+  expect:
+    value:
+    - add_verb
+    - 3
+    - 3
+    - - -1
+      - 4
+      - 4
+- name: add_verb_too_few_args
+  permission: wizard
+  code: add_verb()
+  expect:
+    error: E_ARGS
+- name: add_verb_too_many_args
+  permission: wizard
+  code: add_verb(1, {}, {}, 1)
+  expect:
+    error: E_ARGS
+- name: add_verb_arg_2_rejects_wrong_type
+  permission: wizard
+  code: add_verb(1, 1, {})
+  expect:
+    error: E_TYPE
+- name: add_verb_arg_3_rejects_wrong_type
+  permission: wizard
+  code: add_verb(1, {}, 1)
+  expect:
+    error: E_TYPE

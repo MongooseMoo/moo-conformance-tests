@@ -1,0 +1,35 @@
+# Generated from actual Toast source for builtin sqlite_handles().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\sqlite.cc
+# implementation: bf_sqlite_handles
+# implementation_file: C:\Users\Q\src\toaststunt\src\sqlite.cc
+# arg_type_tokens: []
+# arg_type_names: []
+# arg_type_codes: []
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_PERM']
+# unresolved_returns: ['make_var_pack(r)']
+name: generated_builtin_signature_sqlite_handles
+description: Generated conformance tests for sqlite_handles() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - sqlite_handles
+tests:
+- name: sqlite_handles_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("sqlite_handles")
+  expect:
+    value:
+    - sqlite_handles
+    - 0
+    - 0
+    - []
+- name: sqlite_handles_too_many_args
+  permission: wizard
+  code: sqlite_handles(1)
+  expect:
+    error: E_ARGS

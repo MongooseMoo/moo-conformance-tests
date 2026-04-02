@@ -1,0 +1,63 @@
+# Generated from actual Toast source for builtin thread_pool().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\background_wasm.cc
+# implementation: bf_thread_pool
+# implementation_file: C:\Users\Q\src\toaststunt\src\background.cc
+# arg_type_tokens: ['TYPE_STR', 'TYPE_STR', 'TYPE_INT']
+# arg_type_names: ['str', 'str', 'int']
+# arg_type_codes: [2, 2, 0]
+# inferred_success_type_names: ['int']
+# inferred_raised_error_codes: ['E_INVARG', 'E_PERM']
+# unresolved_returns: []
+name: generated_builtin_signature_thread_pool
+description: Generated conformance tests for thread_pool() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - thread_pool
+tests:
+- name: thread_pool_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("thread_pool")
+  expect:
+    value:
+    - thread_pool
+    - 2
+    - 3
+    - - 2
+      - 2
+      - 0
+- name: thread_pool_too_few_args
+  permission: wizard
+  code: thread_pool()
+  expect:
+    error: E_ARGS
+- name: thread_pool_too_many_args
+  permission: wizard
+  code: thread_pool("x", "x", 1, 1)
+  expect:
+    error: E_ARGS
+- name: thread_pool_arg_1_rejects_wrong_type
+  permission: wizard
+  code: thread_pool(1, "x")
+  expect:
+    error: E_TYPE
+- name: thread_pool_arg_2_rejects_wrong_type
+  permission: wizard
+  code: thread_pool("x", 1)
+  expect:
+    error: E_TYPE
+- name: thread_pool_arg_3_rejects_wrong_type
+  permission: wizard
+  code: thread_pool("x", "x", "x")
+  expect:
+    error: E_TYPE
+- name: thread_pool_runtime_outcome_matches_inferred_types
+  permission: wizard
+  statement: "try\n  result = thread_pool(\"x\", \"x\");\n  return typeof(result)\
+    \ == INT;\nexcept e (E_INVARG, E_PERM)\n  return 1;\nendtry\n"
+  expect:
+    value: 1

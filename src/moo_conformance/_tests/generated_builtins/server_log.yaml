@@ -1,0 +1,52 @@
+# Generated from actual Toast source for builtin server_log().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\log.cc
+# implementation: bf_server_log
+# implementation_file: C:\Users\Q\src\toaststunt\src\log.cc
+# arg_type_tokens: ['TYPE_STR', 'TYPE_ANY']
+# arg_type_names: ['str', 'any']
+# arg_type_codes: [2, -1]
+# inferred_success_type_names: ['int']
+# inferred_raised_error_codes: ['E_PERM']
+# unresolved_returns: []
+name: generated_builtin_signature_server_log
+description: Generated conformance tests for server_log() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - server_log
+tests:
+- name: server_log_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("server_log")
+  expect:
+    value:
+    - server_log
+    - 1
+    - 2
+    - - 2
+      - -1
+- name: server_log_too_few_args
+  permission: wizard
+  code: server_log()
+  expect:
+    error: E_ARGS
+- name: server_log_too_many_args
+  permission: wizard
+  code: server_log("x", 1, 1)
+  expect:
+    error: E_ARGS
+- name: server_log_arg_1_rejects_wrong_type
+  permission: wizard
+  code: server_log(1)
+  expect:
+    error: E_TYPE
+- name: server_log_runtime_outcome_matches_inferred_types
+  permission: wizard
+  statement: "try\n  result = server_log(\"x\");\n  return typeof(result) == INT;\n\
+    except e (E_PERM)\n  return 1;\nendtry\n"
+  expect:
+    value: 1

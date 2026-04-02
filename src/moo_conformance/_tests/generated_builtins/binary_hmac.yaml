@@ -1,0 +1,58 @@
+# Generated from actual Toast source for builtin binary_hmac().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\crypto.cc
+# implementation: bf_binary_hmac
+# implementation_file: C:\Users\Q\src\toaststunt\src\crypto.cc
+# arg_type_tokens: ['TYPE_STR', 'TYPE_STR', 'TYPE_STR', 'TYPE_ANY']
+# arg_type_names: ['str', 'str', 'str', 'any']
+# arg_type_codes: [2, 2, 2, -1]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['p']
+name: generated_builtin_signature_binary_hmac
+description: Generated conformance tests for binary_hmac() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - binary_hmac
+tests:
+- name: binary_hmac_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("binary_hmac")
+  expect:
+    value:
+    - binary_hmac
+    - 2
+    - 4
+    - - 2
+      - 2
+      - 2
+      - -1
+- name: binary_hmac_too_few_args
+  permission: wizard
+  code: binary_hmac()
+  expect:
+    error: E_ARGS
+- name: binary_hmac_too_many_args
+  permission: wizard
+  code: binary_hmac("x", "x", "x", 1, 1)
+  expect:
+    error: E_ARGS
+- name: binary_hmac_arg_1_rejects_wrong_type
+  permission: wizard
+  code: binary_hmac(1, "x")
+  expect:
+    error: E_TYPE
+- name: binary_hmac_arg_2_rejects_wrong_type
+  permission: wizard
+  code: binary_hmac("x", 1)
+  expect:
+    error: E_TYPE
+- name: binary_hmac_arg_3_rejects_wrong_type
+  permission: wizard
+  code: binary_hmac("x", "x", 1)
+  expect:
+    error: E_TYPE

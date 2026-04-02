@@ -1,0 +1,40 @@
+# Generated from actual Toast source for builtin mapvalues().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\map.cc
+# implementation: bf_mapvalues
+# implementation_file: C:\Users\Q\src\toaststunt\src\map.cc
+# arg_type_tokens: ['TYPE_MAP']
+# arg_type_names: ['map']
+# arg_type_codes: [10]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_RANGE']
+# unresolved_returns: ['make_var_pack(r)']
+name: generated_builtin_signature_mapvalues
+description: Generated conformance tests for mapvalues() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - mapvalues
+tests:
+- name: mapvalues_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("mapvalues")
+  expect:
+    value:
+    - mapvalues
+    - 1
+    - -1
+    - - 10
+- name: mapvalues_too_few_args
+  permission: wizard
+  code: mapvalues()
+  expect:
+    error: E_ARGS
+- name: mapvalues_arg_1_rejects_wrong_type
+  permission: wizard
+  code: mapvalues(1)
+  expect:
+    error: E_TYPE

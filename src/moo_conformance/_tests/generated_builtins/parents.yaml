@@ -1,0 +1,46 @@
+# Generated from actual Toast source for builtin parents().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\objects.cc
+# implementation: bf_parents
+# implementation_file: C:\Users\Q\src\toaststunt\src\objects.cc
+# arg_type_tokens: ['TYPE_ANY']
+# arg_type_names: ['any']
+# arg_type_codes: [-1]
+# inferred_success_type_names: ['list']
+# inferred_raised_error_codes: ['E_INVARG', 'E_TYPE']
+# unresolved_returns: ['make_var_pack(r)', 'make_var_pack(t)']
+name: generated_builtin_signature_parents
+description: Generated conformance tests for parents() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - parents
+tests:
+- name: parents_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("parents")
+  expect:
+    value:
+    - parents
+    - 1
+    - 1
+    - - -1
+- name: parents_too_few_args
+  permission: wizard
+  code: parents()
+  expect:
+    error: E_ARGS
+- name: parents_too_many_args
+  permission: wizard
+  code: parents(1, 1)
+  expect:
+    error: E_ARGS
+- name: parents_runtime_outcome_matches_inferred_types
+  permission: wizard
+  statement: "try\n  result = parents(1);\n  return typeof(result) == LIST;\nexcept\
+    \ e (E_INVARG, E_TYPE)\n  return 1;\nendtry\n"
+  expect:
+    value: 1

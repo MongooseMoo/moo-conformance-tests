@@ -1,0 +1,35 @@
+# Generated from actual Toast source for builtin recycled_objects().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\objects.cc
+# implementation: bf_recycled_objects
+# implementation_file: C:\Users\Q\src\toaststunt\src\objects.cc
+# arg_type_tokens: []
+# arg_type_names: []
+# arg_type_codes: []
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['make_var_pack(ret)']
+name: generated_builtin_signature_recycled_objects
+description: Generated conformance tests for recycled_objects() builtin signature,
+  derived from Toast source.
+requires:
+  builtins:
+  - function_info
+  - recycled_objects
+tests:
+- name: recycled_objects_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("recycled_objects")
+  expect:
+    value:
+    - recycled_objects
+    - 0
+    - 0
+    - []
+- name: recycled_objects_too_many_args
+  permission: wizard
+  code: recycled_objects(1)
+  expect:
+    error: E_ARGS

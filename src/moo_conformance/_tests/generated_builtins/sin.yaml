@@ -1,0 +1,45 @@
+# Generated from actual Toast source for builtin sin().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\numbers.cc
+# implementation: bf_sin
+# implementation_file: None
+# arg_type_tokens: ['TYPE_FLOAT']
+# arg_type_names: ['float']
+# arg_type_codes: [9]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['implementation body not found']
+name: generated_builtin_signature_sin
+description: Generated conformance tests for sin() builtin signature, derived from
+  Toast source.
+requires:
+  builtins:
+  - function_info
+  - sin
+tests:
+- name: sin_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("sin")
+  expect:
+    value:
+    - sin
+    - 1
+    - 1
+    - - 9
+- name: sin_too_few_args
+  permission: wizard
+  code: sin()
+  expect:
+    error: E_ARGS
+- name: sin_too_many_args
+  permission: wizard
+  code: sin(1.5, 1)
+  expect:
+    error: E_ARGS
+- name: sin_arg_1_rejects_wrong_type
+  permission: wizard
+  code: sin("x")
+  expect:
+    error: E_TYPE

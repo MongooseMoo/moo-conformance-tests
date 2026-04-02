@@ -1,0 +1,41 @@
+# Generated from actual Toast source for builtin dump_database().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\server.cc
+# implementation: bf_dump_database
+# implementation_file: C:\Users\Q\src\toaststunt\src\server.cc
+# arg_type_tokens: []
+# arg_type_names: []
+# arg_type_codes: []
+# inferred_success_type_names: ['int']
+# inferred_raised_error_codes: ['E_PERM']
+# unresolved_returns: []
+name: generated_builtin_signature_dump_database
+description: Generated conformance tests for dump_database() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - dump_database
+tests:
+- name: dump_database_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("dump_database")
+  expect:
+    value:
+    - dump_database
+    - 0
+    - 0
+    - []
+- name: dump_database_too_many_args
+  permission: wizard
+  code: dump_database(1)
+  expect:
+    error: E_ARGS
+- name: dump_database_runtime_outcome_matches_inferred_types
+  permission: wizard
+  statement: "try\n  result = dump_database();\n  return typeof(result) == INT;\n\
+    except e (E_PERM)\n  return 1;\nendtry\n"
+  expect:
+    value: 1

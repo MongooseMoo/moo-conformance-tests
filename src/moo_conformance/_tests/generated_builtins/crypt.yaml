@@ -1,0 +1,51 @@
+# Generated from actual Toast source for builtin crypt().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\crypto.cc
+# implementation: bf_crypt
+# implementation_file: C:\Users\Q\src\toaststunt\src\crypto.cc
+# arg_type_tokens: ['TYPE_STR', 'TYPE_STR']
+# arg_type_names: ['str', 'str']
+# arg_type_codes: [2, 2]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_INVARG']
+# unresolved_returns: ['make_var_pack(r)', 'p']
+name: generated_builtin_signature_crypt
+description: Generated conformance tests for crypt() builtin signature, derived from
+  Toast source.
+requires:
+  builtins:
+  - function_info
+  - crypt
+tests:
+- name: crypt_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("crypt")
+  expect:
+    value:
+    - crypt
+    - 1
+    - 2
+    - - 2
+      - 2
+- name: crypt_too_few_args
+  permission: wizard
+  code: crypt()
+  expect:
+    error: E_ARGS
+- name: crypt_too_many_args
+  permission: wizard
+  code: crypt("x", "x", 1)
+  expect:
+    error: E_ARGS
+- name: crypt_arg_1_rejects_wrong_type
+  permission: wizard
+  code: crypt(1)
+  expect:
+    error: E_TYPE
+- name: crypt_arg_2_rejects_wrong_type
+  permission: wizard
+  code: crypt("x", 1)
+  expect:
+    error: E_TYPE

@@ -1,0 +1,51 @@
+# Generated from actual Toast source for builtin argon2_verify().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\argon2.cc
+# implementation: bf_argon2_verify
+# implementation_file: C:\Users\Q\src\toaststunt\src\argon2.cc
+# arg_type_tokens: ['TYPE_STR', 'TYPE_STR']
+# arg_type_names: ['str', 'str']
+# arg_type_codes: [2, 2]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_PERM']
+# unresolved_returns: ['background_thread(argon2_verify_thread_callback, &arglist)', 'make_var_pack(ret)']
+name: generated_builtin_signature_argon2_verify
+description: Generated conformance tests for argon2_verify() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - argon2_verify
+tests:
+- name: argon2_verify_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("argon2_verify")
+  expect:
+    value:
+    - argon2_verify
+    - 2
+    - 2
+    - - 2
+      - 2
+- name: argon2_verify_too_few_args
+  permission: wizard
+  code: argon2_verify()
+  expect:
+    error: E_ARGS
+- name: argon2_verify_too_many_args
+  permission: wizard
+  code: argon2_verify("x", "x", 1)
+  expect:
+    error: E_ARGS
+- name: argon2_verify_arg_1_rejects_wrong_type
+  permission: wizard
+  code: argon2_verify(1, "x")
+  expect:
+    error: E_TYPE
+- name: argon2_verify_arg_2_rejects_wrong_type
+  permission: wizard
+  code: argon2_verify("x", 1)
+  expect:
+    error: E_TYPE

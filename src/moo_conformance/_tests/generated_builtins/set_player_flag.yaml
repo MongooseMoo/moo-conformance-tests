@@ -1,0 +1,52 @@
+# Generated from actual Toast source for builtin set_player_flag().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\objects.cc
+# implementation: bf_set_player_flag
+# implementation_file: C:\Users\Q\src\toaststunt\src\objects.cc
+# arg_type_tokens: ['TYPE_OBJ', 'TYPE_ANY']
+# arg_type_names: ['obj', 'any']
+# arg_type_codes: [1, -1]
+# inferred_success_type_names: ['int']
+# inferred_raised_error_codes: ['E_INVARG', 'E_PERM']
+# unresolved_returns: []
+name: generated_builtin_signature_set_player_flag
+description: Generated conformance tests for set_player_flag() builtin signature,
+  derived from Toast source.
+requires:
+  builtins:
+  - function_info
+  - set_player_flag
+tests:
+- name: set_player_flag_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("set_player_flag")
+  expect:
+    value:
+    - set_player_flag
+    - 2
+    - 2
+    - - 1
+      - -1
+- name: set_player_flag_too_few_args
+  permission: wizard
+  code: set_player_flag()
+  expect:
+    error: E_ARGS
+- name: set_player_flag_too_many_args
+  permission: wizard
+  code: set_player_flag(#0, 1, 1)
+  expect:
+    error: E_ARGS
+- name: set_player_flag_arg_1_rejects_wrong_type
+  permission: wizard
+  code: set_player_flag("x", 1)
+  expect:
+    error: E_TYPE
+- name: set_player_flag_runtime_outcome_matches_inferred_types
+  permission: wizard
+  statement: "try\n  result = set_player_flag(#0, 1);\n  return typeof(result) ==\
+    \ INT;\nexcept e (E_INVARG, E_PERM)\n  return 1;\nendtry\n"
+  expect:
+    value: 1

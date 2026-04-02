@@ -1,0 +1,46 @@
+# Generated from actual Toast source for builtin setremove().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\list.cc
+# implementation: bf_setremove
+# implementation_file: C:\Users\Q\src\toaststunt\src\list.cc
+# arg_type_tokens: ['TYPE_LIST', 'TYPE_ANY']
+# arg_type_names: ['list', 'any']
+# arg_type_codes: [4, -1]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['make_space_pack()', 'make_var_pack(r)']
+name: generated_builtin_signature_setremove
+description: Generated conformance tests for setremove() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - setremove
+tests:
+- name: setremove_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("setremove")
+  expect:
+    value:
+    - setremove
+    - 2
+    - 2
+    - - 4
+      - -1
+- name: setremove_too_few_args
+  permission: wizard
+  code: setremove()
+  expect:
+    error: E_ARGS
+- name: setremove_too_many_args
+  permission: wizard
+  code: setremove({}, 1, 1)
+  expect:
+    error: E_ARGS
+- name: setremove_arg_1_rejects_wrong_type
+  permission: wizard
+  code: setremove(1, 1)
+  expect:
+    error: E_TYPE

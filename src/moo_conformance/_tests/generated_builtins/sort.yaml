@@ -1,0 +1,63 @@
+# Generated from actual Toast source for builtin sort().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\list.cc
+# implementation: bf_sort
+# implementation_file: C:\Users\Q\src\toaststunt\src\list.cc
+# arg_type_tokens: ['TYPE_LIST', 'TYPE_LIST', 'TYPE_INT', 'TYPE_INT']
+# arg_type_names: ['list', 'list', 'int', 'int']
+# arg_type_codes: [4, 4, 0, 0]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['background_thread(sort_callback, &arglist)']
+name: generated_builtin_signature_sort
+description: Generated conformance tests for sort() builtin signature, derived from
+  Toast source.
+requires:
+  builtins:
+  - function_info
+  - sort
+tests:
+- name: sort_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("sort")
+  expect:
+    value:
+    - sort
+    - 1
+    - 4
+    - - 4
+      - 4
+      - 0
+      - 0
+- name: sort_too_few_args
+  permission: wizard
+  code: sort()
+  expect:
+    error: E_ARGS
+- name: sort_too_many_args
+  permission: wizard
+  code: sort({}, {}, 1, 1, 1)
+  expect:
+    error: E_ARGS
+- name: sort_arg_1_rejects_wrong_type
+  permission: wizard
+  code: sort(1)
+  expect:
+    error: E_TYPE
+- name: sort_arg_2_rejects_wrong_type
+  permission: wizard
+  code: sort({}, 1)
+  expect:
+    error: E_TYPE
+- name: sort_arg_3_rejects_wrong_type
+  permission: wizard
+  code: sort({}, {}, "x")
+  expect:
+    error: E_TYPE
+- name: sort_arg_4_rejects_wrong_type
+  permission: wizard
+  code: sort({}, {}, 1, "x")
+  expect:
+    error: E_TYPE

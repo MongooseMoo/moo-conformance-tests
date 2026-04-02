@@ -1,0 +1,52 @@
+# Generated from actual Toast source for builtin maphaskey().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\map.cc
+# implementation: bf_maphaskey
+# implementation_file: C:\Users\Q\src\toaststunt\src\map.cc
+# arg_type_tokens: ['TYPE_MAP', 'TYPE_ANY', 'TYPE_INT']
+# arg_type_names: ['map', 'any', 'int']
+# arg_type_codes: [10, -1, 0]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_TYPE']
+# unresolved_returns: ['make_var_pack(ret)']
+name: generated_builtin_signature_maphaskey
+description: Generated conformance tests for maphaskey() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - maphaskey
+tests:
+- name: maphaskey_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("maphaskey")
+  expect:
+    value:
+    - maphaskey
+    - 2
+    - 3
+    - - 10
+      - -1
+      - 0
+- name: maphaskey_too_few_args
+  permission: wizard
+  code: maphaskey()
+  expect:
+    error: E_ARGS
+- name: maphaskey_too_many_args
+  permission: wizard
+  code: maphaskey([1 -> 2], 1, 1, 1)
+  expect:
+    error: E_ARGS
+- name: maphaskey_arg_1_rejects_wrong_type
+  permission: wizard
+  code: maphaskey(1, 1)
+  expect:
+    error: E_TYPE
+- name: maphaskey_arg_3_rejects_wrong_type
+  permission: wizard
+  code: maphaskey([1 -> 2], 1, "x")
+  expect:
+    error: E_TYPE

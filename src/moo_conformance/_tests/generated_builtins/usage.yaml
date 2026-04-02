@@ -1,0 +1,35 @@
+# Generated from actual Toast source for builtin usage().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\server.cc
+# implementation: bf_usage
+# implementation_file: C:\Users\Q\src\toaststunt\src\server.cc
+# arg_type_tokens: []
+# arg_type_names: []
+# arg_type_codes: []
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_PERM']
+# unresolved_returns: ['make_var_pack(r)']
+name: generated_builtin_signature_usage
+description: Generated conformance tests for usage() builtin signature, derived from
+  Toast source.
+requires:
+  builtins:
+  - function_info
+  - usage
+tests:
+- name: usage_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("usage")
+  expect:
+    value:
+    - usage
+    - 0
+    - 0
+    - []
+- name: usage_too_many_args
+  permission: wizard
+  code: usage(1)
+  expect:
+    error: E_ARGS

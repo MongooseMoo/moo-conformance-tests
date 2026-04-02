@@ -1,0 +1,52 @@
+# Generated from actual Toast source for builtin listset().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\list.cc
+# implementation: bf_listset
+# implementation_file: C:\Users\Q\src\toaststunt\src\list.cc
+# arg_type_tokens: ['TYPE_LIST', 'TYPE_ANY', 'TYPE_INT']
+# arg_type_names: ['list', 'any', 'int']
+# arg_type_codes: [4, -1, 0]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_RANGE']
+# unresolved_returns: ['make_space_pack()', 'make_var_pack(r)']
+name: generated_builtin_signature_listset
+description: Generated conformance tests for listset() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - listset
+tests:
+- name: listset_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("listset")
+  expect:
+    value:
+    - listset
+    - 3
+    - 3
+    - - 4
+      - -1
+      - 0
+- name: listset_too_few_args
+  permission: wizard
+  code: listset()
+  expect:
+    error: E_ARGS
+- name: listset_too_many_args
+  permission: wizard
+  code: listset({}, 1, 1, 1)
+  expect:
+    error: E_ARGS
+- name: listset_arg_1_rejects_wrong_type
+  permission: wizard
+  code: listset(1, 1, 1)
+  expect:
+    error: E_TYPE
+- name: listset_arg_3_rejects_wrong_type
+  permission: wizard
+  code: listset({}, 1, "x")
+  expect:
+    error: E_TYPE

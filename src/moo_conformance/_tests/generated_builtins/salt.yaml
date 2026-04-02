@@ -1,0 +1,51 @@
+# Generated from actual Toast source for builtin salt().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\crypto.cc
+# implementation: bf_salt
+# implementation_file: C:\Users\Q\src\toaststunt\src\crypto.cc
+# arg_type_tokens: ['TYPE_STR', 'TYPE_STR']
+# arg_type_names: ['str', 'str']
+# arg_type_codes: [2, 2]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['make_var_pack(r)', 'p']
+name: generated_builtin_signature_salt
+description: Generated conformance tests for salt() builtin signature, derived from
+  Toast source.
+requires:
+  builtins:
+  - function_info
+  - salt
+tests:
+- name: salt_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("salt")
+  expect:
+    value:
+    - salt
+    - 2
+    - 2
+    - - 2
+      - 2
+- name: salt_too_few_args
+  permission: wizard
+  code: salt()
+  expect:
+    error: E_ARGS
+- name: salt_too_many_args
+  permission: wizard
+  code: salt("x", "x", 1)
+  expect:
+    error: E_ARGS
+- name: salt_arg_1_rejects_wrong_type
+  permission: wizard
+  code: salt(1, "x")
+  expect:
+    error: E_TYPE
+- name: salt_arg_2_rejects_wrong_type
+  permission: wizard
+  code: salt("x", 1)
+  expect:
+    error: E_TYPE

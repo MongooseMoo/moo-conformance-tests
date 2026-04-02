@@ -1,0 +1,30 @@
+# Generated from actual Toast source for builtin tostr().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\list.cc
+# implementation: bf_tostr
+# implementation_file: C:\Users\Q\src\toaststunt\src\list.cc
+# arg_type_tokens: []
+# arg_type_names: []
+# arg_type_codes: []
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['p']
+name: generated_builtin_signature_tostr
+description: Generated conformance tests for tostr() builtin signature, derived from
+  Toast source.
+requires:
+  builtins:
+  - function_info
+  - tostr
+tests:
+- name: tostr_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("tostr")
+  expect:
+    value:
+    - tostr
+    - 0
+    - -1
+    - []

@@ -1,0 +1,40 @@
+# Generated from actual Toast source for builtin file_last_change().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\fileio.cc
+# implementation: bf_file_last_change
+# implementation_file: C:\Users\Q\src\toaststunt\src\fileio.cc
+# arg_type_tokens: ['TYPE_ANY']
+# arg_type_names: ['any']
+# arg_type_codes: [-1]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['r']
+name: generated_builtin_signature_file_last_change
+description: Generated conformance tests for file_last_change() builtin signature,
+  derived from Toast source.
+requires:
+  builtins:
+  - function_info
+  - file_last_change
+tests:
+- name: file_last_change_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("file_last_change")
+  expect:
+    value:
+    - file_last_change
+    - 1
+    - 1
+    - - -1
+- name: file_last_change_too_few_args
+  permission: wizard
+  code: file_last_change()
+  expect:
+    error: E_ARGS
+- name: file_last_change_too_many_args
+  permission: wizard
+  code: file_last_change(1, 1)
+  expect:
+    error: E_ARGS

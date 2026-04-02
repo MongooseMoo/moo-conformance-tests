@@ -1,0 +1,40 @@
+# Generated from actual Toast source for builtin suspend().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\execute.cc
+# implementation: bf_suspend
+# implementation_file: C:\Users\Q\src\toaststunt\src\execute.cc
+# arg_type_tokens: ['TYPE_NUMERIC']
+# arg_type_names: ['numeric']
+# arg_type_codes: [-2]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_INVARG']
+# unresolved_returns: ['make_suspend_pack(enqueue_suspended_task, secondsp)']
+name: generated_builtin_signature_suspend
+description: Generated conformance tests for suspend() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - suspend
+tests:
+- name: suspend_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("suspend")
+  expect:
+    value:
+    - suspend
+    - 0
+    - 1
+    - - -2
+- name: suspend_too_many_args
+  permission: wizard
+  code: suspend(1, 1)
+  expect:
+    error: E_ARGS
+- name: suspend_arg_1_rejects_wrong_type
+  permission: wizard
+  code: suspend("x")
+  expect:
+    error: E_TYPE

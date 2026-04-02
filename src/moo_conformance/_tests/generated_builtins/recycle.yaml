@@ -1,0 +1,46 @@
+# Generated from actual Toast source for builtin recycle().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function_with_read_write
+# registration_file: C:\Users\Q\src\toaststunt\src\objects.cc
+# implementation: bf_recycle
+# implementation_file: C:\Users\Q\src\toaststunt\src\objects.cc
+# arg_type_tokens: ['TYPE_ANY']
+# arg_type_names: ['any']
+# arg_type_codes: [-1]
+# inferred_success_type_names: ['int']
+# inferred_raised_error_codes: ['E_INVARG', 'E_PERM', 'E_TYPE']
+# unresolved_returns: ['make_call_pack(2, data)']
+name: generated_builtin_signature_recycle
+description: Generated conformance tests for recycle() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - recycle
+tests:
+- name: recycle_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("recycle")
+  expect:
+    value:
+    - recycle
+    - 1
+    - 1
+    - - -1
+- name: recycle_too_few_args
+  permission: wizard
+  code: recycle()
+  expect:
+    error: E_ARGS
+- name: recycle_too_many_args
+  permission: wizard
+  code: recycle(1, 1)
+  expect:
+    error: E_ARGS
+- name: recycle_runtime_outcome_matches_inferred_types
+  permission: wizard
+  statement: "try\n  result = recycle(1);\n  return typeof(result) == INT;\nexcept\
+    \ e (E_INVARG, E_PERM, E_TYPE)\n  return 1;\nendtry\n"
+  expect:
+    value: 1

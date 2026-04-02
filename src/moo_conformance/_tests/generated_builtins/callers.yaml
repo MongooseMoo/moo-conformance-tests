@@ -1,0 +1,35 @@
+# Generated from actual Toast source for builtin callers().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\execute.cc
+# implementation: bf_callers
+# implementation_file: C:\Users\Q\src\toaststunt\src\execute.cc
+# arg_type_tokens: ['TYPE_ANY']
+# arg_type_names: ['any']
+# arg_type_codes: [-1]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['make_var_pack(make_stack_list(activ_stack, 0, top_activ_stack, 0, root_activ_vector, line_numbers_too, 0, progr))']
+name: generated_builtin_signature_callers
+description: Generated conformance tests for callers() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - callers
+tests:
+- name: callers_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("callers")
+  expect:
+    value:
+    - callers
+    - 0
+    - 1
+    - - -1
+- name: callers_too_many_args
+  permission: wizard
+  code: callers(1, 1)
+  expect:
+    error: E_ARGS

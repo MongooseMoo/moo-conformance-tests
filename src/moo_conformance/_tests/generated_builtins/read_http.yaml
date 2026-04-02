@@ -1,0 +1,51 @@
+# Generated from actual Toast source for builtin read_http().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\execute.cc
+# implementation: bf_read_http
+# implementation_file: C:\Users\Q\src\toaststunt\src\execute.cc
+# arg_type_tokens: ['TYPE_STR', 'TYPE_OBJ']
+# arg_type_names: ['str', 'obj']
+# arg_type_codes: [2, 1]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_INVARG', 'E_PERM']
+# unresolved_returns: ['make_suspend_pack(TernaryOp, &connection)']
+name: generated_builtin_signature_read_http
+description: Generated conformance tests for read_http() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - read_http
+tests:
+- name: read_http_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("read_http")
+  expect:
+    value:
+    - read_http
+    - 1
+    - 2
+    - - 2
+      - 1
+- name: read_http_too_few_args
+  permission: wizard
+  code: read_http()
+  expect:
+    error: E_ARGS
+- name: read_http_too_many_args
+  permission: wizard
+  code: 'read_http("x", #0, 1)'
+  expect:
+    error: E_ARGS
+- name: read_http_arg_1_rejects_wrong_type
+  permission: wizard
+  code: read_http(1)
+  expect:
+    error: E_TYPE
+- name: read_http_arg_2_rejects_wrong_type
+  permission: wizard
+  code: read_http("x", "x")
+  expect:
+    error: E_TYPE

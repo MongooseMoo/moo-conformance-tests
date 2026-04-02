@@ -1,0 +1,35 @@
+# Generated from actual Toast source for builtin connected_players().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\server.cc
+# implementation: bf_connected_players
+# implementation_file: C:\Users\Q\src\toaststunt\src\server.cc
+# arg_type_tokens: ['TYPE_ANY']
+# arg_type_names: ['any']
+# arg_type_codes: [-1]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['make_var_pack(result)']
+name: generated_builtin_signature_connected_players
+description: Generated conformance tests for connected_players() builtin signature,
+  derived from Toast source.
+requires:
+  builtins:
+  - function_info
+  - connected_players
+tests:
+- name: connected_players_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("connected_players")
+  expect:
+    value:
+    - connected_players
+    - 0
+    - 1
+    - - -1
+- name: connected_players_too_many_args
+  permission: wizard
+  code: connected_players(1, 1)
+  expect:
+    error: E_ARGS

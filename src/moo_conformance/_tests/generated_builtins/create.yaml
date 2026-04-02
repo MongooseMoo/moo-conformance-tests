@@ -1,0 +1,43 @@
+# Generated from actual Toast source for builtin create().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function_with_read_write
+# registration_file: C:\Users\Q\src\toaststunt\src\objects.cc
+# implementation: bf_create
+# implementation_file: C:\Users\Q\src\toaststunt\src\objects.cc
+# arg_type_tokens: ['TYPE_ANY', 'TYPE_ANY', 'TYPE_ANY', 'TYPE_ANY']
+# arg_type_names: ['any', 'any', 'any', 'any']
+# arg_type_codes: [-1, -1, -1, -1]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_INVARG', 'E_PERM', 'E_QUOTA', 'E_TYPE']
+# unresolved_returns: ['make_call_pack(2, data)', 'make_error_pack(e)', 'make_var_pack(r)']
+name: generated_builtin_signature_create
+description: Generated conformance tests for create() builtin signature, derived from
+  Toast source.
+requires:
+  builtins:
+  - function_info
+  - create
+tests:
+- name: create_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("create")
+  expect:
+    value:
+    - create
+    - 1
+    - 4
+    - - -1
+      - -1
+      - -1
+      - -1
+- name: create_too_few_args
+  permission: wizard
+  code: create()
+  expect:
+    error: E_ARGS
+- name: create_too_many_args
+  permission: wizard
+  code: create(1, 1, 1, 1, 1)
+  expect:
+    error: E_ARGS

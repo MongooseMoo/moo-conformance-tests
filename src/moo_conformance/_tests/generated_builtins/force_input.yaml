@@ -1,0 +1,58 @@
+# Generated from actual Toast source for builtin force_input().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\tasks.cc
+# implementation: bf_force_input
+# implementation_file: C:\Users\Q\src\toaststunt\src\tasks.cc
+# arg_type_tokens: ['TYPE_OBJ', 'TYPE_STR', 'TYPE_ANY']
+# arg_type_names: ['obj', 'str', 'any']
+# arg_type_codes: [1, 2, -1]
+# inferred_success_type_names: ['int']
+# inferred_raised_error_codes: ['E_PERM']
+# unresolved_returns: []
+name: generated_builtin_signature_force_input
+description: Generated conformance tests for force_input() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - force_input
+tests:
+- name: force_input_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("force_input")
+  expect:
+    value:
+    - force_input
+    - 2
+    - 3
+    - - 1
+      - 2
+      - -1
+- name: force_input_too_few_args
+  permission: wizard
+  code: force_input()
+  expect:
+    error: E_ARGS
+- name: force_input_too_many_args
+  permission: wizard
+  code: force_input(#0, "x", 1, 1)
+  expect:
+    error: E_ARGS
+- name: force_input_arg_1_rejects_wrong_type
+  permission: wizard
+  code: force_input("x", "x")
+  expect:
+    error: E_TYPE
+- name: force_input_arg_2_rejects_wrong_type
+  permission: wizard
+  code: force_input(#0, 1)
+  expect:
+    error: E_TYPE
+- name: force_input_runtime_outcome_matches_inferred_types
+  permission: wizard
+  statement: "try\n  result = force_input(#0, \"x\");\n  return typeof(result) ==\
+    \ INT;\nexcept e (E_PERM)\n  return 1;\nendtry\n"
+  expect:
+    value: 1

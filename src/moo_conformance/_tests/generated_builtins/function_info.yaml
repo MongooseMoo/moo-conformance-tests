@@ -1,0 +1,40 @@
+# Generated from actual Toast source for builtin function_info().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\functions.cc
+# implementation: bf_function_info
+# implementation_file: C:\Users\Q\src\toaststunt\src\functions.cc
+# arg_type_tokens: ['TYPE_STR']
+# arg_type_names: ['str']
+# arg_type_codes: [2]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_INVARG']
+# unresolved_returns: ['make_var_pack(r)']
+name: generated_builtin_signature_function_info
+description: Generated conformance tests for function_info() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - function_info
+tests:
+- name: function_info_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("function_info")
+  expect:
+    value:
+    - function_info
+    - 0
+    - 1
+    - - 2
+- name: function_info_too_many_args
+  permission: wizard
+  code: function_info("x", 1)
+  expect:
+    error: E_ARGS
+- name: function_info_arg_1_rejects_wrong_type
+  permission: wizard
+  code: function_info(1)
+  expect:
+    error: E_TYPE

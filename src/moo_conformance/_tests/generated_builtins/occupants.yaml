@@ -1,0 +1,58 @@
+# Generated from actual Toast source for builtin occupants().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\objects.cc
+# implementation: bf_occupants
+# implementation_file: C:\Users\Q\src\toaststunt\src\objects.cc
+# arg_type_tokens: ['TYPE_LIST', 'TYPE_ANY', 'TYPE_INT', 'TYPE_INT']
+# arg_type_names: ['list', 'any', 'int', 'int']
+# arg_type_codes: [4, -1, 0, 0]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['make_error_pack(ret.v.err)', 'make_var_pack(ret)']
+name: generated_builtin_signature_occupants
+description: Generated conformance tests for occupants() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - occupants
+tests:
+- name: occupants_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("occupants")
+  expect:
+    value:
+    - occupants
+    - 1
+    - 4
+    - - 4
+      - -1
+      - 0
+      - 0
+- name: occupants_too_few_args
+  permission: wizard
+  code: occupants()
+  expect:
+    error: E_ARGS
+- name: occupants_too_many_args
+  permission: wizard
+  code: occupants({}, 1, 1, 1, 1)
+  expect:
+    error: E_ARGS
+- name: occupants_arg_1_rejects_wrong_type
+  permission: wizard
+  code: occupants(1)
+  expect:
+    error: E_TYPE
+- name: occupants_arg_3_rejects_wrong_type
+  permission: wizard
+  code: occupants({}, 1, "x")
+  expect:
+    error: E_TYPE
+- name: occupants_arg_4_rejects_wrong_type
+  permission: wizard
+  code: occupants({}, 1, 1, "x")
+  expect:
+    error: E_TYPE

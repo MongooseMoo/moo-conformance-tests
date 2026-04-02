@@ -1,0 +1,51 @@
+# Generated from actual Toast source for builtin substitute().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\list.cc
+# implementation: bf_substitute
+# implementation_file: C:\Users\Q\src\toaststunt\src\list.cc
+# arg_type_tokens: ['TYPE_STR', 'TYPE_LIST']
+# arg_type_names: ['str', 'list']
+# arg_type_codes: [2, 4]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_INVARG']
+# unresolved_returns: ['p']
+name: generated_builtin_signature_substitute
+description: Generated conformance tests for substitute() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - substitute
+tests:
+- name: substitute_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("substitute")
+  expect:
+    value:
+    - substitute
+    - 2
+    - 2
+    - - 2
+      - 4
+- name: substitute_too_few_args
+  permission: wizard
+  code: substitute()
+  expect:
+    error: E_ARGS
+- name: substitute_too_many_args
+  permission: wizard
+  code: substitute("x", {}, 1)
+  expect:
+    error: E_ARGS
+- name: substitute_arg_1_rejects_wrong_type
+  permission: wizard
+  code: substitute(1, {})
+  expect:
+    error: E_TYPE
+- name: substitute_arg_2_rejects_wrong_type
+  permission: wizard
+  code: substitute("x", 1)
+  expect:
+    error: E_TYPE

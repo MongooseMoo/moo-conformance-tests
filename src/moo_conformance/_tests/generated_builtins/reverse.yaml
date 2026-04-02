@@ -1,0 +1,40 @@
+# Generated from actual Toast source for builtin reverse().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\list.cc
+# implementation: bf_reverse
+# implementation_file: C:\Users\Q\src\toaststunt\src\list.cc
+# arg_type_tokens: ['TYPE_ANY']
+# arg_type_names: ['any']
+# arg_type_codes: [-1]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['TernaryOp']
+name: generated_builtin_signature_reverse
+description: Generated conformance tests for reverse() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - reverse
+tests:
+- name: reverse_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("reverse")
+  expect:
+    value:
+    - reverse
+    - 1
+    - 1
+    - - -1
+- name: reverse_too_few_args
+  permission: wizard
+  code: reverse()
+  expect:
+    error: E_ARGS
+- name: reverse_too_many_args
+  permission: wizard
+  code: reverse(1, 1)
+  expect:
+    error: E_ARGS

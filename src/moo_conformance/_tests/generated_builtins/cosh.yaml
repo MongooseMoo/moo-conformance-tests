@@ -1,0 +1,45 @@
+# Generated from actual Toast source for builtin cosh().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\numbers.cc
+# implementation: bf_cosh
+# implementation_file: None
+# arg_type_tokens: ['TYPE_FLOAT']
+# arg_type_names: ['float']
+# arg_type_codes: [9]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['implementation body not found']
+name: generated_builtin_signature_cosh
+description: Generated conformance tests for cosh() builtin signature, derived from
+  Toast source.
+requires:
+  builtins:
+  - function_info
+  - cosh
+tests:
+- name: cosh_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("cosh")
+  expect:
+    value:
+    - cosh
+    - 1
+    - 1
+    - - 9
+- name: cosh_too_few_args
+  permission: wizard
+  code: cosh()
+  expect:
+    error: E_ARGS
+- name: cosh_too_many_args
+  permission: wizard
+  code: cosh(1.5, 1)
+  expect:
+    error: E_ARGS
+- name: cosh_arg_1_rejects_wrong_type
+  permission: wizard
+  code: cosh("x")
+  expect:
+    error: E_TYPE

@@ -1,0 +1,51 @@
+# Generated from actual Toast source for builtin parse_json().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\json.cc
+# implementation: bf_parse_json
+# implementation_file: C:\Users\Q\src\toaststunt\src\json.cc
+# arg_type_tokens: ['TYPE_STR', 'TYPE_STR']
+# arg_type_names: ['str', 'str']
+# arg_type_codes: [2, 2]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_INVARG']
+# unresolved_returns: ['pack']
+name: generated_builtin_signature_parse_json
+description: Generated conformance tests for parse_json() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - parse_json
+tests:
+- name: parse_json_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("parse_json")
+  expect:
+    value:
+    - parse_json
+    - 1
+    - 2
+    - - 2
+      - 2
+- name: parse_json_too_few_args
+  permission: wizard
+  code: parse_json()
+  expect:
+    error: E_ARGS
+- name: parse_json_too_many_args
+  permission: wizard
+  code: parse_json("x", "x", 1)
+  expect:
+    error: E_ARGS
+- name: parse_json_arg_1_rejects_wrong_type
+  permission: wizard
+  code: parse_json(1)
+  expect:
+    error: E_TYPE
+- name: parse_json_arg_2_rejects_wrong_type
+  permission: wizard
+  code: parse_json("x", 1)
+  expect:
+    error: E_TYPE

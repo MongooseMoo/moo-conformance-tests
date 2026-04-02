@@ -1,0 +1,46 @@
+# Generated from actual Toast source for builtin set_thread_mode().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\tasks.cc
+# implementation: bf_set_thread_mode
+# implementation_file: C:\Users\Q\src\toaststunt\src\tasks.cc
+# arg_type_tokens: ['TYPE_INT']
+# arg_type_names: ['int']
+# arg_type_codes: [0]
+# inferred_success_type_names: ['int']
+# inferred_raised_error_codes: []
+# unresolved_returns: ['make_var_pack(ret)']
+name: generated_builtin_signature_set_thread_mode
+description: Generated conformance tests for set_thread_mode() builtin signature,
+  derived from Toast source.
+requires:
+  builtins:
+  - function_info
+  - set_thread_mode
+tests:
+- name: set_thread_mode_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("set_thread_mode")
+  expect:
+    value:
+    - set_thread_mode
+    - 0
+    - 1
+    - - 0
+- name: set_thread_mode_too_many_args
+  permission: wizard
+  code: set_thread_mode(1, 1)
+  expect:
+    error: E_ARGS
+- name: set_thread_mode_arg_1_rejects_wrong_type
+  permission: wizard
+  code: set_thread_mode("x")
+  expect:
+    error: E_TYPE
+- name: set_thread_mode_runtime_outcome_matches_inferred_types
+  permission: wizard
+  statement: "try\n  result = set_thread_mode();\n  return typeof(result) == INT;\n\
+    except e (ANY)\n  return 0;\nendtry\n"
+  expect:
+    value: 1

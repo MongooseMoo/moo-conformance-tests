@@ -1,0 +1,45 @@
+# Generated from actual Toast source for builtin file_flush().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\fileio.cc
+# implementation: bf_file_flush
+# implementation_file: C:\Users\Q\src\toaststunt\src\fileio.cc
+# arg_type_tokens: ['TYPE_INT']
+# arg_type_names: ['int']
+# arg_type_codes: [0]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['r']
+name: generated_builtin_signature_file_flush
+description: Generated conformance tests for file_flush() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - file_flush
+tests:
+- name: file_flush_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("file_flush")
+  expect:
+    value:
+    - file_flush
+    - 1
+    - 1
+    - - 0
+- name: file_flush_too_few_args
+  permission: wizard
+  code: file_flush()
+  expect:
+    error: E_ARGS
+- name: file_flush_too_many_args
+  permission: wizard
+  code: file_flush(1, 1)
+  expect:
+    error: E_ARGS
+- name: file_flush_arg_1_rejects_wrong_type
+  permission: wizard
+  code: file_flush("x")
+  expect:
+    error: E_TYPE

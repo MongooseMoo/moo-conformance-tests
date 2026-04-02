@@ -1,0 +1,57 @@
+# Generated from actual Toast source for builtin file_readlines().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\fileio.cc
+# implementation: bf_file_readlines
+# implementation_file: C:\Users\Q\src\toaststunt\src\fileio.cc
+# arg_type_tokens: ['TYPE_INT', 'TYPE_INT', 'TYPE_INT']
+# arg_type_names: ['int', 'int', 'int']
+# arg_type_codes: [0, 0, 0]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_INVARG']
+# unresolved_returns: ['r']
+name: generated_builtin_signature_file_readlines
+description: Generated conformance tests for file_readlines() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - file_readlines
+tests:
+- name: file_readlines_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("file_readlines")
+  expect:
+    value:
+    - file_readlines
+    - 3
+    - 3
+    - - 0
+      - 0
+      - 0
+- name: file_readlines_too_few_args
+  permission: wizard
+  code: file_readlines()
+  expect:
+    error: E_ARGS
+- name: file_readlines_too_many_args
+  permission: wizard
+  code: file_readlines(1, 1, 1, 1)
+  expect:
+    error: E_ARGS
+- name: file_readlines_arg_1_rejects_wrong_type
+  permission: wizard
+  code: file_readlines("x", 1, 1)
+  expect:
+    error: E_TYPE
+- name: file_readlines_arg_2_rejects_wrong_type
+  permission: wizard
+  code: file_readlines(1, "x", 1)
+  expect:
+    error: E_TYPE
+- name: file_readlines_arg_3_rejects_wrong_type
+  permission: wizard
+  code: file_readlines(1, 1, "x")
+  expect:
+    error: E_TYPE

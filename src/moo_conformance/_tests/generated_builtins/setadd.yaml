@@ -1,0 +1,46 @@
+# Generated from actual Toast source for builtin setadd().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\list.cc
+# implementation: bf_setadd
+# implementation_file: C:\Users\Q\src\toaststunt\src\list.cc
+# arg_type_tokens: ['TYPE_LIST', 'TYPE_ANY']
+# arg_type_names: ['list', 'any']
+# arg_type_codes: [4, -1]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['make_space_pack()', 'make_var_pack(r)']
+name: generated_builtin_signature_setadd
+description: Generated conformance tests for setadd() builtin signature, derived from
+  Toast source.
+requires:
+  builtins:
+  - function_info
+  - setadd
+tests:
+- name: setadd_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("setadd")
+  expect:
+    value:
+    - setadd
+    - 2
+    - 2
+    - - 4
+      - -1
+- name: setadd_too_few_args
+  permission: wizard
+  code: setadd()
+  expect:
+    error: E_ARGS
+- name: setadd_too_many_args
+  permission: wizard
+  code: setadd({}, 1, 1)
+  expect:
+    error: E_ARGS
+- name: setadd_arg_1_rejects_wrong_type
+  permission: wizard
+  code: setadd(1, 1)
+  expect:
+    error: E_TYPE

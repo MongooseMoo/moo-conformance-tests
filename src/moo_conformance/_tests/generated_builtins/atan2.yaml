@@ -1,0 +1,57 @@
+# Generated from actual Toast source for builtin atan2().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\numbers.cc
+# implementation: bf_atan2
+# implementation_file: C:\Users\Q\src\toaststunt\src\numbers.cc
+# arg_type_tokens: ['TYPE_FLOAT', 'TYPE_FLOAT']
+# arg_type_names: ['float', 'float']
+# arg_type_codes: [9, 9]
+# inferred_success_type_names: ['float']
+# inferred_raised_error_codes: ['E_INVARG']
+# unresolved_returns: []
+name: generated_builtin_signature_atan2
+description: Generated conformance tests for atan2() builtin signature, derived from
+  Toast source.
+requires:
+  builtins:
+  - function_info
+  - atan2
+tests:
+- name: atan2_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("atan2")
+  expect:
+    value:
+    - atan2
+    - 2
+    - 2
+    - - 9
+      - 9
+- name: atan2_too_few_args
+  permission: wizard
+  code: atan2()
+  expect:
+    error: E_ARGS
+- name: atan2_too_many_args
+  permission: wizard
+  code: atan2(1.5, 1.5, 1)
+  expect:
+    error: E_ARGS
+- name: atan2_arg_1_rejects_wrong_type
+  permission: wizard
+  code: atan2("x", 1.5)
+  expect:
+    error: E_TYPE
+- name: atan2_arg_2_rejects_wrong_type
+  permission: wizard
+  code: atan2(1.5, "x")
+  expect:
+    error: E_TYPE
+- name: atan2_runtime_outcome_matches_inferred_types
+  permission: wizard
+  statement: "try\n  result = atan2(1.5, 1.5);\n  return typeof(result) == FLOAT;\n\
+    except e (E_INVARG)\n  return 1;\nendtry\n"
+  expect:
+    value: 1

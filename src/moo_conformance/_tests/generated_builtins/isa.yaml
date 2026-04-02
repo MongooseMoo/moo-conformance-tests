@@ -1,0 +1,47 @@
+# Generated from actual Toast source for builtin isa().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\objects.cc
+# implementation: bf_isa
+# implementation_file: C:\Users\Q\src\toaststunt\src\objects.cc
+# arg_type_tokens: ['TYPE_ANY', 'TYPE_ANY', 'TYPE_INT']
+# arg_type_names: ['any', 'any', 'int']
+# arg_type_codes: [-1, -1, 0]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_TYPE']
+# unresolved_returns: ['ret']
+name: generated_builtin_signature_isa
+description: Generated conformance tests for isa() builtin signature, derived from
+  Toast source.
+requires:
+  builtins:
+  - function_info
+  - isa
+tests:
+- name: isa_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("isa")
+  expect:
+    value:
+    - isa
+    - 2
+    - 3
+    - - -1
+      - -1
+      - 0
+- name: isa_too_few_args
+  permission: wizard
+  code: isa()
+  expect:
+    error: E_ARGS
+- name: isa_too_many_args
+  permission: wizard
+  code: isa(1, 1, 1, 1)
+  expect:
+    error: E_ARGS
+- name: isa_arg_3_rejects_wrong_type
+  permission: wizard
+  code: isa(1, 1, "x")
+  expect:
+    error: E_TYPE

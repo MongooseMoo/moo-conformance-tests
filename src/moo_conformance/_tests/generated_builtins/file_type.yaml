@@ -1,0 +1,40 @@
+# Generated from actual Toast source for builtin file_type().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\fileio.cc
+# implementation: bf_file_type
+# implementation_file: C:\Users\Q\src\toaststunt\src\fileio.cc
+# arg_type_tokens: ['TYPE_ANY']
+# arg_type_names: ['any']
+# arg_type_codes: [-1]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['r']
+name: generated_builtin_signature_file_type
+description: Generated conformance tests for file_type() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - file_type
+tests:
+- name: file_type_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("file_type")
+  expect:
+    value:
+    - file_type
+    - 1
+    - 1
+    - - -1
+- name: file_type_too_few_args
+  permission: wizard
+  code: file_type()
+  expect:
+    error: E_ARGS
+- name: file_type_too_many_args
+  permission: wizard
+  code: file_type(1, 1)
+  expect:
+    error: E_ARGS

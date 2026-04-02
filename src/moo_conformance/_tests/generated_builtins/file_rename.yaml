@@ -1,0 +1,51 @@
+# Generated from actual Toast source for builtin file_rename().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\fileio.cc
+# implementation: bf_file_rename
+# implementation_file: C:\Users\Q\src\toaststunt\src\fileio.cc
+# arg_type_tokens: ['TYPE_STR', 'TYPE_STR']
+# arg_type_names: ['str', 'str']
+# arg_type_codes: [2, 2]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['r']
+name: generated_builtin_signature_file_rename
+description: Generated conformance tests for file_rename() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - file_rename
+tests:
+- name: file_rename_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("file_rename")
+  expect:
+    value:
+    - file_rename
+    - 2
+    - 2
+    - - 2
+      - 2
+- name: file_rename_too_few_args
+  permission: wizard
+  code: file_rename()
+  expect:
+    error: E_ARGS
+- name: file_rename_too_many_args
+  permission: wizard
+  code: file_rename("x", "x", 1)
+  expect:
+    error: E_ARGS
+- name: file_rename_arg_1_rejects_wrong_type
+  permission: wizard
+  code: file_rename(1, "x")
+  expect:
+    error: E_TYPE
+- name: file_rename_arg_2_rejects_wrong_type
+  permission: wizard
+  code: file_rename("x", 1)
+  expect:
+    error: E_TYPE

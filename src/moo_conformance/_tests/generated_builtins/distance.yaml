@@ -1,0 +1,57 @@
+# Generated from actual Toast source for builtin distance().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\numbers.cc
+# implementation: bf_distance
+# implementation_file: C:\Users\Q\src\toaststunt\src\numbers.cc
+# arg_type_tokens: ['TYPE_LIST', 'TYPE_LIST']
+# arg_type_names: ['list', 'list']
+# arg_type_codes: [4, 4]
+# inferred_success_type_names: ['float']
+# inferred_raised_error_codes: ['E_TYPE']
+# unresolved_returns: []
+name: generated_builtin_signature_distance
+description: Generated conformance tests for distance() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - distance
+tests:
+- name: distance_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("distance")
+  expect:
+    value:
+    - distance
+    - 2
+    - 2
+    - - 4
+      - 4
+- name: distance_too_few_args
+  permission: wizard
+  code: distance()
+  expect:
+    error: E_ARGS
+- name: distance_too_many_args
+  permission: wizard
+  code: distance({}, {}, 1)
+  expect:
+    error: E_ARGS
+- name: distance_arg_1_rejects_wrong_type
+  permission: wizard
+  code: distance(1, {})
+  expect:
+    error: E_TYPE
+- name: distance_arg_2_rejects_wrong_type
+  permission: wizard
+  code: distance({}, 1)
+  expect:
+    error: E_TYPE
+- name: distance_runtime_outcome_matches_inferred_types
+  permission: wizard
+  statement: "try\n  result = distance({}, {});\n  return typeof(result) == FLOAT;\n\
+    except e (E_TYPE)\n  return 1;\nendtry\n"
+  expect:
+    value: 1

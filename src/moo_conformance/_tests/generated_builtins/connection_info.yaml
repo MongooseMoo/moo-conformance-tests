@@ -1,0 +1,45 @@
+# Generated from actual Toast source for builtin connection_info().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\server.cc
+# implementation: bf_connection_info
+# implementation_file: C:\Users\Q\src\toaststunt\src\server.cc
+# arg_type_tokens: ['TYPE_OBJ']
+# arg_type_names: ['obj']
+# arg_type_codes: [1]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_INVARG', 'E_PERM']
+# unresolved_returns: ['make_var_pack(ret)']
+name: generated_builtin_signature_connection_info
+description: Generated conformance tests for connection_info() builtin signature,
+  derived from Toast source.
+requires:
+  builtins:
+  - function_info
+  - connection_info
+tests:
+- name: connection_info_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("connection_info")
+  expect:
+    value:
+    - connection_info
+    - 1
+    - 1
+    - - 1
+- name: connection_info_too_few_args
+  permission: wizard
+  code: connection_info()
+  expect:
+    error: E_ARGS
+- name: connection_info_too_many_args
+  permission: wizard
+  code: connection_info(#0, 1)
+  expect:
+    error: E_ARGS
+- name: connection_info_arg_1_rejects_wrong_type
+  permission: wizard
+  code: connection_info("x")
+  expect:
+    error: E_TYPE

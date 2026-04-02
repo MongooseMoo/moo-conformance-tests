@@ -1,0 +1,40 @@
+# Generated from actual Toast source for builtin call_function().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function_with_read_write
+# registration_file: C:\Users\Q\src\toaststunt\src\execute.cc
+# implementation: bf_call_function
+# implementation_file: C:\Users\Q\src\toaststunt\src\execute.cc
+# arg_type_tokens: ['TYPE_STR']
+# arg_type_names: ['str']
+# arg_type_codes: [2]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['p']
+name: generated_builtin_signature_call_function
+description: Generated conformance tests for call_function() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - call_function
+tests:
+- name: call_function_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("call_function")
+  expect:
+    value:
+    - call_function
+    - 1
+    - -1
+    - - 2
+- name: call_function_too_few_args
+  permission: wizard
+  code: call_function()
+  expect:
+    error: E_ARGS
+- name: call_function_arg_1_rejects_wrong_type
+  permission: wizard
+  code: call_function(1)
+  expect:
+    error: E_TYPE

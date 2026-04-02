@@ -1,0 +1,46 @@
+# Generated from actual Toast source for builtin mapdelete().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\map.cc
+# implementation: bf_mapdelete
+# implementation_file: C:\Users\Q\src\toaststunt\src\map.cc
+# arg_type_tokens: ['TYPE_MAP', 'TYPE_ANY']
+# arg_type_names: ['map', 'any']
+# arg_type_codes: [10, -1]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_RANGE', 'E_TYPE']
+# unresolved_returns: ['make_var_pack(r)']
+name: generated_builtin_signature_mapdelete
+description: Generated conformance tests for mapdelete() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - mapdelete
+tests:
+- name: mapdelete_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("mapdelete")
+  expect:
+    value:
+    - mapdelete
+    - 2
+    - 2
+    - - 10
+      - -1
+- name: mapdelete_too_few_args
+  permission: wizard
+  code: mapdelete()
+  expect:
+    error: E_ARGS
+- name: mapdelete_too_many_args
+  permission: wizard
+  code: mapdelete([1 -> 2], 1, 1)
+  expect:
+    error: E_ARGS
+- name: mapdelete_arg_1_rejects_wrong_type
+  permission: wizard
+  code: mapdelete(1, 1)
+  expect:
+    error: E_TYPE

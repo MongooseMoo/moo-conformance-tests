@@ -1,0 +1,51 @@
+# Generated from actual Toast source for builtin listdelete().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\list.cc
+# implementation: bf_listdelete
+# implementation_file: C:\Users\Q\src\toaststunt\src\list.cc
+# arg_type_tokens: ['TYPE_LIST', 'TYPE_INT']
+# arg_type_names: ['list', 'int']
+# arg_type_codes: [4, 0]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_RANGE']
+# unresolved_returns: ['make_space_pack()', 'make_var_pack(r)']
+name: generated_builtin_signature_listdelete
+description: Generated conformance tests for listdelete() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - listdelete
+tests:
+- name: listdelete_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("listdelete")
+  expect:
+    value:
+    - listdelete
+    - 2
+    - 2
+    - - 4
+      - 0
+- name: listdelete_too_few_args
+  permission: wizard
+  code: listdelete()
+  expect:
+    error: E_ARGS
+- name: listdelete_too_many_args
+  permission: wizard
+  code: listdelete({}, 1, 1)
+  expect:
+    error: E_ARGS
+- name: listdelete_arg_1_rejects_wrong_type
+  permission: wizard
+  code: listdelete(1, 1)
+  expect:
+    error: E_TYPE
+- name: listdelete_arg_2_rejects_wrong_type
+  permission: wizard
+  code: listdelete({}, "x")
+  expect:
+    error: E_TYPE

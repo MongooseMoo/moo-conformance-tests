@@ -1,0 +1,53 @@
+# Generated from actual Toast source for builtin value_hmac().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\crypto.cc
+# implementation: bf_value_hmac
+# implementation_file: C:\Users\Q\src\toaststunt\src\crypto.cc
+# arg_type_tokens: ['TYPE_ANY', 'TYPE_STR', 'TYPE_STR', 'TYPE_ANY']
+# arg_type_names: ['any', 'str', 'str', 'any']
+# arg_type_codes: [-1, 2, 2, -1]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['p']
+name: generated_builtin_signature_value_hmac
+description: Generated conformance tests for value_hmac() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - value_hmac
+tests:
+- name: value_hmac_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("value_hmac")
+  expect:
+    value:
+    - value_hmac
+    - 2
+    - 4
+    - - -1
+      - 2
+      - 2
+      - -1
+- name: value_hmac_too_few_args
+  permission: wizard
+  code: value_hmac()
+  expect:
+    error: E_ARGS
+- name: value_hmac_too_many_args
+  permission: wizard
+  code: value_hmac(1, "x", "x", 1, 1)
+  expect:
+    error: E_ARGS
+- name: value_hmac_arg_2_rejects_wrong_type
+  permission: wizard
+  code: value_hmac(1, 1)
+  expect:
+    error: E_TYPE
+- name: value_hmac_arg_3_rejects_wrong_type
+  permission: wizard
+  code: value_hmac(1, "x", 1)
+  expect:
+    error: E_TYPE

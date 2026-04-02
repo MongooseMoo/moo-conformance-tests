@@ -1,0 +1,52 @@
+# Generated from actual Toast source for builtin listen().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\server.cc
+# implementation: bf_listen
+# implementation_file: C:\Users\Q\src\toaststunt\src\server.cc
+# arg_type_tokens: ['TYPE_OBJ', 'TYPE_ANY', 'TYPE_MAP']
+# arg_type_names: ['obj', 'any', 'map']
+# arg_type_codes: [1, -1, 10]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['make_raise_pack(e, error_msg, var_ref(zero))', 'make_var_pack(var_ref(l->desc))']
+name: generated_builtin_signature_listen
+description: Generated conformance tests for listen() builtin signature, derived from
+  Toast source.
+requires:
+  builtins:
+  - function_info
+  - listen
+tests:
+- name: listen_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("listen")
+  expect:
+    value:
+    - listen
+    - 2
+    - 3
+    - - 1
+      - -1
+      - 10
+- name: listen_too_few_args
+  permission: wizard
+  code: listen()
+  expect:
+    error: E_ARGS
+- name: listen_too_many_args
+  permission: wizard
+  code: listen(#0, 1, [1 -> 2], 1)
+  expect:
+    error: E_ARGS
+- name: listen_arg_1_rejects_wrong_type
+  permission: wizard
+  code: listen("x", 1)
+  expect:
+    error: E_TYPE
+- name: listen_arg_3_rejects_wrong_type
+  permission: wizard
+  code: listen(#0, 1, 1)
+  expect:
+    error: E_TYPE

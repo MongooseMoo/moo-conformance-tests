@@ -1,0 +1,51 @@
+# Generated from actual Toast source for builtin round().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\numbers.cc
+# implementation: bf_round
+# implementation_file: C:\Users\Q\src\toaststunt\src\numbers.cc
+# arg_type_tokens: ['TYPE_FLOAT']
+# arg_type_names: ['float']
+# arg_type_codes: [9]
+# inferred_success_type_names: ['float']
+# inferred_raised_error_codes: []
+# unresolved_returns: []
+name: generated_builtin_signature_round
+description: Generated conformance tests for round() builtin signature, derived from
+  Toast source.
+requires:
+  builtins:
+  - function_info
+  - round
+tests:
+- name: round_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("round")
+  expect:
+    value:
+    - round
+    - 1
+    - 1
+    - - 9
+- name: round_too_few_args
+  permission: wizard
+  code: round()
+  expect:
+    error: E_ARGS
+- name: round_too_many_args
+  permission: wizard
+  code: round(1.5, 1)
+  expect:
+    error: E_ARGS
+- name: round_arg_1_rejects_wrong_type
+  permission: wizard
+  code: round("x")
+  expect:
+    error: E_TYPE
+- name: round_runtime_outcome_matches_inferred_types
+  permission: wizard
+  statement: "try\n  result = round(1.5);\n  return typeof(result) == FLOAT;\nexcept\
+    \ e (ANY)\n  return 0;\nendtry\n"
+  expect:
+    value: 1

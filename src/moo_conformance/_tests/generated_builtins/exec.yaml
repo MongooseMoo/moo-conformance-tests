@@ -1,0 +1,57 @@
+# Generated from actual Toast source for builtin exec().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\exec_wasm.cc
+# implementation: bf_exec
+# implementation_file: C:\Users\Q\src\toaststunt\src\exec.cc
+# arg_type_tokens: ['TYPE_LIST', 'TYPE_STR', 'TYPE_LIST']
+# arg_type_names: ['list', 'str', 'list']
+# arg_type_codes: [4, 2, 4]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['make_suspend_pack(exec_waiter_suspender, tw)', 'pack']
+name: generated_builtin_signature_exec
+description: Generated conformance tests for exec() builtin signature, derived from
+  Toast source.
+requires:
+  builtins:
+  - function_info
+  - exec
+tests:
+- name: exec_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("exec")
+  expect:
+    value:
+    - exec
+    - 1
+    - 3
+    - - 4
+      - 2
+      - 4
+- name: exec_too_few_args
+  permission: wizard
+  code: exec()
+  expect:
+    error: E_ARGS
+- name: exec_too_many_args
+  permission: wizard
+  code: exec({}, "x", {}, 1)
+  expect:
+    error: E_ARGS
+- name: exec_arg_1_rejects_wrong_type
+  permission: wizard
+  code: exec(1)
+  expect:
+    error: E_TYPE
+- name: exec_arg_2_rejects_wrong_type
+  permission: wizard
+  code: exec({}, 1)
+  expect:
+    error: E_TYPE
+- name: exec_arg_3_rejects_wrong_type
+  permission: wizard
+  code: exec({}, "x", 1)
+  expect:
+    error: E_TYPE

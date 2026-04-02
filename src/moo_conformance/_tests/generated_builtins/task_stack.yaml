@@ -1,0 +1,47 @@
+# Generated from actual Toast source for builtin task_stack().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\execute.cc
+# implementation: bf_task_stack
+# implementation_file: C:\Users\Q\src\toaststunt\src\execute.cc
+# arg_type_tokens: ['TYPE_INT', 'TYPE_ANY', 'TYPE_ANY']
+# arg_type_names: ['int', 'any', 'any']
+# arg_type_codes: [0, -1, -1]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_INVARG', 'E_PERM']
+# unresolved_returns: ['make_var_pack(make_stack_list(the_vm->activ_stack, 0, the_vm->top_activ_stack, 1, the_vm->root_activ_vector, line_numbers_too, stack_vars, progr))']
+name: generated_builtin_signature_task_stack
+description: Generated conformance tests for task_stack() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - task_stack
+tests:
+- name: task_stack_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("task_stack")
+  expect:
+    value:
+    - task_stack
+    - 1
+    - 3
+    - - 0
+      - -1
+      - -1
+- name: task_stack_too_few_args
+  permission: wizard
+  code: task_stack()
+  expect:
+    error: E_ARGS
+- name: task_stack_too_many_args
+  permission: wizard
+  code: task_stack(1, 1, 1, 1)
+  expect:
+    error: E_ARGS
+- name: task_stack_arg_1_rejects_wrong_type
+  permission: wizard
+  code: task_stack("x")
+  expect:
+    error: E_TYPE

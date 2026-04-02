@@ -1,0 +1,46 @@
+# Generated from actual Toast source for builtin set_task_local().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\tasks.cc
+# implementation: bf_set_task_local
+# implementation_file: C:\Users\Q\src\toaststunt\src\tasks.cc
+# arg_type_tokens: ['TYPE_ANY']
+# arg_type_names: ['any']
+# arg_type_codes: [-1]
+# inferred_success_type_names: ['int']
+# inferred_raised_error_codes: ['E_PERM']
+# unresolved_returns: []
+name: generated_builtin_signature_set_task_local
+description: Generated conformance tests for set_task_local() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - set_task_local
+tests:
+- name: set_task_local_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("set_task_local")
+  expect:
+    value:
+    - set_task_local
+    - 1
+    - 1
+    - - -1
+- name: set_task_local_too_few_args
+  permission: wizard
+  code: set_task_local()
+  expect:
+    error: E_ARGS
+- name: set_task_local_too_many_args
+  permission: wizard
+  code: set_task_local(1, 1)
+  expect:
+    error: E_ARGS
+- name: set_task_local_runtime_outcome_matches_inferred_types
+  permission: wizard
+  statement: "try\n  result = set_task_local(1);\n  return typeof(result) == INT;\n\
+    except e (E_PERM)\n  return 1;\nendtry\n"
+  expect:
+    value: 1

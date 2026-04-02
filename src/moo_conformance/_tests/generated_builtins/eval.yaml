@@ -1,0 +1,40 @@
+# Generated from actual Toast source for builtin eval().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\verbs.cc
+# implementation: bf_eval
+# implementation_file: C:\Users\Q\src\toaststunt\src\verbs.cc
+# arg_type_tokens: ['TYPE_STR']
+# arg_type_names: ['str']
+# arg_type_codes: [2]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: []
+# unresolved_returns: ['p']
+name: generated_builtin_signature_eval
+description: Generated conformance tests for eval() builtin signature, derived from
+  Toast source.
+requires:
+  builtins:
+  - function_info
+  - eval
+tests:
+- name: eval_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("eval")
+  expect:
+    value:
+    - eval
+    - 1
+    - -1
+    - - 2
+- name: eval_too_few_args
+  permission: wizard
+  code: eval()
+  expect:
+    error: E_ARGS
+- name: eval_arg_1_rejects_wrong_type
+  permission: wizard
+  code: eval(1)
+  expect:
+    error: E_TYPE

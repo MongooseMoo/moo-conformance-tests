@@ -1,0 +1,57 @@
+# Generated from actual Toast source for builtin open_network_connection().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\server.cc
+# implementation: bf_open_network_connection
+# implementation_file: C:\Users\Q\src\toaststunt\src\server.cc
+# arg_type_tokens: ['TYPE_STR', 'TYPE_INT', 'TYPE_MAP']
+# arg_type_names: ['str', 'int', 'map']
+# arg_type_codes: [2, 0, 10]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_PERM', 'E_TYPE']
+# unresolved_returns: ['e', 'make_var_pack(r)']
+name: generated_builtin_signature_open_network_connection
+description: Generated conformance tests for open_network_connection() builtin signature,
+  derived from Toast source.
+requires:
+  builtins:
+  - function_info
+  - open_network_connection
+tests:
+- name: open_network_connection_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("open_network_connection")
+  expect:
+    value:
+    - open_network_connection
+    - 2
+    - 3
+    - - 2
+      - 0
+      - 10
+- name: open_network_connection_too_few_args
+  permission: wizard
+  code: open_network_connection()
+  expect:
+    error: E_ARGS
+- name: open_network_connection_too_many_args
+  permission: wizard
+  code: open_network_connection("x", 1, [1 -> 2], 1)
+  expect:
+    error: E_ARGS
+- name: open_network_connection_arg_1_rejects_wrong_type
+  permission: wizard
+  code: open_network_connection(1, 1)
+  expect:
+    error: E_TYPE
+- name: open_network_connection_arg_2_rejects_wrong_type
+  permission: wizard
+  code: open_network_connection("x", "x")
+  expect:
+    error: E_TYPE
+- name: open_network_connection_arg_3_rejects_wrong_type
+  permission: wizard
+  code: open_network_connection("x", 1, 1)
+  expect:
+    error: E_TYPE

@@ -1,0 +1,63 @@
+# Generated from actual Toast source for builtin switch_player().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\tasks.cc
+# implementation: bf_switch_player
+# implementation_file: C:\Users\Q\src\toaststunt\src\tasks.cc
+# arg_type_tokens: ['TYPE_OBJ', 'TYPE_OBJ', 'TYPE_INT']
+# arg_type_names: ['obj', 'obj', 'int']
+# arg_type_codes: [1, 1, 0]
+# inferred_success_type_names: ['int']
+# inferred_raised_error_codes: ['E_INVARG', 'E_PERM']
+# unresolved_returns: []
+name: generated_builtin_signature_switch_player
+description: Generated conformance tests for switch_player() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - switch_player
+tests:
+- name: switch_player_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("switch_player")
+  expect:
+    value:
+    - switch_player
+    - 2
+    - 3
+    - - 1
+      - 1
+      - 0
+- name: switch_player_too_few_args
+  permission: wizard
+  code: switch_player()
+  expect:
+    error: E_ARGS
+- name: switch_player_too_many_args
+  permission: wizard
+  code: 'switch_player(#0, #0, 1, 1)'
+  expect:
+    error: E_ARGS
+- name: switch_player_arg_1_rejects_wrong_type
+  permission: wizard
+  code: 'switch_player("x", #0)'
+  expect:
+    error: E_TYPE
+- name: switch_player_arg_2_rejects_wrong_type
+  permission: wizard
+  code: switch_player(#0, "x")
+  expect:
+    error: E_TYPE
+- name: switch_player_arg_3_rejects_wrong_type
+  permission: wizard
+  code: 'switch_player(#0, #0, "x")'
+  expect:
+    error: E_TYPE
+- name: switch_player_runtime_outcome_matches_inferred_types
+  permission: wizard
+  statement: "try\n  result = switch_player(#0, #0);\n  return typeof(result) == INT;\n\
+    except e (E_INVARG, E_PERM)\n  return 1;\nendtry\n"
+  expect:
+    value: 1

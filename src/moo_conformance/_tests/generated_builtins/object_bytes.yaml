@@ -1,0 +1,40 @@
+# Generated from actual Toast source for builtin object_bytes().
+# This file is a runnable moo-conformance suite.
+# Registration signatures are parsed with pycparser from Toast register_function(...) calls.
+# registration_kind: register_function
+# registration_file: C:\Users\Q\src\toaststunt\src\objects.cc
+# implementation: bf_object_bytes
+# implementation_file: C:\Users\Q\src\toaststunt\src\objects.cc
+# arg_type_tokens: ['TYPE_ANY']
+# arg_type_names: ['any']
+# arg_type_codes: [-1]
+# inferred_success_type_names: []
+# inferred_raised_error_codes: ['E_INVIND', 'E_PERM', 'E_TYPE']
+# unresolved_returns: ['make_var_pack(v)']
+name: generated_builtin_signature_object_bytes
+description: Generated conformance tests for object_bytes() builtin signature, derived
+  from Toast source.
+requires:
+  builtins:
+  - function_info
+  - object_bytes
+tests:
+- name: object_bytes_function_info_signature_matches_source
+  permission: wizard
+  code: function_info("object_bytes")
+  expect:
+    value:
+    - object_bytes
+    - 1
+    - 1
+    - - -1
+- name: object_bytes_too_few_args
+  permission: wizard
+  code: object_bytes()
+  expect:
+    error: E_ARGS
+- name: object_bytes_too_many_args
+  permission: wizard
+  code: object_bytes(1, 1)
+  expect:
+    error: E_ARGS

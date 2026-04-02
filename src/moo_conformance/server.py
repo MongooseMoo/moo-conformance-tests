@@ -26,6 +26,7 @@ class ManagedServer:
         host: str = "localhost",
     ):
         self.command_template = command_template
+        self._default_db_path = db_path
         self.db_path = db_path
         self.host = host
         self._requested_port = port
@@ -46,8 +47,20 @@ class ManagedServer:
     def log_path(self) -> str | None:
         return self._log_path
 
-    def start(self) -> None:
-        """Start the server subprocess and wait for it to accept connections."""
+    @property
+    def default_db_path(self) -> Path:
+        return self._default_db_path
+
+    def start(self, db_path: Path | None = None, wait_for_port: bool = True) -> None:
+        """Start the server subprocess.
+
+        When wait_for_port is False, the process is started and may exit on its
+        own after startup repair / dump processing without ever accepting a
+        socket connection.
+        """
+        if db_path is not None:
+            self.db_path = db_path
+
         # Pick a port once (or use explicitly requested port).
         if self._port is None:
             if self._requested_port is not None:
@@ -55,16 +68,26 @@ class ManagedServer:
             else:
                 self._port = self._find_free_port()
 
-        # Create temp directory and copy database into it once.
+        # Create temp directory and copy the selected database into it.
         if self._temp_dir is None:
             self._temp_dir = tempfile.mkdtemp(prefix="moo_conformance_")
-            db_dest = Path(self._temp_dir, self.db_path.name)
-            shutil.copy2(self.db_path, db_dest)
-            self._db_copy_path = db_dest
+            self._db_copy_path = Path(self._temp_dir, self.db_path.name)
         else:
             if self._db_copy_path is None:
                 raise RuntimeError("Managed server temp directory exists but DB copy path is missing")
-            db_dest = self._db_copy_path
+            if db_path is not None:
+                new_db_copy_path = Path(self._temp_dir, self.db_path.name)
+                if new_db_copy_path != self._db_copy_path and self._db_copy_path.exists():
+                    try:
+                        self._db_copy_path.unlink()
+                    except OSError:
+                        pass
+                self._db_copy_path = new_db_copy_path
+
+        if self._db_copy_path is None:
+            raise RuntimeError("Managed server DB copy path is missing")
+        shutil.copy2(self.db_path, self._db_copy_path)
+        db_dest = self._db_copy_path
 
         # Use forward slashes so shlex.split doesn't eat backslashes
         db_posix = db_dest.as_posix()
@@ -87,8 +110,10 @@ class ManagedServer:
             cwd=self._temp_dir,
         )
 
-        # Wait for the server to accept connections
-        self._wait_for_port(timeout=30.0)
+        # Some canned DB fixtures are intended to start, repair, dump, and exit
+        # without staying up long enough for a socket handshake.
+        if wait_for_port:
+            self._wait_for_port(timeout=30.0)
 
     def stop(self, preserve_temp: bool = False) -> None:
         """Stop the server and optionally clean up temp directory."""
@@ -99,6 +124,11 @@ class ManagedServer:
             except subprocess.TimeoutExpired:
                 self._process.kill()
                 self._process.wait(timeout=5)
+            except OSError:
+                try:
+                    self._process.wait(timeout=5)
+                except Exception:
+                    pass
             self._process = None
 
         if self._log_file is not None:
@@ -110,11 +140,14 @@ class ManagedServer:
             self._temp_dir = None
             self._db_copy_path = None
 
-    def restart(self) -> None:
+    def restart(self, db_path: Path | None = None, wait_for_port: bool = True) -> None:
         """Restart the server process in-place, preserving the working database."""
         self.stop(preserve_temp=True)
-        self._sync_checkpoint_output()
-        self.start()
+        if db_path is None:
+            self._sync_checkpoint_output()
+            self.start(wait_for_port=wait_for_port)
+        else:
+            self.start(db_path=db_path, wait_for_port=wait_for_port)
 
     def _sync_checkpoint_output(self) -> None:
         """Adopt common external checkpoint outputs back into the input DB path.

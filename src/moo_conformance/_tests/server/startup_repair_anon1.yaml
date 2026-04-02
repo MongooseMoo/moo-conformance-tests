@@ -1,0 +1,16 @@
+name: startup_repair_anon1
+description: Keeps pending anonymous-object finalization from ToastStunt's Anon1 canned DB.
+server_db: Anon1.db
+requires:
+  config:
+    - managed_server
+    - server_dir
+    - log_file
+    - server_db_dir
+tests:
+  - name: pending_finalization_is_written_to_output_db
+    steps:
+      - wait: 500
+      - assert_file:
+          path: Anon1.db.new
+          contains: "1 values pending finalization"

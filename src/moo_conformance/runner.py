@@ -6,10 +6,12 @@ Executes test cases defined in YAML format against a MOO transport.
 import os
 import re
 import time
+from pathlib import Path
 from typing import Any
 
 from .transport import MooTransport, ExecutionResult, TestConnection
 from .schema import MooTestSuite, MooTestCase, Expectation, TestStep, LogAssertion, FileAssertion, WriteFile
+from .server import ManagedServer
 from .moo_types import MooError, TYPE_NAMES
 
 
@@ -22,12 +24,16 @@ class YamlTestRunner:
     """Executes YAML-defined test cases."""
 
     def __init__(self, transport: MooTransport, log_file_path: str | None = None,
-                 server_dir: str | None = None):
+                 server_dir: str | None = None, managed_server: ManagedServer | None = None,
+                 server_db_dir: str | None = None):
         self.transport = transport
         self.log_file_path = log_file_path
         self.server_dir = server_dir
+        self.managed_server = managed_server
+        self.server_db_dir = server_db_dir
         self._suites_setup_done: set[str] = set()
         self._log_offset: int = 0
+        self._active_server_db_path: Path | None = None
 
     def run_suite_setup(self, suite: MooTestSuite) -> None:
         """Run suite-level setup.
@@ -37,9 +43,11 @@ class YamlTestRunner:
         if properties already exist (E_INVARG), but that's OK - we just
         want to ensure properties exist with correct values.
         """
+        self._ensure_suite_server_db(suite)
         if suite.setup and suite.name not in self._suites_setup_done:
             # Switch user for suite setup if permission specified
             if suite.setup.permission:
+                self._ensure_transport_connected()
                 self.transport.switch_user(suite.setup.permission)
             # Execute setup code as individual statements to match Ruby behavior
             # Ruby calls evaluate() separately for each statement, ignoring errors
@@ -51,8 +59,103 @@ class YamlTestRunner:
                     stmt = stmt.strip()
                     if stmt:
                         # Execute statement (errors ignored to match Ruby behavior)
+                        self._ensure_transport_connected()
                         self.transport.execute(stmt)
             self._suites_setup_done.add(suite.name)
+
+    def _ensure_transport_connected(self) -> None:
+        """Reconnect the transport if it was disconnected by a server restart."""
+        if getattr(self.transport, "sock", None) is None:
+            current_user = getattr(self.transport, "current_user", "programmer")
+            self.transport.connect(current_user)
+
+    def _resolve_suite_server_db(self, suite: MooTestSuite) -> Path | None:
+        """Resolve the database file a suite wants the managed server to use."""
+        if self.managed_server is None:
+            return None
+
+        if suite.server_db is None:
+            return self.managed_server.default_db_path
+
+        server_db = Path(suite.server_db)
+        if not server_db.is_absolute() and self.server_db_dir is not None:
+            server_db = Path(self.server_db_dir) / server_db
+
+        return Path(os.path.realpath(server_db))
+
+    def _suite_requires_transport(self, suite: MooTestSuite) -> bool:
+        """Check whether any test in the suite needs a live transport connection."""
+        def step_needs_transport(step: TestStep) -> bool:
+            return any([
+                step.run is not None,
+                step.command is not None,
+                step.verb_setup is not None,
+                step.new_connection is not None,
+                step.send is not None,
+                step.restart_server is not None,
+            ])
+
+        if suite.setup is not None or suite.teardown is not None:
+            return True
+
+        for test in suite.tests:
+            if test.code is not None or test.statement is not None or test.verb is not None:
+                return True
+            if any(step_needs_transport(step) for step in test.steps):
+                return True
+            if any(step_needs_transport(step) for step in test.cleanup):
+                return True
+
+        return False
+
+    def _test_requires_transport(self, test: MooTestCase) -> bool:
+        """Check whether a test will use the transport or require a login."""
+        if test.code is not None or test.statement is not None or test.verb is not None:
+            return True
+        if any(step.run is not None or step.command is not None or step.verb_setup is not None
+               or step.new_connection is not None or step.send is not None or step.restart_server is not None
+               for step in test.steps):
+            return True
+        if any(step.run is not None or step.command is not None or step.verb_setup is not None
+               or step.new_connection is not None or step.send is not None or step.restart_server is not None
+               for step in test.cleanup):
+            return True
+        return False
+
+    def _ensure_suite_server_db(self, suite: MooTestSuite) -> None:
+        """Switch the managed server to the suite's requested database if needed."""
+        if self.managed_server is None:
+            if suite.server_db is not None:
+                raise AssertionError(
+                    f"Test suite '{suite.name}' uses server_db but no managed server is configured "
+                    f"(use --server-command)"
+                )
+            return
+
+        desired_db = self._resolve_suite_server_db(suite)
+        if desired_db is None:
+            return
+
+        needs_transport = self._suite_requires_transport(suite)
+
+        if self._active_server_db_path is not None:
+            current_db = Path(os.path.realpath(self._active_server_db_path))
+            if current_db == desired_db:
+                return
+
+        if self._active_server_db_path is None:
+            current_db = Path(os.path.realpath(self.managed_server.db_path))
+            if current_db == desired_db:
+                self._active_server_db_path = desired_db
+                return
+
+        current_user = getattr(self.transport, "current_user", "programmer")
+        self.transport.disconnect()
+        self.managed_server.restart(db_path=desired_db, wait_for_port=needs_transport)
+        self._active_server_db_path = desired_db
+
+        if needs_transport and suite.setup is not None:
+            self.transport.connect(current_user)
 
     def run_suite_teardown(self, suite: MooTestSuite) -> None:
         """Run suite-level teardown."""
@@ -63,6 +166,7 @@ class YamlTestRunner:
             code = suite.teardown.code if isinstance(suite.teardown.code, str) else "\n".join(suite.teardown.code)
             if code.strip():
                 # Best effort - don't fail on teardown errors
+                self._ensure_transport_connected()
                 self.transport.execute(code)
             self._suites_setup_done.discard(suite.name)
 
@@ -76,7 +180,8 @@ class YamlTestRunner:
             AssertionError: If the test expectation is not met
         """
         # Switch to required user for this test
-        if test.permission:
+        if test.permission and self._test_requires_transport(test):
+            self._ensure_transport_connected()
             self.transport.switch_user(test.permission)
 
         # Record log file offset for assert_log steps
@@ -103,6 +208,7 @@ class YamlTestRunner:
 
                 # Combine into single execution
                 combined_code = "\n".join(code_parts)
+                self._ensure_transport_connected()
                 result = self.transport.execute(combined_code)
 
                 # Verify expectations
@@ -112,6 +218,7 @@ class YamlTestRunner:
             # Run test teardown (always, even on failure)
             if test.teardown:
                 for code in test.teardown.code_lines:
+                    self._ensure_transport_connected()
                     self.transport.execute(code)
 
     def _snapshot_log_offset(self) -> None:
@@ -160,16 +267,19 @@ class YamlTestRunner:
             for step in test.steps:
                 # Switch permission if step specifies different one
                 if step.as_:
+                    self._ensure_transport_connected()
                     self.transport.switch_user(step.as_)
 
                 # Handle new_connection step
                 if step.new_connection:
+                    self._ensure_transport_connected()
                     conn = self.transport.open_connection()
                     connections[step.new_connection.capture] = conn
                     continue
 
                 # Handle send step
                 if step.send:
+                    self._ensure_transport_connected()
                     conn_name = step.send.connection
                     if conn_name not in connections:
                         raise AssertionError(
@@ -213,8 +323,14 @@ class YamlTestRunner:
                     self._execute_write_file(step.write_file, test.name)
                     continue
 
+                # Handle restart_server step
+                if step.restart_server:
+                    self._execute_restart_server(step.restart_server.wait_ms, test.name)
+                    continue
+
                 # Check if this is a verb_setup step
                 if step.verb_setup:
+                    self._ensure_transport_connected()
                     result = self._execute_verb_setup(step.verb_setup, variables)
                     # Capture result if requested
                     if step.capture:
@@ -229,6 +345,7 @@ class YamlTestRunner:
 
                 elif step.command:
                     # Raw command step - for testing command parser
+                    self._ensure_transport_connected()
                     command = self._substitute_variables(step.command, variables)
                     output_lines = self.transport.send_command(command)
 
@@ -244,6 +361,7 @@ class YamlTestRunner:
 
                 else:
                     # Execute the step (run field)
+                    self._ensure_transport_connected()
                     code = self._substitute_variables(step.run, variables)
 
                     # Wrap as expression if it doesn't look like a statement
@@ -278,10 +396,12 @@ class YamlTestRunner:
             for cleanup_step in test.cleanup:
                 # Switch permission if cleanup step specifies different one
                 if cleanup_step.as_:
+                    self._ensure_transport_connected()
                     self.transport.switch_user(cleanup_step.as_)
 
                 cleanup_code = self._substitute_variables(cleanup_step.run, variables)
                 # Best effort - don't fail on cleanup errors
+                self._ensure_transport_connected()
                 self.transport.execute(cleanup_code)
 
             # Close any remaining connections
@@ -290,6 +410,27 @@ class YamlTestRunner:
                     conn.close()
                 except Exception:
                     pass
+
+    def _execute_restart_server(self, wait_ms: int, test_name: str) -> None:
+        """Restart managed server and reconnect transport to the same user."""
+        if self.managed_server is None:
+            raise AssertionError(
+                f"Test '{test_name}' uses restart_server but no managed server is configured "
+                f"(use --server-command)"
+            )
+
+        current_user = getattr(self.transport, "current_user", "programmer")
+
+        self.transport.disconnect()
+        self.managed_server.restart()
+
+        # Update transport endpoint in case a dynamic port changed.
+        self.transport.host = self.managed_server.host
+        self.transport.port = self.managed_server.port
+        self.transport.connect(current_user)
+
+        if wait_ms > 0:
+            time.sleep(wait_ms / 1000.0)
 
     def _substitute_variables(self, code: str, variables: dict[str, Any]) -> str:
         """Substitute {varname} placeholders with captured values.

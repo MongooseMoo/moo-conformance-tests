@@ -93,6 +93,11 @@ def pytest_addoption(parser):
         help="Path to database file for managed server (default: bundled Test.db)",
     )
     parser.addoption(
+        "--server-db-dir",
+        default=None,
+        help="Directory containing canned DB fixtures referenced by suite.server_db",
+    )
+    parser.addoption(
         "--moo-server-dir",
         default=None,
         help="Path to the MOO server's working directory (auto-detected with --server-command)",
@@ -137,6 +142,12 @@ def managed_server(request) -> Iterator[ManagedServer | None]:
 
 
 @pytest.fixture(scope="session")
+def moo_server_db_dir(request) -> str | None:
+    """Get the directory containing canned DB fixtures, if configured."""
+    return request.config.getoption("--server-db-dir")
+
+
+@pytest.fixture(scope="session")
 def moo_server_dir(request, managed_server) -> str | None:
     """Get the MOO server's working directory.
 
@@ -165,7 +176,7 @@ def moo_log_file(request, managed_server) -> str | None:
 
 
 @pytest.fixture(scope="session")
-def moo_config(moo_server_dir, moo_log_file) -> dict[str, str | None]:
+def moo_config(moo_server_dir, moo_log_file, moo_server_db_dir, managed_server) -> dict[str, str | None]:
     """Aggregate config values available for requires.config checks.
 
     Returns a dict mapping config key names to their values (or None if unavailable).
@@ -173,6 +184,8 @@ def moo_config(moo_server_dir, moo_log_file) -> dict[str, str | None]:
     return {
         "server_dir": moo_server_dir,
         "log_file": moo_log_file,
+        "managed_server": "1" if managed_server is not None else None,
+        "server_db_dir": moo_server_db_dir,
     }
 
 
@@ -205,10 +218,11 @@ def transport(request, managed_server) -> Iterator[MooTransport]:
 
 
 @pytest.fixture(scope="session")
-def runner(transport, moo_log_file, moo_server_dir) -> YamlTestRunner:
+def runner(transport, moo_log_file, moo_server_dir, managed_server, moo_server_db_dir) -> YamlTestRunner:
     """Create a test runner with the configured transport."""
     return YamlTestRunner(transport, log_file_path=moo_log_file,
-                          server_dir=moo_server_dir)
+                          server_dir=moo_server_dir, managed_server=managed_server,
+                          server_db_dir=moo_server_db_dir)
 
 
 def discover_yaml_tests(test_dir: Path | None = None) -> list[tuple[Path, MooTestSuite, MooTestCase]]:

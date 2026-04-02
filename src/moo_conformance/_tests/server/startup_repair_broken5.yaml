@@ -1,0 +1,17 @@
+name: startup_repair_broken5
+description: Repairs bottom-up inconsistencies from ToastStunt's Broken5 canned DB.
+server_db: Broken5.db
+requires:
+  config:
+    - managed_server
+    - server_dir
+    - log_file
+    - server_db_dir
+tests:
+  - name: bottom_up_inconsistencies_are_reported
+    steps:
+      - wait: 500
+      - assert_log:
+          contains: "#1 not in it's child's (#0) parents"
+      - assert_log:
+          contains: "#2 not in it's content's (#3) location"

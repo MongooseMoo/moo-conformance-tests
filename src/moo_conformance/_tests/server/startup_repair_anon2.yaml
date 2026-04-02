@@ -1,0 +1,16 @@
+name: startup_repair_anon2
+description: Keeps cyclic anonymous-object finalization from ToastStunt's Anon2 canned DB.
+server_db: Anon2.db
+requires:
+  config:
+    - managed_server
+    - server_dir
+    - log_file
+    - server_db_dir
+tests:
+  - name: cyclic_pending_finalization_is_written_to_output_db
+    steps:
+      - wait: 500
+      - assert_file:
+          path: Anon2.db.new
+          contains: "0 values pending finalization"

@@ -1,0 +1,29 @@
+name: startup_repair_broken2
+description: Repairs invalid object-type fields from ToastStunt's Broken2 canned DB.
+server_db: Broken2.db
+requires:
+  config:
+    - managed_server
+    - server_dir
+    - log_file
+    - server_db_dir
+tests:
+  - name: invalid_object_types_are_repaired
+    steps:
+      - wait: 500
+      - assert_log:
+          contains: "#0.parents is not an object or list of objects"
+      - assert_log:
+          contains: "#0.children is not a list of objects"
+      - assert_log:
+          contains: "#0.location is not an object"
+      - assert_log:
+          contains: "#0.contents is not a list of objects"
+      - assert_log:
+          contains: "#1.parents is not an object or list of objects"
+      - assert_log:
+          contains: "#1.children is not a list of objects"
+      - assert_log:
+          contains: "#1.location is not an object"
+      - assert_log:
+          contains: "#1.contents is not a list of objects"

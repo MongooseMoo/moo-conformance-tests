@@ -1,0 +1,25 @@
+name: startup_repair_broken4
+description: Repairs top-down inconsistencies from ToastStunt's Broken4 canned DB.
+server_db: Broken4.db
+requires:
+  config:
+    - managed_server
+    - server_dir
+    - log_file
+    - server_db_dir
+tests:
+  - name: top_down_inconsistencies_are_reported
+    steps:
+      - wait: 500
+      - assert_log:
+          contains: "#0 not in it's location's (#2) contents"
+      - assert_log:
+          contains: "#0 not in it's parent's (#1) children"
+      - assert_log:
+          contains: "#1 not in it's location's (#2) contents"
+      - assert_log:
+          contains: "#2 not in it's parent's (#1) children"
+      - assert_log:
+          contains: "#3 not in it's location's (#2) contents"
+      - assert_log:
+          contains: "#3 not in it's parent's (#1) children"

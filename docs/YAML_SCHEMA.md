@@ -9,6 +9,8 @@ name: suite_name              # Required: lowercase, underscores
 description: "Human readable" # Optional
 version: "1.0"               # Optional
 
+server_db: "Anon1.db"        # Optional: managed-server DB fixture for this suite, resolved against --server-db-dir
+
 requires:                     # Optional: dependencies
   builtins: [random, sqrt]   # Required builtins
   features: [maps, 64bit]    # Required server features
@@ -131,6 +133,7 @@ skip_if: "missing builtin.foo"       # Skip if builtin missing
 | `--moo-port` | `7777` | MOO server port |
 | `--server-command` | none | Shell command to start a managed MOO server (supports `{port}` and `{db}` placeholders) |
 | `--server-db` | bundled Test.db | Database file for managed server |
+| `--server-db-dir` | none | Directory containing canned DB fixtures referenced by `server_db` |
 | `--moo-server-dir` | none | Path to the MOO server's working directory |
 | `--moo-log-file` | none | Path to the MOO server's log file |
 
@@ -162,6 +165,8 @@ Available config keys:
 |-----|-------------|-------------|
 | `server_dir` | `--moo-server-dir` | Server's working directory |
 | `log_file` | `--moo-log-file` | Server's log file path |
+| `managed_server` | `--server-command` | Managed server lifecycle is active |
+| `server_db_dir` | `--server-db-dir` | Directory containing canned DB fixtures referenced by `server_db` |
 
 When a required config key is missing, the test is skipped with a message indicating which `--moo-*` option to use.
 
@@ -202,6 +207,7 @@ Each step must have exactly ONE action field. The common fields (`capture`, `as`
 | `assert_log` | Verify server log contains expected text |
 | `assert_file` | Verify file existence and contents on disk |
 | `write_file` | Create a file on the test host |
+| `restart_server` | Restart managed server process in-place (managed mode only) |
 
 **Common fields** (optional, on any step):
 
@@ -328,6 +334,28 @@ steps:
 | `write_file.path` | `str` | File path relative to `server_dir` |
 | `write_file.content` | `str` | Content to write to the file |
 
+#### `restart_server` - Restart Managed Server
+
+Restarts the managed server process in-place and reconnects the test transport
+as the current user. This preserves the managed server working directory and
+database copy, so persistence across `dump_database()` can be tested.
+
+Requires: `--server-command`. Suites should declare
+`requires.config: [managed_server]`.
+
+```yaml
+steps:
+  - run: "return dump_database();"
+    as: wizard
+  - restart_server:
+      wait_ms: 300
+  - run: "return some_persisted_value();"
+```
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `restart_server.wait_ms` | `int` | `0` | Optional pause after reconnect before the next step |
+
 ## Test File Index
 
 ### Fork Tests (`_tests/fork/`)
@@ -341,6 +369,8 @@ steps:
 | File | Description |
 |------|-------------|
 | `dump_database.yaml` | `dump_database()` builtin: return value, checkpoint log entry via `assert_log`, wizard-only permission. Requires `log_file` config. |
+| `dump_persistence.yaml` | Regression for persistence across `dump_database()` + managed restart; verifies inherited property overrides survive reload. Requires `managed_server` config. |
+| `startup_repair_*.yaml` | ToastStunt canned DB startup-repair coverage: invalid object references, invalid object types, hierarchy cycles, inconsistency repair, and pending-finalization output DB checks. Requires `managed_server`, `server_db_dir`, `log_file`, and `server_dir` as needed. |
 
 ### Builtin Tests (`_tests/builtins/`)
 

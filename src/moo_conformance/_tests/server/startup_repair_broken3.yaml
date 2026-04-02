@@ -1,0 +1,29 @@
+name: startup_repair_broken3
+description: Repairs parent/location cycles from ToastStunt's Broken3 canned DB.
+server_db: Broken3.db
+requires:
+  config:
+    - managed_server
+    - server_dir
+    - log_file
+    - server_db_dir
+tests:
+  - name: cycle_repair_is_reported
+    steps:
+      - wait: 500
+      - assert_log:
+          contains: "Cycle in parent chain of #0"
+      - assert_log:
+          contains: "Cycle in location chain of #0"
+      - assert_log:
+          contains: "Cycle in parent chain of #1"
+      - assert_log:
+          contains: "Cycle in location chain of #1"
+      - assert_log:
+          contains: "Cycle in parent chain of #2"
+      - assert_log:
+          contains: "Cycle in location chain of #2"
+      - assert_log:
+          contains: "Cycle in parent chain of #3"
+      - assert_log:
+          contains: "Cycle in location chain of #3"

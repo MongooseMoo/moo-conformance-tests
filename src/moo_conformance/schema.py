@@ -9,6 +9,10 @@ MULTI-STEP TEST SUPPORT
 For complex tests requiring dynamic setup, variable capture between steps,
 or cleanup that must always run, use the `steps` and `cleanup` fields.
 
+Some suites also target a specific managed-server database fixture via the
+optional `server_db` field. When used, it selects the database file that the
+managed server should start from for that suite.
+
 Basic Example:
 -------------
 ```yaml
@@ -223,6 +227,12 @@ class WriteFile:
 
 
 @dataclass
+class RestartServer:
+    """Restart the managed server process and reconnect transport."""
+    wait_ms: int = 0  # Optional pause after restart before next step
+
+
+@dataclass
 class TestStep:
     """A single step in a multi-step test.
 
@@ -240,6 +250,7 @@ class TestStep:
     - assert_log: Verify server log contains expected text
     - assert_file: Verify file existence and contents on disk
     - write_file: Create a file on the test host
+    - restart_server: Restart managed server process in-place
     """
     run: str | None = None                      # MOO code to execute
     command: str | None = None                  # Raw command (no ; prefix)
@@ -251,6 +262,7 @@ class TestStep:
     assert_log: LogAssertion | None = None      # Verify server log content
     assert_file: FileAssertion | None = None    # Verify file on disk
     write_file: WriteFile | None = None         # Create file on test host
+    restart_server: RestartServer | None = None # Restart managed server
     capture: str | None = None                  # Variable name to store result
     as_: str | None = None                      # Permission for this step (wizard, programmer)
     expect: Expectation | None = None           # Optional assertion on this step's result
@@ -338,6 +350,7 @@ class MooTestSuite:
     description: str = ""
     version: str = "1.0"
     skip: bool | str = False
+    server_db: str | None = None
     requires: Requirements = field(default_factory=Requirements)
     setup: SetupTeardown | None = None
     teardown: SetupTeardown | None = None
@@ -436,6 +449,7 @@ def validate_test_suite(data: dict) -> MooTestSuite:
         description=data.get('description', ''),
         version=data.get('version', '1.0'),
         skip=data.get('skip', False),
+        server_db=data.get('server_db'),
         requires=requires,
         setup=setup,
         teardown=teardown,
@@ -503,16 +517,17 @@ def _parse_test_step(data: dict) -> TestStep:
     has_assert_log = 'assert_log' in data
     has_assert_file = 'assert_file' in data
     has_write_file = 'write_file' in data
+    has_restart_server = 'restart_server' in data
 
     action_count = sum([has_run, has_command, has_verb_setup,
                         has_new_connection, has_send, has_close_connection,
                         has_wait, has_assert_log, has_assert_file,
-                        has_write_file])
+                        has_write_file, has_restart_server])
 
     if action_count == 0:
         raise ValueError("Test step must have an action field (run, command, verb_setup, "
                         "new_connection, send, close_connection, wait, assert_log, "
-                        "assert_file, or write_file)")
+                        "assert_file, write_file, or restart_server)")
     if action_count > 1:
         raise ValueError("Test step must have exactly one action field")
 
@@ -577,6 +592,15 @@ def _parse_test_step(data: dict) -> TestStep:
             content=wf_data['content'],
         )
 
+    # Parse restart_server if present
+    restart_server = None
+    if 'restart_server' in data:
+        rs_data = data['restart_server']
+        if isinstance(rs_data, dict):
+            restart_server = RestartServer(wait_ms=rs_data.get('wait_ms', 0))
+        else:
+            restart_server = RestartServer()
+
     return TestStep(
         run=data.get('run'),
         command=data.get('command'),
@@ -588,6 +612,7 @@ def _parse_test_step(data: dict) -> TestStep:
         assert_log=assert_log,
         assert_file=assert_file,
         write_file=write_file,
+        restart_server=restart_server,
         capture=data.get('capture'),
         as_=data.get('as'),
         expect=expect,

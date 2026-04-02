@@ -1,0 +1,18 @@
+name: startup_repair_anon6
+description: Removes invalid pending-finalization values from ToastStunt's Anon6 canned DB.
+server_db: Anon6.db
+requires:
+  config:
+    - managed_server
+    - server_dir
+    - log_file
+    - server_db_dir
+tests:
+  - name: invalid_pending_values_are_removed
+    steps:
+      - wait: 500
+      - assert_log:
+          contains: "shazam"
+      - assert_file:
+          path: Anon6.db.new
+          contains: "0 values pending finalization"

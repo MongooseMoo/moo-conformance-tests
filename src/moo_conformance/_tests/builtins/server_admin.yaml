@@ -393,6 +393,43 @@ tests:
         boot_player({conn});
         return 1;
       as: wizard
+
+- name: connection_name_lookup_no_rewrite_preserves_saved_name
+  description: connection_name_lookup() with rewrite disabled should not mutate connection_name()
+  permission: wizard
+  steps:
+    - run: |
+        port = listeners()[1]["port"];
+        return open_network_connection("localhost", port);
+      capture: conn
+      expect:
+        type: obj
+    - run: |
+        state = ["before" -> connection_name({conn})];
+        state["lookup"] = connection_name_lookup({conn}, 0);
+        state["after"] = connection_name({conn});
+        return state;
+      capture: state
+      expect:
+        type: map
+    - run: |
+        before = {state}["before"];
+        after = {state}["after"];
+        lookup = {state}["lookup"];
+        return (before == after) && (typeof(lookup) == 2) && (length(lookup) > 0);
+      expect:
+        value: 1
+  cleanup:
+    - run: |
+        boot_player({conn});
+        return 1;
+      as: wizard
+
+- name: connection_name_lookup_invalid_connection
+  permission: wizard
+  code: connection_name_lookup(#999999)
+  expect:
+    error: E_INVARG
 - name: connection_info_returns_map
   description: 'VERIFY: typeof(map) value -- scout used 10 based on _TYPE_MAP enum'
   permission: wizard
@@ -835,6 +872,13 @@ tests:
   expect:
     value: 0
 
+- name: set_connection_option_keep_alive_wrong_type
+  description: keep-alive only accepts an int or map
+  permission: wizard
+  code: set_connection_option(player, "keep-alive", "yes")
+  expect:
+    error: E_INVARG
+
 - name: connection_option_flush_command_roundtrip
   description: Setting flush-command and reading it back returns the new value
   permission: wizard
@@ -910,8 +954,63 @@ tests:
   code: 'listen(player, 0)'
   expect:
     error: E_PERM
+
+- name: listen_options_must_be_map
+  permission: wizard
+  code: listen(#0, 0, 1)
+  expect:
+    error: E_TYPE
+
+- name: listen_duplicate_description_rejected
+  description: listen() rejects a second listener with the same description
+  permission: wizard
+  steps:
+    - run: |
+        return listen(#0, 0, ["print-messages" -> 1]);
+      capture: port
+      expect:
+        type: int
+    - run: |
+        try
+          listen(#0, {port}, ["print-messages" -> 0]);
+          return 0;
+        except (E_INVARG)
+          return 1;
+        endtry
+      expect:
+        value: 1
+  cleanup:
+    - run: |
+        try
+          unlisten({port});
+        except (ANY)
+        endtry
+        return 1;
+      as: wizard
+
 - name: unlisten_requires_wizard
   permission: programmer
   code: unlisten(0)
   expect:
     error: E_PERM
+
+- name: unlisten_missing_listener_rejected
+  description: unlisten() rejects a description that is no longer registered
+  permission: wizard
+  steps:
+    - run: |
+        port = listen(#0, 0, ["print-messages" -> 1]);
+        unlisten(port);
+        return port;
+      capture: port
+      expect:
+        type: int
+    - run: |
+        try
+          unlisten({port});
+          return 0;
+        except (E_INVARG)
+          return 1;
+        endtry
+      expect:
+        value: 1

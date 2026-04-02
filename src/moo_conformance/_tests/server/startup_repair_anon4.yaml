@@ -1,0 +1,20 @@
+name: startup_repair_anon4
+description: Preserves chained anonymous-object references from ToastStunt's Anon4 canned DB.
+server_db: Anon4.db
+requires:
+  config:
+    - managed_server
+    - server_dir
+    - log_file
+    - server_db_dir
+tests:
+  - name: anonymous_object_chain_is_written_to_output_db
+    steps:
+      - wait: 500
+      - assert_log:
+          contains: "$one is valid"
+      - assert_log:
+          contains: "$one.two is valid"
+      - assert_file:
+          path: Anon4.db.new
+          contains: "0 values pending finalization"

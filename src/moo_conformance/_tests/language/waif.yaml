@@ -175,6 +175,36 @@ tests:
     - [':a', 1, 1]
     - [':b', 1, 1]
     - [':c', 1, 1]
+- name: queued_tasks_returns_valid_waifs_for_programmers
+  statement: |
+    o = create($waif);
+    add_verb(o, {player, "xd", ":a"}, {"this", "none", "this"});
+    set_verb_code(o, ":a", {"suspend();"});
+    add_verb(o, {player, "xd", ":b"}, {"this", "none", "this"});
+    set_verb_code(o, ":b", {"return this:a();"});
+    add_verb(o, {player, "xd", ":c"}, {"this", "none", "this"});
+    set_verb_code(o, ":c", {
+      "for delay in ({0, 100})",
+      "  fork (delay)",
+      "    c = this:b();",
+      "  endfork",
+      "endfor",
+      "suspend(0);",
+      "q = queued_tasks();",
+      "result = {length(q), {q[1][7], q[1][6] == this.class, typeof(q[1][9]) == WAIF}, {q[2][7], q[2][6] == this.class, typeof(q[2][9]) == WAIF}};",
+      "kill_task(q[1][1]);",
+      "kill_task(q[2][1]);",
+      "return result;"
+    });
+    w = o:new();
+    result = w:c();
+    recycle(o);
+    return result;
+  expect:
+    value:
+    - 2
+    - [':c', 1, 1]
+    - [':a', 1, 1]
 - name: nested_waif_map_indexes
   setup:
     code: 'waif_class = create($waif);

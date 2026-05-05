@@ -425,9 +425,24 @@ tests:
 - name: callers_returns_valid_anonymous_for_wizards
   permission: wizard
   description: Wizard sees valid anonymous objects in callers()
-  code: typeof(callers()) == LIST
+  statement: |
+    o = create($anonymous, 1);
+    add_verb(o, {player, "xd", "a"}, {"this", "none", "this"});
+    set_verb_code(o, "a", {"return callers();"});
+    add_verb(o, {player, "xd", "b"}, {"this", "none", "this"});
+    set_verb_code(o, "b", {"return this:a();"});
+    add_verb(o, {player, "xd", "c"}, {"this", "none", "this"});
+    set_verb_code(o, "c", {
+      "c = this:b();",
+      "return {{c[1][2], valid(c[1][1]), valid(c[1][4])}, {c[2][2], valid(c[2][1]), valid(c[2][4])}};"
+    });
+    result = o:c();
+    recycle(o);
+    return result;
   expect:
-    value: 1
+    value:
+    - [b, 1, 1]
+    - [c, 1, 1]
 - name: callers_returns_invalid_anonymous_for_others
   permission: programmer
   description: Non-owners see invalid anonymous objects in callers()

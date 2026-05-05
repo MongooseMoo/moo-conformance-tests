@@ -626,6 +626,37 @@ tests:
       - foobar
   cleanup:
   - run: recycle({obj})
+- name: properties_preserves_definition_order
+  description: properties returns locally-defined properties in definition order, with
+    delete/re-add moving a property to the end
+  permission: programmer
+  steps:
+  - run: create($nothing)
+    capture: obj
+  - run: add_property({obj}, "first", 1, {player, ""})
+  - run: add_property({obj}, "second", 2, {player, ""})
+  - run: add_property({obj}, "third", 3, {player, ""})
+  - run: properties({obj})
+    expect:
+      value:
+      - first
+      - second
+      - third
+  - run: delete_property({obj}, "second")
+  - run: properties({obj})
+    expect:
+      value:
+      - first
+      - third
+  - run: add_property({obj}, "second", 22, {player, ""})
+  - run: properties({obj})
+    expect:
+      value:
+      - first
+      - third
+      - second
+  cleanup:
+  - run: recycle({obj})
 - name: properties_recycled_object
   description: properties fails with E_INVARG if object is not valid
   permission: programmer

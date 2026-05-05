@@ -3,7 +3,7 @@ description: Tests for isa() builtin function
 # Converted from toaststunt test/tests/test_miscellaneous.rb
 
 requires:
-  builtins: [isa, create, valid]
+  builtins: [isa, create, recycle, valid]
 
 tests:
   # isa() with object numbers
@@ -128,3 +128,43 @@ tests:
       return isa(o.b, o.c);
     expect:
       value: 0
+
+  - name: isa_return_object_for_matching_parent
+    permission: programmer
+    statement: |
+      a = create($nothing);
+      b = create(a);
+      result = isa(b, a, 1) == a;
+      recycle(b);
+      recycle(a);
+      return result;
+    expect:
+      value: 1
+
+  - name: isa_return_object_for_no_match_is_nothing
+    permission: programmer
+    statement: |
+      a = create($nothing);
+      b = create($nothing);
+      result = isa(b, a, 1);
+      recycle(b);
+      recycle(a);
+      return result;
+    expect:
+      value: -1
+
+  - name: isa_return_object_uses_first_matching_list_parent
+    permission: programmer
+    statement: |
+      a = create($nothing);
+      b = create($nothing);
+      c = create($nothing);
+      d = create({a, b});
+      result = {isa(d, {c, b, a}, 1) == b, isa(d, {c, a, b}, 1) == a};
+      recycle(d);
+      recycle(c);
+      recycle(b);
+      recycle(a);
+      return result;
+    expect:
+      value: [1, 1]

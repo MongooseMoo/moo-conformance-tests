@@ -436,11 +436,32 @@ tests:
     value: 1
 - name: task_stack_returns_valid_anonymous_for_wizards
   permission: wizard
-  description: Wizard sees valid anonymous objects in task_stack() - requires fork/suspend/set_verb_code
-  skip: Requires complex verb setup with fork/suspend
-  code: '1'
+  description: Wizard sees valid anonymous objects in task_stack()
+  statement: |
+    o = create($anonymous, 1);
+    add_verb(o, {player, "xd", "a"}, {"this", "none", "this"});
+    set_verb_code(o, "a", {"suspend();"});
+    add_verb(o, {player, "xd", "b"}, {"this", "none", "this"});
+    set_verb_code(o, "b", {"return this:a();"});
+    add_verb(o, {player, "xd", "c"}, {"this", "none", "this"});
+    set_verb_code(o, "c", {
+      "fork t (0)",
+      "  c = this:b();",
+      "endfork",
+      "suspend(0);",
+      "stack = task_stack(t);",
+      "result = {{stack[1][2], valid(stack[1][1]), valid(stack[1][4])}, {stack[2][2], valid(stack[2][1]), valid(stack[2][4])}, {stack[3][2], valid(stack[3][1]), valid(stack[3][4])}};",
+      "kill_task(t);",
+      "return result;"
+    });
+    result = o:c();
+    recycle(o);
+    return result;
   expect:
-    value: 1
+    value:
+    - [a, 1, 1]
+    - [b, 1, 1]
+    - [c, 1, 1]
 - name: task_stack_returns_invalid_anonymous_for_others
   permission: programmer
   description: Non-owners see invalid anonymous objects in task_stack() - requires

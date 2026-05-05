@@ -149,11 +149,32 @@ tests:
   expect:
     error: E_INVARG
 - name: task_stack_returns_valid_waifs_for_owners
-  statement: 'return 0;
-
-    '
+  statement: |
+    o = create($waif);
+    add_verb(o, {player, "xd", ":a"}, {"this", "none", "this"});
+    set_verb_code(o, ":a", {"suspend();"});
+    add_verb(o, {player, "xd", ":b"}, {"this", "none", "this"});
+    set_verb_code(o, ":b", {"return this:a();"});
+    add_verb(o, {player, "xd", ":c"}, {"this", "none", "this"});
+    set_verb_code(o, ":c", {
+      "fork t (0)",
+      "  c = this:b();",
+      "endfork",
+      "suspend(0);",
+      "stack = task_stack(t);",
+      "result = {{stack[1][2], typeof(stack[1][1]) == WAIF, stack[1][4] == this.class}, {stack[2][2], typeof(stack[2][1]) == WAIF, stack[2][4] == this.class}, {stack[3][2], typeof(stack[3][1]) == WAIF, stack[3][4] == this.class}};",
+      "kill_task(t);",
+      "return result;"
+    });
+    w = o:new();
+    result = w:c();
+    recycle(o);
+    return result;
   expect:
-    value: 0
+    value:
+    - [':a', 1, 1]
+    - [':b', 1, 1]
+    - [':c', 1, 1]
 - name: nested_waif_map_indexes
   setup:
     code: 'waif_class = create($waif);

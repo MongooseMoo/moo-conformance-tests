@@ -241,3 +241,60 @@ tests:
     return result;
   expect:
     value: [123, abc, 1, E_VERBNF, class-only]
+
+- name: waif_lost_reference_calls_recycle
+  steps:
+    - run: |
+        a = create($waif);
+        add_property(a, "recycle_called", 0, {player, ""});
+        add_verb(a, {player, "xd", ":recycle"}, {"this", "none", "this"});
+        set_verb_code(a, ":recycle", {
+          "typeof(this) == WAIF || raise(E_INVARG);",
+          tostr(a) + ".recycle_called = " + tostr(a) + ".recycle_called + 1;"
+        });
+        return a;
+      capture: waif_class
+    - run: "{waif_class}.recycle_called"
+      expect:
+        value: 0
+    - run: |
+        w = {waif_class}:new();
+        return 0;
+      expect:
+        value: 0
+    - run: "{waif_class}.recycle_called"
+      expect:
+        value: 1
+  cleanup:
+    - run: "recycle({waif_class});"
+
+- name: waif_recycle_hook_runs_once_even_if_it_stashes_self
+  steps:
+    - run: |
+        a = create($waif);
+        add_property(a, "reference", 0, {player, ""});
+        add_property(a, "recycle_called", 0, {player, ""});
+        add_verb(a, {player, "xd", ":recycle"}, {"this", "none", "this"});
+        set_verb_code(a, ":recycle", {
+          "typeof(this) == WAIF || raise(E_INVARG);",
+          tostr(a) + ".recycle_called = " + tostr(a) + ".recycle_called + 1;",
+          tostr(a) + ".reference = this;"
+        });
+        return a;
+      capture: waif_class
+    - run: |
+        w = {waif_class}:new();
+        return 0;
+      expect:
+        value: 0
+    - run: "{waif_class}.recycle_called"
+      expect:
+        value: 1
+    - run: "{waif_class}.reference = 0"
+      expect:
+        value: 0
+    - run: "{waif_class}.recycle_called"
+      expect:
+        value: 1
+  cleanup:
+    - run: "recycle({waif_class});"

@@ -224,10 +224,26 @@ tests:
     value: [[], 1, [local], 2, []]
 - name: verb_calls_work
   permission: programmer
-  description: Anonymous objects can call inherited verbs - requires set_verb_code
-  code: '1'
+  description: Anonymous objects can call verbs inherited from each ancestor
+  statement: |
+    x = create($nothing);
+    add_verb(x, {player, "xd", "x"}, {"this", "none", "this"});
+    set_verb_code(x, "x", {"return 123;"});
+    y = create(x);
+    add_verb(y, {player, "xd", "y"}, {"this", "none", "this"});
+    set_verb_code(y, "y", {"return \"abc\";"});
+    z = create(y);
+    add_verb(z, {player, "xd", "z"}, {"this", "none", "this"});
+    set_verb_code(z, "z", {"return [1 -> 1];"});
+    a = create(z, 1);
+    result = {a:x(), a:y(), a:z()[1]};
+    recycle(a);
+    recycle(z);
+    recycle(y);
+    recycle(x);
+    return result;
   expect:
-    value: 1
+    value: [123, abc, 1]
 - name: valid_returns_true_for_valid_anonymous
   statement: 'a = create($anonymous, 1);
 

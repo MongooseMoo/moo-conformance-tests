@@ -212,6 +212,59 @@ tests:
   expect:
     value: [123, abc, 1, E_PROPNF, wxyz]
 
+- name: properties_rejects_waif_instance
+  description: properties() treats a waif instance as invalid even though instance
+    property access works
+  statement: |
+    waif_class = create($waif);
+    add_property(waif_class, ":alpha", 1, {player, "r"});
+    w = waif_class:new();
+    try
+      result = properties(w);
+    except e (ANY)
+      result = e[1];
+    endtry
+    recycle(waif_class);
+    return result;
+  expect:
+    value: E_INVARG
+
+- name: property_info_rejects_waif_instance_property
+  description: property_info() treats a waif instance property as invalid even when
+    it is readable through dot syntax
+  statement: |
+    waif_class = create($waif);
+    add_property(waif_class, ":alpha", 1, {player, "r"});
+    w = waif_class:new();
+    readable = w.alpha;
+    try
+      result = property_info(w, "alpha");
+    except e (ANY)
+      result = {readable, e[1]};
+    endtry
+    recycle(waif_class);
+    return result;
+  expect:
+    value: [1, E_INVARG]
+
+- name: is_clear_property_rejects_waif_instance_property
+  description: is_clear_property() treats a waif instance property as invalid even
+    when it exists on the waif
+  statement: |
+    waif_class = create($waif);
+    add_property(waif_class, ":alpha", 1, {player, ""});
+    w = waif_class:new();
+    w.alpha = 2;
+    try
+      result = is_clear_property(w, "alpha");
+    except e (ANY)
+      result = {w.alpha, e[1]};
+    endtry
+    recycle(waif_class);
+    return result;
+  expect:
+    value: [2, E_INVARG]
+
 - name: waif_colon_verbs_are_instance_verbs
   statement: |
     x = create($waif);

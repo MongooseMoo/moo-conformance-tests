@@ -1,0 +1,70 @@
+name: move
+description: Behavioral tests for ToastStunt's move() builtin.
+
+requires:
+  builtins:
+    - create
+    - recycle
+    - move
+
+tests:
+  - name: move_position_reorders_existing_contents
+    permission: wizard
+    statement: |
+      room = create($nothing);
+      a = create($nothing);
+      b = create($nothing);
+      c = create($nothing);
+      move(a, room);
+      move(b, room);
+      move(c, room);
+      before = room.contents;
+      move(c, room, 1);
+      after_front = room.contents;
+      move(a, room, 3);
+      after_third = room.contents;
+      result = {before == {a, b, c}, after_front == {c, a, b}, after_third == {c, b, a}};
+      recycle(a);
+      recycle(b);
+      recycle(c);
+      recycle(room);
+      return result;
+    expect:
+      value: [1, 1, 1]
+
+  - name: move_position_zero_appends
+    permission: wizard
+    statement: |
+      room = create($nothing);
+      a = create($nothing);
+      b = create($nothing);
+      c = create($nothing);
+      move(a, room);
+      move(b, room);
+      move(c, room, 0);
+      result = room.contents == {a, b, c};
+      recycle(a);
+      recycle(b);
+      recycle(c);
+      recycle(room);
+      return result;
+    expect:
+      value: 1
+
+  - name: move_negative_position_rejected
+    permission: wizard
+    statement: |
+      room = create($nothing);
+      o = create($nothing);
+      try
+        move(o, room, -1);
+      except e (ANY)
+        recycle(o);
+        recycle(room);
+        return e[1];
+      endtry
+      recycle(o);
+      recycle(room);
+      return 0;
+    expect:
+      value: E_INVARG

@@ -545,3 +545,64 @@ tests:
     '
   expect:
     error: E_INVIND
+- name: anonymous_lost_reference_calls_recycle
+  permission: programmer
+  steps:
+  - run: |
+      a = create($object);
+      add_property(a, "recycle_called", 0, {player, ""});
+      add_verb(a, {player, "xd", "recycle"}, {"this", "none", "this"});
+      set_verb_code(a, "recycle", {
+        "typeof(this) == ANON || raise(E_INVARG);",
+        tostr(a) + ".recycle_called = " + tostr(a) + ".recycle_called + 1;"
+      });
+      return a;
+    capture: anon_class
+  - run: "{anon_class}.recycle_called"
+    expect:
+      value: 0
+  - run: |
+      a = create({anon_class}, 1);
+      return 0;
+    expect:
+      value: 0
+  - run: "{anon_class}.recycle_called"
+    expect:
+      value: 1
+  cleanup:
+  - run: "recycle({anon_class});"
+
+- name: anonymous_recycle_hook_runs_once_even_if_it_stashes_self
+  permission: programmer
+  steps:
+  - run: |
+      a = create($object);
+      add_property(a, "reference", 0, {player, ""});
+      add_property(a, "recycle_called", 0, {player, ""});
+      add_verb(a, {player, "xd", "recycle"}, {"this", "none", "this"});
+      set_verb_code(a, "recycle", {
+        "typeof(this) == ANON || raise(E_INVARG);",
+        tostr(a) + ".recycle_called = " + tostr(a) + ".recycle_called + 1;",
+        tostr(a) + ".reference = this;"
+      });
+      return a;
+    capture: anon_class
+  - run: |
+      a = create({anon_class}, 1);
+      return 0;
+    expect:
+      value: 0
+  - run: "{anon_class}.recycle_called"
+    expect:
+      value: 1
+  - run: "valid({anon_class}.reference)"
+    expect:
+      value: 0
+  - run: "{anon_class}.reference = 0"
+    expect:
+      value: 0
+  - run: "{anon_class}.recycle_called"
+    expect:
+      value: 1
+  cleanup:
+  - run: "recycle({anon_class});"

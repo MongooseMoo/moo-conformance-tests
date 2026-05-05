@@ -1,0 +1,93 @@
+name: recreate
+description: Behavioral tests for ToastStunt's recreate() builtin.
+
+requires:
+  builtins:
+    - create
+    - recycle
+    - recreate
+    - valid
+    - parent
+    - children
+    - add_property
+    - add_verb
+    - set_verb_code
+
+tests:
+  - name: recreate_reuses_recycled_object_id
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      recycle(o);
+      r = recreate(o, $nothing);
+      result = {r == o, valid(r), parent(r), r.owner == player};
+      recycle(r);
+      return result;
+    expect:
+      value: [1, 1, -1, 1]
+
+  - name: recreate_assigns_parent_and_child_link
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      o = create($nothing);
+      recycle(o);
+      r = recreate(o, p);
+      result = {r == o, parent(r) == p, r in children(p)};
+      recycle(r);
+      recycle(p);
+      return result;
+    expect:
+      value: [1, 1, 1]
+
+  - name: recreate_assigns_explicit_owner
+    permission: wizard
+    statement: |
+      owner = create($nothing);
+      o = create($nothing);
+      recycle(o);
+      r = recreate(o, $nothing, owner);
+      result = {r == o, r.owner == owner};
+      recycle(r);
+      recycle(owner);
+      return result;
+    expect:
+      value: [1, 1]
+
+  - name: recreate_calls_inherited_initialize
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p, "init_seen", 0, {player, ""});
+      add_verb(p, {player, "xd", "initialize"}, {"this", "none", "this"});
+      set_verb_code(p, "initialize", {"this.init_seen = 1;"});
+      o = create($nothing);
+      recycle(o);
+      r = recreate(o, p);
+      result = r.init_seen;
+      recycle(r);
+      recycle(p);
+      return result;
+    expect:
+      value: 1
+
+  - name: recreate_rejects_zero_object_id
+    permission: wizard
+    code: "recreate(#0, $nothing)"
+    expect:
+      error: E_INVARG
+
+  - name: recreate_rejects_valid_old_object
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      try
+        recreate(o, $nothing);
+      except e (ANY)
+        recycle(o);
+        return e[1];
+      endtry
+      recycle(o);
+      return 0;
+    expect:
+      value: E_INVARG

@@ -202,6 +202,26 @@ tests:
   expect:
     value:
     - 1
+- name: anonymous_local_properties_are_listed_but_inherited_properties_are_not
+  permission: programmer
+  description: properties() on an anonymous object returns local anonymous property
+    definitions, not readable inherited properties
+  statement: |
+    parent = create($nothing);
+    add_property(parent, "inherited", 1, {player, ""});
+    a = create(parent, 1);
+    before = properties(a);
+    inherited_value = a.inherited;
+    add_property(a, "local", 2, {player, ""});
+    after = properties(a);
+    local_value = a.local;
+    delete_property(a, "local");
+    final = properties(a);
+    recycle(a);
+    recycle(parent);
+    return {before, inherited_value, after, local_value, final};
+  expect:
+    value: [[], 1, [local], 2, []]
 - name: verb_calls_work
   permission: programmer
   description: Anonymous objects can call inherited verbs - requires set_verb_code

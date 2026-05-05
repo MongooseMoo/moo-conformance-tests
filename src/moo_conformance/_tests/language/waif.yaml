@@ -186,3 +186,58 @@ tests:
     '
   expect:
     value: 42
+- name: waif_colon_properties_are_instance_properties
+  statement: |
+    x = create($waif);
+    add_property(x, ":x", 123, {player, ""});
+    y = create(x);
+    add_property(y, ":y", "abc", {player, ""});
+    z = create(y);
+    add_property(z, ":z", {1}, {player, ""});
+    q = create(z);
+    add_property(q, "q", "wxyz", {player, ""});
+    w = z:new();
+    wq = q:new();
+    try
+      missing = wq.q;
+    except e (ANY)
+      missing = e[1];
+    endtry
+    result = {w.x, w.y, w.z[1], missing, wq.class.q};
+    recycle(q);
+    recycle(z);
+    recycle(y);
+    recycle(x);
+    return result;
+  expect:
+    value: [123, abc, 1, E_PROPNF, wxyz]
+
+- name: waif_colon_verbs_are_instance_verbs
+  statement: |
+    x = create($waif);
+    add_verb(x, {player, "xd", ":x"}, {"this", "none", "this"});
+    set_verb_code(x, ":x", {"return 123;"});
+    y = create(x);
+    add_verb(y, {player, "xd", ":y"}, {"this", "none", "this"});
+    set_verb_code(y, ":y", {"return \"abc\";"});
+    z = create(y);
+    add_verb(z, {player, "xd", ":z"}, {"this", "none", "this"});
+    set_verb_code(z, ":z", {"return {1};"});
+    q = create(z);
+    add_verb(q, {player, "xd", "q"}, {"this", "none", "this"});
+    set_verb_code(q, "q", {"return \"class-only\";"});
+    w = z:new();
+    wq = q:new();
+    try
+      missing = wq:q();
+    except e (ANY)
+      missing = e[1];
+    endtry
+    result = {w:x(), w:y(), w:z()[1], missing, wq.class:q()};
+    recycle(q);
+    recycle(z);
+    recycle(y);
+    recycle(x);
+    return result;
+  expect:
+    value: [123, abc, 1, E_VERBNF, class-only]

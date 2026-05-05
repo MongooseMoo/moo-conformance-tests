@@ -452,9 +452,34 @@ tests:
 - name: queued_tasks_returns_valid_anonymous_for_wizards
   permission: wizard
   description: Wizard sees valid anonymous objects in queued_tasks()
-  code: typeof(queued_tasks()) == LIST
+  statement: |
+    o = create($anonymous, 1);
+    add_verb(o, {player, "xd", "a"}, {"this", "none", "this"});
+    set_verb_code(o, "a", {"suspend();"});
+    add_verb(o, {player, "xd", "b"}, {"this", "none", "this"});
+    set_verb_code(o, "b", {"return this:a();"});
+    add_verb(o, {player, "xd", "c"}, {"this", "none", "this"});
+    set_verb_code(o, "c", {
+      "for delay in ({0, 100})",
+      "  fork (delay)",
+      "    c = this:b();",
+      "  endfork",
+      "endfor",
+      "suspend(0);",
+      "q = queued_tasks();",
+      "result = {length(q), {q[1][7], valid(q[1][6]), valid(q[1][9])}, {q[2][7], valid(q[2][6]), valid(q[2][9])}};",
+      "kill_task(q[1][1]);",
+      "kill_task(q[2][1]);",
+      "return result;"
+    });
+    result = o:c();
+    recycle(o);
+    return result;
   expect:
-    value: 1
+    value:
+    - 2
+    - [c, 1, 1]
+    - [a, 1, 1]
 - name: queued_tasks_returns_invalid_anonymous_for_others
   permission: programmer
   description: Non-owners see invalid anonymous objects in queued_tasks()

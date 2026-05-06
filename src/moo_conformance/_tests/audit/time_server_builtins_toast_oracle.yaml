@@ -1,0 +1,96 @@
+name: audit_time_server_builtins_toast_oracle
+description: Toast-confirmed audit cases for time formatting and server-adjacent builtins.
+
+requires:
+  builtins:
+    - ctime
+    - ftime
+    - shutdown
+    - queue_info
+    - set_property_info
+    - memory_usage
+    - create
+    - recycle
+
+tests:
+  - name: audit_ctime_includes_full_timezone_name
+    description: This Toast build formats ctime() with the full local timezone name.
+    code: "ctime()"
+    expect:
+      match: "^\\w{3} \\w{3} .+ \\d{2}:\\d{2}:\\d{2} \\d{4} Mountain (Standard|Daylight) Time$"
+
+  - name: audit_ctime_extreme_timestamp_rejected
+    description: ctime rejects out-of-range endpoint timestamps with Toast's E_INVARG behavior.
+    code: "ctime(2147483647)"
+    expect:
+      error: E_INVARG
+
+  - name: audit_ftime_args_are_clock_selectors
+    description: ftime(1) and ftime(2) are clock selectors returning floats, not timestamp formatters.
+    statement: |
+      a = ftime(1);
+      b = ftime(2);
+      return {typeof(a), typeof(b), a > 0.0, b >= 0.0};
+    expect:
+      value:
+        - 9
+        - 9
+        - 1
+        - 1
+
+  - name: audit_shutdown_accepts_two_args_before_permission_check
+    description: shutdown(message, delay) accepts Toast's optional second argument before rejecting non-wizards.
+    permission: programmer
+    code: 'shutdown("audit shutdown", 0)'
+    expect:
+      error: E_PERM
+
+  - name: audit_queue_info_no_arg_allowed_for_programmer
+    description: queue_info() with no arguments is allowed for non-wizards.
+    permission: programmer
+    code: "typeof(queue_info())"
+    expect:
+      value: 4
+
+  - name: audit_queue_info_wizard_map_shape
+    description: queue_info(player) for wizards returns Toast's connected-player map shape.
+    permission: wizard
+    statement: |
+      info = queue_info(player);
+      return {
+        typeof(info),
+        maphaskey(info, "player"),
+        maphaskey(info, "connected"),
+        maphaskey(info, "num_bg_tasks")
+      };
+    expect:
+      value:
+        - 10
+        - 1
+        - 1
+        - 1
+
+  - name: audit_set_property_info_requires_permission
+    description: set_property_info denies non-owner programmers without change permission.
+    steps:
+      - run: |
+          obj = create($nothing);
+          obj.w = 0;
+          add_property(obj, "auditprop", 1, {#0, "r"});
+          return obj;
+        capture: obj
+        as: wizard
+      - run: 'set_property_info({obj}, "auditprop", {player, "rw"})'
+        as: programmer
+        expect:
+          error: E_PERM
+    cleanup:
+      - run: recycle({obj});
+        as: wizard
+
+  - name: audit_memory_usage_windows_behavior
+    description: This Toast build returns E_FILE for memory_usage() on Windows.
+    permission: programmer
+    code: "memory_usage()"
+    expect:
+      error: E_FILE

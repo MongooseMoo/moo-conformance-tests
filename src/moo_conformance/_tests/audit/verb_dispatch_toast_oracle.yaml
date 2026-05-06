@@ -147,6 +147,24 @@ tests:
       - run: recycle({obj});
         as: wizard
 
+  - name: audit_non_executable_verb_call_is_verb_not_found
+    description: Calling a readable verb without execute permission raises E_VERBNF, not E_PERM.
+    steps:
+      - run: |
+          obj = create($nothing);
+          add_verb(obj, {#0, "rd", "auditnoexec"}, {"this", "none", "this"});
+          set_verb_code(obj, "auditnoexec", {"return 77;"});
+          return obj;
+        capture: obj
+        as: wizard
+      - run: "return {obj}:auditnoexec();"
+        as: wizard
+        expect:
+          error: E_VERBNF
+    cleanup:
+      - run: recycle({obj});
+        as: wizard
+
   - name: audit_set_verb_info_nonowner_denied_even_with_writable_object
     description: set_verb_info denies a non-owner programmer even when the object is writable.
     steps:

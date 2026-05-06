@@ -22,6 +22,11 @@ requires:
     - set_verb_code
     - create
     - recycle
+    - valid
+    - set_player_flag
+    - boot_player
+    - force_input
+    - connected_players
 
 tests:
   - name: audit_ctime_includes_full_timezone_name
@@ -173,4 +178,92 @@ tests:
           except (ANY)
           endtry
           load_server_options();
+        as: wizard
+
+  - name: audit_set_player_flag_false_boots_active_player
+    description: Clearing an active player's player flag boots its live connection.
+    steps:
+      - run: |
+          try
+            add_property(#0, "audit_player_flag_login", $nothing, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          try
+            add_property(#0, "audit_player_flag_saved", {}, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          login_player = create($nothing);
+          set_player_flag(login_player, 1);
+          #0.audit_player_flag_login = login_player;
+          old_exists = 1;
+          try
+            old_info = verb_info(#0, "do_login_command");
+            old_args = verb_args(#0, "do_login_command");
+            old_code = verb_code(#0, "do_login_command");
+          except (E_VERBNF)
+            old_exists = 0;
+            old_info = {};
+            old_args = {};
+            old_code = {};
+          endtry
+          #0.audit_player_flag_saved = {old_exists, old_info, old_args, old_code};
+          try
+            add_verb(#0, {#0, "rxd", "do_login_command"}, {"this", "none", "this"});
+          except (E_INVARG)
+          endtry
+          set_verb_info(#0, "do_login_command", {#0, "rxd", "do_login_command"});
+          set_verb_args(#0, "do_login_command", {"this", "none", "this"});
+          set_verb_code(#0, "do_login_command", {"return #0.audit_player_flag_login;"});
+          return 1;
+        as: wizard
+      - new_connection:
+          capture: conn1
+      - run: |
+          neg = #-1;
+          for conn in (connected_players(1))
+            if (!valid(conn))
+              neg = conn;
+            endif
+          endfor
+          force_input(neg, "audit-player-flag-login");
+          suspend(0);
+          was_connected = (#0.audit_player_flag_login in connected_players(1)) > 0;
+          set_player_flag(#0.audit_player_flag_login, 0);
+          suspend(0);
+          return {was_connected, (#0.audit_player_flag_login in connected_players(1)) > 0};
+        as: wizard
+        expect:
+          value:
+            - 1
+            - 0
+      - close_connection: conn1
+    cleanup:
+      - run: |
+          try
+            saved = #0.audit_player_flag_saved;
+            if (saved[1])
+              set_verb_info(#0, "do_login_command", saved[2]);
+              set_verb_args(#0, "do_login_command", saved[3]);
+              set_verb_code(#0, "do_login_command", saved[4]);
+            else
+              delete_verb(#0, "do_login_command");
+            endif
+          except (ANY)
+          endtry
+          try
+            boot_player(#0.audit_player_flag_login);
+          except (ANY)
+          endtry
+          try
+            recycle(#0.audit_player_flag_login);
+          except (ANY)
+          endtry
+          try
+            delete_property(#0, "audit_player_flag_saved");
+          except (ANY)
+          endtry
+          try
+            delete_property(#0, "audit_player_flag_login");
+          except (ANY)
+          endtry
         as: wizard

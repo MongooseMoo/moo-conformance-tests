@@ -646,3 +646,48 @@ tests:
           delete_property($server_options, "bg_seconds");
           load_server_options();
         as: wizard
+
+  - name: audit_long_suspended_background_task_can_yield_after_wake
+    description: Time spent suspended does not consume a background task's execution-second budget.
+    steps:
+      - run: |
+          try
+            add_property($server_options, "bg_seconds", 1, {player, "r"});
+          except (E_INVARG)
+            $server_options.bg_seconds = 1;
+          endtry
+          try
+            add_property(#0, "audit_long_suspend_progress", "", {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          load_server_options();
+          #0.audit_long_suspend_progress = "created";
+          fork (0)
+            #0.audit_long_suspend_progress = "before";
+            suspend(2);
+            #0.audit_long_suspend_progress = "after-long-suspend";
+            suspend(0);
+            #0.audit_long_suspend_progress = "after-yield";
+          endfork
+          suspend(0);
+          return #0.audit_long_suspend_progress;
+        as: wizard
+        expect:
+          value: before
+      - wait: 3500
+      - run: "return #0.audit_long_suspend_progress;"
+        as: wizard
+        expect:
+          value: after-yield
+    cleanup:
+      - run: |
+          try
+            delete_property(#0, "audit_long_suspend_progress");
+          except (ANY)
+          endtry
+          try
+            delete_property($server_options, "bg_seconds");
+          except (ANY)
+          endtry
+          load_server_options();
+        as: wizard

@@ -550,6 +550,91 @@ tests:
           endfor
         as: wizard
 
+  - name: audit_connect_timeout_server_option
+    description: Toast honors $server_options.connect_timeout for unauthenticated connections.
+    steps:
+      - run: |
+          for prop in ({"audit_timeout_seen", "audit_timeout_option_saved", "audit_timeout_hook_saved"})
+            try
+              add_property(#0, prop, {}, {#0, "rw"});
+            except (E_INVARG)
+            endtry
+          endfor
+          option_exists = 1;
+          try
+            option_saved = $server_options.connect_timeout;
+          except (E_PROPNF)
+            option_exists = 0;
+            option_saved = {};
+          endtry
+          #0.audit_timeout_option_saved = {option_exists, option_saved};
+          try
+            add_property($server_options, "connect_timeout", 1, {player, "r"});
+          except (E_INVARG)
+          endtry
+          $server_options.connect_timeout = 1;
+          old_hook_exists = 1;
+          try
+            old_hook_info = verb_info(#0, "user_disconnected");
+            old_hook_args = verb_args(#0, "user_disconnected");
+            old_hook_code = verb_code(#0, "user_disconnected");
+          except (E_VERBNF)
+            old_hook_exists = 0;
+            old_hook_info = {};
+            old_hook_args = {};
+            old_hook_code = {};
+          endtry
+          #0.audit_timeout_hook_saved = {old_hook_exists, old_hook_info, old_hook_args, old_hook_code};
+          try
+            add_verb(#0, {#0, "rxd", "user_disconnected"}, {"this", "none", "this"});
+          except (E_INVARG)
+          endtry
+          set_verb_info(#0, "user_disconnected", {player, "rxd", "user_disconnected"});
+          set_verb_args(#0, "user_disconnected", {"this", "none", "this"});
+          set_verb_code(#0, "user_disconnected", {
+            "#0.audit_timeout_seen = args[1];",
+            "return 1;"
+          });
+          return 1;
+        as: wizard
+      - new_connection:
+          capture: conn1
+      - wait: 2500
+      - run: "return typeof(#0.audit_timeout_seen);"
+        as: wizard
+        expect:
+          value: 1
+      - close_connection: conn1
+    cleanup:
+      - run: |
+          try
+            saved = #0.audit_timeout_hook_saved;
+            if (saved[1])
+              set_verb_info(#0, "user_disconnected", saved[2]);
+              set_verb_args(#0, "user_disconnected", saved[3]);
+              set_verb_code(#0, "user_disconnected", saved[4]);
+            else
+              delete_verb(#0, "user_disconnected");
+            endif
+          except (ANY)
+          endtry
+          try
+            saved = #0.audit_timeout_option_saved;
+            if (saved[1])
+              $server_options.connect_timeout = saved[2];
+            else
+              delete_property($server_options, "connect_timeout");
+            endif
+          except (ANY)
+          endtry
+          for prop in ({"audit_timeout_seen", "audit_timeout_option_saved", "audit_timeout_hook_saved"})
+            try
+              delete_property(#0, prop);
+            except (ANY)
+            endtry
+          endfor
+        as: wizard
+
   - name: audit_oob_prefix_dispatches_do_out_of_band_command
     description: Commands beginning with #$# dispatch to #0:do_out_of_band_command.
     steps:

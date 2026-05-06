@@ -70,3 +70,15 @@ tests:
     code: 'eval("return 5;")'
     expect:
       value: [1, 5]
+
+  - name: eval_runtime_error_returns_error_value
+    permission: wizard
+    code: 'eval("return 1 / 0;")'
+    expect:
+      error: E_DIV
+
+  - name: eval_string_index_succeeds_in_eval_frame
+    permission: wizard
+    code: 'eval("return index(\"caller && raise(E_PERM);\", \"caller\");")'
+    expect:
+      value: [1, 1]

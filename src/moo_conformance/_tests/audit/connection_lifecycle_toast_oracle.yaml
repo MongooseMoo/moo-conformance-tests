@@ -1,0 +1,72 @@
+name: audit_connection_lifecycle_toast_oracle
+description: Toast-confirmed audit cases for observable connection and lifecycle behavior.
+
+requires:
+  builtins:
+    - add_property
+    - delete_property
+    - add_verb
+    - delete_verb
+    - set_verb_code
+    - connection_name
+    - connection_info
+
+tests:
+  - name: audit_oob_prefix_dispatches_do_out_of_band_command
+    description: Commands beginning with #$# dispatch to #0:do_out_of_band_command.
+    steps:
+      - run: |
+          try
+            add_property(#0, "audit_oob_args", {}, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          try
+            add_verb(#0, {#0, "rxd", "do_out_of_band_command"}, {"this", "none", "this"});
+          except (E_INVARG)
+          endtry
+          set_verb_code(#0, "do_out_of_band_command", {
+            "#0.audit_oob_args = args;",
+            "return 1;"
+          });
+          return 1;
+        as: wizard
+      - command: "#$#audit-oob alpha beta"
+      - run: "return #0.audit_oob_args;"
+        as: wizard
+        expect:
+          value:
+            - "#$#audit-oob"
+            - "alpha"
+            - "beta"
+    cleanup:
+      - run: |
+          delete_verb(#0, "do_out_of_band_command");
+          delete_property(#0, "audit_oob_args");
+        as: wizard
+
+  - name: audit_connection_name_method0_hostname
+    description: connection_name(player, 0) returns Toast's saved hostname/address string.
+    permission: wizard
+    statement: |
+      name = connection_name(player, 0);
+      return {typeof(name), length(name) > 0};
+    expect:
+      value:
+        - 2
+        - 1
+
+  - name: audit_connection_info_source_fields
+    description: connection_info(player) exposes Toast source and destination network fields.
+    permission: wizard
+    statement: |
+      info = connection_info(player);
+      keys = mapkeys(info);
+      required = {"destination_address", "destination_ip", "destination_port", "outbound", "protocol", "source_address", "source_ip", "source_port"};
+      for k in (required)
+        if (!(k in keys))
+          return 0;
+        endif
+      endfor
+      return typeof(info["source_address"]) == STR && typeof(info["source_port"]) == INT && typeof(info["destination_port"]) == INT;
+    expect:
+      value: 1

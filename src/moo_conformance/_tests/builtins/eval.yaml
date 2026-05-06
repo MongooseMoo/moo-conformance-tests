@@ -6,17 +6,28 @@ requires:
 
 tests:
   - name: eval_requires_programmer
-    skip: "Test corrupts state - teardown can't run because eval requires programmer"
-    permission: wizard
-    setup:
-      code: |
-        player.a = 0;
-        player.programmer = 0;
-    code: 'eval("return 5;")'
-    expect:
-      error: E_PERM
-    teardown:
-      code: 'player.programmer = 1;'
+    steps:
+      - run: "create($nothing)"
+        as: wizard
+        capture: owner
+      - run: "create($nothing)"
+        as: wizard
+        capture: target
+      - run: "{owner}.programmer = 0; return {owner}.programmer;"
+        as: wizard
+        expect:
+          value: 0
+      - run: |
+          add_verb({target}, {{owner}, "xd", "try_eval_permission"}, {"this", "none", "this"});
+          return set_verb_code({target}, "try_eval_permission", {"return eval(\"return 5;\");"});
+        as: wizard
+      - run: "return {target}:try_eval_permission();"
+        as: wizard
+        expect:
+          error: E_PERM
+    cleanup:
+      - run: "recycle({target}); recycle({owner});"
+        as: wizard
 
   - name: eval_requires_at_least_one_argument
     permission: wizard

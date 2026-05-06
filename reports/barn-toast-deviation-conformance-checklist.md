@@ -77,7 +77,7 @@ Order rule: command parser tests come first because many later tests depend on r
 - [x] CON-007 user_client_disconnected_hook: client-initiated disconnect invokes Toast's client-disconnect hook.
 - [x] CON-008 user_reconnected_cross_listener_hooks: reconnect hook behavior matches Toast.
 - [x] CON-009 connect_timeout_server_option: `$server_options.connect_timeout` controls login timeout.
-- [ ] CON-010 flush_command_flushes_pending_input: connection `flush-command` flushes queued input.
+- [x] CON-010 flush_command_flushes_pending_input: connection `flush-command` flushes queued input.
 - [x] CON-011 hold_input_blocks_inband: `hold-input` queues normal commands until released.
 - [x] CON-012 hold_input_allows_oob_when_enabled: OOB input bypasses hold-input unless disabled.
 - [x] CON-013 disable_oob_blocks_oob: `disable-oob` makes OOB wait like in-band input.

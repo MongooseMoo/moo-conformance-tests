@@ -55,7 +55,7 @@ Order rule: command parser tests come first because many later tests depend on r
 - [x] TSK-006 server_options_bg_seconds_runtime: `$server_options.bg_seconds` is honored.
 - [x] TSK-007 server_options_max_stack_depth_runtime: `$server_options.max_stack_depth` is honored.
 - [x] TSK-008 suspend_zero_yields_to_ready_task: `suspend(0)` gives another ready task a turn.
-- [ ] TSK-009 tick_exhaustion_not_catchable: tick exhaustion cannot be swallowed by MOO `try`.
+- [x] TSK-009 tick_exhaustion_not_catchable: tick exhaustion cannot be swallowed by MOO `try`.
 - [ ] TSK-010 handle_task_timeout_invoked: Toast invokes `$server:handle_task_timeout` on timeout.
 - [ ] TSK-011 suspended_task_survives_restart: suspended tasks persist across checkpoint/restart.
 - [x] TSK-012 read_requires_connection_owner_or_wizard: `read()` denies unrelated programmers.

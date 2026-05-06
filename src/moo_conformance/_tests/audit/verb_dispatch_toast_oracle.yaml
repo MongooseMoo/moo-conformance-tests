@@ -4,6 +4,7 @@ description: Toast-confirmed audit cases for verb lookup, verb metadata permissi
 requires:
   builtins:
     - add_verb
+    - delete_verb
     - set_verb_code
     - set_verb_info
     - set_verb_args
@@ -11,6 +12,7 @@ requires:
     - verb_args
     - verb_code
     - callers
+    - call_function
     - caller_perms
     - create
     - recycle
@@ -251,6 +253,49 @@ tests:
             - "#-1"
     cleanup:
       - run: 'delete_verb(player, "auditcallerperms");'
+        as: wizard
+
+  - name: audit_callers_top_level_command_is_empty
+    description: A parser-dispatched top-level command verb sees no MOO caller frames.
+    steps:
+      - run: |
+          add_verb(player, {player, "xd", "auditcallers"}, {"none", "none", "none"});
+          set_verb_code(player, "auditcallers", {
+            "notify(player, toliteral(callers()));"
+          });
+          return 1;
+        as: wizard
+      - command: "auditcallers"
+        expect:
+          output:
+            - "{}"
+    cleanup:
+      - run: 'delete_verb(player, "auditcallers");'
+        as: wizard
+
+  - name: audit_call_function_callers_has_no_extra_builtin_frame
+    description: call_function("callers") reports the same frames as direct callers().
+    steps:
+      - run: |
+          obj = create($nothing);
+          add_verb(obj, {player, "xd", "audit_builtin_frame"}, {"this", "none", "this"});
+          set_verb_code(obj, "audit_builtin_frame", {
+            "direct = callers();",
+            "indirect = call_function(\"callers\");",
+            "return {direct == indirect, length(direct), length(indirect)};"
+          });
+          return obj;
+        capture: obj
+        as: wizard
+      - run: "return {obj}:audit_builtin_frame();"
+        as: wizard
+        expect:
+          value:
+            - 1
+            - 3
+            - 3
+    cleanup:
+      - run: "recycle({obj});"
         as: wizard
 
   - name: audit_set_task_perms_uses_current_programmer_not_player

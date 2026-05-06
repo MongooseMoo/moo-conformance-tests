@@ -248,6 +248,96 @@ tests:
           endfor
         as: wizard
 
+  - name: audit_proxy_command_clears_login_input
+    description: Toast parses a trusted PROXY command and calls do_login_command with empty input.
+    steps:
+      - run: |
+          for prop in ({"audit_proxy_seen", "audit_proxy_login_saved", "audit_proxy_trusted_saved"})
+            try
+              add_property(#0, prop, {}, {#0, "rw"});
+            except (E_INVARG)
+            endtry
+          endfor
+          trusted_exists = 1;
+          try
+            trusted_saved = #6.trusted_proxies;
+          except (E_PROPNF)
+            trusted_exists = 0;
+            trusted_saved = {};
+          endtry
+          #0.audit_proxy_trusted_saved = {trusted_exists, trusted_saved};
+          try
+            add_property(#6, "trusted_proxies", {}, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          #6.trusted_proxies = {"::1", "127.0.0.1"};
+          old_login_exists = 1;
+          try
+            old_login_info = verb_info(#0, "do_login_command");
+            old_login_args = verb_args(#0, "do_login_command");
+            old_login_code = verb_code(#0, "do_login_command");
+          except (E_VERBNF)
+            old_login_exists = 0;
+            old_login_info = {};
+            old_login_args = {};
+            old_login_code = {};
+          endtry
+          #0.audit_proxy_login_saved = {old_login_exists, old_login_info, old_login_args, old_login_code};
+          try
+            add_verb(#0, {#0, "rxd", "do_login_command"}, {"this", "none", "this"});
+          except (E_INVARG)
+          endtry
+          set_verb_info(#0, "do_login_command", {player, "rxd", "do_login_command"});
+          set_verb_args(#0, "do_login_command", {"this", "none", "this"});
+          set_verb_code(#0, "do_login_command", {
+            "#0.audit_proxy_seen = {args, argstr};",
+            "return 0;"
+          });
+          return 1;
+        as: wizard
+      - new_connection:
+          capture: conn1
+      - send:
+          connection: conn1
+          text: "PROXY TCP4 127.0.0.1 198.51.100.9 4242 7777"
+      - wait: 500
+      - run: "return #0.audit_proxy_seen;"
+        as: wizard
+        expect:
+          value:
+            - []
+            - ""
+      - close_connection: conn1
+    cleanup:
+      - run: |
+          try
+            saved = #0.audit_proxy_login_saved;
+            if (saved[1])
+              set_verb_info(#0, "do_login_command", saved[2]);
+              set_verb_args(#0, "do_login_command", saved[3]);
+              set_verb_code(#0, "do_login_command", saved[4]);
+            else
+              delete_verb(#0, "do_login_command");
+            endif
+          except (ANY)
+          endtry
+          try
+            saved = #0.audit_proxy_trusted_saved;
+            if (saved[1])
+              #6.trusted_proxies = saved[2];
+            else
+              delete_property(#6, "trusted_proxies");
+            endif
+          except (ANY)
+          endtry
+          for prop in ({"audit_proxy_seen", "audit_proxy_login_saved", "audit_proxy_trusted_saved"})
+            try
+              delete_property(#0, prop);
+            except (ANY)
+            endtry
+          endfor
+        as: wizard
+
   - name: audit_oob_prefix_dispatches_do_out_of_band_command
     description: Commands beginning with #$# dispatch to #0:do_out_of_band_command.
     steps:

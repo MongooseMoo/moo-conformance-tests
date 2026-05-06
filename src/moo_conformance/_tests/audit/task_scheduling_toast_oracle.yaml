@@ -304,6 +304,37 @@ tests:
       - run: 'delete_property(#0, "audit_read_noarg_error");'
         as: wizard
 
+  - name: audit_tick_exhaustion_not_catchable
+    description: Tick exhaustion aborts the task before MOO try/except can swallow it.
+    steps:
+      - run: |
+          try
+            add_property($server_options, "fg_ticks", 100, {player, "r"});
+          except (E_INVARG)
+            $server_options.fg_ticks = 100;
+          endtry
+          load_server_options();
+          return 1;
+        as: wizard
+      - run: |
+          try
+            i = 0;
+            while (1)
+              i = i + 1;
+            endwhile
+          except (ANY)
+            return "caught";
+          endtry
+          return "completed";
+        as: wizard
+        expect:
+          match: "Task ran out of ticks"
+    cleanup:
+      - run: |
+          delete_property($server_options, "fg_ticks");
+          load_server_options();
+        as: wizard
+
   - name: audit_yin_yields_when_thresholds_crossed
     description: yin() yields to a ready task when remaining ticks fall below the requested threshold.
     steps:

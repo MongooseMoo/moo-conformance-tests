@@ -71,7 +71,7 @@ Order rule: command parser tests come first because many later tests depend on r
 - [ ] CON-001 listener_handler_do_login_command: `listen(handler, port, options)` dispatches login hooks on that handler.
 - [ ] CON-002 listener_handler_do_command: post-login command hooks dispatch on the connection's handler.
 - [ ] CON-003 listener_handler_do_blank_command: trusted-proxy blank-line hook dispatches on the listener handler.
-- [ ] CON-004 do_login_command_argstr_original: `do_login_command` sees original command and Toast word parsing.
+- [x] CON-004 do_login_command_argstr_original: `do_login_command` sees original command and Toast word parsing.
 - [ ] CON-005 proxy_command_clears_login_input: trusted proxy `PROXY` command is parsed and cleared like Toast.
 - [ ] CON-006 user_created_hook_on_new_login_object: `user_created` runs when login creates a new player.
 - [ ] CON-007 user_client_disconnected_hook: client-initiated disconnect invokes Toast's client-disconnect hook.

@@ -9,6 +9,17 @@ requires:
     - queue_info
     - set_property_info
     - memory_usage
+    - load_server_options
+    - add_property
+    - delete_property
+    - add_verb
+    - delete_verb
+    - verb_info
+    - set_verb_info
+    - verb_args
+    - set_verb_args
+    - verb_code
+    - set_verb_code
     - create
     - recycle
 
@@ -94,3 +105,72 @@ tests:
     code: "memory_usage()"
     expect:
       error: E_FILE
+
+  - name: audit_protected_builtin_dispatches_bf_verb
+    description: $server_options.protect_length routes non-wizard length() calls through #0:bf_length.
+    steps:
+      - run: |
+          try
+            add_property(#0, "audit_protect_saved", {}, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          old_exists = 1;
+          try
+            old_info = verb_info(#0, "bf_length");
+            old_args = verb_args(#0, "bf_length");
+            old_code = verb_code(#0, "bf_length");
+          except (E_VERBNF)
+            old_exists = 0;
+            old_info = {};
+            old_args = {};
+            old_code = {};
+          endtry
+          #0.audit_protect_saved = {old_exists, old_info, old_args, old_code};
+          try
+            add_verb(#0, {#0, "rxd", "bf_length"}, {"this", "none", "this"});
+          except (E_INVARG)
+          endtry
+          set_verb_info(#0, "bf_length", {#0, "rxd", "bf_length"});
+          set_verb_args(#0, "bf_length", {"this", "none", "this"});
+          set_verb_code(#0, "bf_length", {"return {\"protected\", args};"});
+          try
+            add_property($server_options, "protect_length", 1, {player, "r"});
+          except (E_INVARG)
+            $server_options.protect_length = 1;
+          endtry
+          load_server_options();
+          return 1;
+        as: wizard
+      - run: "return length({1, 2, 3});"
+        as: programmer
+        expect:
+          value:
+            - protected
+            -
+              -
+                - 1
+                - 2
+                - 3
+    cleanup:
+      - run: |
+          try
+            saved = #0.audit_protect_saved;
+            if (saved[1])
+              set_verb_info(#0, "bf_length", saved[2]);
+              set_verb_args(#0, "bf_length", saved[3]);
+              set_verb_code(#0, "bf_length", saved[4]);
+            else
+              delete_verb(#0, "bf_length");
+            endif
+          except (ANY)
+          endtry
+          try
+            delete_property(#0, "audit_protect_saved");
+          except (ANY)
+          endtry
+          try
+            delete_property($server_options, "protect_length");
+          except (ANY)
+          endtry
+          load_server_options();
+        as: wizard

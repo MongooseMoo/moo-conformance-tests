@@ -25,21 +25,18 @@ tests:
   # bytecode-level type checking for builtin function arguments.
   - name: first_arg_must_be_object
     permission: wizard
-    skip: "cow_py lacks VM type checking - tracked in moo_interp"
     code: "switch_player(1, #3)"
     expect:
       error: E_TYPE
 
   - name: second_arg_must_be_object
     permission: wizard
-    skip: "cow_py lacks VM type checking - tracked in moo_interp"
     code: "switch_player(#2, 1)"
     expect:
       error: E_TYPE
 
   - name: third_arg_must_be_int_if_provided
     permission: wizard
-    skip: "cow_py lacks VM type checking - tracked in moo_interp"
     code: "switch_player(#2, #3, \"foo\")"
     expect:
       error: E_TYPE

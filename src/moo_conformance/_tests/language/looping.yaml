@@ -182,7 +182,6 @@ tests:
       match: "(syntax error|Parse error)"
 
   - name: for_loop_continue_invalid_name_single_var
-    skip: "Barn parser doesn't validate loop names in continue/break - needs fix"
     statement: |
       x = {};
       for i in ({"1", "2", "3", "4", "5"})
@@ -193,7 +192,6 @@ tests:
       match: "Invalid loop name"
 
   - name: for_loop_continue_invalid_name_two_vars
-    skip: "Barn parser doesn't validate loop names in continue/break - needs fix"
     statement: |
       x = {};
       for i, j in ({"1", "2", "3", "4", "5"})

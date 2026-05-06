@@ -15,6 +15,15 @@ requires:
     - set_verb_code
     - connection_name
     - connection_info
+    - create
+    - recycle
+    - valid
+    - set_player_flag
+    - boot_player
+    - connected_players
+    - force_input
+    - set_connection_option
+    - suspend
 
 tests:
   - name: audit_oob_prefix_dispatches_do_out_of_band_command
@@ -148,4 +157,163 @@ tests:
             delete_property(#0, "audit_login_seen");
           except (ANY)
           endtry
+        as: wizard
+
+  - name: audit_connection_hold_and_oob_options
+    description: Toast input queue options hold-input and disable-oob interact with in-band and OOB input.
+    steps:
+      - run: |
+          for prop in ({"audit_queue_seen", "audit_queue_oob", "audit_queue_login_saved", "audit_queue_oob_saved", "audit_queue_player"})
+            try
+              add_property(#0, prop, {}, {#0, "rw"});
+            except (E_INVARG)
+            endtry
+          endfor
+          login_player = create($nothing);
+          set_player_flag(login_player, 1);
+          #0.audit_queue_player = login_player;
+          add_verb(login_player, {#0, "rxd", "auditq"}, {"none", "none", "none"});
+          set_verb_code(login_player, "auditq", {
+            "#0.audit_queue_seen = listappend(#0.audit_queue_seen, argstr);",
+            "return 1;"
+          });
+          old_login_exists = 1;
+          try
+            old_login_info = verb_info(#0, "do_login_command");
+            old_login_args = verb_args(#0, "do_login_command");
+            old_login_code = verb_code(#0, "do_login_command");
+          except (E_VERBNF)
+            old_login_exists = 0;
+            old_login_info = {};
+            old_login_args = {};
+            old_login_code = {};
+          endtry
+          #0.audit_queue_login_saved = {old_login_exists, old_login_info, old_login_args, old_login_code};
+          try
+            add_verb(#0, {#0, "rxd", "do_login_command"}, {"this", "none", "this"});
+          except (E_INVARG)
+          endtry
+          set_verb_info(#0, "do_login_command", {#0, "rxd", "do_login_command"});
+          set_verb_args(#0, "do_login_command", {"this", "none", "this"});
+          set_verb_code(#0, "do_login_command", {"return #0.audit_queue_player;"});
+          old_oob_exists = 1;
+          try
+            old_oob_info = verb_info(#0, "do_out_of_band_command");
+            old_oob_args = verb_args(#0, "do_out_of_band_command");
+            old_oob_code = verb_code(#0, "do_out_of_band_command");
+          except (E_VERBNF)
+            old_oob_exists = 0;
+            old_oob_info = {};
+            old_oob_args = {};
+            old_oob_code = {};
+          endtry
+          #0.audit_queue_oob_saved = {old_oob_exists, old_oob_info, old_oob_args, old_oob_code};
+          try
+            add_verb(#0, {#0, "rxd", "do_out_of_band_command"}, {"this", "none", "this"});
+          except (E_INVARG)
+          endtry
+          set_verb_info(#0, "do_out_of_band_command", {#0, "rxd", "do_out_of_band_command"});
+          set_verb_args(#0, "do_out_of_band_command", {"this", "none", "this"});
+          set_verb_code(#0, "do_out_of_band_command", {
+            "#0.audit_queue_oob = listappend(#0.audit_queue_oob, argstr);",
+            "return 1;"
+          });
+          return 1;
+        as: wizard
+      - new_connection:
+          capture: conn1
+      - run: |
+          neg = #-1;
+          for conn in (connected_players(1))
+            if (!valid(conn))
+              neg = conn;
+            endif
+          endfor
+          force_input(neg, "audit-queue-login");
+          suspend(0);
+          return (#0.audit_queue_player in connected_players(1)) > 0;
+        as: wizard
+        expect:
+          value: 1
+      - run: |
+          p = #0.audit_queue_player;
+          #0.audit_queue_seen = {};
+          set_connection_option(p, "hold-input", 1);
+          force_input(p, "auditq");
+          suspend(0);
+          held_blocked = (#0.audit_queue_seen == {});
+          set_connection_option(p, "hold-input", 0);
+          suspend(0);
+          held_released = (#0.audit_queue_seen == {""});
+
+          #0.audit_queue_oob = {};
+          set_connection_option(p, "hold-input", 1);
+          force_input(p, "#$#audit-oob-free");
+          suspend(0);
+          oob_bypassed_hold = (#0.audit_queue_oob == {"#$#audit-oob-free"});
+
+          #0.audit_queue_oob = {};
+          set_connection_option(p, "disable-oob", 1);
+          force_input(p, "#$#audit-oob-held");
+          suspend(0);
+          disabled_oob_blocked = (#0.audit_queue_oob == {});
+          set_connection_option(p, "hold-input", 0);
+          suspend(0);
+          disabled_oob_released_as_oob = (#0.audit_queue_oob != {});
+          set_connection_option(p, "disable-oob", 0);
+          return {held_blocked, held_released, oob_bypassed_hold, disabled_oob_blocked, disabled_oob_released_as_oob};
+        as: wizard
+        expect:
+          value:
+            - 1
+            - 1
+            - 1
+            - 1
+            - 0
+      - close_connection: conn1
+    cleanup:
+      - run: |
+          try
+            p = #0.audit_queue_player;
+            set_connection_option(p, "hold-input", 0);
+            set_connection_option(p, "disable-oob", 0);
+            set_connection_option(p, "flush-command", "");
+          except (ANY)
+          endtry
+          try
+            saved = #0.audit_queue_login_saved;
+            if (saved[1])
+              set_verb_info(#0, "do_login_command", saved[2]);
+              set_verb_args(#0, "do_login_command", saved[3]);
+              set_verb_code(#0, "do_login_command", saved[4]);
+            else
+              delete_verb(#0, "do_login_command");
+            endif
+          except (ANY)
+          endtry
+          try
+            saved = #0.audit_queue_oob_saved;
+            if (saved[1])
+              set_verb_info(#0, "do_out_of_band_command", saved[2]);
+              set_verb_args(#0, "do_out_of_band_command", saved[3]);
+              set_verb_code(#0, "do_out_of_band_command", saved[4]);
+            else
+              delete_verb(#0, "do_out_of_band_command");
+            endif
+          except (ANY)
+          endtry
+          try
+            boot_player(#0.audit_queue_player);
+          except (ANY)
+          endtry
+          try
+            recycle(#0.audit_queue_player);
+          except (ANY)
+          endtry
+          for prop in ({"audit_queue_seen", "audit_queue_oob", "audit_queue_login_saved", "audit_queue_oob_saved", "audit_queue_player"})
+            try
+              delete_property(#0, prop);
+            except (ANY)
+            endtry
+          endfor
         as: wizard

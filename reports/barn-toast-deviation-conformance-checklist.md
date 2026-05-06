@@ -69,7 +69,7 @@ Order rule: command parser tests come first because many later tests depend on r
 ## Login, Connection, Listener, And Network Lifecycle
 
 - [x] CON-001 listener_handler_do_login_command: `listen(handler, port, options)` dispatches login hooks on that handler.
-- [ ] CON-002 listener_handler_do_command: post-login command hooks dispatch on the connection's handler.
+- [x] CON-002 listener_handler_do_command: post-login command hooks dispatch on the connection's handler.
 - [ ] CON-003 listener_handler_do_blank_command: trusted-proxy blank-line hook dispatches on the listener handler.
 - [x] CON-004 do_login_command_argstr_original: `do_login_command` sees original command and Toast word parsing.
 - [ ] CON-005 proxy_command_clears_login_input: trusted proxy `PROXY` command is parsed and cleared like Toast.

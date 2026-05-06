@@ -6,19 +6,19 @@ Order rule: command parser tests come first because many later tests depend on r
 
 ## Command Parser And Object Matching
 
-- [ ] CMD-001 tokenizer_backslash_escapes: command word parsing consumes backslash escapes like Toast.
-- [ ] CMD-002 tokenizer_midword_quotes: quotes toggle inside a word, not only at word start.
-- [ ] CMD-003 shortcut_say_reparsed: leading quote rewrites to `say` and still receives Toast-style parsed command variables.
-- [ ] CMD-004 shortcut_emote_reparsed: leading colon rewrites to `emote` and still receives Toast-style parsed command variables.
+- [x] CMD-001 tokenizer_backslash_escapes: command word parsing consumes backslash escapes like Toast.
+- [x] CMD-002 tokenizer_midword_quotes: quotes toggle inside a word, not only at word start.
+- [x] CMD-003 shortcut_say_reparsed: leading quote rewrites to `say` and still receives Toast-style parsed command variables.
+- [x] CMD-004 shortcut_emote_reparsed: leading colon rewrites to `emote` and still receives Toast-style parsed command variables.
 - [ ] CMD-005 shortcut_eval_reparsed: leading semicolon rewrites to `eval` and still goes through normal command setup.
-- [ ] CMD-006 argstr_preserves_original_spacing: `argstr` preserves the original post-verb substring spacing.
-- [ ] CMD-007 prep_scan_leftmost_position: Toast chooses the earliest preposition position, not the globally highest-priority prep phrase.
-- [ ] CMD-008 negative_object_literal_failed_match: `#-1`, `#-2`, and `#-3` in command object slots resolve to FAILED_MATCH when parsed as object literals.
-- [ ] CMD-009 name_alias_exact_ambiguity: an object name and another object alias with the same exact text are ambiguous.
-- [ ] CMD-010 name_alias_partial_ambiguity: partial matches across names and aliases are pooled for ambiguity.
-- [ ] CMD-011 player_name_in_room_contents_matches: the current player can be matched by name through room contents.
-- [ ] CMD-012 do_command_runs_for_semicolon_eval: `do_command` runs before a semicolon eval command.
-- [ ] CMD-013 huh_runs_after_argspec_mismatch: a matching verb name with mismatching argspec falls through to `huh`.
+- [x] CMD-006 argstr_preserves_original_spacing: `argstr` preserves the original post-verb substring spacing.
+- [x] CMD-007 prep_scan_leftmost_position: Toast chooses the earliest preposition position, not the globally highest-priority prep phrase.
+- [x] CMD-008 negative_object_literal_failed_match: `#-1`, `#-2`, and `#-3` in command object slots resolve to FAILED_MATCH when parsed as object literals.
+- [x] CMD-009 name_alias_exact_ambiguity: an object name and another object alias with the same exact text are ambiguous.
+- [x] CMD-010 name_alias_partial_ambiguity: partial matches across names and aliases are pooled for ambiguity.
+- [x] CMD-011 player_name_in_room_contents_matches: the current player can be matched by name through room contents.
+- [x] CMD-012 do_command_runs_for_semicolon_eval: `do_command` runs before a semicolon eval command.
+- [x] CMD-013 huh_runs_after_argspec_mismatch: a matching verb name with mismatching argspec falls through to `huh`.
 - [ ] CMD-014 quoted_backslash_wordlist_for_do_command: `do_command` receives Toast's escaped/quoted word list.
 - [ ] CMD-015 dot_program_intrinsic: `.program object:verb` command mode works for programmers.
 

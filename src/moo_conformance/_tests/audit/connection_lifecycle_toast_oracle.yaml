@@ -7,6 +7,11 @@ requires:
     - delete_property
     - add_verb
     - delete_verb
+    - verb_info
+    - set_verb_info
+    - verb_args
+    - set_verb_args
+    - verb_code
     - set_verb_code
     - connection_name
     - connection_info
@@ -70,3 +75,77 @@ tests:
       return typeof(info["source_address"]) == STR && typeof(info["source_port"]) == INT && typeof(info["destination_port"]) == INT;
     expect:
       value: 1
+
+  - name: audit_do_login_command_argstr_original
+    description: do_login_command receives Toast's login word list and original login command string.
+    steps:
+      - run: |
+          try
+            add_property(#0, "audit_login_seen", {}, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          try
+            add_property(#0, "audit_login_saved", {}, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          old_exists = 1;
+          try
+            old_info = verb_info(#0, "do_login_command");
+            old_args = verb_args(#0, "do_login_command");
+            old_code = verb_code(#0, "do_login_command");
+          except (E_VERBNF)
+            old_exists = 0;
+            old_info = {};
+            old_args = {};
+            old_code = {};
+          endtry
+          #0.audit_login_saved = {old_exists, old_info, old_args, old_code};
+          try
+            add_verb(#0, {#0, "rxd", "do_login_command"}, {"this", "none", "this"});
+          except (E_INVARG)
+          endtry
+          set_verb_info(#0, "do_login_command", {#0, "rxd", "do_login_command"});
+          set_verb_args(#0, "do_login_command", {"this", "none", "this"});
+          set_verb_code(#0, "do_login_command", {
+            "#0.audit_login_seen = {args, argstr};",
+            "return 1;"
+          });
+          return 1;
+        as: wizard
+      - new_connection:
+          capture: conn1
+      - send:
+          connection: conn1
+          text: 'auditlogin foo\ bar  baz'
+      - run: "return #0.audit_login_seen;"
+        as: wizard
+        expect:
+          value:
+            -
+              - auditlogin
+              - "foo bar"
+              - baz
+            - 'auditlogin foo\ bar  baz'
+      - close_connection: conn1
+    cleanup:
+      - run: |
+          try
+            saved = #0.audit_login_saved;
+            if (saved[1])
+              set_verb_info(#0, "do_login_command", saved[2]);
+              set_verb_args(#0, "do_login_command", saved[3]);
+              set_verb_code(#0, "do_login_command", saved[4]);
+            else
+              delete_verb(#0, "do_login_command");
+            endif
+          except (ANY)
+          endtry
+          try
+            delete_property(#0, "audit_login_saved");
+          except (ANY)
+          endtry
+          try
+            delete_property(#0, "audit_login_seen");
+          except (ANY)
+          endtry
+        as: wizard

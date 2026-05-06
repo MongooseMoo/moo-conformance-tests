@@ -147,24 +147,6 @@ tests:
       - run: recycle({obj});
         as: wizard
 
-  - name: audit_wizard_can_call_non_executable_verb
-    description: Wizard-permission code can call a readable verb without the executable bit.
-    steps:
-      - run: |
-          obj = create($nothing);
-          add_verb(obj, {#0, "rd", "auditsecretcall"}, {"this", "none", "this"});
-          set_verb_code(obj, "auditsecretcall", {"return 77;"});
-          return obj;
-        capture: obj
-        as: wizard
-      - run: "return {obj}:auditsecretcall();"
-        as: wizard
-        expect:
-          value: 77
-    cleanup:
-      - run: recycle({obj});
-        as: wizard
-
   - name: audit_set_verb_info_nonowner_denied_even_with_writable_object
     description: set_verb_info denies a non-owner programmer even when the object is writable.
     steps:

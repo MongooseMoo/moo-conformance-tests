@@ -14,6 +14,8 @@ requires:
     - move
     - chparent
     - parent
+    - connection_options
+    - set_connection_option
     - set_task_local
     - task_local
     - suspend
@@ -39,6 +41,49 @@ tests:
           error: E_PERM
     cleanup:
       - run: "recycle({obj});"
+        as: wizard
+
+  - name: audit_intrinsic_command_table_roundtrip
+    description: Toast exposes exactly the intrinsic command table through the intrinsic-commands connection option.
+    steps:
+      - run: |
+          before = connection_options(player, "intrinsic-commands");
+          set_connection_option(player, "intrinsic-commands", {"PREFIX", "SUFFIX"});
+          subset = connection_options(player, "intrinsic-commands");
+          set_connection_option(player, "intrinsic-commands", 1);
+          restored = connection_options(player, "intrinsic-commands");
+          return {before, subset, restored};
+        as: wizard
+        expect:
+          value:
+            -
+              - ".program"
+              - PREFIX
+              - SUFFIX
+              - OUTPUTPREFIX
+              - OUTPUTSUFFIX
+            -
+              - PREFIX
+              - SUFFIX
+            -
+              - ".program"
+              - PREFIX
+              - SUFFIX
+              - OUTPUTPREFIX
+              - OUTPUTSUFFIX
+    cleanup:
+      - run: 'set_connection_option(player, "intrinsic-commands", 1);'
+        as: wizard
+
+  - name: audit_intrinsic_command_table_rejects_unknown
+    description: Toast rejects unknown intrinsic command names in the intrinsic-commands connection option.
+    steps:
+      - run: 'set_connection_option(player, "intrinsic-commands", {"PREFIX", "NOT_A_TOAST_INTRINSIC"});'
+        as: wizard
+        expect:
+          error: E_INVARG
+    cleanup:
+      - run: 'set_connection_option(player, "intrinsic-commands", 1);'
         as: wizard
 
   - name: audit_command_dispatch_ignores_execute_flag

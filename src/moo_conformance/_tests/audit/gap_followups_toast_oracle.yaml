@@ -11,6 +11,9 @@ requires:
     - callers
     - create
     - recycle
+    - move
+    - chparent
+    - parent
     - set_task_local
     - task_local
     - suspend
@@ -106,3 +109,54 @@ tests:
               - ":audit_c"
               - 1
               - 1
+
+  - name: audit_move_wizard_calls_accept_but_overrides_false
+    description: move() calls destination :accept for wizards, but wizards still move when :accept returns false.
+    steps:
+      - run: |
+          try
+            add_property(#0, "audit_move_accept_seen", $nothing, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          thing = create($nothing);
+          dest = create($nothing);
+          add_verb(dest, {player, "xd", "accept"}, {"this", "none", "this"});
+          set_verb_code(dest, "accept", {
+            "#0.audit_move_accept_seen = args[1];",
+            "return 0;"
+          });
+          move(thing, dest);
+          result = {#0.audit_move_accept_seen == thing, thing.location == dest};
+          recycle(thing);
+          recycle(dest);
+          delete_property(#0, "audit_move_accept_seen");
+          return result;
+        as: wizard
+        expect:
+          value:
+            - 1
+            - 1
+
+  - name: audit_chparent_nonwizard_requires_fertile_parent
+    description: chparent() denies non-wizards using a non-fertile parent they do not own.
+    steps:
+      - run: |
+          parent_obj = create($nothing);
+          parent_obj.f = 0;
+          return parent_obj;
+        capture: parent_obj
+        as: wizard
+      - run: |
+          child = create($nothing);
+          return child;
+        capture: child
+        as: programmer
+      - run: "chparent({child}, {parent_obj});"
+        as: programmer
+        expect:
+          error: E_PERM
+    cleanup:
+      - run: |
+          recycle({child});
+          recycle({parent_obj});
+        as: wizard

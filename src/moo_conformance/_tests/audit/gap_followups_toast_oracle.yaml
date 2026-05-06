@@ -1,0 +1,75 @@
+name: audit_gap_followups_toast_oracle
+description: Toast-confirmed audit follow-ups for property flags, command execute flags, and task-local propagation.
+
+requires:
+  builtins:
+    - add_property
+    - delete_property
+    - add_verb
+    - delete_verb
+    - set_verb_code
+    - set_task_local
+    - task_local
+    - suspend
+
+tests:
+  - name: audit_property_flags_deny_nonowner_read_and_write
+    description: Property read/write flags deny non-owner programmers like Toast.
+    steps:
+      - run: |
+          obj = create($nothing);
+          obj.w = 0;
+          add_property(obj, "audit_secret", 10, {#0, ""});
+          return obj;
+        capture: obj
+        as: wizard
+      - run: "return {obj}.audit_secret;"
+        as: programmer
+        expect:
+          error: E_PERM
+      - run: "{obj}.audit_secret = 11;"
+        as: programmer
+        expect:
+          error: E_PERM
+    cleanup:
+      - run: "recycle({obj});"
+        as: wizard
+
+  - name: audit_command_dispatch_ignores_execute_flag
+    description: Toast command dispatch executes matching verbs even when the verb lacks the x flag.
+    steps:
+      - run: |
+          add_verb(player, {player, "d", "auditnoexec"}, {"none", "none", "none"});
+          set_verb_code(player, "auditnoexec", {"notify(player, \"EXECUTED\");"});
+          return 1;
+        as: wizard
+      - command: "auditnoexec"
+        expect:
+          output:
+            - "EXECUTED"
+    cleanup:
+      - run: 'delete_verb(player, "auditnoexec");'
+        as: wizard
+
+  - name: audit_task_local_not_inherited_by_fork
+    description: Forked tasks start with empty Toast task_local state even when the parent task has task-local data.
+    steps:
+      - run: |
+          try
+            add_property(#0, "audit_task_local_value", {}, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          set_task_local({"parent", 7});
+          fork (0)
+            suspend(0);
+            #0.audit_task_local_value = task_local();
+          endfork
+          suspend(0);
+          suspend(0);
+          return #0.audit_task_local_value;
+        as: wizard
+        expect:
+          value: {}
+    cleanup:
+      - run: 'delete_property(#0, "audit_task_local_value");'
+        as: wizard

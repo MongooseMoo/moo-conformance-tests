@@ -23,9 +23,72 @@ requires:
     - connected_players
     - force_input
     - set_connection_option
+    - listen
+    - unlisten
     - suspend
 
 tests:
+  - name: audit_listener_handler_do_login_command
+    description: Toast dispatches login commands to the object passed to listen(), not always #0.
+    steps:
+      - allocate_port:
+          capture: listener_port
+      - run: |
+          for prop in ({"audit_listener_handler", "audit_listener_port", "audit_listener_seen"})
+            try
+              add_property(#0, prop, {}, {#0, "rw"});
+            except (E_INVARG)
+            endtry
+          endfor
+          handler = create($nothing);
+          #0.audit_listener_handler = handler;
+          #0.audit_listener_port = {listener_port};
+          add_verb(handler, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(handler, "do_login_command", {
+            "#0.audit_listener_seen = {this, args, argstr};",
+            "return 0;"
+          });
+          return listen(handler, {listener_port}, ["print-messages" -> 0]);
+        as: wizard
+        expect:
+          type: int
+      - new_connection:
+          capture: conn1
+          port: "{listener_port}"
+      - send:
+          connection: conn1
+          text: "listener-login alpha beta"
+      - wait: 500
+      - run: |
+          return {#0.audit_listener_seen[1] == #0.audit_listener_handler, #0.audit_listener_seen[2], #0.audit_listener_seen[3]};
+        as: wizard
+        expect:
+          value:
+            - 1
+            -
+              - listener-login
+              - alpha
+              - beta
+            - "listener-login alpha beta"
+      - close_connection: conn1
+    cleanup:
+      - run: |
+          try
+            unlisten(#0.audit_listener_port);
+          except (ANY)
+          endtry
+          try
+            recycle(#0.audit_listener_handler);
+          except (ANY)
+          endtry
+          for prop in ({"audit_listener_handler", "audit_listener_port", "audit_listener_seen"})
+            try
+              delete_property(#0, prop);
+            except (ANY)
+            endtry
+          endfor
+        as: wizard
+
   - name: audit_oob_prefix_dispatches_do_out_of_band_command
     description: Commands beginning with #$# dispatch to #0:do_out_of_band_command.
     steps:

@@ -78,9 +78,9 @@ Order rule: command parser tests come first because many later tests depend on r
 - [ ] CON-008 user_reconnected_cross_listener_hooks: reconnect hook behavior matches Toast.
 - [ ] CON-009 connect_timeout_server_option: `$server_options.connect_timeout` controls login timeout.
 - [ ] CON-010 flush_command_flushes_pending_input: connection `flush-command` flushes queued input.
-- [ ] CON-011 hold_input_blocks_inband: `hold-input` queues normal commands until released.
-- [ ] CON-012 hold_input_allows_oob_when_enabled: OOB input bypasses hold-input unless disabled.
-- [ ] CON-013 disable_oob_blocks_oob: `disable-oob` makes OOB wait like in-band input.
+- [x] CON-011 hold_input_blocks_inband: `hold-input` queues normal commands until released.
+- [x] CON-012 hold_input_allows_oob_when_enabled: OOB input bypasses hold-input unless disabled.
+- [x] CON-013 disable_oob_blocks_oob: `disable-oob` makes OOB wait like in-band input.
 - [x] CON-014 oob_prefix_dispatch: `#$#` dispatches `do_out_of_band_command`.
 - [ ] CON-015 listener_print_messages_suppresses_connect_msg: listener `print-messages` controls connect messages.
 - [x] CON-016 connection_name_method0_hostname: `connection_name(player)` method 0 returns Toast hostname format.

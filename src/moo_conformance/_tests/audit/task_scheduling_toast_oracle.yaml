@@ -13,6 +13,8 @@ requires:
     - queued_tasks
     - kill_task
     - read
+    - yin
+    - dump_database
 
 tests:
   - name: audit_default_fg_ticks
@@ -280,4 +282,97 @@ tests:
             - 1
     cleanup:
       - run: "kill_task({task_id});"
+        as: wizard
+
+  - name: audit_read_no_arg_from_fork_denied
+    description: read() with no explicit connection is denied outside the last input task context.
+    steps:
+      - run: |
+          try
+            add_property(#0, "audit_read_noarg_error", $nothing, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          fork (0)
+            #0.audit_read_noarg_error = `read() ! E_PERM => E_PERM';
+          endfork
+          suspend(0);
+          return #0.audit_read_noarg_error;
+        as: wizard
+        expect:
+          value: E_PERM
+    cleanup:
+      - run: 'delete_property(#0, "audit_read_noarg_error");'
+        as: wizard
+
+  - name: audit_yin_yields_when_thresholds_crossed
+    description: yin() yields to a ready task when remaining ticks fall below the requested threshold.
+    steps:
+      - run: |
+          try
+            add_property(#0, "audit_yin_order", {}, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          try
+            add_property($server_options, "fg_ticks", 60000, {player, "r"});
+          except (E_INVARG)
+            $server_options.fg_ticks = 60000;
+          endtry
+          load_server_options();
+          #0.audit_yin_order = {"main-before"};
+          fork (0)
+            #0.audit_yin_order = listappend(#0.audit_yin_order, "fork");
+          endfork
+          yin(0, 59999, 4);
+          #0.audit_yin_order = listappend(#0.audit_yin_order, "main-after");
+          return #0.audit_yin_order;
+        as: wizard
+        expect:
+          value:
+            - main-before
+            - fork
+            - main-after
+    cleanup:
+      - run: |
+          delete_property(#0, "audit_yin_order");
+          delete_property($server_options, "fg_ticks");
+          load_server_options();
+        as: wizard
+
+  - name: audit_resume_after_suspend_uses_background_limits
+    description: A suspended foreground task resumes with Toast background tick and second budgets.
+    steps:
+      - run: |
+          try
+            add_property($server_options, "fg_ticks", 50000, {player, "r"});
+          except (E_INVARG)
+            $server_options.fg_ticks = 50000;
+          endtry
+          try
+            add_property($server_options, "bg_ticks", 9000, {player, "r"});
+          except (E_INVARG)
+            $server_options.bg_ticks = 9000;
+          endtry
+          try
+            add_property($server_options, "bg_seconds", 7, {player, "r"});
+          except (E_INVARG)
+            $server_options.bg_seconds = 7;
+          endtry
+          load_server_options();
+          before_ticks = ticks_left();
+          suspend(0);
+          after_ticks = ticks_left();
+          after_seconds = seconds_left();
+          return {before_ticks <= 50000 && before_ticks > 49000, after_ticks <= 9000 && after_ticks > 8500, after_seconds <= 7 && after_seconds > 4};
+        as: wizard
+        expect:
+          value:
+            - 0
+            - 1
+            - 1
+    cleanup:
+      - run: |
+          delete_property($server_options, "fg_ticks");
+          delete_property($server_options, "bg_ticks");
+          delete_property($server_options, "bg_seconds");
+          load_server_options();
         as: wizard

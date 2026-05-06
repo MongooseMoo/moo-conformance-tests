@@ -125,6 +125,13 @@ class TestConnection:
         self.sock.sendall((text + "\r\n").encode('utf-8'))
         return self._receive_until_quiet()
 
+    def send_bytes(self, data: bytes) -> list[str]:
+        """Send raw bytes and return output lines."""
+        if self.sock is None:
+            raise RuntimeError("TestConnection not connected")
+        self.sock.sendall(data)
+        return self._receive_until_quiet()
+
     def read(self) -> list[str]:
         """Return pending output lines without sending input."""
         return self._receive_until_quiet()

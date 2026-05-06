@@ -200,6 +200,13 @@ class SendOnConnection:
 
 
 @dataclass
+class SendBytesOnConnection:
+    """Send raw bytes, represented as hex, on a specific connection."""
+    hex: str              # Hex-encoded bytes to send
+    connection: str       # Connection variable name
+
+
+@dataclass
 class ReadConnection:
     """Read pending output from a specific connection without sending input."""
     connection: str       # Connection variable name
@@ -259,6 +266,7 @@ class TestStep:
     - allocate_port: Capture an available localhost TCP port
     - new_connection: Open a new socket connection
     - send: Send raw text on a specific connection
+    - send_bytes: Send raw hex bytes on a specific connection
     - read_connection: Read pending output from a specific connection
     - close_connection: Close a connection
     - wait: Pause for N milliseconds (no socket communication)
@@ -273,6 +281,7 @@ class TestStep:
     allocate_port: AllocatePort | None = None   # Capture an available localhost TCP port
     new_connection: NewConnection | None = None # Open new connection
     send: SendOnConnection | None = None        # Send on specific connection
+    send_bytes: SendBytesOnConnection | None = None # Send raw bytes on connection
     read_connection: ReadConnection | None = None # Read pending output on connection
     close_connection: str | None = None         # Close a connection by name
     wait: int | None = None                     # Pause for N milliseconds
@@ -530,6 +539,7 @@ def _parse_test_step(data: dict) -> TestStep:
     has_allocate_port = 'allocate_port' in data
     has_new_connection = 'new_connection' in data
     has_send = 'send' in data
+    has_send_bytes = 'send_bytes' in data
     has_read_connection = 'read_connection' in data
     has_close_connection = 'close_connection' in data
     has_wait = 'wait' in data
@@ -539,13 +549,14 @@ def _parse_test_step(data: dict) -> TestStep:
     has_restart_server = 'restart_server' in data
 
     action_count = sum([has_run, has_command, has_verb_setup, has_allocate_port,
-                        has_new_connection, has_send, has_read_connection, has_close_connection,
+                        has_new_connection, has_send, has_send_bytes,
+                        has_read_connection, has_close_connection,
                         has_wait, has_assert_log, has_assert_file,
                         has_write_file, has_restart_server])
 
     if action_count == 0:
         raise ValueError("Test step must have an action field (run, command, verb_setup, "
-                        "allocate_port, new_connection, send, read_connection, close_connection, wait, assert_log, "
+                        "allocate_port, new_connection, send, send_bytes, read_connection, close_connection, wait, assert_log, "
                         "assert_file, write_file, or restart_server)")
     if action_count > 1:
         raise ValueError("Test step must have exactly one action field")
@@ -594,6 +605,15 @@ def _parse_test_step(data: dict) -> TestStep:
         send = SendOnConnection(
             text=s_data['text'],
             connection=s_data['connection'],
+        )
+
+    # Parse send_bytes if present
+    send_bytes = None
+    if 'send_bytes' in data:
+        sb_data = data['send_bytes']
+        send_bytes = SendBytesOnConnection(
+            hex=sb_data['hex'],
+            connection=sb_data['connection'],
         )
 
     # Parse read_connection if present
@@ -648,6 +668,7 @@ def _parse_test_step(data: dict) -> TestStep:
         allocate_port=allocate_port,
         new_connection=new_connection,
         send=send,
+        send_bytes=send_bytes,
         read_connection=read_connection,
         close_connection=data.get('close_connection'),
         wait=data.get('wait'),

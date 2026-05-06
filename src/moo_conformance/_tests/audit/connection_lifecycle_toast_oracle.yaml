@@ -746,6 +746,74 @@ tests:
           endfor
         as: wizard
 
+  - name: audit_listener_print_messages_suppresses_connect_msg
+    description: Toast listener print-messages false suppresses the connect message after login.
+    steps:
+      - allocate_port:
+          capture: listener_port
+      - run: |
+          for prop in ({"audit_print_handler", "audit_print_port", "audit_print_player", "audit_print_login_seen"})
+            try
+              add_property(#0, prop, {}, {#0, "rw"});
+            except (E_INVARG)
+            endtry
+          endfor
+          handler = create($nothing);
+          login_player = create($nothing);
+          set_player_flag(login_player, 1);
+          #0.audit_print_handler = handler;
+          #0.audit_print_player = login_player;
+          #0.audit_print_port = {listener_port};
+          add_verb(handler, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(handler, "do_login_command", {
+            "#0.audit_print_login_seen = 1;",
+            "return #0.audit_print_player;"
+          });
+          return listen(handler, {listener_port}, ["print-messages" -> 0]);
+        as: wizard
+        expect:
+          type: int
+      - new_connection:
+          capture: conn1
+          port: "{listener_port}"
+      - send:
+          connection: conn1
+          text: "login-print-suppressed"
+        expect:
+          output:
+            exact:
+              - "I couldn't understand that."
+      - run: "return #0.audit_print_login_seen;"
+        as: wizard
+        expect:
+          value: 1
+      - close_connection: conn1
+    cleanup:
+      - run: |
+          try
+            unlisten(#0.audit_print_port);
+          except (ANY)
+          endtry
+          try
+            boot_player(#0.audit_print_player);
+          except (ANY)
+          endtry
+          try
+            recycle(#0.audit_print_player);
+          except (ANY)
+          endtry
+          try
+            recycle(#0.audit_print_handler);
+          except (ANY)
+          endtry
+          for prop in ({"audit_print_handler", "audit_print_port", "audit_print_player", "audit_print_login_seen"})
+            try
+              delete_property(#0, prop);
+            except (ANY)
+            endtry
+          endfor
+        as: wizard
+
   - name: audit_oob_prefix_dispatches_do_out_of_band_command
     description: Commands beginning with #$# dispatch to #0:do_out_of_band_command.
     steps:

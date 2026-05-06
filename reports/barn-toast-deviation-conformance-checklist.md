@@ -90,16 +90,16 @@ Order rule: command parser tests come first because many later tests depend on r
 
 ## Time And Server Builtins
 
-- [ ] TIM-001 ctime_includes_timezone: `ctime()` and `ctime(int)` include Toast timezone text.
-- [ ] TIM-002 ctime_extreme_clamps_or_errors: extreme integer timestamps match Toast clamp/error behavior.
-- [ ] TIM-003 ftime_arg_clock_selector: `ftime(1)` and `ftime(2)` are clock selectors, not timestamp conversion.
-- [ ] TIM-004 shutdown_accepts_two_args: `shutdown` accepts Toast's optional second argument.
-- [ ] TIM-005 queue_info_no_arg_no_wizard_required: `queue_info()` no-arg permission matches Toast.
-- [ ] TIM-006 queue_info_wizard_map_shape: `queue_info(player)` map keys match Toast.
-- [ ] TIM-007 set_property_info_requires_perm: `set_property_info` requires Toast permissions.
+- [x] TIM-001 ctime_includes_timezone: `ctime()` includes Toast's full timezone text.
+- [x] TIM-002 ctime_extreme_clamps_or_errors: extreme integer timestamps match Toast clamp/error behavior.
+- [x] TIM-003 ftime_arg_clock_selector: `ftime(1)` and `ftime(2)` are clock selectors, not timestamp conversion.
+- [x] TIM-004 shutdown_accepts_two_args: `shutdown` accepts Toast's optional second argument.
+- [x] TIM-005 queue_info_no_arg_no_wizard_required: `queue_info()` no-arg permission matches Toast.
+- [x] TIM-006 queue_info_wizard_map_shape: `queue_info(player)` map keys match Toast.
+- [x] TIM-007 set_property_info_requires_perm: `set_property_info` requires Toast permissions.
 - [ ] TIM-008 set_player_flag_false_boots_player: clearing player flag boots active players.
 - [ ] TIM-009 builtin_protect_properties: `.protect_<funcname>` server options protect builtins like Toast.
-- [ ] TIM-010 memory_usage_behavior: `memory_usage()` behavior matches Toast's actual configured result.
+- [x] TIM-010 memory_usage_behavior: `memory_usage()` behavior matches Toast's actual configured result.
 
 ## Harder Audit Follow-Ups
 

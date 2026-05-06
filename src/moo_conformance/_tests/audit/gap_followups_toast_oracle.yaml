@@ -8,6 +8,9 @@ requires:
     - add_verb
     - delete_verb
     - set_verb_code
+    - callers
+    - create
+    - recycle
     - set_task_local
     - task_local
     - suspend
@@ -73,3 +76,33 @@ tests:
     cleanup:
       - run: 'delete_property(#0, "audit_task_local_value");'
         as: wizard
+
+  - name: audit_waif_callers_preserve_this_and_verb_location
+    description: callers() reports WAIF this values and the WAIF class as verb location.
+    steps:
+      - run: |
+          obj = create($waif);
+          add_verb(obj, {player, "xd", ":audit_a"}, {"this", "none", "this"});
+          set_verb_code(obj, ":audit_a", {"return callers();"});
+          add_verb(obj, {player, "xd", ":audit_b"}, {"this", "none", "this"});
+          set_verb_code(obj, ":audit_b", {"return this:audit_a();"});
+          add_verb(obj, {player, "xd", ":audit_c"}, {"this", "none", "this"});
+          set_verb_code(obj, ":audit_c", {
+            "c = this:audit_b();",
+            "return {{c[1][2], typeof(c[1][1]) == WAIF, c[1][4] == this.class}, {c[2][2], typeof(c[2][1]) == WAIF, c[2][4] == this.class}};"
+          });
+          waif = obj:new();
+          result = waif:audit_c();
+          recycle(obj);
+          return result;
+        as: wizard
+        expect:
+          value:
+            -
+              - ":audit_b"
+              - 1
+              - 1
+            -
+              - ":audit_c"
+              - 1
+              - 1

@@ -431,6 +431,42 @@ tests:
           load_server_options();
         as: wizard
 
+  - name: audit_suspended_task_survives_restart
+    description: A delayed forked task survives dump_database() and a managed server restart.
+    steps:
+      - run: |
+          try
+            add_property(#0, "audit_restart_task_seen", "before", {#0, "rw"});
+          except (E_INVARG)
+            #0.audit_restart_task_seen = "before";
+          endtry
+          fork (4)
+            #0.audit_restart_task_seen = "after";
+          endfork
+          return #0.audit_restart_task_seen;
+        as: wizard
+        expect:
+          value: before
+      - run: "return dump_database();"
+        as: wizard
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+          wait_ms: 500
+      - wait: 4500
+      - run: "return #0.audit_restart_task_seen;"
+        as: wizard
+        expect:
+          value: after
+    cleanup:
+      - run: |
+          try
+            delete_property(#0, "audit_restart_task_seen");
+          except (ANY)
+          endtry
+        as: wizard
+
   - name: audit_yin_yields_when_thresholds_crossed
     description: yin() yields to a ready task when remaining ticks fall below the requested threshold.
     steps:

@@ -59,10 +59,10 @@ Order rule: command parser tests come first because many later tests depend on r
 - [ ] TSK-010 handle_task_timeout_invoked: Toast invokes `$server:handle_task_timeout` on timeout.
 - [ ] TSK-011 suspended_task_survives_restart: suspended tasks persist across checkpoint/restart.
 - [x] TSK-012 read_requires_connection_owner_or_wizard: `read()` denies unrelated programmers.
-- [ ] TSK-013 read_requires_last_input_task: `read()` is only allowed from the last input task context.
-- [ ] TSK-014 yin_yields_when_needed: `yin()`/`yield_if_needed` has Toast scheduling behavior.
-- [ ] TSK-015 seconds_deadline_resets_on_resume: resumed suspended tasks get Toast-style execution limit reset.
-- [ ] TSK-016 fg_to_bg_after_suspend_limits: a suspended foreground task resumes with Toast background limits if Toast does that.
+- [x] TSK-013 read_requires_last_input_task: `read()` is only allowed from the last input task context.
+- [x] TSK-014 yin_yields_when_needed: `yin()`/`yield_if_needed` has Toast scheduling behavior.
+- [x] TSK-015 seconds_deadline_resets_on_resume: resumed suspended tasks get Toast-style execution limit reset.
+- [x] TSK-016 fg_to_bg_after_suspend_limits: a suspended foreground task resumes with Toast background limits if Toast does that.
 - [x] TSK-017 queued_task_reported_budget: `queued_tasks()` reports task budgets and start times like Toast.
 - [ ] TSK-018 force_input_read_login_interaction: `force_input` interaction with login/read matches Toast.
 

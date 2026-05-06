@@ -24,26 +24,26 @@ Order rule: command parser tests come first because many later tests depend on r
 
 ## Verb Lookup, Frames, And Permissions
 
-- [ ] VRB-001 alias_collision_definition_order: callable verb alias collisions resolve in Toast definition order.
-- [ ] VRB-002 trailing_star_wildcard_matches_any_suffix: a verb alias ending in `*` matches longer command/call names.
-- [ ] VRB-003 max_stack_depth_raises_toast_limit: recursive verb calls hit Toast's max activation limit.
-- [ ] VRB-004 verb_info_no_inheritance: `verb_info(obj, name)` does not find inherited verbs.
-- [ ] VRB-005 verb_args_no_inheritance: `verb_args(obj, name)` does not find inherited verbs.
-- [ ] VRB-006 verb_code_no_inheritance: `verb_code(obj, name)` does not find inherited verbs.
-- [ ] VRB-007 verb_info_requires_read: non-readable verbs deny `verb_info`.
-- [ ] VRB-008 verb_args_requires_read: non-readable verbs deny `verb_args`.
-- [ ] VRB-009 verb_code_requires_read: non-readable verbs deny `verb_code`.
-- [ ] VRB-010 set_verb_info_requires_write_and_owner: `set_verb_info` requires Toast write/ownership permissions.
-- [ ] VRB-011 set_verb_args_requires_write: `set_verb_args` requires Toast write permissions.
-- [ ] VRB-012 set_verb_code_requires_write: `set_verb_code` requires Toast write permissions.
-- [ ] VRB-013 pass_preserves_command_vars: `pass()` copies `argstr`, `dobj`, `dobjstr`, `prepstr`, `iobj`, and `iobjstr`.
+- [x] VRB-001 alias_collision_definition_order: callable verb alias collisions resolve in Toast definition order.
+- [x] VRB-002 trailing_star_wildcard_matches_any_suffix: a verb alias ending in `*` matches longer command/call names.
+- [x] VRB-003 max_stack_depth_raises_toast_limit: recursive verb calls hit Toast's max activation limit.
+- [x] VRB-004 verb_info_no_inheritance: `verb_info(obj, name)` does not find inherited verbs.
+- [x] VRB-005 verb_args_no_inheritance: `verb_args(obj, name)` does not find inherited verbs.
+- [x] VRB-006 verb_code_no_inheritance: `verb_code(obj, name)` does not find inherited verbs.
+- [x] VRB-007 verb_info_requires_read: non-readable verbs deny `verb_info`.
+- [x] VRB-008 verb_args_requires_read: non-readable verbs deny `verb_args`.
+- [x] VRB-009 verb_code_requires_read: non-readable verbs deny `verb_code`.
+- [x] VRB-010 set_verb_info_requires_write_and_owner: `set_verb_info` requires Toast write/ownership permissions.
+- [x] VRB-011 set_verb_args_requires_write: `set_verb_args` requires Toast write permissions.
+- [x] VRB-012 set_verb_code_requires_write: `set_verb_code` requires Toast write permissions.
+- [x] VRB-013 pass_preserves_command_vars: `pass()` copies `argstr`, `dobj`, `dobjstr`, `prepstr`, `iobj`, and `iobjstr`.
 - [ ] VRB-014 callers_includes_toast_server_frames: `callers()` frame visibility matches Toast for server-initiated calls.
 - [ ] VRB-015 callers_builtin_frame_shape: builtin pseudo-frame visibility matches Toast where observable.
 - [ ] VRB-016 set_task_perms_checks_current_programmer: `set_task_perms` compares target against current programmer, not player.
-- [ ] VRB-017 caller_perms_top_level_is_nothing: top-level `caller_perms()` returns `#-1`.
-- [ ] VRB-018 diamond_inheritance_resolution: multi-parent verb lookup matches Toast order.
-- [ ] VRB-019 pass_parent_search_order: `pass()` parent search order matches Toast.
-- [ ] VRB-020 command_context_nested_call: nested verb calls from command verbs inherit command variables.
+- [x] VRB-017 caller_perms_top_level_is_nothing: top-level `caller_perms()` returns `#-1`.
+- [x] VRB-018 diamond_inheritance_resolution: multi-parent verb lookup matches Toast order.
+- [x] VRB-019 pass_parent_search_order: `pass()` parent search order matches Toast.
+- [x] VRB-020 command_context_nested_call: nested verb calls from command verbs inherit command variables.
 
 ## Task Scheduling, Limits, Read, And Persistence
 

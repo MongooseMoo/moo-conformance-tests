@@ -81,10 +81,10 @@ Order rule: command parser tests come first because many later tests depend on r
 - [ ] CON-011 hold_input_blocks_inband: `hold-input` queues normal commands until released.
 - [ ] CON-012 hold_input_allows_oob_when_enabled: OOB input bypasses hold-input unless disabled.
 - [ ] CON-013 disable_oob_blocks_oob: `disable-oob` makes OOB wait like in-band input.
-- [ ] CON-014 oob_prefix_dispatch: `#$#` dispatches `do_out_of_band_command`.
+- [x] CON-014 oob_prefix_dispatch: `#$#` dispatches `do_out_of_band_command`.
 - [ ] CON-015 listener_print_messages_suppresses_connect_msg: listener `print-messages` controls connect messages.
-- [ ] CON-016 connection_name_method0_hostname: `connection_name(player)` method 0 returns Toast hostname format.
-- [ ] CON-017 connection_info_source_fields: `connection_info()` source fields use actual network handle data.
+- [x] CON-016 connection_name_method0_hostname: `connection_name(player)` method 0 returns Toast hostname format.
+- [x] CON-017 connection_info_source_fields: `connection_info()` source fields use actual network handle data.
 - [ ] CON-018 boot_player_messages: boot/disconnect messages match Toast server options.
 - [ ] CON-019 recycle_redirect_timeout_messages: lifecycle message options match Toast.
 

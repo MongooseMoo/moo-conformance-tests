@@ -97,7 +97,7 @@ Order rule: command parser tests come first because many later tests depend on r
 - [x] TIM-005 queue_info_no_arg_no_wizard_required: `queue_info()` no-arg permission matches Toast.
 - [x] TIM-006 queue_info_wizard_map_shape: `queue_info(player)` map keys match Toast.
 - [x] TIM-007 set_property_info_requires_perm: `set_property_info` requires Toast permissions.
-- [ ] TIM-008 set_player_flag_false_boots_player: clearing player flag boots active players.
+- [x] TIM-008 set_player_flag_false_boots_player: clearing player flag boots active players.
 - [x] TIM-009 builtin_protect_properties: `.protect_<funcname>` server options protect builtins like Toast.
 - [x] TIM-010 memory_usage_behavior: `memory_usage()` behavior matches Toast's actual configured result.
 

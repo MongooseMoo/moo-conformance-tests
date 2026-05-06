@@ -308,6 +308,23 @@ class YamlTestRunner:
                         self._verify_output(step.expect.output, output_lines, f"send on '{conn_name}'")
                     continue
 
+                # Handle read_connection step
+                if step.read_connection:
+                    self._ensure_transport_connected()
+                    conn_name = step.read_connection.connection
+                    if conn_name not in connections:
+                        raise AssertionError(
+                            f"Unknown connection '{conn_name}'. Available: {list(connections.keys())}"
+                        )
+                    output_lines = connections[conn_name].read()
+
+                    if step.capture:
+                        variables[step.capture] = output_lines
+
+                    if step.expect and step.expect.output:
+                        self._verify_output(step.expect.output, output_lines, f"read on '{conn_name}'")
+                    continue
+
                 # Handle close_connection step
                 if step.close_connection:
                     conn_name = step.close_connection

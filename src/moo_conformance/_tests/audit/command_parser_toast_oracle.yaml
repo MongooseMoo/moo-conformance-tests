@@ -295,3 +295,92 @@ tests:
     cleanup:
       - run: 'delete_verb(player, "emote");'
         as: wizard
+
+  - name: audit_eval_shortcut_reparses_preposition
+    description: Leading semicolon rewrites to eval and then receives normal command parsing before dispatch.
+    steps:
+      - run: |
+          box = create($nothing);
+          box.name = "auditevalbox";
+          move(box, player);
+          add_verb(player, {player, "xd", "eval"}, {"any", "in", "any"});
+          set_verb_code(player, "eval", {
+            "notify(player, \"DOBJSTR:\" + dobjstr);",
+            "notify(player, \"PREPSTR:\" + prepstr);",
+            "notify(player, \"IOBJSTR:\" + iobjstr);"
+          });
+          return box;
+        capture: box
+        as: wizard
+      - command: ";widget in auditevalbox"
+        expect:
+          output:
+            - "DOBJSTR:widget"
+            - "PREPSTR:in"
+            - "IOBJSTR:auditevalbox"
+    cleanup:
+      - run: 'delete_verb(player, "eval"); recycle({box});'
+        as: wizard
+
+  - name: audit_do_command_receives_quoted_backslash_wordlist
+    description: do_command receives Toast's parse_into_wordlist result for escaped and mid-word quoted input.
+    steps:
+      - run: |
+          try
+            add_property(#0, "audit_do_command_words", {}, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          try
+            add_verb(#0, {#0, "rxd", "do_command"}, {"this", "none", "this"});
+          except (E_INVARG)
+          endtry
+          set_verb_code(#0, "do_command", {
+            "if (args[1] == \";\")",
+            "  return 0;",
+            "endif",
+            "#0.audit_do_command_words = args;",
+            "return 1;"
+          });
+          return 1;
+        as: wizard
+      - command: 'auditnoop foo\ bar ab"c d"ef'
+      - run: "return #0.audit_do_command_words;"
+        as: wizard
+        expect:
+          value:
+            - "auditnoop"
+            - "foo bar"
+            - "abc def"
+    cleanup:
+      - run: |
+          try
+            delete_verb(#0, "do_command");
+          except (ANY)
+          endtry
+          try
+            delete_property(#0, "audit_do_command_words");
+          except (ANY)
+          endtry
+        as: wizard
+
+  - name: audit_dot_program_intrinsic_installs_verb_code
+    description: The .program intrinsic enters programming mode and installs submitted verb code.
+    permission: wizard
+    steps:
+      - run: |
+          obj = create($nothing);
+          obj.name = "audit program target";
+          add_verb(obj, {player, "rxd", "auditprog"}, {"this", "none", "none"});
+          return obj;
+        capture: obj
+        as: wizard
+      - command: ".program {obj}:auditprog"
+      - command: "return 4242;"
+      - command: "."
+      - run: "return {obj}:auditprog();"
+        as: wizard
+        expect:
+          value: 4242
+    cleanup:
+      - run: "recycle({obj});"
+        as: wizard

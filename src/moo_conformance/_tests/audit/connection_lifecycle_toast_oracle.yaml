@@ -89,6 +89,85 @@ tests:
           endfor
         as: wizard
 
+  - name: audit_listener_handler_do_command
+    description: Toast dispatches post-login do_command fallback to the connection's listener handler.
+    steps:
+      - allocate_port:
+          capture: listener_port
+      - run: |
+          for prop in ({"audit_command_handler", "audit_command_port", "audit_command_player", "audit_command_seen"})
+            try
+              add_property(#0, prop, {}, {#0, "rw"});
+            except (E_INVARG)
+            endtry
+          endfor
+          handler = create($nothing);
+          login_player = create($nothing);
+          set_player_flag(login_player, 1);
+          #0.audit_command_handler = handler;
+          #0.audit_command_player = login_player;
+          #0.audit_command_port = {listener_port};
+          add_verb(handler, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(handler, "do_login_command", {"return #0.audit_command_player;"});
+          add_verb(handler, {player, "rxd", "do_command"}, {"this", "none", "this"});
+          set_verb_code(handler, "do_command", {
+            "#0.audit_command_seen = {this, player, args, argstr};",
+            "return 0;"
+          });
+          return listen(handler, {listener_port}, ["print-messages" -> 0]);
+        as: wizard
+        expect:
+          type: int
+      - new_connection:
+          capture: conn1
+          port: "{listener_port}"
+      - send:
+          connection: conn1
+          text: "login-through-handler"
+      - wait: 500
+      - send:
+          connection: conn1
+          text: "postlogin alpha beta"
+      - wait: 500
+      - run: |
+          return {#0.audit_command_seen[1] == #0.audit_command_handler, #0.audit_command_seen[2] == #0.audit_command_player, #0.audit_command_seen[3], #0.audit_command_seen[4]};
+        as: wizard
+        expect:
+          value:
+            - 1
+            - 1
+            -
+              - postlogin
+              - alpha
+              - beta
+            - "postlogin alpha beta"
+      - close_connection: conn1
+    cleanup:
+      - run: |
+          try
+            unlisten(#0.audit_command_port);
+          except (ANY)
+          endtry
+          try
+            boot_player(#0.audit_command_player);
+          except (ANY)
+          endtry
+          try
+            recycle(#0.audit_command_player);
+          except (ANY)
+          endtry
+          try
+            recycle(#0.audit_command_handler);
+          except (ANY)
+          endtry
+          for prop in ({"audit_command_handler", "audit_command_port", "audit_command_player", "audit_command_seen"})
+            try
+              delete_property(#0, prop);
+            except (ANY)
+            endtry
+          endfor
+        as: wizard
+
   - name: audit_oob_prefix_dispatches_do_out_of_band_command
     description: Commands beginning with #$# dispatch to #0:do_out_of_band_command.
     steps:

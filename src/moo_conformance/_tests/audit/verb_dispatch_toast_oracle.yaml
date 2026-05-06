@@ -1,0 +1,327 @@
+name: audit_verb_dispatch_toast_oracle
+description: Toast-confirmed audit cases for verb lookup, verb metadata permissions, pass(), and call frames.
+
+requires:
+  builtins:
+    - add_verb
+    - set_verb_code
+    - set_verb_info
+    - set_verb_args
+    - verb_info
+    - verb_args
+    - verb_code
+    - callers
+    - caller_perms
+    - create
+    - recycle
+    - chparents
+
+tests:
+  - name: audit_verb_alias_collision_uses_definition_order
+    description: When callable aliases collide, Toast dispatches the first matching verb definition.
+    permission: wizard
+    statement: |
+      obj = create($nothing);
+      add_verb(obj, {player, "xd", "auditfirst auditdupe"}, {"this", "none", "this"});
+      set_verb_code(obj, "auditfirst", {"return \"first\";"});
+      add_verb(obj, {player, "xd", "auditdupe"}, {"this", "none", "this"});
+      set_verb_code(obj, 2, {"return \"second\";"});
+      result = obj:auditdupe();
+      recycle(obj);
+      return result;
+    expect:
+      value: first
+
+  - name: audit_trailing_star_verb_matches_suffix
+    description: A verb alias ending in * matches a longer requested verb name suffix.
+    permission: wizard
+    statement: |
+      obj = create($nothing);
+      add_verb(obj, {player, "xd", "audittrail*"}, {"this", "none", "this"});
+      set_verb_code(obj, "audittrail*", {"return 22;"});
+      result = obj:audittrailing_suffix();
+      recycle(obj);
+      return result;
+    expect:
+      value: 22
+
+  - name: audit_max_stack_depth_raises_e_maxrec
+    description: Recursive verb calls raise E_MAXREC at Toast's configured max activation depth.
+    permission: wizard
+    statement: |
+      obj = create($nothing);
+      add_verb(obj, {player, "xd", "auditrecurse"}, {"this", "none", "this"});
+      set_verb_code(obj, "auditrecurse", {
+        "return this:auditrecurse();"
+      });
+      obj:auditrecurse();
+    expect:
+      error: E_MAXREC
+
+  - name: audit_verb_info_does_not_inherit
+    description: verb_info(obj, name) inspects only obj's own verbs, not inherited verbs.
+    permission: wizard
+    statement: |
+      parent = create($nothing);
+      child = create(parent);
+      add_verb(parent, {player, "rxd", "auditmeta"}, {"this", "none", "this"});
+      verb_info(child, "auditmeta");
+    expect:
+      error: E_VERBNF
+
+  - name: audit_verb_args_does_not_inherit
+    description: verb_args(obj, name) inspects only obj's own verbs, not inherited verbs.
+    permission: wizard
+    statement: |
+      parent = create($nothing);
+      child = create(parent);
+      add_verb(parent, {player, "rxd", "auditmeta"}, {"this", "none", "this"});
+      verb_args(child, "auditmeta");
+    expect:
+      error: E_VERBNF
+
+  - name: audit_verb_code_does_not_inherit
+    description: verb_code(obj, name) inspects only obj's own verbs, not inherited verbs.
+    permission: wizard
+    statement: |
+      parent = create($nothing);
+      child = create(parent);
+      add_verb(parent, {player, "rxd", "auditmeta"}, {"this", "none", "this"});
+      verb_code(child, "auditmeta");
+    expect:
+      error: E_VERBNF
+
+  - name: audit_verb_info_requires_read_permission
+    description: A non-owner cannot inspect non-readable verb info.
+    steps:
+      - run: |
+          obj = create($nothing);
+          obj.w = 0;
+          add_verb(obj, {#0, "x", "auditsecret"}, {"this", "none", "this"});
+          return obj;
+        capture: obj
+        as: wizard
+      - run: 'verb_info({obj}, "auditsecret")'
+        as: programmer
+        expect:
+          error: E_PERM
+    cleanup:
+      - run: recycle({obj});
+        as: wizard
+
+  - name: audit_verb_args_requires_read_permission
+    description: A non-owner cannot inspect non-readable verb args.
+    steps:
+      - run: |
+          obj = create($nothing);
+          obj.w = 0;
+          add_verb(obj, {#0, "x", "auditsecret"}, {"this", "none", "this"});
+          return obj;
+        capture: obj
+        as: wizard
+      - run: 'verb_args({obj}, "auditsecret")'
+        as: programmer
+        expect:
+          error: E_PERM
+    cleanup:
+      - run: recycle({obj});
+        as: wizard
+
+  - name: audit_verb_code_requires_read_permission
+    description: A non-owner cannot inspect non-readable verb code.
+    steps:
+      - run: |
+          obj = create($nothing);
+          obj.w = 0;
+          add_verb(obj, {#0, "x", "auditsecret"}, {"this", "none", "this"});
+          return obj;
+        capture: obj
+        as: wizard
+      - run: 'verb_code({obj}, "auditsecret")'
+        as: programmer
+        expect:
+          error: E_PERM
+    cleanup:
+      - run: recycle({obj});
+        as: wizard
+
+  - name: audit_set_verb_info_nonowner_denied_even_with_writable_object
+    description: set_verb_info denies a non-owner programmer even when the object is writable.
+    steps:
+      - run: |
+          obj = create($nothing);
+          obj.w = 1;
+          add_verb(obj, {#0, "rwx", "auditsecret"}, {"this", "none", "this"});
+          return obj;
+        capture: obj
+        as: wizard
+      - run: 'set_verb_info({obj}, "auditsecret", {player, "rwx", "auditsecret2"})'
+        as: programmer
+        expect:
+          error: E_PERM
+    cleanup:
+      - run: recycle({obj});
+        as: wizard
+
+  - name: audit_set_verb_args_requires_write_permission
+    description: set_verb_args denies non-owner changes when the verb is not writable.
+    steps:
+      - run: |
+          obj = create($nothing);
+          obj.w = 0;
+          add_verb(obj, {#0, "rx", "auditsecret"}, {"this", "none", "this"});
+          return obj;
+        capture: obj
+        as: wizard
+      - run: 'set_verb_args({obj}, "auditsecret", {"any", "none", "any"})'
+        as: programmer
+        expect:
+          error: E_PERM
+    cleanup:
+      - run: recycle({obj});
+        as: wizard
+
+  - name: audit_set_verb_code_requires_write_permission
+    description: set_verb_code denies non-owner changes when the verb is not writable.
+    steps:
+      - run: |
+          obj = create($nothing);
+          obj.w = 0;
+          add_verb(obj, {#0, "rx", "auditsecret"}, {"this", "none", "this"});
+          return obj;
+        capture: obj
+        as: wizard
+      - run: |
+          set_verb_code({obj}, "auditsecret", {"return 7;"});
+        as: programmer
+        expect:
+          error: E_PERM
+    cleanup:
+      - run: recycle({obj});
+        as: wizard
+
+  - name: audit_pass_preserves_command_variables
+    description: pass() preserves command parsing variables when delegating to an inherited command verb.
+    steps:
+      - run: |
+          thing = create($nothing);
+          thing.name = "auditpasswidget";
+          move(thing, player);
+          parent = create($nothing);
+          add_verb(parent, {player, "xd", "auditpass"}, {"any", "in", "this"});
+          set_verb_code(parent, "auditpass", {
+            "notify(player, \"DOBJSTR:\" + dobjstr);",
+            "notify(player, \"PREPSTR:\" + prepstr);",
+            "notify(player, \"IOBJSTR:\" + iobjstr);"
+          });
+          child = create(parent);
+          child.name = "auditpassbox";
+          move(child, player);
+          add_verb(child, {player, "xd", "auditpass"}, {"any", "in", "this"});
+          set_verb_code(child, "auditpass", {"pass();"});
+          return {thing, parent, child};
+        capture: objs
+        as: wizard
+      - command: "auditpass auditpasswidget in auditpassbox"
+        expect:
+          output:
+            - "DOBJSTR:auditpasswidget"
+            - "PREPSTR:in"
+            - "IOBJSTR:auditpassbox"
+    cleanup:
+      - run: |
+          recycle({{objs}[1]});
+          recycle({{objs}[3]});
+          recycle({{objs}[2]});
+        as: wizard
+
+  - name: audit_caller_perms_top_level_command_is_nothing
+    description: A parser-dispatched top-level command verb has no caller permissions object.
+    steps:
+      - run: |
+          add_verb(player, {player, "xd", "auditcallerperms"}, {"none", "none", "none"});
+          set_verb_code(player, "auditcallerperms", {
+            "notify(player, toliteral(caller_perms()));"
+          });
+          return 1;
+        as: wizard
+      - command: "auditcallerperms"
+        expect:
+          output:
+            - "#-1"
+    cleanup:
+      - run: 'delete_verb(player, "auditcallerperms");'
+        as: wizard
+
+  - name: audit_diamond_inheritance_resolution
+    description: Multi-parent verb lookup follows Toast's parent order.
+    permission: wizard
+    statement: |
+      left = create($nothing);
+      right = create($nothing);
+      child = create({left, right});
+      add_verb(left, {player, "xd", "auditdiamond"}, {"this", "none", "this"});
+      set_verb_code(left, "auditdiamond", {"return \"left\";"});
+      add_verb(right, {player, "xd", "auditdiamond"}, {"this", "none", "this"});
+      set_verb_code(right, "auditdiamond", {"return \"right\";"});
+      result = child:auditdiamond();
+      recycle(child);
+      recycle(left);
+      recycle(right);
+      return result;
+    expect:
+      value: left
+
+  - name: audit_pass_parent_search_order
+    description: pass() in a multi-parent child continues through Toast's parent search order.
+    permission: wizard
+    statement: |
+      left = create($nothing);
+      right = create($nothing);
+      child = create({left, right});
+      add_verb(left, {player, "xd", "auditpassorder"}, {"this", "none", "this"});
+      set_verb_code(left, "auditpassorder", {"return \"left\";"});
+      add_verb(right, {player, "xd", "auditpassorder"}, {"this", "none", "this"});
+      set_verb_code(right, "auditpassorder", {"return \"right\";"});
+      add_verb(child, {player, "xd", "auditpassorder"}, {"this", "none", "this"});
+      set_verb_code(child, "auditpassorder", {"return pass();"});
+      result = child:auditpassorder();
+      recycle(child);
+      recycle(left);
+      recycle(right);
+      return result;
+    expect:
+      value: left
+
+  - name: audit_command_context_nested_call
+    description: Nested verb calls from command-dispatched verbs inherit command variables.
+    steps:
+      - run: |
+          thing = create($nothing);
+          thing.name = "auditnestedwidget";
+          move(thing, player);
+          box = create($nothing);
+          box.name = "auditnestedbox";
+          move(box, player);
+          add_verb(box, {player, "xd", "auditnested_inner"}, {"this", "none", "this"});
+          set_verb_code(box, "auditnested_inner", {
+            "notify(player, \"DOBJSTR:\" + dobjstr);",
+            "notify(player, \"PREPSTR:\" + prepstr);",
+            "notify(player, \"IOBJSTR:\" + iobjstr);"
+          });
+          add_verb(box, {player, "xd", "auditnested"}, {"any", "in", "this"});
+          set_verb_code(box, "auditnested", {"this:auditnested_inner();"});
+          return {thing, box};
+        capture: objs
+        as: wizard
+      - command: "auditnested auditnestedwidget in auditnestedbox"
+        expect:
+          output:
+            - "DOBJSTR:auditnestedwidget"
+            - "PREPSTR:in"
+            - "IOBJSTR:auditnestedbox"
+    cleanup:
+      - run: |
+          recycle({{objs}[1]});
+          recycle({{objs}[2]});
+        as: wizard

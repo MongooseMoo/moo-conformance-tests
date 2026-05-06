@@ -39,7 +39,7 @@ Order rule: command parser tests come first because many later tests depend on r
 - [x] VRB-013 pass_preserves_command_vars: `pass()` copies `argstr`, `dobj`, `dobjstr`, `prepstr`, `iobj`, and `iobjstr`.
 - [ ] VRB-014 callers_includes_toast_server_frames: `callers()` frame visibility matches Toast for server-initiated calls.
 - [ ] VRB-015 callers_builtin_frame_shape: builtin pseudo-frame visibility matches Toast where observable.
-- [ ] VRB-016 set_task_perms_checks_current_programmer: `set_task_perms` compares target against current programmer, not player.
+- [x] VRB-016 set_task_perms_checks_current_programmer: `set_task_perms` compares target against current programmer, not player.
 - [x] VRB-017 caller_perms_top_level_is_nothing: top-level `caller_perms()` returns `#-1`.
 - [x] VRB-018 diamond_inheritance_resolution: multi-parent verb lookup matches Toast order.
 - [x] VRB-019 pass_parent_search_order: `pass()` parent search order matches Toast.

@@ -273,7 +273,12 @@ class YamlTestRunner:
                 # Handle new_connection step
                 if step.new_connection:
                     self._ensure_transport_connected()
-                    conn = self.transport.open_connection()
+                    port = step.new_connection.port
+                    if isinstance(port, str):
+                        port = self._substitute_variables(port, variables)
+                    if port is not None:
+                        port = int(port)
+                    conn = self.transport.open_connection(port=port)
                     connections[step.new_connection.capture] = conn
                     continue
 

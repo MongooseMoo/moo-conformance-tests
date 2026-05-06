@@ -183,6 +183,7 @@ class VerbSetup:
 class NewConnection:
     """Open a new socket connection (for lifecycle testing)."""
     capture: str          # Variable name to store connection handle
+    port: int | str | None = None  # Optional target port, literal or captured variable
 
 
 @dataclass
@@ -551,7 +552,10 @@ def _parse_test_step(data: dict) -> TestStep:
     if 'new_connection' in data:
         nc_data = data['new_connection']
         if isinstance(nc_data, dict):
-            new_connection = NewConnection(capture=nc_data.get('capture', 'conn'))
+            new_connection = NewConnection(
+                capture=nc_data.get('capture', 'conn'),
+                port=nc_data.get('port'),
+            )
         else:
             # Simple string form: new_connection: conn1
             new_connection = NewConnection(capture=nc_data)

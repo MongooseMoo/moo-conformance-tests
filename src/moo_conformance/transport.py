@@ -323,9 +323,9 @@ class SocketTransport(MooTransport):
 
         self.current_user = user
 
-    def open_connection(self) -> "TestConnection":
+    def open_connection(self, port: int | None = None) -> "TestConnection":
         """Open a new unauthenticated connection for lifecycle testing."""
-        conn = TestConnection(self.host, self.port)
+        conn = TestConnection(self.host, port if port is not None else self.port)
         conn.connect()
         return conn
 

@@ -107,7 +107,7 @@ Order rule: command parser tests come first because many later tests depend on r
 - [ ] GAP-002 transport_telnet_iac_binary: telnet IAC and binary-mode line parsing match Toast.
 - [ ] GAP-003 output_order_disconnect: output buffer ordering during disconnect matches Toast.
 - [ ] GAP-004 move_chparent_trust_check: move/chparent/trust_check permission flow matches Toast.
-- [ ] GAP-005 property_flag_enforcement: property read/write/change flags match Toast.
-- [ ] GAP-006 command_dispatch_x_flag: verb execute flag interactions with command dispatch match Toast.
+- [x] GAP-005 property_flag_enforcement: property read/write/change flags match Toast.
+- [x] GAP-006 command_dispatch_x_flag: Toast command dispatch executes matching verbs even without the `x` flag.
 - [ ] GAP-007 waif_anonymous_callers: WAIF/anonymous values in callers/task_stack match Toast.
-- [ ] GAP-008 task_local_fork_suspend: task_local propagation through fork/suspend matches Toast.
+- [x] GAP-008 task_local_fork_suspend: Toast forked tasks start with empty `task_local()` state.

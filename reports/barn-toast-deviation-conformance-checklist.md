@@ -47,23 +47,23 @@ Order rule: command parser tests come first because many later tests depend on r
 
 ## Task Scheduling, Limits, Read, And Persistence
 
-- [ ] TSK-001 default_fg_ticks: foreground default tick limit matches Toast.
-- [ ] TSK-002 default_bg_ticks: background default tick limit matches Toast.
-- [ ] TSK-003 server_options_fg_ticks_runtime: `$server_options.fg_ticks` is honored for new tasks.
-- [ ] TSK-004 server_options_bg_ticks_runtime: `$server_options.bg_ticks` is honored for forked tasks.
-- [ ] TSK-005 server_options_fg_seconds_runtime: `$server_options.fg_seconds` is honored.
-- [ ] TSK-006 server_options_bg_seconds_runtime: `$server_options.bg_seconds` is honored.
-- [ ] TSK-007 server_options_max_stack_depth_runtime: `$server_options.max_stack_depth` is honored.
-- [ ] TSK-008 suspend_zero_yields_to_ready_task: `suspend(0)` gives another ready task a turn.
+- [x] TSK-001 default_fg_ticks: foreground default tick limit matches Toast.
+- [x] TSK-002 default_bg_ticks: background default tick limit matches Toast.
+- [x] TSK-003 server_options_fg_ticks_runtime: `$server_options.fg_ticks` is honored for new tasks.
+- [x] TSK-004 server_options_bg_ticks_runtime: `$server_options.bg_ticks` is honored for forked tasks.
+- [x] TSK-005 server_options_fg_seconds_runtime: `$server_options.fg_seconds` is honored.
+- [x] TSK-006 server_options_bg_seconds_runtime: `$server_options.bg_seconds` is honored.
+- [x] TSK-007 server_options_max_stack_depth_runtime: `$server_options.max_stack_depth` is honored.
+- [x] TSK-008 suspend_zero_yields_to_ready_task: `suspend(0)` gives another ready task a turn.
 - [ ] TSK-009 tick_exhaustion_not_catchable: tick exhaustion cannot be swallowed by MOO `try`.
 - [ ] TSK-010 handle_task_timeout_invoked: Toast invokes `$server:handle_task_timeout` on timeout.
 - [ ] TSK-011 suspended_task_survives_restart: suspended tasks persist across checkpoint/restart.
-- [ ] TSK-012 read_requires_connection_owner_or_wizard: `read()` denies unrelated programmers.
+- [x] TSK-012 read_requires_connection_owner_or_wizard: `read()` denies unrelated programmers.
 - [ ] TSK-013 read_requires_last_input_task: `read()` is only allowed from the last input task context.
 - [ ] TSK-014 yin_yields_when_needed: `yin()`/`yield_if_needed` has Toast scheduling behavior.
 - [ ] TSK-015 seconds_deadline_resets_on_resume: resumed suspended tasks get Toast-style execution limit reset.
 - [ ] TSK-016 fg_to_bg_after_suspend_limits: a suspended foreground task resumes with Toast background limits if Toast does that.
-- [ ] TSK-017 queued_task_reported_budget: `queued_tasks()` reports task budgets and start times like Toast.
+- [x] TSK-017 queued_task_reported_budget: `queued_tasks()` reports task budgets and start times like Toast.
 - [ ] TSK-018 force_input_read_login_interaction: `force_input` interaction with login/read matches Toast.
 
 ## Login, Connection, Listener, And Network Lifecycle

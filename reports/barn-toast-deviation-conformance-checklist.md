@@ -64,7 +64,7 @@ Order rule: command parser tests come first because many later tests depend on r
 - [x] TSK-015 seconds_deadline_resets_on_resume: resumed suspended tasks get Toast-style execution limit reset.
 - [x] TSK-016 fg_to_bg_after_suspend_limits: a suspended foreground task resumes with Toast background limits if Toast does that.
 - [x] TSK-017 queued_task_reported_budget: `queued_tasks()` reports task budgets and start times like Toast.
-- [ ] TSK-018 force_input_read_login_interaction: `force_input` interaction with login/read matches Toast.
+- [x] TSK-018 force_input_read_login_interaction: `force_input` interaction with login/read matches Toast.
 
 ## Login, Connection, Listener, And Network Lifecycle
 

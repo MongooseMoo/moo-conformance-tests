@@ -893,6 +893,223 @@ tests:
           endfor
         as: wizard
 
+  - name: audit_recycle_active_player_message
+    description: Toast sends the recycle message when a connected player object is recycled.
+    steps:
+      - run: |
+          for prop in ({"audit_recycle_player", "audit_recycle_login_saved"})
+            try
+              add_property(#0, prop, {}, {#0, "rw"});
+            except (E_INVARG)
+            endtry
+          endfor
+          login_player = create($nothing);
+          set_player_flag(login_player, 1);
+          #0.audit_recycle_player = login_player;
+          old_login_exists = 1;
+          try
+            old_login_info = verb_info(#0, "do_login_command");
+            old_login_args = verb_args(#0, "do_login_command");
+            old_login_code = verb_code(#0, "do_login_command");
+          except (E_VERBNF)
+            old_login_exists = 0;
+            old_login_info = {};
+            old_login_args = {};
+            old_login_code = {};
+          endtry
+          #0.audit_recycle_login_saved = {old_login_exists, old_login_info, old_login_args, old_login_code};
+          try
+            add_verb(#0, {#0, "rxd", "do_login_command"}, {"this", "none", "this"});
+          except (E_INVARG)
+          endtry
+          set_verb_info(#0, "do_login_command", {player, "rxd", "do_login_command"});
+          set_verb_args(#0, "do_login_command", {"this", "none", "this"});
+          set_verb_code(#0, "do_login_command", {"return #0.audit_recycle_player;"});
+          return 1;
+        as: wizard
+      - new_connection:
+          capture: conn1
+      - send:
+          connection: conn1
+          text: "login-for-recycle"
+      - wait: 500
+      - run: "recycle(#0.audit_recycle_player); return 1;"
+        as: wizard
+      - wait: 500
+      - read_connection:
+          connection: conn1
+        expect:
+          output:
+            exact:
+              - "*** Recycled ***"
+      - close_connection: conn1
+    cleanup:
+      - run: |
+          try
+            saved = #0.audit_recycle_login_saved;
+            if (saved[1])
+              set_verb_info(#0, "do_login_command", saved[2]);
+              set_verb_args(#0, "do_login_command", saved[3]);
+              set_verb_code(#0, "do_login_command", saved[4]);
+            else
+              delete_verb(#0, "do_login_command");
+            endif
+          except (ANY)
+          endtry
+          for prop in ({"audit_recycle_player", "audit_recycle_login_saved"})
+            try
+              delete_property(#0, prop);
+            except (ANY)
+            endtry
+          endfor
+        as: wizard
+
+  - name: audit_login_timeout_message
+    description: Toast sends the timeout message when an unauthenticated connection exceeds connect_timeout.
+    steps:
+      - run: |
+          for prop in ({"audit_timeout_msg_option_saved"})
+            try
+              add_property(#0, prop, {}, {#0, "rw"});
+            except (E_INVARG)
+            endtry
+          endfor
+          option_exists = 1;
+          try
+            option_saved = $server_options.connect_timeout;
+          except (E_PROPNF)
+            option_exists = 0;
+            option_saved = {};
+          endtry
+          #0.audit_timeout_msg_option_saved = {option_exists, option_saved};
+          try
+            add_property($server_options, "connect_timeout", 1, {player, "r"});
+          except (E_INVARG)
+          endtry
+          $server_options.connect_timeout = 1;
+          return 1;
+        as: wizard
+      - new_connection:
+          capture: conn1
+      - wait: 2500
+      - read_connection:
+          connection: conn1
+        expect:
+          output:
+            exact:
+              - "*** Timed-out waiting for login. ***"
+      - close_connection: conn1
+    cleanup:
+      - run: |
+          try
+            saved = #0.audit_timeout_msg_option_saved;
+            if (saved[1])
+              $server_options.connect_timeout = saved[2];
+            else
+              delete_property($server_options, "connect_timeout");
+            endif
+          except (ANY)
+          endtry
+          try
+            delete_property(#0, "audit_timeout_msg_option_saved");
+          except (ANY)
+          endtry
+        as: wizard
+
+  - name: audit_redirect_messages
+    description: Toast sends redirect messages to old and new connections when the same player reconnects.
+    steps:
+      - run: |
+          for prop in ({"audit_redirect_player", "audit_redirect_login_saved"})
+            try
+              add_property(#0, prop, {}, {#0, "rw"});
+            except (E_INVARG)
+            endtry
+          endfor
+          login_player = create($nothing);
+          set_player_flag(login_player, 1);
+          #0.audit_redirect_player = login_player;
+          old_login_exists = 1;
+          try
+            old_login_info = verb_info(#0, "do_login_command");
+            old_login_args = verb_args(#0, "do_login_command");
+            old_login_code = verb_code(#0, "do_login_command");
+          except (E_VERBNF)
+            old_login_exists = 0;
+            old_login_info = {};
+            old_login_args = {};
+            old_login_code = {};
+          endtry
+          #0.audit_redirect_login_saved = {old_login_exists, old_login_info, old_login_args, old_login_code};
+          try
+            add_verb(#0, {#0, "rxd", "do_login_command"}, {"this", "none", "this"});
+          except (E_INVARG)
+          endtry
+          set_verb_info(#0, "do_login_command", {player, "rxd", "do_login_command"});
+          set_verb_args(#0, "do_login_command", {"this", "none", "this"});
+          set_verb_code(#0, "do_login_command", {"return #0.audit_redirect_player;"});
+          return 1;
+        as: wizard
+      - new_connection:
+          capture: conn1
+      - send:
+          connection: conn1
+          text: "login-redirect-old"
+      - wait: 500
+      - new_connection:
+          capture: conn2
+      - send:
+          connection: conn2
+          text: "login-redirect-new"
+        capture: redirect_send_output
+      - wait: 500
+      - read_connection:
+          connection: conn2
+        capture: redirect_new_output
+      - read_connection:
+          connection: conn1
+        capture: redirect_old_output
+      - run: |
+          return {{redirect_send_output}, {redirect_new_output}, {redirect_old_output}, #0.audit_redirect_player in connected_players(1)};
+        as: wizard
+        expect:
+          value:
+            -
+              - "I couldn't understand that."
+            - []
+            -
+              - "*** Redirecting connection to new port ***"
+            - 1
+      - close_connection: conn2
+    cleanup:
+      - run: |
+          try
+            saved = #0.audit_redirect_login_saved;
+            if (saved[1])
+              set_verb_info(#0, "do_login_command", saved[2]);
+              set_verb_args(#0, "do_login_command", saved[3]);
+              set_verb_code(#0, "do_login_command", saved[4]);
+            else
+              delete_verb(#0, "do_login_command");
+            endif
+          except (ANY)
+          endtry
+          try
+            boot_player(#0.audit_redirect_player);
+          except (ANY)
+          endtry
+          try
+            recycle(#0.audit_redirect_player);
+          except (ANY)
+          endtry
+          for prop in ({"audit_redirect_player", "audit_redirect_login_saved"})
+            try
+              delete_property(#0, prop);
+            except (ANY)
+            endtry
+          endfor
+        as: wizard
+
   - name: audit_oob_prefix_dispatches_do_out_of_band_command
     description: Commands beginning with #$# dispatch to #0:do_out_of_band_command.
     steps:

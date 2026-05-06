@@ -57,7 +57,7 @@ Order rule: command parser tests come first because many later tests depend on r
 - [x] TSK-008 suspend_zero_yields_to_ready_task: `suspend(0)` gives another ready task a turn.
 - [x] TSK-009 tick_exhaustion_not_catchable: tick exhaustion cannot be swallowed by MOO `try`.
 - [x] TSK-010 handle_task_timeout_invoked: Toast invokes `$server:handle_task_timeout` on timeout.
-- [ ] TSK-011 suspended_task_survives_restart: suspended tasks persist across checkpoint/restart.
+- [x] TSK-011 suspended_task_survives_restart: suspended tasks persist across checkpoint/restart.
 - [x] TSK-012 read_requires_connection_owner_or_wizard: `read()` denies unrelated programmers.
 - [x] TSK-013 read_requires_last_input_task: `read()` is only allowed from the last input task context.
 - [x] TSK-014 yin_yields_when_needed: `yin()`/`yield_if_needed` has Toast scheduling behavior.

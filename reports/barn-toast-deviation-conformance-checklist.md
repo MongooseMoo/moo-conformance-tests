@@ -75,7 +75,7 @@ Order rule: command parser tests come first because many later tests depend on r
 - [x] CON-005 proxy_command_clears_login_input: trusted proxy `PROXY` command is parsed and cleared like Toast.
 - [x] CON-006 user_created_hook_on_new_login_object: `user_created` runs when login creates a new player.
 - [x] CON-007 user_client_disconnected_hook: client-initiated disconnect invokes Toast's client-disconnect hook.
-- [ ] CON-008 user_reconnected_cross_listener_hooks: reconnect hook behavior matches Toast.
+- [x] CON-008 user_reconnected_cross_listener_hooks: reconnect hook behavior matches Toast.
 - [ ] CON-009 connect_timeout_server_option: `$server_options.connect_timeout` controls login timeout.
 - [ ] CON-010 flush_command_flushes_pending_input: connection `flush-command` flushes queued input.
 - [x] CON-011 hold_input_blocks_inband: `hold-input` queues normal commands until released.

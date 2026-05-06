@@ -27,7 +27,6 @@ tests:
 
   - name: fork_with_delay_shows_future_start
     description: Fork with delay shows future start time
-    skip: "Task format varies by implementation - needs investigation"
     permission: wizard
     statement: |
       fork (3)

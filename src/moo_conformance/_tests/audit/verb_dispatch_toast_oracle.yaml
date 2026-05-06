@@ -253,6 +253,33 @@ tests:
       - run: 'delete_verb(player, "auditcallerperms");'
         as: wizard
 
+  - name: audit_set_task_perms_uses_current_programmer_not_player
+    description: set_task_perms compares the target to the running verb owner, not the connected player.
+    steps:
+      - run: |
+          try
+            add_property(#0, "audit_task_perms_value", $nothing, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          add_verb(player, {#0, "xd", "audittaskperms"}, {"none", "none", "none"});
+          set_verb_code(player, "audittaskperms", {
+            "set_task_perms(#0);",
+            "#0.audit_task_perms_value = task_perms();"
+          });
+          return 1;
+        as: wizard
+      - command: "audittaskperms"
+      - run: "return #0.audit_task_perms_value;"
+        as: wizard
+        expect:
+          value: "#0"
+          type: obj
+    cleanup:
+      - run: |
+          delete_verb(player, "audittaskperms");
+          delete_property(#0, "audit_task_perms_value");
+        as: wizard
+
   - name: audit_diamond_inheritance_resolution
     description: Multi-parent verb lookup follows Toast's parent order.
     permission: wizard

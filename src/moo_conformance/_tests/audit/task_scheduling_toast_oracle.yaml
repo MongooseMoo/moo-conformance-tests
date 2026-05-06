@@ -1,0 +1,283 @@
+name: audit_task_scheduling_toast_oracle
+description: Toast-confirmed audit cases for task limits, scheduling, read(), and queued task metadata.
+
+requires:
+  builtins:
+    - add_property
+    - delete_property
+    - load_server_options
+    - ticks_left
+    - seconds_left
+    - suspend
+    - fork
+    - queued_tasks
+    - kill_task
+    - read
+
+tests:
+  - name: audit_default_fg_ticks
+    description: Foreground tasks use Toast's compiled default tick budget when no server option overrides it.
+    steps:
+      - run: |
+          try
+            delete_property($server_options, "fg_ticks");
+          except (ANY)
+          endtry
+          load_server_options();
+          return 1;
+        as: wizard
+      - run: "return ticks_left() <= 60000 && ticks_left() > 59000;"
+        as: wizard
+        expect:
+          value: 1
+
+  - name: audit_default_bg_ticks
+    description: Background forked tasks use Toast's compiled default tick budget when no server option overrides it.
+    steps:
+      - run: |
+          try
+            delete_property($server_options, "bg_ticks");
+          except (ANY)
+          endtry
+          try
+            add_property(#0, "audit_bg_ticks", 0, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          load_server_options();
+          return 1;
+        as: wizard
+      - run: |
+          fork (0)
+            #0.audit_bg_ticks = ticks_left();
+          endfork
+          suspend(0);
+          return #0.audit_bg_ticks <= 30000 && #0.audit_bg_ticks > 29500;
+        as: wizard
+        expect:
+          value: 1
+    cleanup:
+      - run: |
+          try
+            delete_property(#0, "audit_bg_ticks");
+          except (ANY)
+          endtry
+        as: wizard
+
+  - name: audit_server_options_fg_ticks_runtime
+    description: $server_options.fg_ticks is honored for new foreground tasks.
+    steps:
+      - run: |
+          try
+            add_property($server_options, "fg_ticks", 12345, {player, "r"});
+          except (E_INVARG)
+            $server_options.fg_ticks = 12345;
+          endtry
+          load_server_options();
+          return 1;
+        as: wizard
+      - run: "return ticks_left() <= 12345 && ticks_left() > 12000;"
+        as: wizard
+        expect:
+          value: 1
+    cleanup:
+      - run: |
+          delete_property($server_options, "fg_ticks");
+          load_server_options();
+        as: wizard
+
+  - name: audit_server_options_bg_ticks_runtime
+    description: $server_options.bg_ticks is honored for new background tasks.
+    steps:
+      - run: |
+          try
+            add_property($server_options, "bg_ticks", 23456, {player, "r"});
+          except (E_INVARG)
+            $server_options.bg_ticks = 23456;
+          endtry
+          try
+            add_property(#0, "audit_bg_ticks", 0, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          load_server_options();
+          return 1;
+        as: wizard
+      - run: |
+          fork (0)
+            #0.audit_bg_ticks = ticks_left();
+          endfork
+          suspend(0);
+          return #0.audit_bg_ticks <= 23456 && #0.audit_bg_ticks > 23000;
+        as: wizard
+        expect:
+          value: 1
+    cleanup:
+      - run: |
+          delete_property($server_options, "bg_ticks");
+          delete_property(#0, "audit_bg_ticks");
+          load_server_options();
+        as: wizard
+
+  - name: audit_server_options_fg_seconds_runtime
+    description: $server_options.fg_seconds is honored for new foreground tasks.
+    steps:
+      - run: |
+          try
+            add_property($server_options, "fg_seconds", 12, {player, "r"});
+          except (E_INVARG)
+            $server_options.fg_seconds = 12;
+          endtry
+          load_server_options();
+          return 1;
+        as: wizard
+      - run: "return seconds_left() <= 12 && seconds_left() > 8;"
+        as: wizard
+        expect:
+          value: 1
+    cleanup:
+      - run: |
+          delete_property($server_options, "fg_seconds");
+          load_server_options();
+        as: wizard
+
+  - name: audit_server_options_bg_seconds_runtime
+    description: $server_options.bg_seconds is honored for new background tasks.
+    steps:
+      - run: |
+          try
+            add_property($server_options, "bg_seconds", 9, {player, "r"});
+          except (E_INVARG)
+            $server_options.bg_seconds = 9;
+          endtry
+          try
+            add_property(#0, "audit_bg_seconds", 0, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          load_server_options();
+          return 1;
+        as: wizard
+      - run: |
+          fork (0)
+            #0.audit_bg_seconds = seconds_left();
+          endfork
+          suspend(0);
+          return #0.audit_bg_seconds <= 9 && #0.audit_bg_seconds > 5;
+        as: wizard
+        expect:
+          value: 1
+    cleanup:
+      - run: |
+          delete_property($server_options, "bg_seconds");
+          delete_property(#0, "audit_bg_seconds");
+          load_server_options();
+        as: wizard
+
+  - name: audit_server_options_max_stack_depth_runtime
+    description: $server_options.max_stack_depth is honored for recursive verb calls.
+    steps:
+      - run: |
+          obj = create($nothing);
+          add_verb(obj, {player, "xd", "audit_depth"}, {"this", "none", "this"});
+          set_verb_code(obj, "audit_depth", {"return this:audit_depth();"});
+          try
+            add_property($server_options, "max_stack_depth", 8, {player, "r"});
+          except (E_INVARG)
+            $server_options.max_stack_depth = 8;
+          endtry
+          load_server_options();
+          return obj;
+        capture: obj
+        as: wizard
+      - run: "{obj}:audit_depth();"
+        as: wizard
+        expect:
+          error: E_MAXREC
+    cleanup:
+      - run: |
+          recycle({obj});
+          delete_property($server_options, "max_stack_depth");
+          load_server_options();
+        as: wizard
+
+  - name: audit_suspend_zero_yields_to_ready_task
+    description: suspend(0) gives a ready forked task a turn before the original task resumes.
+    steps:
+      - run: |
+          try
+            add_property(#0, "audit_suspend_order", {}, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          #0.audit_suspend_order = {"main-before"};
+          fork (0)
+            #0.audit_suspend_order = listappend(#0.audit_suspend_order, "fork");
+          endfork
+          suspend(0);
+          #0.audit_suspend_order = listappend(#0.audit_suspend_order, "main-after");
+          return #0.audit_suspend_order;
+        as: wizard
+        expect:
+          value:
+            - main-before
+            - fork
+            - main-after
+    cleanup:
+      - run: 'delete_property(#0, "audit_suspend_order");'
+        as: wizard
+
+  - name: audit_read_unrelated_player_denied
+    description: read(other_player, nonblocking) denies unrelated non-wizard programmers.
+    steps:
+      - run: "return player;"
+        capture: wiz
+        as: wizard
+      - run: "read({wiz}, 1)"
+        as: programmer
+        expect:
+          error: E_PERM
+
+  - name: audit_read_nonblocking_from_fork_returns_zero
+    description: Nonblocking read() from a forked task returns 0 when no input is available.
+    steps:
+      - run: |
+          try
+            add_property(#0, "audit_read_error", $nothing, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          fork (0)
+            #0.audit_read_error = read(player, 1);
+          endfork
+          suspend(0);
+          return #0.audit_read_error;
+        as: wizard
+        expect:
+          value: 0
+    cleanup:
+      - run: 'delete_property(#0, "audit_read_error");'
+        as: wizard
+
+  - name: audit_queued_task_reported_budget_shape
+    description: queued_tasks() reports Toast task ids, start times, and frame lists for delayed tasks.
+    steps:
+      - run: |
+          fork id (30)
+            1 + 1;
+          endfork
+          return id;
+        capture: task_id
+        as: wizard
+      - run: |
+          for task in (queued_tasks())
+            if (task[1] == {task_id})
+              return {typeof(task[1]), typeof(task[2]), typeof(task[3]), task[2] > time()};
+            endif
+          endfor
+          return {};
+        as: wizard
+        expect:
+          value:
+            - 0
+            - 0
+            - 0
+            - 1
+    cleanup:
+      - run: "kill_task({task_id});"
+        as: wizard

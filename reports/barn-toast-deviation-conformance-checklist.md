@@ -86,7 +86,7 @@ Order rule: command parser tests come first because many later tests depend on r
 - [x] CON-016 connection_name_method0_hostname: `connection_name(player)` method 0 returns Toast hostname format.
 - [x] CON-017 connection_info_source_fields: `connection_info()` source fields use actual network handle data.
 - [x] CON-018 boot_player_messages: boot/disconnect messages match Toast server options.
-- [ ] CON-019 recycle_redirect_timeout_messages: lifecycle message options match Toast.
+- [x] CON-019 recycle_redirect_timeout_messages: lifecycle message options match Toast.
 
 ## Time And Server Builtins
 

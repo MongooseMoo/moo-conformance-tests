@@ -446,6 +446,110 @@ tests:
           endfor
         as: wizard
 
+  - name: audit_user_reconnected_cross_listener_hooks
+    description: Toast cross-listener reconnect calls old user_client_disconnected and new user_connected, not user_reconnected.
+    steps:
+      - allocate_port:
+          capture: old_port
+      - allocate_port:
+          capture: new_port
+      - run: |
+          for prop in ({"audit_cross_player", "audit_cross_old_handler", "audit_cross_new_handler", "audit_cross_old_port", "audit_cross_new_port", "audit_cross_old_client", "audit_cross_new_connected", "audit_cross_new_reconnected"})
+            try
+              add_property(#0, prop, {}, {#0, "rw"});
+            except (E_INVARG)
+            endtry
+          endfor
+          login_player = create($nothing);
+          set_player_flag(login_player, 1);
+          old_handler = create($nothing);
+          new_handler = create($nothing);
+          #0.audit_cross_player = login_player;
+          #0.audit_cross_old_handler = old_handler;
+          #0.audit_cross_new_handler = new_handler;
+          #0.audit_cross_old_port = {old_port};
+          #0.audit_cross_new_port = {new_port};
+          #0.audit_cross_new_reconnected = {};
+          add_verb(old_handler, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(old_handler, "do_login_command", {"return #0.audit_cross_player;"});
+          add_verb(old_handler, {player, "rxd", "user_client_disconnected"}, {"this", "none", "this"});
+          set_verb_code(old_handler, "user_client_disconnected", {
+            "#0.audit_cross_old_client = args[1];",
+            "return 1;"
+          });
+          add_verb(new_handler, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(new_handler, "do_login_command", {"return #0.audit_cross_player;"});
+          add_verb(new_handler, {player, "rxd", "user_connected"}, {"this", "none", "this"});
+          set_verb_code(new_handler, "user_connected", {
+            "#0.audit_cross_new_connected = args[1];",
+            "return 1;"
+          });
+          add_verb(new_handler, {player, "rxd", "user_reconnected"}, {"this", "none", "this"});
+          set_verb_code(new_handler, "user_reconnected", {
+            "#0.audit_cross_new_reconnected = args[1];",
+            "return 1;"
+          });
+          listen(old_handler, {old_port}, ["print-messages" -> 0]);
+          listen(new_handler, {new_port}, ["print-messages" -> 0]);
+          return 1;
+        as: wizard
+      - new_connection:
+          capture: conn1
+          port: "{old_port}"
+      - send:
+          connection: conn1
+          text: "login-old-listener"
+      - wait: 500
+      - new_connection:
+          capture: conn2
+          port: "{new_port}"
+      - send:
+          connection: conn2
+          text: "login-new-listener"
+      - wait: 500
+      - run: |
+          return {#0.audit_cross_old_client == #0.audit_cross_player, #0.audit_cross_new_connected == #0.audit_cross_player, typeof(#0.audit_cross_new_reconnected)};
+        as: wizard
+        expect:
+          value:
+            - 1
+            - 1
+            - 4
+      - close_connection: conn2
+    cleanup:
+      - run: |
+          try
+            unlisten(#0.audit_cross_old_port);
+          except (ANY)
+          endtry
+          try
+            unlisten(#0.audit_cross_new_port);
+          except (ANY)
+          endtry
+          try
+            boot_player(#0.audit_cross_player);
+          except (ANY)
+          endtry
+          try
+            recycle(#0.audit_cross_player);
+          except (ANY)
+          endtry
+          try
+            recycle(#0.audit_cross_old_handler);
+          except (ANY)
+          endtry
+          try
+            recycle(#0.audit_cross_new_handler);
+          except (ANY)
+          endtry
+          for prop in ({"audit_cross_player", "audit_cross_old_handler", "audit_cross_new_handler", "audit_cross_old_port", "audit_cross_new_port", "audit_cross_old_client", "audit_cross_new_connected", "audit_cross_new_reconnected"})
+            try
+              delete_property(#0, prop);
+            except (ANY)
+            endtry
+          endfor
+        as: wizard
+
   - name: audit_oob_prefix_dispatches_do_out_of_band_command
     description: Commands beginning with #$# dispatch to #0:do_out_of_band_command.
     steps:

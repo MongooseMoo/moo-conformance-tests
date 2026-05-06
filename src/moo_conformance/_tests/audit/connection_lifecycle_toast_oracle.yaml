@@ -317,3 +317,116 @@ tests:
             endtry
           endfor
         as: wizard
+
+  - name: audit_user_created_hook_for_new_login_object
+    description: Toast calls user_created when do_login_command creates and returns a new player object.
+    steps:
+      - run: |
+          for prop in ({"audit_created_user", "audit_created_seen", "audit_created_login_saved", "audit_created_hook_saved"})
+            try
+              add_property(#0, prop, {}, {#0, "rw"});
+            except (E_INVARG)
+            endtry
+          endfor
+          old_login_exists = 1;
+          try
+            old_login_info = verb_info(#0, "do_login_command");
+            old_login_args = verb_args(#0, "do_login_command");
+            old_login_code = verb_code(#0, "do_login_command");
+          except (E_VERBNF)
+            old_login_exists = 0;
+            old_login_info = {};
+            old_login_args = {};
+            old_login_code = {};
+          endtry
+          #0.audit_created_login_saved = {old_login_exists, old_login_info, old_login_args, old_login_code};
+          try
+            add_verb(#0, {#0, "rxd", "do_login_command"}, {"this", "none", "this"});
+          except (E_INVARG)
+          endtry
+          set_verb_info(#0, "do_login_command", {player, "rxd", "do_login_command"});
+          set_verb_args(#0, "do_login_command", {"this", "none", "this"});
+          set_verb_code(#0, "do_login_command", {
+            "u = create($nothing);",
+            "set_player_flag(u, 1);",
+            "#0.audit_created_user = u;",
+            "return u;"
+          });
+          old_hook_exists = 1;
+          try
+            old_hook_info = verb_info(#0, "user_created");
+            old_hook_args = verb_args(#0, "user_created");
+            old_hook_code = verb_code(#0, "user_created");
+          except (E_VERBNF)
+            old_hook_exists = 0;
+            old_hook_info = {};
+            old_hook_args = {};
+            old_hook_code = {};
+          endtry
+          #0.audit_created_hook_saved = {old_hook_exists, old_hook_info, old_hook_args, old_hook_code};
+          try
+            add_verb(#0, {#0, "rxd", "user_created"}, {"this", "none", "this"});
+          except (E_INVARG)
+          endtry
+          set_verb_info(#0, "user_created", {player, "rxd", "user_created"});
+          set_verb_args(#0, "user_created", {"this", "none", "this"});
+          set_verb_code(#0, "user_created", {
+            "#0.audit_created_seen = args[1];",
+            "return 1;"
+          });
+          return 1;
+        as: wizard
+      - new_connection:
+          capture: conn1
+      - send:
+          connection: conn1
+          text: "audit-create-login"
+      - wait: 500
+      - run: |
+          return {typeof(#0.audit_created_seen), typeof(#0.audit_created_user), #0.audit_created_seen == #0.audit_created_user};
+        as: wizard
+        expect:
+          value:
+            - 1
+            - 1
+            - 1
+      - close_connection: conn1
+    cleanup:
+      - run: |
+          try
+            saved = #0.audit_created_login_saved;
+            if (saved[1])
+              set_verb_info(#0, "do_login_command", saved[2]);
+              set_verb_args(#0, "do_login_command", saved[3]);
+              set_verb_code(#0, "do_login_command", saved[4]);
+            else
+              delete_verb(#0, "do_login_command");
+            endif
+          except (ANY)
+          endtry
+          try
+            saved = #0.audit_created_hook_saved;
+            if (saved[1])
+              set_verb_info(#0, "user_created", saved[2]);
+              set_verb_args(#0, "user_created", saved[3]);
+              set_verb_code(#0, "user_created", saved[4]);
+            else
+              delete_verb(#0, "user_created");
+            endif
+          except (ANY)
+          endtry
+          try
+            boot_player(#0.audit_created_user);
+          except (ANY)
+          endtry
+          try
+            recycle(#0.audit_created_user);
+          except (ANY)
+          endtry
+          for prop in ({"audit_created_user", "audit_created_seen", "audit_created_login_saved", "audit_created_hook_saved"})
+            try
+              delete_property(#0, prop);
+            except (ANY)
+            endtry
+          endfor
+        as: wizard

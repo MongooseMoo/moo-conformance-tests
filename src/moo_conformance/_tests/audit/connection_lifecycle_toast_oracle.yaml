@@ -168,6 +168,86 @@ tests:
           endfor
         as: wizard
 
+  - name: audit_listener_handler_do_blank_command
+    description: Toast dispatches trusted-proxy blank login input to the connection's listener handler.
+    steps:
+      - allocate_port:
+          capture: listener_port
+      - run: |
+          for prop in ({"audit_blank_handler", "audit_blank_port", "audit_blank_seen", "audit_blank_trusted_saved"})
+            try
+              add_property(#0, prop, {}, {#0, "rw"});
+            except (E_INVARG)
+            endtry
+          endfor
+          trusted_exists = 1;
+          try
+            trusted_saved = #6.trusted_proxies;
+          except (E_PROPNF)
+            trusted_exists = 0;
+            trusted_saved = {};
+          endtry
+          #0.audit_blank_trusted_saved = {trusted_exists, trusted_saved};
+          try
+            add_property(#6, "trusted_proxies", {}, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          #6.trusted_proxies = {"::1", "127.0.0.1"};
+          handler = create($nothing);
+          #0.audit_blank_handler = handler;
+          #0.audit_blank_port = {listener_port};
+          add_verb(handler, {player, "rxd", "do_blank_command"}, {"this", "none", "none"});
+          set_verb_code(handler, "do_blank_command", {
+            "#0.audit_blank_seen = {this, args, argstr};",
+            "return 0;"
+          });
+          return listen(handler, {listener_port}, ["print-messages" -> 0]);
+        as: wizard
+        expect:
+          type: int
+      - new_connection:
+          capture: conn1
+          port: "{listener_port}"
+      - send:
+          connection: conn1
+          text: ""
+      - wait: 500
+      - run: |
+          return {#0.audit_blank_seen[1] == #0.audit_blank_handler, #0.audit_blank_seen[2], #0.audit_blank_seen[3]};
+        as: wizard
+        expect:
+          value:
+            - 1
+            - []
+            - ""
+      - close_connection: conn1
+    cleanup:
+      - run: |
+          try
+            unlisten(#0.audit_blank_port);
+          except (ANY)
+          endtry
+          try
+            saved = #0.audit_blank_trusted_saved;
+            if (saved[1])
+              #6.trusted_proxies = saved[2];
+            else
+              delete_property(#6, "trusted_proxies");
+            endif
+          except (ANY)
+          endtry
+          try
+            recycle(#0.audit_blank_handler);
+          except (ANY)
+          endtry
+          for prop in ({"audit_blank_handler", "audit_blank_port", "audit_blank_seen", "audit_blank_trusted_saved"})
+            try
+              delete_property(#0, prop);
+            except (ANY)
+            endtry
+          endfor
+        as: wizard
+
   - name: audit_oob_prefix_dispatches_do_out_of_band_command
     description: Commands beginning with #$# dispatch to #0:do_out_of_band_command.
     steps:

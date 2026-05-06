@@ -187,6 +187,12 @@ class NewConnection:
 
 
 @dataclass
+class AllocatePort:
+    """Capture an available localhost TCP port for tests that create listeners."""
+    capture: str          # Variable name to store the allocated port number
+
+
+@dataclass
 class SendOnConnection:
     """Send raw text on a specific connection."""
     text: str             # Raw text to send
@@ -244,6 +250,7 @@ class TestStep:
     - run: MOO code to execute (wrapped in ; prefix)
     - command: Raw command to send (for testing command parser)
     - verb_setup: Declarative verb creation
+    - allocate_port: Capture an available localhost TCP port
     - new_connection: Open a new socket connection
     - send: Send raw text on a specific connection
     - close_connection: Close a connection
@@ -256,6 +263,7 @@ class TestStep:
     run: str | None = None                      # MOO code to execute
     command: str | None = None                  # Raw command (no ; prefix)
     verb_setup: VerbSetup | None = None         # Declarative verb creation
+    allocate_port: AllocatePort | None = None   # Capture an available localhost TCP port
     new_connection: NewConnection | None = None # Open new connection
     send: SendOnConnection | None = None        # Send on specific connection
     close_connection: str | None = None         # Close a connection by name
@@ -511,6 +519,7 @@ def _parse_test_step(data: dict) -> TestStep:
     has_run = 'run' in data
     has_command = 'command' in data
     has_verb_setup = 'verb_setup' in data
+    has_allocate_port = 'allocate_port' in data
     has_new_connection = 'new_connection' in data
     has_send = 'send' in data
     has_close_connection = 'close_connection' in data
@@ -520,14 +529,14 @@ def _parse_test_step(data: dict) -> TestStep:
     has_write_file = 'write_file' in data
     has_restart_server = 'restart_server' in data
 
-    action_count = sum([has_run, has_command, has_verb_setup,
+    action_count = sum([has_run, has_command, has_verb_setup, has_allocate_port,
                         has_new_connection, has_send, has_close_connection,
                         has_wait, has_assert_log, has_assert_file,
                         has_write_file, has_restart_server])
 
     if action_count == 0:
         raise ValueError("Test step must have an action field (run, command, verb_setup, "
-                        "new_connection, send, close_connection, wait, assert_log, "
+                        "allocate_port, new_connection, send, close_connection, wait, assert_log, "
                         "assert_file, write_file, or restart_server)")
     if action_count > 1:
         raise ValueError("Test step must have exactly one action field")
@@ -546,6 +555,15 @@ def _parse_test_step(data: dict) -> TestStep:
             args=vs_data['args'],
             code=vs_data['code'],
         )
+
+    # Parse allocate_port if present
+    allocate_port = None
+    if 'allocate_port' in data:
+        ap_data = data['allocate_port']
+        if isinstance(ap_data, dict):
+            allocate_port = AllocatePort(capture=ap_data.get('capture', 'port'))
+        else:
+            allocate_port = AllocatePort(capture=ap_data)
 
     # Parse new_connection if present
     new_connection = None
@@ -609,6 +627,7 @@ def _parse_test_step(data: dict) -> TestStep:
         run=data.get('run'),
         command=data.get('command'),
         verb_setup=verb_setup,
+        allocate_port=allocate_port,
         new_connection=new_connection,
         send=send,
         close_connection=data.get('close_connection'),

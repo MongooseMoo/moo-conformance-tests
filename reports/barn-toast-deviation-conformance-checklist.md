@@ -109,5 +109,5 @@ Order rule: command parser tests come first because many later tests depend on r
 - [ ] GAP-004 move_chparent_trust_check: move/chparent/trust_check permission flow matches Toast.
 - [x] GAP-005 property_flag_enforcement: property read/write/change flags match Toast.
 - [x] GAP-006 command_dispatch_x_flag: Toast command dispatch executes matching verbs even without the `x` flag.
-- [ ] GAP-007 waif_anonymous_callers: WAIF/anonymous values in callers/task_stack match Toast.
+- [x] GAP-007 waif_anonymous_callers: WAIF/anonymous values in callers/task_stack match Toast.
 - [x] GAP-008 task_local_fork_suspend: Toast forked tasks start with empty `task_local()` state.

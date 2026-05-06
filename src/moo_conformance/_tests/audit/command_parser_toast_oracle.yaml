@@ -1,0 +1,297 @@
+name: audit_command_parser_toast_oracle
+description: ToastStunt oracle tests for command parsing and object matching deviations found in Barn.
+
+tests:
+  - name: audit_tokenizer_backslash_escapes
+    description: Backslash escapes protect the following character inside command words.
+    steps:
+      - run: |
+          add_verb(player, {player, "xd", "audit_words"}, {"any", "none", "none"});
+          set_verb_code(player, "audit_words", {
+            "notify(player, \"LEN:\" + tostr(length(args)));",
+            "notify(player, \"ARG1:\" + args[1]);",
+            "notify(player, \"ARG2:\" + args[2]);"
+          });
+          return 1;
+        as: wizard
+      - command: 'audit_words foo\ bar baz'
+        expect:
+          output:
+            - "LEN:2"
+            - "ARG1:foo bar"
+            - "ARG2:baz"
+    cleanup:
+      - run: 'delete_verb(player, "audit_words");'
+        as: wizard
+
+  - name: audit_tokenizer_midword_quotes
+    description: Quotes toggle inside a word and can include spaces in that same word.
+    steps:
+      - run: |
+          add_verb(player, {player, "xd", "audit_words"}, {"any", "none", "none"});
+          set_verb_code(player, "audit_words", {
+            "notify(player, \"LEN:\" + tostr(length(args)));",
+            "notify(player, \"ARG1:\" + args[1]);",
+            "notify(player, \"ARG2:\" + args[2]);"
+          });
+          return 1;
+        as: wizard
+      - command: 'audit_words ab"c d"ef zz'
+        expect:
+          output:
+            - "LEN:2"
+            - "ARG1:abc def"
+            - "ARG2:zz"
+    cleanup:
+      - run: 'delete_verb(player, "audit_words");'
+        as: wizard
+
+  - name: audit_argstr_preserves_internal_spacing
+    description: argstr preserves original spacing after the verb's separating spaces are skipped.
+    steps:
+      - run: |
+          add_verb(player, {player, "xd", "audit_arg"}, {"any", "none", "none"});
+          set_verb_code(player, "audit_arg", {
+            "notify(player, \"ARGSTR:[\" + argstr + \"]\");"
+          });
+          return 1;
+        as: wizard
+      - command: 'audit_arg    alpha   beta'
+        expect:
+          output: "ARGSTR:[alpha   beta]"
+    cleanup:
+      - run: 'delete_verb(player, "audit_arg");'
+        as: wizard
+
+  - name: audit_preposition_scan_uses_leftmost_position
+    description: Toast chooses the earliest preposition occurrence in the command, not the longest later phrase.
+    steps:
+      - run: |
+          add_verb(player, {player, "xd", "auditprep"}, {"any", "any", "any"});
+          set_verb_code(player, "auditprep", {
+            "notify(player, \"DOBJSTR:\" + dobjstr);",
+            "notify(player, \"PREPSTR:\" + prepstr);",
+            "notify(player, \"IOBJSTR:\" + iobjstr);"
+          });
+          return 1;
+        as: wizard
+      - command: "auditprep book out of bag in front of chair"
+        expect:
+          output:
+            - "DOBJSTR:book"
+            - "PREPSTR:out of"
+            - "IOBJSTR:bag in front of chair"
+    cleanup:
+      - run: 'delete_verb(player, "auditprep");'
+        as: wizard
+
+  - name: audit_negative_object_literals_are_failed_match
+    description: Negative object literals in command object slots are FAILED_MATCH, not the literal negative object.
+    steps:
+      - run: |
+          add_verb(player, {player, "xd", "auditgrab"}, {"any", "none", "none"});
+          set_verb_code(player, "auditgrab", {
+            "notify(player, \"DOBJ:\" + toliteral(dobj));"
+          });
+          return 1;
+        as: wizard
+      - command: "auditgrab #-1"
+        expect:
+          output: "DOBJ:#-3"
+      - command: "auditgrab #-2"
+        expect:
+          output: "DOBJ:#-3"
+      - command: "auditgrab #-3"
+        expect:
+          output: "DOBJ:#-3"
+    cleanup:
+      - run: 'delete_verb(player, "auditgrab");'
+        as: wizard
+
+  - name: audit_name_alias_exact_match_is_ambiguous
+    description: Exact object-name and alias matches share one ambiguity pool.
+    steps:
+      - run: |
+          first = create($nothing);
+          first.name = "auditexact";
+          add_property(first, "aliases", {}, {player, "rw"});
+          move(first, player);
+          second = create($nothing);
+          second.name = "other audit exact";
+          add_property(second, "aliases", {"auditexact"}, {player, "rw"});
+          move(second, player);
+          add_verb(player, {player, "xd", "auditlook"}, {"any", "none", "none"});
+          set_verb_code(player, "auditlook", {
+            "notify(player, \"DOBJ:\" + toliteral(dobj));"
+          });
+          return {first, second};
+        capture: objs
+        as: wizard
+      - command: "auditlook auditexact"
+        expect:
+          output: "DOBJ:#-2"
+    cleanup:
+      - run: 'delete_verb(player, "auditlook");'
+        as: wizard
+      - run: "recycle({objs}[1]); recycle({objs}[2]);"
+        as: wizard
+
+  - name: audit_name_alias_partial_match_is_ambiguous
+    description: Partial object-name and alias matches share one ambiguity pool.
+    steps:
+      - run: |
+          first = create($nothing);
+          first.name = "auditpartialone";
+          add_property(first, "aliases", {}, {player, "rw"});
+          move(first, player);
+          second = create($nothing);
+          second.name = "other audit partial";
+          add_property(second, "aliases", {"auditpartialtwo"}, {player, "rw"});
+          move(second, player);
+          add_verb(player, {player, "xd", "auditlook"}, {"any", "none", "none"});
+          set_verb_code(player, "auditlook", {
+            "notify(player, \"DOBJ:\" + toliteral(dobj));"
+          });
+          return {first, second};
+        capture: objs
+        as: wizard
+      - command: "auditlook auditpartial"
+        expect:
+          output: "DOBJ:#-2"
+    cleanup:
+      - run: 'delete_verb(player, "auditlook");'
+        as: wizard
+      - run: "recycle({objs}[1]); recycle({objs}[2]);"
+        as: wizard
+
+  - name: audit_player_name_matches_room_contents
+    description: The current player is still considered when matching room contents by name.
+    steps:
+      - run: |
+          old_name = player.name;
+          player.name = "auditplayerunique";
+          add_property(player, "audit_old_name", old_name, {player, "rw"});
+          add_verb(player, {player, "xd", "auditlook"}, {"any", "none", "none"});
+          set_verb_code(player, "auditlook", {
+            "notify(player, \"ISPLAYER:\" + tostr(dobj == player));"
+          });
+          return 1;
+        as: wizard
+      - command: "auditlook auditplayerunique"
+        expect:
+          output: "ISPLAYER:1"
+    cleanup:
+      - run: |
+          player.name = player.audit_old_name;
+          delete_property(player, "audit_old_name");
+          delete_verb(player, "auditlook");
+        as: wizard
+
+  - name: audit_do_command_runs_before_semicolon_eval
+    description: do_command is invoked even for a semicolon eval command.
+    steps:
+      - run: |
+          try
+            add_property(#0, "audit_do_command_seen", "", {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          try
+            add_verb(#0, {#0, "rxd", "do_command"}, {"this", "none", "this"});
+          except (E_INVARG)
+          endtry
+          set_verb_code(#0, "do_command", {
+            "#0.audit_do_command_seen = args[1];",
+            "return 0;"
+          });
+          return 1;
+        as: wizard
+      - command: ";return 12345;"
+      - run: "return #0.audit_do_command_seen;"
+        as: wizard
+        expect:
+          value: ";"
+    cleanup:
+      - run: |
+          try
+            delete_verb(#0, "do_command");
+          except (ANY)
+          endtry
+          try
+            delete_property(#0, "audit_do_command_seen");
+          except (ANY)
+          endtry
+        as: wizard
+
+  - name: audit_huh_runs_after_argspec_mismatch
+    description: A matching verb name with mismatching argspec falls through to huh.
+    steps:
+      - run: |
+          room = player.location;
+          add_verb(player, {player, "xd", "auditmismatch"}, {"none", "none", "none"});
+          set_verb_code(player, "auditmismatch", {"notify(player, \"BAD_MATCH\");"});
+          add_verb(room, {player, "xd", "huh"}, {"none", "none", "none"});
+          set_verb_code(room, "huh", {
+            "notify(player, \"HUH:\" + verb);",
+            "notify(player, \"ARGSTR:\" + argstr);"
+          });
+          return room;
+        capture: room
+        as: wizard
+      - command: "auditmismatch object"
+        expect:
+          output:
+            - "HUH:auditmismatch"
+            - "ARGSTR:object"
+    cleanup:
+      - run: 'delete_verb(player, "auditmismatch"); delete_verb({room}, "huh");'
+        as: wizard
+
+  - name: audit_say_shortcut_reparses_preposition
+    description: Leading quote rewrites to say and then receives normal preposition parsing.
+    steps:
+      - run: |
+          box = create($nothing);
+          box.name = "auditbox";
+          move(box, player);
+          add_verb(player, {player, "xd", "say"}, {"any", "in", "any"});
+          set_verb_code(player, "say", {
+            "notify(player, \"DOBJSTR:\" + dobjstr);",
+            "notify(player, \"PREPSTR:\" + prepstr);",
+            "notify(player, \"IOBJSTR:\" + iobjstr);"
+          });
+          return box;
+        capture: box
+        as: wizard
+      - command: '"widget in auditbox'
+        expect:
+          output:
+            - "DOBJSTR:widget"
+            - "PREPSTR:in"
+            - "IOBJSTR:auditbox"
+    cleanup:
+      - run: 'delete_verb(player, "say"); recycle({box});'
+        as: wizard
+
+  - name: audit_emote_shortcut_reparses_preposition
+    description: Leading colon rewrites to emote and then receives normal preposition parsing.
+    steps:
+      - run: |
+          add_verb(player, {player, "xd", "emote"}, {"any", "at", "any"});
+          set_verb_code(player, "emote", {
+            "notify(player, \"DOBJSTR:\" + dobjstr);",
+            "notify(player, \"PREPSTR:\" + prepstr);",
+            "notify(player, \"IOBJSTR:\" + iobjstr);",
+            "notify(player, \"IOBJISPLAYER:\" + tostr(iobj == player));"
+          });
+          return 1;
+        as: wizard
+      - command: ":wave at me"
+        expect:
+          output:
+            - "DOBJSTR:wave"
+            - "PREPSTR:at"
+            - "IOBJSTR:me"
+            - "IOBJISPLAYER:1"
+    cleanup:
+      - run: 'delete_verb(player, "emote");'
+        as: wizard

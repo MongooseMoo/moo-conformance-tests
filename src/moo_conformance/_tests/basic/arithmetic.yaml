@@ -38,6 +38,16 @@ tests:
     expect:
       value: 5.5
 
+  - name: mixed_int_float_addition_type_error
+    code: "1.0 + 1"
+    expect:
+      error: E_TYPE
+
+  - name: mixed_int_float_comparison_type_error
+    code: "5.5 > 5"
+    expect:
+      error: E_TYPE
+
   - name: parentheses_precedence
     code: "(2 + 2) * 3"
     expect:

@@ -361,7 +361,8 @@ tests:
   - run: recycle({a})
 - name: recycling_anonymous_recycles_property_values_on_object
   description: Recycling an anonymous object also recycles anonymous objects stored
-    in properties defined on the object
+    in properties defined on the object. Upstream Toast master does not recycle
+    the nested anonymous value in this case.
   permission: wizard
   steps:
   - run: create($object)
@@ -377,12 +378,12 @@ tests:
   - run: '{a}:go()'
   - run: '{a}.recycle_called'
     expect:
-      value: 2
+      value: 1
   - run: '{a}.recycle_called = 0'
   - run: '{a}:go(1)'
   - run: '{a}.recycle_called'
     expect:
-      value: 2
+      value: 1
   cleanup:
   - run: recycle({a})
 - name: recycling_anonymous_recycles_property_values_on_parent

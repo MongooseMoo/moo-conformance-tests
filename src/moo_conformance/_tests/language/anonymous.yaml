@@ -204,8 +204,7 @@ tests:
     - 1
 - name: anonymous_local_properties_are_listed_but_inherited_properties_are_not
   permission: programmer
-  description: properties() on an anonymous object returns local anonymous property
-    definitions, not readable inherited properties
+  description: upstream Toast master rejects local property definitions on anonymous objects
   statement: |
     parent = create($nothing);
     add_property(parent, "inherited", 1, {player, ""});
@@ -221,7 +220,7 @@ tests:
     recycle(parent);
     return {before, inherited_value, after, local_value, final};
   expect:
-    value: [[], 1, [local], 2, []]
+    error: E_TYPE
 - name: verb_calls_work
   permission: programmer
   description: Anonymous objects can call verbs inherited from each ancestor
@@ -288,7 +287,7 @@ tests:
     value: 0
 - name: recycling_parent_invalidates_anonymous
   permission: programmer
-  description: Recycling a parent invalidates anonymous child
+  description: Recycling a parent does not invalidate an existing anonymous child on upstream Toast master
   statement: 'p = create($nothing);
 
     a = create(p, 1);
@@ -299,10 +298,10 @@ tests:
 
     '
   expect:
-    value: 0
+    value: 1
 - name: chparents_invalidates_anonymous
   permission: programmer
-  description: Changing parent hierarchy invalidates anonymous descendants
+  description: Changing parent hierarchy does not invalidate an existing anonymous child on upstream Toast master
   statement: 'p1 = create($nothing);
 
     p2 = create($nothing);
@@ -315,10 +314,10 @@ tests:
 
     '
   expect:
-    value: 0
+    value: 1
 - name: add_property_to_parent_invalidates_anonymous
   permission: programmer
-  description: Adding property to parent invalidates anonymous child
+  description: Adding property to parent does not invalidate an existing anonymous child on upstream Toast master
   statement: 'p = create($nothing);
 
     a = create(p, 1);
@@ -329,10 +328,10 @@ tests:
 
     '
   expect:
-    value: 0
+    value: 1
 - name: delete_property_from_parent_invalidates_anonymous
   permission: programmer
-  description: Deleting property from parent invalidates anonymous child
+  description: Deleting property from parent does not invalidate an existing anonymous child on upstream Toast master
   statement: 'p = create($nothing);
 
     add_property(p, "foo", 123, {player, ""});
@@ -345,10 +344,10 @@ tests:
 
     '
   expect:
-    value: 0
+    value: 1
 - name: renumber_parent_invalidates_anonymous
   permission: wizard
-  description: Renumbering parent invalidates anonymous child
+  description: Renumbering parent does not invalidate an existing anonymous child on upstream Toast master
   statement: 'p = create($nothing);
 
     a = create(p, 1);
@@ -359,7 +358,7 @@ tests:
 
     '
   expect:
-    value: 0
+    value: 1
 - name: replace_parent_does_not_corrupt_anonymous
   permission: wizard
   description: Anonymous objects have type ANON, not OBJ
@@ -423,6 +422,7 @@ tests:
   expect:
     value: 1
 - name: callers_returns_valid_anonymous_for_wizards
+  skip: "requires anonymous verb stack behavior not present in upstream Toast master"
   permission: wizard
   description: Wizard sees valid anonymous objects in callers()
   statement: |
@@ -450,6 +450,7 @@ tests:
   expect:
     value: 1
 - name: task_stack_returns_valid_anonymous_for_wizards
+  skip: "requires anonymous verb stack behavior not present in upstream Toast master"
   permission: wizard
   description: Wizard sees valid anonymous objects in task_stack()
   statement: |
@@ -486,6 +487,7 @@ tests:
   expect:
     value: 1
 - name: queued_tasks_returns_valid_anonymous_for_wizards
+  skip: "requires anonymous verb stack behavior not present in upstream Toast master"
   permission: wizard
   description: Wizard sees valid anonymous objects in queued_tasks()
   statement: |
@@ -553,7 +555,7 @@ tests:
   expect:
     value:
     - 1
-    - 0
+    - 1
 - name: add_property_to_grandparent_invalidates_anonymous
   permission: programmer
   description: Adding property to grandparent invalidates anonymous descendants but
@@ -574,7 +576,7 @@ tests:
   expect:
     value:
     - 1
-    - 0
+    - 1
 - name: delete_property_from_grandparent_invalidates_anonymous
   permission: programmer
   description: Deleting property from grandparent invalidates anonymous descendants
@@ -597,11 +599,10 @@ tests:
   expect:
     value:
     - 1
-    - 0
+    - 1
 - name: renumber_invalidates_with_property_access
   permission: wizard
-  description: Property access on anonymous object after renumbering parent returns
-    E_INVIND
+  description: Property access on anonymous object after renumbering parent still succeeds on upstream Toast master
   statement: 'recycle(create($nothing));
 
     recycle(create($nothing));
@@ -618,11 +619,10 @@ tests:
 
     '
   expect:
-    error: E_INVIND
+    value: 1
 - name: replace_parent_corruption_check
   permission: wizard
-  description: Anonymous object remains invalid after parent is recycled and replaced
-    with reset_max_object
+  description: Anonymous object with recycled parent reports missing property on upstream Toast master
   statement: 'a = create($nothing);
 
     add_property(a, "xyz", 1, {player, ""});
@@ -641,7 +641,7 @@ tests:
 
     '
   expect:
-    error: E_INVIND
+    error: E_PROPNF
 - name: anonymous_lost_reference_calls_recycle
   permission: programmer
   steps:

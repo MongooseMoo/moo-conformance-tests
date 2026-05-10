@@ -39,6 +39,9 @@ def _server_features(runner) -> set[str]:
 
 
 def _has_feature(runner, feature: str) -> bool:
+    if feature == "64bit":
+        result = runner.transport.execute("return typeof(2147483648) == INT;")
+        return result.success and result.value == 1
     return feature in _server_features(runner)
 
 

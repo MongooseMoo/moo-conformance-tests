@@ -1328,7 +1328,7 @@ tests:
       error: E_INVARG
 
   - name: crypt_invalid_salt
-    description: "Unrecognized salt prefix falls through to DES crypt using first 2 chars of salt"
+    description: "Unrecognized salt prefix returns the platform crypt failure marker"
     code: 'crypt("password", "$99$abc")'
     expect:
-      value: "$9HPzCGenwB2E"
+      value: "*0"

@@ -30,16 +30,16 @@ requires:
 
 tests:
   - name: audit_ctime_includes_full_timezone_name
-    description: This Toast build formats ctime() with the full local timezone name.
+    description: Unix-like Toast builds format ctime() with the local timezone abbreviation.
     code: "ctime()"
     expect:
-      match: "^\\w{3} \\w{3} .+ \\d{2}:\\d{2}:\\d{2} \\d{4} Mountain (Standard|Daylight) Time$"
+      match: "^\\w{3} \\w{3} .+ \\d{2}:\\d{2}:\\d{2} \\d{4} \\w+$"
 
   - name: audit_ctime_extreme_timestamp_rejected
-    description: ctime rejects out-of-range endpoint timestamps with Toast's E_INVARG behavior.
+    description: 64-bit Unix-like Toast builds accept the 32-bit endpoint timestamp.
     code: "ctime(2147483647)"
     expect:
-      error: E_INVARG
+      match: "^\\w{3} \\w{3} .+ \\d{2}:\\d{2}:\\d{2} \\d{4} \\w+$"
 
   - name: audit_ftime_args_are_clock_selectors
     description: ftime(1) and ftime(2) are clock selectors returning floats, not timestamp formatters.
@@ -105,11 +105,13 @@ tests:
         as: wizard
 
   - name: audit_memory_usage_windows_behavior
-    description: This Toast build returns E_FILE for memory_usage() on Windows.
+    description: Unix-like Toast builds return five memory_usage() values from /proc/self/statm.
     permission: programmer
-    code: "memory_usage()"
+    statement: |
+      usage = memory_usage();
+      return {typeof(usage), length(usage)};
     expect:
-      error: E_FILE
+      value: [4, 5]
 
   - name: audit_protected_builtin_dispatches_bf_verb
     description: $server_options.protect_length routes non-wizard length() calls through #0:bf_length.

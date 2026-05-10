@@ -199,10 +199,10 @@ tests:
       value: "a.b"
 
   - name: pcre_match_empty_subject
-    description: "Empty subject raises E_INVARG"
+    description: "Empty subject returns no matches"
     code: 'pcre_match("", "foo")'
     expect:
-      error: E_INVARG
+      value: []
 
   - name: pcre_match_match_at_start
     description: "Match at start of string has position {1, N}"

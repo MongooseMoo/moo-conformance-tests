@@ -158,11 +158,13 @@ tests:
   expect:
     value: 4
 - name: memory_usage_returns_five_elements
-  description: Returns E_FILE on Windows MSVC builds without /proc/self/statm
+  description: Returns five values on Unix-like builds with /proc/self/statm
   permission: programmer
-  code: memory_usage()
+  statement: |
+    usage = memory_usage();
+    return {typeof(usage), length(usage)};
   expect:
-    error: E_FILE
+    value: [4, 5]
 - name: server_log_requires_wizard
   permission: programmer
   code: server_log("test")

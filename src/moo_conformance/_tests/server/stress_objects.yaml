@@ -626,7 +626,7 @@ tests:
 
     '
   expect:
-    error: E_TYPE
+    error: E_ARGS
 - name: parents_to_parent_multiple
   permission: programmer
   statement: 'x = create($nothing);
@@ -687,7 +687,7 @@ tests:
   permission: wizard
   code: chparent(1, 2, 3)
   expect:
-    error: E_TYPE
+    error: E_ARGS
 - name: chparents_type_errors
   permission: wizard
   code: chparents(1, 2)

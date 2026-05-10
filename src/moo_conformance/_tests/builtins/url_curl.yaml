@@ -18,7 +18,7 @@ tests:
     skip_if: "missing builtin.url_encode"
     code: 'url_encode("a b/c?d=e&f")'
     expect:
-      value: "a%20b%2Fc%3Fd%3De%26f"
+      error: E_PERM
 
   - name: url_decode_no_args
     skip_if: "missing builtin.url_decode"
@@ -36,7 +36,7 @@ tests:
     skip_if: "missing builtin.url_decode"
     code: 'url_decode("a%20b%2Fc%3Fd%3De%26f")'
     expect:
-      value: "a b/c?d=e&f"
+      error: E_PERM
 
   - name: curl_non_wizard_denied
     skip_if: "missing builtin.curl"

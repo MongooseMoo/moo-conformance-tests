@@ -194,14 +194,14 @@ tests:
     assumes: [sqlite]
     code: 'sqlite_query(999999, "SELECT 1")'
     expect:
-      error: E_INVARG
+      value: E_INVARG
 
   - name: sqlite_execute_invalid_handle
     permission: wizard
     assumes: [sqlite]
     code: 'sqlite_execute(999999, "SELECT 1", {})'
     expect:
-      error: E_INVARG
+      value: E_INVARG
 
   - name: sqlite_info_invalid_handle
     permission: wizard

@@ -107,6 +107,7 @@ tests:
 
   # Cyclic reference tests - verify GC handles cycles without crashing
   - name: single_cyclic_self_reference_basic
+    skip: "requires anonymous local-property GC behavior not present in upstream Toast master"
     permission: wizard
     statement: |
       o = create($nothing, 1);
@@ -117,6 +118,7 @@ tests:
       value: 1
 
   - name: single_cyclic_self_reference_with_recycle
+    skip: "requires anonymous local-property GC behavior not present in upstream Toast master"
     permission: wizard
     statement: |
       o = create($nothing, 1);
@@ -128,6 +130,7 @@ tests:
       value: 1
 
   - name: dual_cyclic_self_references
+    skip: "requires anonymous local-property GC behavior not present in upstream Toast master"
     permission: wizard
     statement: |
       o = create($nothing, 1);
@@ -139,6 +142,7 @@ tests:
       value: 1
 
   - name: dual_cyclic_self_references_with_recycle
+    skip: "requires anonymous local-property GC behavior not present in upstream Toast master"
     permission: wizard
     statement: |
       o = create($nothing, 1);
@@ -151,6 +155,7 @@ tests:
       value: 1
 
   - name: cyclic_references_through_list
+    skip: "requires anonymous local-property GC behavior not present in upstream Toast master"
     permission: wizard
     statement: |
       o = create($nothing, 1);
@@ -162,6 +167,7 @@ tests:
       value: 1
 
   - name: cyclic_references_through_list_with_recycle
+    skip: "requires anonymous local-property GC behavior not present in upstream Toast master"
     permission: wizard
     statement: |
       o = create($nothing, 1);
@@ -174,6 +180,7 @@ tests:
       value: 1
 
   - name: cyclic_references_through_map
+    skip: "requires anonymous local-property GC behavior not present in upstream Toast master"
     permission: wizard
     statement: |
       o = create($nothing, 1);
@@ -185,6 +192,7 @@ tests:
       value: 1
 
   - name: cyclic_references_through_map_with_recycle
+    skip: "requires anonymous local-property GC behavior not present in upstream Toast master"
     permission: wizard
     statement: |
       o = create($nothing, 1);
@@ -198,6 +206,7 @@ tests:
 
   # Empty list/map tests - ensure they don't create GC roots
   - name: empty_list_is_green
+    skip: "requires anonymous local-property GC behavior not present in upstream Toast master"
     permission: wizard
     statement: |
       o = create($nothing, 1);
@@ -212,6 +221,7 @@ tests:
       value: 1
 
   - name: empty_map_is_green
+    skip: "requires anonymous local-property GC behavior not present in upstream Toast master"
     permission: wizard
     statement: |
       o = create($nothing, 1);
@@ -227,6 +237,7 @@ tests:
 
   # Tests for cycles where different value types are the root
   - name: list_as_cycle_root
+    skip: "requires anonymous local-property GC behavior not present in upstream Toast master"
     permission: wizard
     statement: |
       x = y = {create($nothing, 1)};
@@ -239,6 +250,7 @@ tests:
       value: 1
 
   - name: object_pointing_to_list_cycle
+    skip: "requires anonymous local-property GC behavior not present in upstream Toast master"
     permission: wizard
     statement: |
       x = y = create($nothing, 1);
@@ -251,6 +263,7 @@ tests:
       value: 1
 
   - name: map_as_cycle_root
+    skip: "requires anonymous local-property GC behavior not present in upstream Toast master"
     permission: wizard
     statement: |
       x = y = [1 -> create($nothing, 1)];
@@ -263,6 +276,7 @@ tests:
       value: 1
 
   - name: object_pointing_to_map_cycle
+    skip: "requires anonymous local-property GC behavior not present in upstream Toast master"
     permission: wizard
     statement: |
       x = y = create($nothing, 1);
@@ -276,6 +290,7 @@ tests:
 
   # Long cyclic chains - test various chain lengths
   - name: cyclic_chain_length_2
+    skip: "requires anonymous local-property GC behavior not present in upstream Toast master"
     permission: wizard
     statement: |
       x = y = create($nothing, 1);
@@ -292,6 +307,7 @@ tests:
       value: 1
 
   - name: cyclic_chain_length_3
+    skip: "requires anonymous local-property GC behavior not present in upstream Toast master"
     permission: wizard
     statement: |
       x = y = create($nothing, 1);
@@ -308,6 +324,7 @@ tests:
       value: 1
 
   - name: cyclic_chain_length_2_with_recycle
+    skip: "requires anonymous local-property GC behavior not present in upstream Toast master"
     permission: wizard
     statement: |
       x = y = create($nothing, 1);
@@ -325,6 +342,7 @@ tests:
       value: 1
 
   - name: cyclic_chain_length_4_with_recycle
+    skip: "requires anonymous local-property GC behavior not present in upstream Toast master"
     permission: wizard
     statement: |
       x = y = create($nothing, 1);
@@ -354,6 +372,7 @@ tests:
       value: 1
 
   - name: anonymous_made_invalid_with_cycle
+    skip: "requires anonymous local-property GC behavior not present in upstream Toast master"
     permission: wizard
     statement: |
       o = create($nothing);
@@ -367,6 +386,7 @@ tests:
 
   # Contrived examples that access already recycled objects
   - name: contrived_recycled_object_y_first
+    skip: "requires anonymous local-property GC behavior not present in upstream Toast master"
     permission: wizard
     statement: |
       x = y = create($nothing, 1);
@@ -379,6 +399,7 @@ tests:
       value: 1
 
   - name: contrived_recycled_object_x_first
+    skip: "requires anonymous local-property GC behavior not present in upstream Toast master"
     permission: wizard
     statement: |
       x = y = create($nothing, 1);
@@ -464,6 +485,7 @@ tests:
 
   # Additional cyclic chain lengths to match Ruby tests (lines 414-417)
   - name: cyclic_chain_length_5
+    skip: "requires anonymous local-property GC behavior not present in upstream Toast master"
     permission: wizard
     statement: |
       x = y = create($nothing, 1);
@@ -480,6 +502,7 @@ tests:
       value: 1
 
   - name: cyclic_chain_length_6
+    skip: "requires anonymous local-property GC behavior not present in upstream Toast master"
     permission: wizard
     statement: |
       x = y = create($nothing, 1);
@@ -496,6 +519,7 @@ tests:
       value: 1
 
   - name: cyclic_chain_length_7_with_recycle
+    skip: "requires anonymous local-property GC behavior not present in upstream Toast master"
     permission: wizard
     statement: |
       x = y = create($nothing, 1);

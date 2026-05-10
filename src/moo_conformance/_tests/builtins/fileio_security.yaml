@@ -364,7 +364,9 @@ tests:
   - name: traversal_backslash_mid
     permission: wizard
     description: |
-      Tests mid-path backslash traversal.
+      Tests mid-path backslash traversal. On Unix-like Toast builds,
+      backslash is not a path separator, so this resolves to a missing
+      file under the configured file directory.
     code: "return file_open(\"foo\\\\..\\\\bar\", \"r-tn\");"
     expect:
-      error: E_INVARG
+      error: E_FILE

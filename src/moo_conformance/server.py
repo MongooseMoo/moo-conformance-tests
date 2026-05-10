@@ -36,6 +36,7 @@ class ManagedServer:
         self._log_path: str | None = None
         self._log_file = None
         self._db_copy_path: Path | None = None
+        self._manifest_path: Path | None = None
 
     @property
     def port(self) -> int:
@@ -50,6 +51,12 @@ class ManagedServer:
     @property
     def default_db_path(self) -> Path:
         return self._default_db_path
+
+    @property
+    def manifest_path(self) -> Path:
+        if self._manifest_path is None:
+            raise RuntimeError("Server not started")
+        return self._manifest_path
 
     def start(self, db_path: Path | None = None, wait_for_port: bool = True) -> None:
         """Start the server subprocess.
@@ -86,6 +93,7 @@ class ManagedServer:
 
         if self._db_copy_path is None:
             raise RuntimeError("Managed server DB copy path is missing")
+        self._manifest_path = Path(self._temp_dir, "profile.json")
 
         # On the initial start, or when explicitly switching suites to a
         # different source database, refresh the managed working copy from the
@@ -102,6 +110,8 @@ class ManagedServer:
         command = self.command_template.format(
             port=self._port,
             db=db_posix,
+            manifest=self._manifest_path.as_posix(),
+            server_dir=Path(self._temp_dir).as_posix(),
         )
 
         # Open log file for server output
@@ -145,6 +155,7 @@ class ManagedServer:
             shutil.rmtree(self._temp_dir, ignore_errors=True)
             self._temp_dir = None
             self._db_copy_path = None
+            self._manifest_path = None
 
     def restart(self, db_path: Path | None = None, wait_for_port: bool = True) -> None:
         """Restart the server process in-place, preserving the working database."""

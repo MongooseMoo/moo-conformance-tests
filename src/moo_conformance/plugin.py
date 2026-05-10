@@ -29,6 +29,7 @@ from .schema import validate_test_suite, MooTestSuite, MooTestCase
 from .runner import YamlTestRunner
 from .capabilities import CapabilityManager, CapabilityState
 from .server import ManagedServer
+from .profile_gate import ProfileGateError, validate_manifest_paths
 
 # Global capability manager (session-scoped)
 capability_manager = CapabilityManager()
@@ -83,7 +84,7 @@ def pytest_addoption(parser):
         default=None,
         help=(
             "Shell command to start a MOO server. "
-            "Supports {port} and {db} placeholders. "
+            "Supports {port}, {db}, {manifest}, and {server_dir} placeholders. "
             "When set, the server is started/stopped automatically."
         ),
     )
@@ -106,6 +107,16 @@ def pytest_addoption(parser):
         "--moo-log-file",
         default=None,
         help="Path to the MOO server's log file (auto-detected with --server-command)",
+    )
+    parser.addoption(
+        "--oracle-profile-manifest",
+        default=None,
+        help="Path to the oracle profile manifest used to gate managed comparisons",
+    )
+    parser.addoption(
+        "--target-profile-manifest",
+        default=None,
+        help="Path to the target profile manifest (defaults to managed server {manifest})",
     )
 
 
@@ -136,6 +147,15 @@ def managed_server(request) -> Iterator[ManagedServer | None]:
     server = ManagedServer(command, db_path, port=port, host=host)
     try:
         server.start()
+        oracle_manifest = request.config.getoption("--oracle-profile-manifest")
+        target_manifest = request.config.getoption("--target-profile-manifest")
+        if target_manifest is None:
+            target_manifest = server.manifest_path
+        if oracle_manifest is not None:
+            try:
+                validate_manifest_paths(oracle_manifest, target_manifest)
+            except ProfileGateError as exc:
+                raise pytest.UsageError(str(exc)) from exc
         yield server
     finally:
         server.stop()

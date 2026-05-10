@@ -376,6 +376,7 @@ tests:
     value: 1
 - name: connection_name_lookup_records_result
   description: connection_name_lookup() can rewrite the saved connection name
+  skip_if: "not option.OUTBOUND_NETWORK"
   permission: wizard
   steps:
     - run: |
@@ -398,6 +399,7 @@ tests:
 
 - name: connection_name_lookup_no_rewrite_preserves_saved_name
   description: connection_name_lookup() with rewrite disabled should not mutate connection_name()
+  skip_if: "not option.OUTBOUND_NETWORK"
   permission: wizard
   steps:
     - run: |
@@ -673,6 +675,7 @@ tests:
     value: 0
 - name: buffered_output_length_increases_after_notify
   description: Notifying the current connection should increase its pending output
+  skip_if: "not option.OUTBOUND_NETWORK"
   permission: wizard
   steps:
     - run: |
@@ -712,6 +715,7 @@ tests:
     error: E_ARGS
 - name: boot_player_disconnects_open_connection
   description: boot_player() should disconnect a separately opened connection
+  skip_if: "not option.OUTBOUND_NETWORK"
   permission: wizard
   steps:
     - run: |

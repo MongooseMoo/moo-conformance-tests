@@ -45,6 +45,16 @@ def _has_feature(runner, feature: str) -> bool:
     return feature in _server_features(runner)
 
 
+def _has_option(runner, option: str) -> bool:
+    result = runner.transport.execute(f'return server_version("options.{option}");')
+    if not result.success:
+        return False
+    value = result.value
+    if value in (None, 0, "#-1", "OFF"):
+        return False
+    return True
+
+
 @pytest.mark.conformance
 def test_yaml_conformance(runner, yaml_test_case, moo_config):
     """Run a single YAML test case.
@@ -76,6 +86,14 @@ def test_yaml_conformance(runner, yaml_test_case, moo_config):
             builtin = condition[16:]
             if not _has_builtin(runner, builtin):
                 pytest.skip(f"Requires builtin: {builtin}")
+        elif condition.startswith("not option."):
+            option = condition[11:]
+            if not _has_option(runner, option):
+                pytest.skip(f"Requires option: {option}")
+        elif condition.startswith("option."):
+            option = condition[7:]
+            if _has_option(runner, option):
+                pytest.skip(f"Incompatible with option: {option}")
         else:
             pytest.skip(f"Skip condition: {condition}")
 

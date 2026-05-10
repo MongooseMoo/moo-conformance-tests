@@ -147,18 +147,31 @@ def managed_server(request) -> Iterator[ManagedServer | None]:
     server = ManagedServer(command, db_path, port=port, host=host)
     try:
         server.start()
-        oracle_manifest = request.config.getoption("--oracle-profile-manifest")
-        target_manifest = request.config.getoption("--target-profile-manifest")
-        if target_manifest is None:
-            target_manifest = server.manifest_path
-        if oracle_manifest is not None:
-            try:
-                validate_manifest_paths(oracle_manifest, target_manifest)
-            except ProfileGateError as exc:
-                raise pytest.UsageError(str(exc)) from exc
         yield server
     finally:
         server.stop()
+
+
+@pytest.fixture(scope="session", autouse=True)
+def profile_metadata_gate(request, managed_server) -> None:
+    """Reject invalid profile comparisons before any tests execute."""
+    oracle_manifest = request.config.getoption("--oracle-profile-manifest")
+    if oracle_manifest is None:
+        return
+
+    target_manifest = request.config.getoption("--target-profile-manifest")
+    if target_manifest is None:
+        if managed_server is None:
+            raise pytest.UsageError(
+                "--target-profile-manifest is required with --oracle-profile-manifest "
+                "unless --server-command is managing a target that writes {manifest}"
+            )
+        target_manifest = managed_server.manifest_path
+
+    try:
+        validate_manifest_paths(oracle_manifest, target_manifest)
+    except ProfileGateError as exc:
+        raise pytest.UsageError(str(exc)) from exc
 
 
 @pytest.fixture(scope="session")

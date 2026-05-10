@@ -1,0 +1,12 @@
+name: open_network_connection_options
+description: Profile-sensitive open_network_connection() option behavior.
+requires:
+  builtins:
+  - open_network_connection
+tests:
+- name: open_network_connection_disabled_returns_perm
+  permission: wizard
+  skip_if: option.OUTBOUND_NETWORK
+  code: open_network_connection("127.0.0.1", 1)
+  expect:
+    error: E_PERM

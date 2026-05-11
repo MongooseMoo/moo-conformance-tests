@@ -137,6 +137,7 @@ skip_if: "missing builtin.foo"       # Skip if builtin missing
 | `--moo-server-dir` | none | Path to the MOO server's working directory |
 | `--moo-log-file` | none | Path to the MOO server's log file |
 | `--moo-login-script-env` | none | Environment variable containing newline-separated raw login commands |
+| `--moo-skip-standard-properties` | false | Skip automatic Test.db standard property initialization on connect |
 
 ### `--moo-server-dir`
 

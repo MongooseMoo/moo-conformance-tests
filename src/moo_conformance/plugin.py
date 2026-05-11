@@ -128,6 +128,11 @@ def pytest_addoption(parser):
             "When omitted, the harness uses the default connect command for the requested user."
         ),
     )
+    parser.addoption(
+        "--moo-skip-standard-properties",
+        action="store_true",
+        help="Skip automatic Test.db standard property initialization on connect.",
+    )
 
 
 def _load_login_script(request) -> list[str] | None:
@@ -271,7 +276,13 @@ def transport(request, managed_server) -> Iterator[MooTransport]:
         if port is None:
             port = 7777
     login_script = _load_login_script(request)
-    t = SocketTransport(host, port, login_script=login_script)
+    ensure_standard_properties = not request.config.getoption("--moo-skip-standard-properties")
+    t = SocketTransport(
+        host,
+        port,
+        login_script=login_script,
+        ensure_standard_properties=ensure_standard_properties,
+    )
     t.connect("wizard")  # Connect ONCE at session start
 
     yield t

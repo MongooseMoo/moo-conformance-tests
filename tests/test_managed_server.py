@@ -4,6 +4,7 @@ import pytest
 
 from moo_conformance.plugin import _load_login_script
 from moo_conformance.server import ManagedServer
+from moo_conformance.transport import SocketTransport
 
 
 class _FakeProcess:
@@ -104,3 +105,9 @@ def test_load_login_script_env_requires_value(monkeypatch):
 
     with pytest.raises(pytest.UsageError):
         _load_login_script(_FakeRequest("MOO_LOGIN_SCRIPT_TEST"))
+
+
+def test_socket_transport_can_skip_standard_property_initialization():
+    transport = SocketTransport(ensure_standard_properties=False)
+
+    assert transport.ensure_standard_properties is False

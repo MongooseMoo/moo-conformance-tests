@@ -198,10 +198,12 @@ class SocketTransport(MooTransport):
         host: str = "localhost",
         port: int = 7777,
         login_script: list[str] | None = None,
+        ensure_standard_properties: bool = True,
     ):
         self.host = host
         self.port = port
         self.login_script = login_script
+        self.ensure_standard_properties = ensure_standard_properties
         self.sock: socket.socket | None = None
         self.current_user = "programmer"
 
@@ -228,7 +230,7 @@ class SocketTransport(MooTransport):
         self._send("SUFFIX -=!-v-!=-")
 
         # Ensure standard properties exist (only once per test session)
-        if not SocketTransport._properties_initialized:
+        if self.ensure_standard_properties and not SocketTransport._properties_initialized:
             self._ensure_standard_properties()
             SocketTransport._properties_initialized = True
 

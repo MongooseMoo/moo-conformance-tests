@@ -193,9 +193,15 @@ class SocketTransport(MooTransport):
     # Class-level flag to track if standard properties have been set up
     _properties_initialized = False
 
-    def __init__(self, host: str = "localhost", port: int = 7777):
+    def __init__(
+        self,
+        host: str = "localhost",
+        port: int = 7777,
+        login_script: list[str] | None = None,
+    ):
         self.host = host
         self.port = port
+        self.login_script = login_script
         self.sock: socket.socket | None = None
         self.current_user = "programmer"
 
@@ -215,12 +221,7 @@ class SocketTransport(MooTransport):
         }
         login_user = user_map.get(user, user)
 
-        # Send connect command
-        self._send(f"connect {login_user}")
-
-        # Consume initial login output (welcome message, room description, etc.)
-        # This output is sent before PREFIX/SUFFIX are set, so it has no markers.
-        self._consume_login_output()
+        self._login(login_user)
 
         # Set up PREFIX/SUFFIX for response parsing
         self._send("PREFIX -=!-^-!=-")
@@ -325,14 +326,23 @@ class SocketTransport(MooTransport):
         self.sock.connect((self.host, self.port))
 
         # Log in as new user
-        self._send(f"connect {login_user}")
-        self._consume_login_output()
+        self._login(login_user)
 
         # Set up PREFIX/SUFFIX for response parsing
         self._send("PREFIX -=!-^-!=-")
         self._send("SUFFIX -=!-v-!=-")
 
         self.current_user = user
+
+    def _login(self, login_user: str) -> None:
+        """Run the configured login script, or the default connect command."""
+        commands = self.login_script
+        if commands is None:
+            commands = [f"connect {login_user}"]
+
+        for command in commands:
+            self._send(command)
+            self._consume_login_output()
 
     def open_connection(self, port: int | None = None) -> "TestConnection":
         """Open a new unauthenticated connection for lifecycle testing."""

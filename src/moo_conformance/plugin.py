@@ -18,6 +18,8 @@ Usage from command line:
     pytest --pyargs moo_conformance --moo-port=7777
 """
 
+import os
+
 import pytest
 import yaml
 from pathlib import Path
@@ -118,6 +120,33 @@ def pytest_addoption(parser):
         default=None,
         help="Path to the target profile manifest (defaults to managed server {manifest})",
     )
+    parser.addoption(
+        "--moo-login-script-env",
+        default=None,
+        help=(
+            "Environment variable containing newline-separated raw login commands. "
+            "When omitted, the harness uses the default connect command for the requested user."
+        ),
+    )
+
+
+def _load_login_script(request) -> list[str] | None:
+    env_name = request.config.getoption("--moo-login-script-env")
+    if env_name is None:
+        return None
+
+    raw = os.environ.get(env_name)
+    if raw is None or raw == "":
+        raise pytest.UsageError(
+            f"--moo-login-script-env={env_name} was provided, but that environment variable is empty"
+        )
+
+    commands = [line.strip() for line in raw.splitlines() if line.strip()]
+    if not commands:
+        raise pytest.UsageError(
+            f"--moo-login-script-env={env_name} did not contain any login commands"
+        )
+    return commands
 
 
 @pytest.fixture(scope="session")
@@ -241,7 +270,8 @@ def transport(request, managed_server) -> Iterator[MooTransport]:
         port = request.config.getoption("--moo-port")
         if port is None:
             port = 7777
-    t = SocketTransport(host, port)
+    login_script = _load_login_script(request)
+    t = SocketTransport(host, port, login_script=login_script)
     t.connect("wizard")  # Connect ONCE at session start
 
     yield t

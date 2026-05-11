@@ -1,5 +1,8 @@
 from pathlib import Path
 
+import pytest
+
+from moo_conformance.plugin import _load_login_script
 from moo_conformance.server import ManagedServer
 
 
@@ -71,3 +74,33 @@ def test_command_template_supports_manifest_and_server_dir(monkeypatch, tmp_path
     assert "--dir" in command_args
     server_dir_arg = command_args[command_args.index("--dir") + 1]
     assert server_dir_arg == server.manifest_path.parent.as_posix()
+
+
+class _FakeConfig:
+    def __init__(self, env_name):
+        self.env_name = env_name
+
+    def getoption(self, name):
+        if name == "--moo-login-script-env":
+            return self.env_name
+        raise AssertionError(name)
+
+
+class _FakeRequest:
+    def __init__(self, env_name):
+        self.config = _FakeConfig(env_name)
+
+
+def test_load_login_script_from_env(monkeypatch):
+    monkeypatch.setenv("MOO_LOGIN_SCRIPT_TEST", "connect Codex secret 1\n")
+
+    assert _load_login_script(_FakeRequest("MOO_LOGIN_SCRIPT_TEST")) == [
+        "connect Codex secret 1"
+    ]
+
+
+def test_load_login_script_env_requires_value(monkeypatch):
+    monkeypatch.delenv("MOO_LOGIN_SCRIPT_TEST", raising=False)
+
+    with pytest.raises(pytest.UsageError):
+        _load_login_script(_FakeRequest("MOO_LOGIN_SCRIPT_TEST"))

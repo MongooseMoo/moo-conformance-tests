@@ -30,6 +30,17 @@ tests:
   code: valid(create({}, 1))
   expect:
     value: 1
+# Anonymous objects are instances, not classes: their verb/property structure
+# cannot be modified. ToastStunt raises E_TYPE when add_verb or add_property is
+# called on an anonymous object (querying with verbs()/properties() still works).
+- name: add_verb_on_anonymous_raises_e_type
+  code: 'add_verb(create($nothing, 1), {player, "rxd", "foobar"}, {"this", "none", "this"})'
+  expect:
+    error: E_TYPE
+- name: add_property_on_anonymous_raises_e_type
+  code: 'add_property(create($nothing, 1), "anon_prop", 5, {player, ""})'
+  expect:
+    error: E_TYPE
 - name: anonymous_have_parents
   statement: 'x = create($nothing);
 

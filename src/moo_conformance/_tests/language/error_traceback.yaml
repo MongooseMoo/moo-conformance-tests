@@ -355,3 +355,25 @@ tests:
       - boom
     teardown:
       code: "recycle(o);"
+
+  # --- Server-printed traceback format (uncaught error in a command verb) ---
+
+  - name: uncaught_command_traceback_format
+    description: >
+      When a command verb aborts with an uncaught error, the server prints a
+      traceback to the player. Each line is the bare frame (no per-connection
+      prefix), and the final line is exactly "(End of traceback)", matching
+      ToastStunt.
+    steps:
+      - run: |
+          add_verb(player, {player, "xd", "boomcmd"}, {"any", "none", "none"});
+          set_verb_code(player, "boomcmd", {"return {}[1];"});
+          return 1;
+        as: wizard
+      - command: boomcmd
+        expect:
+          output:
+            match: '(?m)^#\d+:boomcmd \(this == #\d+\), line 1:\s+Range error\n\(End of traceback\)$'
+    cleanup:
+      - run: 'delete_verb(player, "boomcmd");'
+        as: wizard

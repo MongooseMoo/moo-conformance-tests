@@ -417,3 +417,22 @@ tests:
     cleanup:
       - run: 'delete_verb(player, "evcmd");'
         as: wizard
+
+  - name: traceback_uses_stored_verb_name_spec
+    description: >
+      A printed traceback names the frame's verb by its stored name spec
+      (including any "*" wildcard), not by the word it was invoked with,
+      matching ToastStunt. Here the verb "boom*cmd" is invoked as "boomcmd".
+    steps:
+      - run: |
+          add_verb(player, {player, "xd", "boom*cmd"}, {"any", "none", "none"});
+          set_verb_code(player, "boomcmd", {"return {}[1];"});
+          return 1;
+        as: wizard
+      - command: boomcmd
+        expect:
+          output:
+            match: '(?m)^#\d+:boom\*cmd \(this == #\d+\), line 1:\s+Range error'
+    cleanup:
+      - run: 'delete_verb(player, "boomcmd");'
+        as: wizard

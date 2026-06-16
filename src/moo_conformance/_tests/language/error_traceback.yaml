@@ -1,379 +1,419 @@
-name: error_traceback
-description: >
-  Exception value structure and traceback content.
-  Tests the four-element exception value, traceback frame fields,
-  line numbers, raise() custom values, and frame counts.
+name: error_traceback
+description: >
+  Exception value structure and traceback content.
+  Tests the four-element exception value, traceback frame fields,
+  line numbers, raise() custom values, and frame counts.
+
+tests:
+  # --- Exception value structure ---
+
+  - name: caught_exception_has_four_elements
+    description: A caught exception value has exactly 4 elements
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "err_inner"}, {"this", "none", "this"});
+        set_verb_code(o, "err_inner", {"return 1/0;"});
+        add_verb(o, {player, "xd", "err_outer"}, {"this", "none", "this"});
+        set_verb_code(o, "err_outer", {"try", "return this:err_inner();", "except e (ANY)", "return e;", "endtry"});
+    statement: |
+      e = o:err_outer();
+      return length(e);
+    expect:
+      value: 4
+    teardown:
+      code: "recycle(o);"
+
+  - name: exception_fourth_element_is_list
+    description: The fourth element of a caught exception is a list (the traceback)
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "err_inner"}, {"this", "none", "this"});
+        set_verb_code(o, "err_inner", {"return 1/0;"});
+        add_verb(o, {player, "xd", "err_outer"}, {"this", "none", "this"});
+        set_verb_code(o, "err_outer", {"try", "return this:err_inner();", "except e (ANY)", "return e;", "endtry"});
+    statement: |
+      e = o:err_outer();
+      return typeof(e[4]) == LIST;
+    expect:
+      value: 1
+    teardown:
+      code: "recycle(o);"
+
+  - name: exception_stack_has_frames
+    description: The traceback list is non-empty
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "err_inner"}, {"this", "none", "this"});
+        set_verb_code(o, "err_inner", {"return 1/0;"});
+        add_verb(o, {player, "xd", "err_outer"}, {"this", "none", "this"});
+        set_verb_code(o, "err_outer", {"try", "return this:err_inner();", "except e (ANY)", "return e;", "endtry"});
+    statement: |
+      e = o:err_outer();
+      return length(e[4]) >= 1;
+    expect:
+      value: 1
+    teardown:
+      code: "recycle(o);"
+
+  # --- Exception stack frame content ---
+
+  - name: exception_stack_frame_has_six_fields
+    description: Each traceback frame has 6 elements (includes line number by default)
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "err_inner"}, {"this", "none", "this"});
+        set_verb_code(o, "err_inner", {"return 1/0;"});
+        add_verb(o, {player, "xd", "err_outer"}, {"this", "none", "this"});
+        set_verb_code(o, "err_outer", {"try", "return this:err_inner();", "except e (ANY)", "return e;", "endtry"});
+    statement: |
+      e = o:err_outer();
+      return length(e[4][1]);
+    expect:
+      value: 6
+    teardown:
+      code: "recycle(o);"
+
+  - name: exception_stack_contains_error_verb
+    description: First traceback frame verb name is where the error occurred
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "err_inner"}, {"this", "none", "this"});
+        set_verb_code(o, "err_inner", {"return 1/0;"});
+        add_verb(o, {player, "xd", "err_outer"}, {"this", "none", "this"});
+        set_verb_code(o, "err_outer", {"try", "return this:err_inner();", "except e (ANY)", "return e;", "endtry"});
+    statement: |
+      e = o:err_outer();
+      return e[4][1][2];
+    expect:
+      value: err_inner
+    teardown:
+      code: "recycle(o);"
+
+  - name: exception_stack_verb_order_in_chain
+    description: Traceback lists error verb first, then calling verb
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "err_inner"}, {"this", "none", "this"});
+        set_verb_code(o, "err_inner", {"return 1/0;"});
+        add_verb(o, {player, "xd", "err_outer"}, {"this", "none", "this"});
+        set_verb_code(o, "err_outer", {"try", "return this:err_inner();", "except e (ANY)", "return e;", "endtry"});
+    statement: |
+      e = o:err_outer();
+      return {e[4][1][2], e[4][2][2]};
+    expect:
+      value: ["err_inner", "err_outer"]
+    teardown:
+      code: "recycle(o);"
+
+  - name: exception_stack_frame_this_field
+    description: The this field in traceback frames points to the correct object
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "err_inner"}, {"this", "none", "this"});
+        set_verb_code(o, "err_inner", {"return 1/0;"});
+        add_verb(o, {player, "xd", "err_outer"}, {"this", "none", "this"});
+        set_verb_code(o, "err_outer", {"try", "return this:err_inner();", "except e (ANY)", "return e;", "endtry"});
+    statement: |
+      e = o:err_outer();
+      return e[4][1][1] == o;
+    expect:
+      value: 1
+    teardown:
+      code: "recycle(o);"
+
+  - name: exception_stack_frame_vloc_field
+    description: The vloc field in traceback frames is the defining object
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "err_inner"}, {"this", "none", "this"});
+        set_verb_code(o, "err_inner", {"return 1/0;"});
+        add_verb(o, {player, "xd", "err_outer"}, {"this", "none", "this"});
+        set_verb_code(o, "err_outer", {"try", "return this:err_inner();", "except e (ANY)", "return e;", "endtry"});
+    statement: |
+      e = o:err_outer();
+      return e[4][1][4] == o;
+    expect:
+      value: 1
+    teardown:
+      code: "recycle(o);"
+
+  - name: exception_stack_frame_player_field
+    description: The player field in traceback frames is the connected player
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "err_inner"}, {"this", "none", "this"});
+        set_verb_code(o, "err_inner", {"return 1/0;"});
+        add_verb(o, {player, "xd", "err_outer"}, {"this", "none", "this"});
+        set_verb_code(o, "err_outer", {"try", "return this:err_inner();", "except e (ANY)", "return e;", "endtry"});
+    statement: |
+      e = o:err_outer();
+      return e[4][1][5] == player;
+    expect:
+      value: 1
+    teardown:
+      code: "recycle(o);"
+
+  # --- Exception value details ---
+
+  - name: exception_default_value_is_zero
+    description: e[3] is 0 for a builtin runtime error (division by zero)
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "err_inner"}, {"this", "none", "this"});
+        set_verb_code(o, "err_inner", {"return 1/0;"});
+        add_verb(o, {player, "xd", "err_outer"}, {"this", "none", "this"});
+        set_verb_code(o, "err_outer", {"try", "return this:err_inner();", "except e (ANY)", "return e;", "endtry"});
+    statement: |
+      e = o:err_outer();
+      return e[3];
+    expect:
+      value: 0
+    teardown:
+      code: "recycle(o);"
+
+  - name: exception_raise_custom_value
+    description: e[3] contains the value passed to raise()
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "err_inner"}, {"this", "none", "this"});
+        set_verb_code(o, "err_inner", {"raise(E_INVARG, \"custom msg\", {1, 2});"});
+        add_verb(o, {player, "xd", "err_outer"}, {"this", "none", "this"});
+        set_verb_code(o, "err_outer", {"try", "return this:err_inner();", "except e (ANY)", "return e;", "endtry"});
+    statement: |
+      e = o:err_outer();
+      return e[3];
+    expect:
+      value: [1, 2]
+    teardown:
+      code: "recycle(o);"
+
+  - name: exception_raise_custom_message
+    description: e[2] contains the message string passed to raise()
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "err_inner"}, {"this", "none", "this"});
+        set_verb_code(o, "err_inner", {"raise(E_INVARG, \"custom msg\", {1, 2});"});
+        add_verb(o, {player, "xd", "err_outer"}, {"this", "none", "this"});
+        set_verb_code(o, "err_outer", {"try", "return this:err_inner();", "except e (ANY)", "return e;", "endtry"});
+    statement: |
+      e = o:err_outer();
+      return e[2];
+    expect:
+      value: custom msg
+    teardown:
+      code: "recycle(o);"
+
+  - name: exception_raise_custom_code
+    description: e[1] contains the error code passed to raise()
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "err_inner"}, {"this", "none", "this"});
+        set_verb_code(o, "err_inner", {"raise(E_INVARG, \"custom msg\", {1, 2});"});
+        add_verb(o, {player, "xd", "err_outer"}, {"this", "none", "this"});
+        set_verb_code(o, "err_outer", {"try", "return this:err_inner();", "except e (ANY)", "return e;", "endtry"});
+    statement: |
+      e = o:err_outer();
+      return e[1];
+    expect:
+      value: E_INVARG
+    teardown:
+      code: "recycle(o);"
+
+  - name: exception_builtin_error_message
+    description: e[2] for division by zero is "Division by zero"
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "err_inner"}, {"this", "none", "this"});
+        set_verb_code(o, "err_inner", {"return 1/0;"});
+        add_verb(o, {player, "xd", "err_outer"}, {"this", "none", "this"});
+        set_verb_code(o, "err_outer", {"try", "return this:err_inner();", "except e (ANY)", "return e;", "endtry"});
+    statement: |
+      e = o:err_outer();
+      return e[2];
+    expect:
+      value: Division by zero
+    teardown:
+      code: "recycle(o);"
+
+  # --- Exception stack with line numbers ---
+
+  - name: exception_stack_line_number_is_positive_int
+    description: Line number in traceback frame is a positive integer
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "err_inner"}, {"this", "none", "this"});
+        set_verb_code(o, "err_inner", {"return 1/0;"});
+        add_verb(o, {player, "xd", "err_outer"}, {"this", "none", "this"});
+        set_verb_code(o, "err_outer", {"try", "return this:err_inner();", "except e (ANY)", "return e;", "endtry"});
+    statement: |
+      e = o:err_outer();
+      return e[4][1][6] > 0;
+    expect:
+      value: 1
+    teardown:
+      code: "recycle(o);"
+
+  - name: exception_stack_line_number_correct
+    description: Line number matches where the error occurred (line 1 of a single-line verb)
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "err_inner"}, {"this", "none", "this"});
+        set_verb_code(o, "err_inner", {"return 1/0;"});
+        add_verb(o, {player, "xd", "err_outer"}, {"this", "none", "this"});
+        set_verb_code(o, "err_outer", {"try", "return this:err_inner();", "except e (ANY)", "return e;", "endtry"});
+    statement: |
+      e = o:err_outer();
+      return e[4][1][6];
+    expect:
+      value: 1
+    teardown:
+      code: "recycle(o);"
+
+  # --- Exception traceback frame count ---
+
+  - name: exception_traceback_has_two_frames
+    description: For a 2-verb chain, the traceback has exactly 2 frames (no eval infrastructure)
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "err_inner"}, {"this", "none", "this"});
+        set_verb_code(o, "err_inner", {"return 1/0;"});
+        add_verb(o, {player, "xd", "err_outer"}, {"this", "none", "this"});
+        set_verb_code(o, "err_outer", {"try", "return this:err_inner();", "except e (ANY)", "return e;", "endtry"});
+    statement: |
+      e = o:err_outer();
+      return length(e[4]);
+    expect:
+      value: 2
+    teardown:
+      code: "recycle(o);"
+
+  # --- Eval boundary: the eval'd-code activation is part of the traceback when
+  #     the error is caught at the eval frame (not by a verb above it). ---
+
+  - name: exception_traceback_direct_eval_error_has_one_frame
+    description: >
+      An error raised and caught directly in eval'd code has exactly one
+      traceback frame: the eval'd-code activation itself.
+    statement: |
+      try
+        x = {}[1];
+      except e (ANY)
+        return length(e[4]);
+      endtry
+    expect:
+      value: 1
+
+  - name: exception_traceback_direct_eval_frame_fields
+    description: >
+      The eval'd-code activation frame reports this == #-1 and an empty verb name.
+    statement: |
+      try
+        x = {}[1];
+      except e (ANY)
+        return {e[4][1][1], e[4][1][2]};
+      endtry
+    expect:
+      value:
+      - "#-1"
+      - ""
+
+  - name: exception_traceback_verb_then_eval_frame
+    description: >
+      When a verb error is caught in eval'd code, the traceback is the verb frame
+      followed by the eval'd-code activation (two frames).
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "boom"}, {"this", "none", "this"});
+        set_verb_code(o, "boom", {"return {}[1];"});
+    statement: |
+      try
+        o:boom();
+      except e (ANY)
+        return {length(e[4]), e[4][1][2]};
+      endtry
+    expect:
+      value:
+      - 2
+      - boom
+    teardown:
+      code: "recycle(o);"
+
+  # --- Server-printed traceback format (uncaught error in a command verb) ---
+
+  - name: uncaught_command_traceback_format
+    description: >
+      When a command verb aborts with an uncaught error, the server prints a
+      traceback to the player. Each line is the bare frame (no per-connection
+      prefix), and the final line is exactly "(End of traceback)", matching
+      ToastStunt.
+    steps:
+      - run: |
+          add_verb(player, {player, "xd", "boomcmd"}, {"any", "none", "none"});
+          set_verb_code(player, "boomcmd", {"return {}[1];"});
+          return 1;
+        as: wizard
+      - command: boomcmd
+        expect:
+          output:
+            match: '(?m)^#\d+:boomcmd \(this == #\d+\), line 1:\s+Range error\n\(End of traceback\)$'
+    cleanup:
+      - run: 'delete_verb(player, "boomcmd");'
+        as: wizard
 
-tests:
-  # --- Exception value structure ---
+  # --- Eval frames in a server-printed traceback (error through eval()) ---
 
-  - name: caught_exception_has_four_elements
-    description: A caught exception value has exactly 4 elements
-    setup:
-      code: |
-        o = create($nothing);
-        add_verb(o, {player, "xd", "err_inner"}, {"this", "none", "this"});
-        set_verb_code(o, "err_inner", {"return 1/0;"});
-        add_verb(o, {player, "xd", "err_outer"}, {"this", "none", "this"});
-        set_verb_code(o, "err_outer", {"try", "return this:err_inner();", "except e (ANY)", "return e;", "endtry"});
-    statement: |
-      e = o:err_outer();
-      return length(e);
-    expect:
-      value: 4
-    teardown:
-      code: "recycle(o);"
-
-  - name: exception_fourth_element_is_list
-    description: The fourth element of a caught exception is a list (the traceback)
-    setup:
-      code: |
-        o = create($nothing);
-        add_verb(o, {player, "xd", "err_inner"}, {"this", "none", "this"});
-        set_verb_code(o, "err_inner", {"return 1/0;"});
-        add_verb(o, {player, "xd", "err_outer"}, {"this", "none", "this"});
-        set_verb_code(o, "err_outer", {"try", "return this:err_inner();", "except e (ANY)", "return e;", "endtry"});
-    statement: |
-      e = o:err_outer();
-      return typeof(e[4]) == LIST;
-    expect:
-      value: 1
-    teardown:
-      code: "recycle(o);"
-
-  - name: exception_stack_has_frames
-    description: The traceback list is non-empty
-    setup:
-      code: |
-        o = create($nothing);
-        add_verb(o, {player, "xd", "err_inner"}, {"this", "none", "this"});
-        set_verb_code(o, "err_inner", {"return 1/0;"});
-        add_verb(o, {player, "xd", "err_outer"}, {"this", "none", "this"});
-        set_verb_code(o, "err_outer", {"try", "return this:err_inner();", "except e (ANY)", "return e;", "endtry"});
-    statement: |
-      e = o:err_outer();
-      return length(e[4]) >= 1;
-    expect:
-      value: 1
-    teardown:
-      code: "recycle(o);"
-
-  # --- Exception stack frame content ---
-
-  - name: exception_stack_frame_has_six_fields
-    description: Each traceback frame has 6 elements (includes line number by default)
-    setup:
-      code: |
-        o = create($nothing);
-        add_verb(o, {player, "xd", "err_inner"}, {"this", "none", "this"});
-        set_verb_code(o, "err_inner", {"return 1/0;"});
-        add_verb(o, {player, "xd", "err_outer"}, {"this", "none", "this"});
-        set_verb_code(o, "err_outer", {"try", "return this:err_inner();", "except e (ANY)", "return e;", "endtry"});
-    statement: |
-      e = o:err_outer();
-      return length(e[4][1]);
-    expect:
-      value: 6
-    teardown:
-      code: "recycle(o);"
-
-  - name: exception_stack_contains_error_verb
-    description: First traceback frame verb name is where the error occurred
-    setup:
-      code: |
-        o = create($nothing);
-        add_verb(o, {player, "xd", "err_inner"}, {"this", "none", "this"});
-        set_verb_code(o, "err_inner", {"return 1/0;"});
-        add_verb(o, {player, "xd", "err_outer"}, {"this", "none", "this"});
-        set_verb_code(o, "err_outer", {"try", "return this:err_inner();", "except e (ANY)", "return e;", "endtry"});
-    statement: |
-      e = o:err_outer();
-      return e[4][1][2];
-    expect:
-      value: err_inner
-    teardown:
-      code: "recycle(o);"
-
-  - name: exception_stack_verb_order_in_chain
-    description: Traceback lists error verb first, then calling verb
-    setup:
-      code: |
-        o = create($nothing);
-        add_verb(o, {player, "xd", "err_inner"}, {"this", "none", "this"});
-        set_verb_code(o, "err_inner", {"return 1/0;"});
-        add_verb(o, {player, "xd", "err_outer"}, {"this", "none", "this"});
-        set_verb_code(o, "err_outer", {"try", "return this:err_inner();", "except e (ANY)", "return e;", "endtry"});
-    statement: |
-      e = o:err_outer();
-      return {e[4][1][2], e[4][2][2]};
-    expect:
-      value: ["err_inner", "err_outer"]
-    teardown:
-      code: "recycle(o);"
-
-  - name: exception_stack_frame_this_field
-    description: The this field in traceback frames points to the correct object
-    setup:
-      code: |
-        o = create($nothing);
-        add_verb(o, {player, "xd", "err_inner"}, {"this", "none", "this"});
-        set_verb_code(o, "err_inner", {"return 1/0;"});
-        add_verb(o, {player, "xd", "err_outer"}, {"this", "none", "this"});
-        set_verb_code(o, "err_outer", {"try", "return this:err_inner();", "except e (ANY)", "return e;", "endtry"});
-    statement: |
-      e = o:err_outer();
-      return e[4][1][1] == o;
-    expect:
-      value: 1
-    teardown:
-      code: "recycle(o);"
-
-  - name: exception_stack_frame_vloc_field
-    description: The vloc field in traceback frames is the defining object
-    setup:
-      code: |
-        o = create($nothing);
-        add_verb(o, {player, "xd", "err_inner"}, {"this", "none", "this"});
-        set_verb_code(o, "err_inner", {"return 1/0;"});
-        add_verb(o, {player, "xd", "err_outer"}, {"this", "none", "this"});
-        set_verb_code(o, "err_outer", {"try", "return this:err_inner();", "except e (ANY)", "return e;", "endtry"});
-    statement: |
-      e = o:err_outer();
-      return e[4][1][4] == o;
-    expect:
-      value: 1
-    teardown:
-      code: "recycle(o);"
-
-  - name: exception_stack_frame_player_field
-    description: The player field in traceback frames is the connected player
-    setup:
-      code: |
-        o = create($nothing);
-        add_verb(o, {player, "xd", "err_inner"}, {"this", "none", "this"});
-        set_verb_code(o, "err_inner", {"return 1/0;"});
-        add_verb(o, {player, "xd", "err_outer"}, {"this", "none", "this"});
-        set_verb_code(o, "err_outer", {"try", "return this:err_inner();", "except e (ANY)", "return e;", "endtry"});
-    statement: |
-      e = o:err_outer();
-      return e[4][1][5] == player;
-    expect:
-      value: 1
-    teardown:
-      code: "recycle(o);"
-
-  # --- Exception value details ---
-
-  - name: exception_default_value_is_zero
-    description: e[3] is 0 for a builtin runtime error (division by zero)
-    setup:
-      code: |
-        o = create($nothing);
-        add_verb(o, {player, "xd", "err_inner"}, {"this", "none", "this"});
-        set_verb_code(o, "err_inner", {"return 1/0;"});
-        add_verb(o, {player, "xd", "err_outer"}, {"this", "none", "this"});
-        set_verb_code(o, "err_outer", {"try", "return this:err_inner();", "except e (ANY)", "return e;", "endtry"});
-    statement: |
-      e = o:err_outer();
-      return e[3];
-    expect:
-      value: 0
-    teardown:
-      code: "recycle(o);"
-
-  - name: exception_raise_custom_value
-    description: e[3] contains the value passed to raise()
-    setup:
-      code: |
-        o = create($nothing);
-        add_verb(o, {player, "xd", "err_inner"}, {"this", "none", "this"});
-        set_verb_code(o, "err_inner", {"raise(E_INVARG, \"custom msg\", {1, 2});"});
-        add_verb(o, {player, "xd", "err_outer"}, {"this", "none", "this"});
-        set_verb_code(o, "err_outer", {"try", "return this:err_inner();", "except e (ANY)", "return e;", "endtry"});
-    statement: |
-      e = o:err_outer();
-      return e[3];
-    expect:
-      value: [1, 2]
-    teardown:
-      code: "recycle(o);"
-
-  - name: exception_raise_custom_message
-    description: e[2] contains the message string passed to raise()
-    setup:
-      code: |
-        o = create($nothing);
-        add_verb(o, {player, "xd", "err_inner"}, {"this", "none", "this"});
-        set_verb_code(o, "err_inner", {"raise(E_INVARG, \"custom msg\", {1, 2});"});
-        add_verb(o, {player, "xd", "err_outer"}, {"this", "none", "this"});
-        set_verb_code(o, "err_outer", {"try", "return this:err_inner();", "except e (ANY)", "return e;", "endtry"});
-    statement: |
-      e = o:err_outer();
-      return e[2];
-    expect:
-      value: custom msg
-    teardown:
-      code: "recycle(o);"
-
-  - name: exception_raise_custom_code
-    description: e[1] contains the error code passed to raise()
-    setup:
-      code: |
-        o = create($nothing);
-        add_verb(o, {player, "xd", "err_inner"}, {"this", "none", "this"});
-        set_verb_code(o, "err_inner", {"raise(E_INVARG, \"custom msg\", {1, 2});"});
-        add_verb(o, {player, "xd", "err_outer"}, {"this", "none", "this"});
-        set_verb_code(o, "err_outer", {"try", "return this:err_inner();", "except e (ANY)", "return e;", "endtry"});
-    statement: |
-      e = o:err_outer();
-      return e[1];
-    expect:
-      value: E_INVARG
-    teardown:
-      code: "recycle(o);"
-
-  - name: exception_builtin_error_message
-    description: e[2] for division by zero is "Division by zero"
-    setup:
-      code: |
-        o = create($nothing);
-        add_verb(o, {player, "xd", "err_inner"}, {"this", "none", "this"});
-        set_verb_code(o, "err_inner", {"return 1/0;"});
-        add_verb(o, {player, "xd", "err_outer"}, {"this", "none", "this"});
-        set_verb_code(o, "err_outer", {"try", "return this:err_inner();", "except e (ANY)", "return e;", "endtry"});
-    statement: |
-      e = o:err_outer();
-      return e[2];
-    expect:
-      value: Division by zero
-    teardown:
-      code: "recycle(o);"
-
-  # --- Exception stack with line numbers ---
-
-  - name: exception_stack_line_number_is_positive_int
-    description: Line number in traceback frame is a positive integer
-    setup:
-      code: |
-        o = create($nothing);
-        add_verb(o, {player, "xd", "err_inner"}, {"this", "none", "this"});
-        set_verb_code(o, "err_inner", {"return 1/0;"});
-        add_verb(o, {player, "xd", "err_outer"}, {"this", "none", "this"});
-        set_verb_code(o, "err_outer", {"try", "return this:err_inner();", "except e (ANY)", "return e;", "endtry"});
-    statement: |
-      e = o:err_outer();
-      return e[4][1][6] > 0;
-    expect:
-      value: 1
-    teardown:
-      code: "recycle(o);"
-
-  - name: exception_stack_line_number_correct
-    description: Line number matches where the error occurred (line 1 of a single-line verb)
-    setup:
-      code: |
-        o = create($nothing);
-        add_verb(o, {player, "xd", "err_inner"}, {"this", "none", "this"});
-        set_verb_code(o, "err_inner", {"return 1/0;"});
-        add_verb(o, {player, "xd", "err_outer"}, {"this", "none", "this"});
-        set_verb_code(o, "err_outer", {"try", "return this:err_inner();", "except e (ANY)", "return e;", "endtry"});
-    statement: |
-      e = o:err_outer();
-      return e[4][1][6];
-    expect:
-      value: 1
-    teardown:
-      code: "recycle(o);"
-
-  # --- Exception traceback frame count ---
-
-  - name: exception_traceback_has_two_frames
-    description: For a 2-verb chain, the traceback has exactly 2 frames (no eval infrastructure)
-    setup:
-      code: |
-        o = create($nothing);
-        add_verb(o, {player, "xd", "err_inner"}, {"this", "none", "this"});
-        set_verb_code(o, "err_inner", {"return 1/0;"});
-        add_verb(o, {player, "xd", "err_outer"}, {"this", "none", "this"});
-        set_verb_code(o, "err_outer", {"try", "return this:err_inner();", "except e (ANY)", "return e;", "endtry"});
-    statement: |
-      e = o:err_outer();
-      return length(e[4]);
-    expect:
-      value: 2
-    teardown:
-      code: "recycle(o);"
-
-  # --- Eval boundary: the eval'd-code activation is part of the traceback when
-  #     the error is caught at the eval frame (not by a verb above it). ---
-
-  - name: exception_traceback_direct_eval_error_has_one_frame
+  - name: eval_frame_labeled_input_to_eval
     description: >
-      An error raised and caught directly in eval'd code has exactly one
-      traceback frame: the eval'd-code activation itself.
-    statement: |
-      try
-        x = {}[1];
-      except e (ANY)
-        return length(e[4]);
-      endtry
-    expect:
-      value: 1
-
-  - name: exception_traceback_direct_eval_frame_fields
-    description: >
-      The eval'd-code activation frame reports this == #-1 and an empty verb name.
-    statement: |
-      try
-        x = {}[1];
-      except e (ANY)
-        return {e[4][1][1], e[4][1][2]};
-      endtry
-    expect:
-      value:
-      - "#-1"
-      - ""
-
-  - name: exception_traceback_verb_then_eval_frame
-    description: >
-      When a verb error is caught in eval'd code, the traceback is the verb frame
-      followed by the eval'd-code activation (two frames).
-    setup:
-      code: |
-        o = create($nothing);
-        add_verb(o, {player, "xd", "boom"}, {"this", "none", "this"});
-        set_verb_code(o, "boom", {"return {}[1];"});
-    statement: |
-      try
-        o:boom();
-      except e (ANY)
-        return {length(e[4]), e[4][1][2]};
-      endtry
-    expect:
-      value:
-      - 2
-      - boom
-    teardown:
-      code: "recycle(o);"
-
-  # --- Server-printed traceback format (uncaught error in a command verb) ---
-
-  - name: uncaught_command_traceback_format
-    description: >
-      When a command verb aborts with an uncaught error, the server prints a
-      traceback to the player. Each line is the bare frame (no per-connection
-      prefix), and the final line is exactly "(End of traceback)", matching
-      ToastStunt.
+      When an uncaught error passes through eval(), the eval'd-code activation
+      in the server-printed traceback is labeled "Input to EVAL" on #-1,
+      matching ToastStunt.
     steps:
       - run: |
-          add_verb(player, {player, "xd", "boomcmd"}, {"any", "none", "none"});
-          set_verb_code(player, "boomcmd", {"return {}[1];"});
+          add_verb(player, {player, "xd", "evcmd"}, {"any", "none", "none"});
+          set_verb_code(player, "evcmd", {"eval(\"return {}[1];\");"});
           return 1;
         as: wizard
-      - command: boomcmd
+      - command: evcmd
         expect:
           output:
-            match: '(?m)^#\d+:boomcmd \(this == #\d+\), line 1:\s+Range error\n\(End of traceback\)$'
+            contains: '#-1:Input to EVAL (this == #-1)'
     cleanup:
-      - run: 'delete_verb(player, "boomcmd");'
+      - run: 'delete_verb(player, "evcmd");'
+        as: wizard
+
+  - name: eval_builtin_frame_in_traceback
+    description: >
+      A server-printed traceback that passed through eval() includes a
+      "built-in function eval()" frame between the eval'd code and its caller,
+      matching ToastStunt.
+    steps:
+      - run: |
+          add_verb(player, {player, "xd", "evcmd"}, {"any", "none", "none"});
+          set_verb_code(player, "evcmd", {"eval(\"return {}[1];\");"});
+          return 1;
+        as: wizard
+      - command: evcmd
+        expect:
+          output:
+            contains: '... called from built-in function eval()'
+    cleanup:
+      - run: 'delete_verb(player, "evcmd");'
         as: wizard

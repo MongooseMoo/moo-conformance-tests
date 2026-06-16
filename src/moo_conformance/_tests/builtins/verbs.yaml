@@ -771,3 +771,27 @@ tests:
       value: 1
   cleanup:
   - run: recycle({obj})
+- name: verb_lookup_wildcard_expands
+  description: A verb whose name contains "*" is found by an expanded lookup name (foobar matches foo*bar), on both Toast and Barn.
+  permission: programmer
+  steps:
+  - run: create($nothing)
+    capture: obj
+  - run: add_verb({obj}, {player, "xd", "foo*bar"}, {"this", "none", "this"})
+  - run: verb_info({obj}, "foobar")[3]
+    expect:
+      value: foo*bar
+  cleanup:
+  - run: recycle({obj})
+- name: verb_lookup_rejects_literal_wildcard_name
+  description: Looking up a verb by its literal stored name containing "*" raises E_VERBNF. The "*" is a wildcard in the verb's name, not a literal character a lookup string can match (matches ToastStunt verbcasecmp).
+  permission: programmer
+  steps:
+  - run: create($nothing)
+    capture: obj
+  - run: add_verb({obj}, {player, "xd", "foo*bar"}, {"this", "none", "this"})
+  - run: verb_info({obj}, "foo*bar")
+    expect:
+      error: E_VERBNF
+  cleanup:
+  - run: recycle({obj})

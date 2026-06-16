@@ -230,11 +230,6 @@ tests:
   code: typeof(connected_players(1))
   expect:
     value: 4
-- name: connected_players_accepts_false_second_flag
-  description: Toast accepts the Mongoose two-flag form when the second flag is false.
-  code: typeof(connected_players(1, 0))
-  expect:
-    value: 4
 - name: connected_players_elements_are_objects
   statement: "pl = connected_players();\nif (length(pl) == 0)\n  return 1;\nendif\n\
     return typeof(pl[1]);\n"

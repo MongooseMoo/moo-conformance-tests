@@ -203,6 +203,9 @@ class SocketTransport(MooTransport):
         self.host = host
         self.port = port
         self.login_script = login_script
+        self._login_script_uses_requested_user = bool(
+            login_script and any("{user}" in command for command in login_script)
+        )
         self.ensure_standard_properties = ensure_standard_properties
         self.sock: socket.socket | None = None
         self.current_user = "programmer"
@@ -212,7 +215,6 @@ class SocketTransport(MooTransport):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.settimeout(3)  # 3 second timeout to avoid hanging forever
         self.sock.connect((self.host, self.port))
-        self.current_user = user
 
         # Map user names to actual database users
         # Toast/toastcore has both "Wizard" and "Programmer" players
@@ -224,6 +226,7 @@ class SocketTransport(MooTransport):
         login_user = user_map.get(user, user)
 
         self._login(login_user)
+        self.current_user = user
 
         # Set up PREFIX/SUFFIX for response parsing
         self._send("PREFIX -=!-^-!=-")
@@ -314,6 +317,12 @@ class SocketTransport(MooTransport):
         }
         login_user = user_map.get(user, user)
 
+        if self.login_script is not None and not self._login_script_uses_requested_user:
+            raise RuntimeError(
+                "Cannot switch users with a static login script; include {user} "
+                "in --moo-login-script-env commands so the requested user is used."
+            )
+
         # Close existing connection
         if self.sock:
             try:
@@ -343,7 +352,7 @@ class SocketTransport(MooTransport):
             commands = [f"connect {login_user}"]
 
         for command in commands:
-            self._send(command)
+            self._send(command.replace("{user}", login_user))
             self._consume_login_output()
 
     def open_connection(self, port: int | None = None) -> "TestConnection":

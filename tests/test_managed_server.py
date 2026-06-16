@@ -93,10 +93,10 @@ class _FakeRequest:
 
 
 def test_load_login_script_from_env(monkeypatch):
-    monkeypatch.setenv("MOO_LOGIN_SCRIPT_TEST", "connect Codex secret 1\n")
+    monkeypatch.setenv("MOO_LOGIN_SCRIPT_TEST", "connect {user}\n")
 
     assert _load_login_script(_FakeRequest("MOO_LOGIN_SCRIPT_TEST")) == [
-        "connect Codex secret 1"
+        "connect {user}"
     ]
 
 
@@ -111,3 +111,23 @@ def test_socket_transport_can_skip_standard_property_initialization():
     transport = SocketTransport(ensure_standard_properties=False)
 
     assert transport.ensure_standard_properties is False
+
+
+def test_static_login_script_rejects_user_switch():
+    transport = SocketTransport(login_script=["connect FixedUser"])
+    transport.current_user = "wizard"
+
+    with pytest.raises(RuntimeError, match="static login script"):
+        transport.switch_user("programmer")
+
+
+def test_login_script_substitutes_requested_user(monkeypatch):
+    transport = SocketTransport(login_script=["connect {user}"])
+    sent = []
+
+    monkeypatch.setattr(transport, "_send", sent.append)
+    monkeypatch.setattr(transport, "_consume_login_output", lambda: None)
+
+    transport._login("Programmer")
+
+    assert sent == ["connect Programmer"]

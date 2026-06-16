@@ -46,7 +46,7 @@ def test_validate_profile_pair_rejects_missing_feature():
 
 def test_validate_profile_pair_rejects_database_fixture_mismatch():
     with pytest.raises(ProfileGateError, match="database_fixture differs"):
-        validate_profile_pair(manifest(False, fixture="mongoose"), manifest(False, fixture="testdb"))
+        validate_profile_pair(manifest(False, fixture="oracle-db"), manifest(False, fixture="testdb"))
 
 
 def test_validate_manifest_paths_loads_json(tmp_path):

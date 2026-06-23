@@ -1,0 +1,62 @@
+name: chr_raw_bytes
+description: >
+  chr() returns a string holding the RAW byte(s) for the given code point(s),
+  not a binary-encoded (~XX) representation. A high/non-printable byte in the
+  permitted range therefore has length 1, concatenates as one character, and is
+  only turned into ~XX notation by encode_binary(). chr() and encode_binary()
+  are distinct functions. (Tests run as a non-wizard programmer, so the codes
+  used here stay inside the 32..254 range chr() permits without wizard bits;
+  ord() is avoided for high bytes because it returns a signed value.)
+
+requires:
+  builtins:
+    - chr
+    - encode_binary
+
+tests:
+  - name: chr_del_byte_length_is_one
+    code: 'length(chr(127))'
+    expect:
+      value: 1
+
+  - name: chr_high_byte_length_is_one
+    code: 'length(chr(128))'
+    expect:
+      value: 1
+
+  - name: chr_mid_high_byte_length_is_one
+    code: 'length(chr(200))'
+    expect:
+      value: 1
+
+  - name: chr_max_nonwizard_byte_length_is_one
+    code: 'length(chr(254))'
+    expect:
+      value: 1
+
+  - name: chr_tilde_is_single_char
+    description: 'code 126 is "~" itself; chr must not escape it to ~7E'
+    code: 'length(chr(126))'
+    expect:
+      value: 1
+
+  - name: chr_printable_letter
+    code: 'chr(65)'
+    expect:
+      value: "A"
+
+  - name: chr_concat_counts_high_byte_once
+    code: 'length(chr(128) + "X")'
+    expect:
+      value: 2
+
+  - name: encode_binary_of_chr_high
+    description: 'encode_binary() is the only thing that yields ~XX; it must see chr(200) as one raw byte'
+    code: 'encode_binary(chr(200))'
+    expect:
+      value: "~C8"
+
+  - name: encode_binary_of_chr_128
+    code: 'encode_binary(chr(128))'
+    expect:
+      value: "~80"

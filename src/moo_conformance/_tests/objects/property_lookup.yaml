@@ -1,0 +1,27 @@
+name: property_lookup
+description: Tests for object property lookup semantics.
+
+requires:
+  builtins: [create, recycle, add_property, property_info, is_clear_property]
+
+tests:
+  - name: property_lookup_is_case_insensitive
+    description: Mixed-case property definitions are found through differently-cased lookup names.
+    permission: wizard
+    steps:
+      - run: create($nothing)
+        capture: obj
+      - run: add_property({obj}, "CaseProbe", 42, {player, "rw"})
+        expect:
+          value: 0
+      - run: |
+          return {
+            {obj}.caseprobe,
+            {obj}.("CASEPROBE"),
+            property_info({obj}, "caseprobe")[2],
+            is_clear_property({obj}, "CASEPROBE")
+          };
+        expect:
+          value: [42, 42, "rw", 0]
+    cleanup:
+      - run: recycle({obj})

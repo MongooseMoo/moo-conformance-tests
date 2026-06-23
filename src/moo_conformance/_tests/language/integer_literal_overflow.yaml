@@ -1,0 +1,39 @@
+name: integer_literal_overflow
+description: >
+  An integer literal whose magnitude exceeds the signed 64-bit range is not a
+  compile error: ToastStunt's lexer reduces it modulo 2^64 and reinterprets the
+  low 64 bits as a two's-complement signed value. This is, notably, how the most
+  negative integer is written -- the source `-9223372036854775808` lexes the
+  positive token 9223372036854775808 (= 2^63), which wraps to INT_MIN, and the
+  unary minus of INT_MIN is INT_MIN. These pin that wrapping against the reference.
+
+tests:
+  - name: literal_2pow63_wraps_to_int_min
+    code: '9223372036854775808'
+    expect:
+      value: -9223372036854775808
+
+  - name: int_min_literal_is_expressible
+    code: '-9223372036854775808 == 9223372036854775807 + 1'
+    expect:
+      value: 1
+
+  - name: literal_2pow64_wraps_to_zero
+    code: '18446744073709551616'
+    expect:
+      value: 0
+
+  - name: literal_2pow64_minus_one_wraps_to_neg_one
+    code: '18446744073709551615'
+    expect:
+      value: -1
+
+  - name: literal_1e19_wraps
+    code: '10000000000000000000'
+    expect:
+      value: -8446744073709551616
+
+  - name: literal_twenty_nines_wraps
+    code: '99999999999999999999'
+    expect:
+      value: 7766279631452241919

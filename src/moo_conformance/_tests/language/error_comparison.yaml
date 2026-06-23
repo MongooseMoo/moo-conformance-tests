@@ -1,0 +1,55 @@
+name: error_comparison
+description: >
+  In MOO, error values carry an integer code (E_NONE=0, E_TYPE=1, E_DIV=2,
+  E_PERM=3, ... E_RANGE=10, E_ARGS=11, ... E_FLOAT=15). ToastStunt lets the
+  relational operators <, <=, >, >= compare two error operands by those codes,
+  yielding a truth value. (Comparing an error against a non-error operand is
+  still E_TYPE.) These tests pin that ordering against the reference.
+
+tests:
+  - name: err_lt_true
+    code: 'E_NONE < E_TYPE'
+    expect:
+      value: 1
+
+  - name: err_lt_false
+    code: 'E_TYPE < E_NONE'
+    expect:
+      value: 0
+
+  - name: err_le_equal
+    code: 'E_NONE <= E_NONE'
+    expect:
+      value: 1
+
+  - name: err_gt_true
+    code: 'E_PERM > E_TYPE'
+    expect:
+      value: 1
+
+  - name: err_ge_equal
+    code: 'E_PERM >= E_PERM'
+    expect:
+      value: 1
+
+  - name: err_lt_div_perm
+    code: 'E_DIV < E_PERM'
+    expect:
+      value: 1
+
+  - name: err_lt_by_code_not_declaration
+    description: 'E_RANGE is code 10, E_PERM is 3, so E_RANGE < E_PERM is false'
+    code: 'E_RANGE < E_PERM'
+    expect:
+      value: 0
+
+  - name: err_gt_high_codes
+    code: 'E_QUOTA > E_RANGE'
+    expect:
+      value: 1
+
+  # Boundary: an error compared against a non-error is still a type error.
+  - name: err_vs_int_is_type_error
+    code: 'E_NONE < 1'
+    expect:
+      error: E_TYPE

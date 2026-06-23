@@ -55,6 +55,10 @@ def _has_option(runner, option: str) -> bool:
     return True
 
 
+def _uses_managed_restart(test) -> bool:
+    return any(step.restart_server is not None for step in [*test.steps, *test.cleanup])
+
+
 @pytest.mark.conformance
 def test_yaml_conformance(runner, yaml_test_case, moo_config):
     """Run a single YAML test case.
@@ -108,6 +112,8 @@ def test_yaml_conformance(runner, yaml_test_case, moo_config):
             if moo_config.get(key) is None:
                 option = config_option_map.get(key, f"--moo-{key.replace('_', '-')}")
                 pytest.skip(f"Requires config '{key}' (use {option})")
+    if _uses_managed_restart(test) and moo_config.get("managed_server") is None:
+        pytest.skip("Requires config 'managed_server' (use --server-command)")
 
     # Run suite setup if not already done
     runner.run_suite_setup(suite)

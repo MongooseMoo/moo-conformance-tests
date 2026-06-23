@@ -1,0 +1,63 @@
+name: float_formatting
+description: >
+  Canonical float-to-string formatting. ToastStunt renders floats with 15
+  significant digits (equivalent to printf "%.15g"), appending ".0" when the
+  result would otherwise have no decimal point or exponent so the value stays
+  visibly a float. These pin the exact textual representation that tostr(),
+  toliteral(), and value output must produce. Verified against ToastStunt.
+
+requires:
+  builtins: [tostr, toliteral, sqrt, exp]
+
+tests:
+  - name: sqrt_two_is_15_significant_digits
+    description: sqrt(2.0) prints with 15 significant digits, not full float64 precision.
+    code: "tostr(sqrt(2.0))"
+    expect:
+      value: "1.4142135623731"
+
+  - name: one_third_is_15_significant_digits
+    description: 1.0/3.0 prints as fifteen 3s, not the 16-digit shortest round-trip.
+    code: "tostr(1.0 / 3.0)"
+    expect:
+      value: "0.333333333333333"
+
+  - name: ten_thirds_is_15_significant_digits
+    code: "tostr(10.0 / 3.0)"
+    expect:
+      value: "3.33333333333333"
+
+  - name: rounding_artifact_collapses_at_15_digits
+    description: 0.1 + 0.2 rounds to "0.3" at 15 significant digits (no 0.30000000000000004 tail).
+    code: "tostr(0.1 + 0.2)"
+    expect:
+      value: "0.3"
+
+  - name: eulers_number_15_significant_digits
+    code: "tostr(exp(1.0))"
+    expect:
+      value: "2.71828182845905"
+
+  - name: fifteen_digit_integral_float_stays_fixed
+    description: A 15-digit integral-valued float stays in fixed notation with a ".0" suffix.
+    code: "tostr(123456789012345.0)"
+    expect:
+      value: "123456789012345.0"
+
+  - name: sixteen_digit_float_uses_scientific
+    description: Beyond 15 significant digits the value switches to scientific notation, rounded.
+    code: "tostr(1234567890123456.0)"
+    expect:
+      value: "1.23456789012346e+15"
+
+  - name: ten_billion_stays_fixed_with_point_zero
+    description: 1.0e10 prints in fixed notation as 10000000000.0, not 1e+10.
+    code: "tostr(1.0e10)"
+    expect:
+      value: "10000000000.0"
+
+  - name: toliteral_float_matches_tostr
+    description: toliteral of a float uses the same 15-significant-digit formatting as tostr.
+    code: "toliteral(1.0 / 3.0)"
+    expect:
+      value: "0.333333333333333"

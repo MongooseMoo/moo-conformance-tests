@@ -1,0 +1,87 @@
+name: builtin_property_pseudo
+description: >
+  The set of built-in object properties is fixed (name, owner, location, contents,
+  programmer, wizard, r, w, f, last_move). Names that have dedicated accessor
+  built-in functions instead -- parent(), children(), is_player() -- are NOT
+  properties, so `.parent`, `.children`, and `.player` must raise E_PROPNF rather
+  than silently returning a value. Confirmed against ToastStunt.
+
+requires:
+  builtins: [create, recycle]
+
+tests:
+  - name: parent_is_not_a_builtin_property
+    description: Reading `.parent` raises E_PROPNF; use the parent() built-in instead.
+    permission: wizard
+    steps:
+      - run: create($nothing)
+        capture: obj
+      - run: return {obj}.parent;
+        expect:
+          error: E_PROPNF
+    cleanup:
+      - run: recycle({obj})
+
+  - name: children_is_not_a_builtin_property
+    description: Reading `.children` raises E_PROPNF; use the children() built-in instead.
+    permission: wizard
+    steps:
+      - run: create($nothing)
+        capture: obj
+      - run: return {obj}.children;
+        expect:
+          error: E_PROPNF
+    cleanup:
+      - run: recycle({obj})
+
+  - name: player_is_not_a_builtin_property
+    description: Reading `.player` raises E_PROPNF; use is_player() / set_player_flag() instead.
+    permission: wizard
+    steps:
+      - run: create($nothing)
+        capture: obj
+      - run: return {obj}.player;
+        expect:
+          error: E_PROPNF
+    cleanup:
+      - run: recycle({obj})
+
+  - name: player_pseudo_property_is_not_writable
+    description: Assigning to `.player` raises E_PROPNF -- it is not a property at all.
+    permission: wizard
+    steps:
+      - run: create($nothing)
+        capture: obj
+      - run: |
+          {obj}.player = 1;
+          return 1;
+        expect:
+          error: E_PROPNF
+    cleanup:
+      - run: recycle({obj})
+
+  - name: last_move_is_a_builtin_property
+    description: last_move IS a built-in property; on a fresh object it is an empty map.
+    permission: wizard
+    steps:
+      - run: create($nothing)
+        capture: obj
+      - run: return {obj}.last_move;
+        expect:
+          type: map
+    cleanup:
+      - run: recycle({obj})
+
+  - name: last_move_builtin_property_is_read_only
+    description: last_move is server-maintained; writing to it raises E_PERM (the property exists but is protected).
+    permission: wizard
+    steps:
+      - run: create($nothing)
+        capture: obj
+      - run: |
+          {obj}.last_move = [];
+          return 1;
+        expect:
+          error: E_PERM
+    cleanup:
+      - run: recycle({obj})

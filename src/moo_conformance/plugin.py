@@ -316,7 +316,7 @@ def discover_yaml_tests(test_dir: Path | None = None) -> list[tuple[Path, MooTes
     if not test_dir.exists():
         return test_cases
 
-    for yaml_file in test_dir.rglob("*.yaml"):
+    for yaml_file in sorted(test_dir.rglob("*.yaml")):
         try:
             with open(yaml_file, encoding="utf-8") as f:
                 data = yaml.safe_load(f)

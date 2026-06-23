@@ -149,6 +149,26 @@ tests:
     expect:
       error: E_RANGE
 
+  - name: dollar_list_nested_in_function_call
+    description: >
+      $ resolves to the indexed collection's length even when nested inside
+      a function call argument within the index expression, not just when
+      it is the index expression by itself.
+    code: '{1, 2, 3, 4, 5, 6, 7}[max($, 1)]'
+    expect:
+      value: 7
+
+  - name: dollar_list_nested_in_random
+    description: >
+      Regression test: random($) as a list index must pick from the full
+      range 1..length(list), not random(0) (which is an E_INVARG range).
+    statement: |
+      t = {1, 2, 3, 4, 5, 6, 7};
+      picked = t[random($)];
+      return picked >= 1 && picked <= 7;
+    expect:
+      value: 1
+
   - name: dollar_list_assign_last
     statement: |
       t = {1, 2, 3, 4, 5, 6, 7};

@@ -1,0 +1,42 @@
+name: tofloat_inf_nan
+description: >
+  tofloat() parsing a string rejects the special tokens that name a
+  non-finite value -- "inf", "-inf", "nan", "Infinity" -- with E_INVARG, rather
+  than producing an infinity or NaN. (A finite numeric string still parses, and
+  a magnitude that overflows the float range is also E_INVARG.) Pins this
+  against ToastStunt, whose strtod-based parse does not accept these tokens.
+
+requires:
+  builtins:
+    - tofloat
+
+tests:
+  - name: tofloat_inf_rejected
+    code: 'tofloat("inf")'
+    expect:
+      error: E_INVARG
+
+  - name: tofloat_neg_inf_rejected
+    code: 'tofloat("-inf")'
+    expect:
+      error: E_INVARG
+
+  - name: tofloat_nan_rejected
+    code: 'tofloat("nan")'
+    expect:
+      error: E_INVARG
+
+  - name: tofloat_infinity_word_rejected
+    code: 'tofloat("Infinity")'
+    expect:
+      error: E_INVARG
+
+  - name: tofloat_overflow_rejected
+    code: 'tofloat("1e999")'
+    expect:
+      error: E_INVARG
+
+  - name: tofloat_finite_string_ok
+    code: 'tofloat("3.5")'
+    expect:
+      value: 3.5

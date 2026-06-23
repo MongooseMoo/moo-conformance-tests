@@ -1,0 +1,51 @@
+name: pass_no_parent
+description: >
+  pass() re-dispatches the current verb to the same-named verb on the parent of
+  `this`. When the object has NO parent (its parent is #-1), the indirection
+  targets an invalid object and ToastStunt raises E_INVIND -- distinct from the
+  E_VERBNF raised when a real parent simply lacks the verb. These pin pass()'s
+  behavior across the no-parent, parent-without-verb, and parent-with-verb cases.
+
+tests:
+  - name: pass_with_no_parent_raises_e_invind
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "rxd", "foo"}, {"this", "none", "this"});
+      set_verb_code(o, "foo", {"return pass();"});
+      return `o:foo() ! ANY';
+    expect:
+      value: E_INVIND
+
+  - name: pass_parent_lacking_verb_raises_e_verbnf
+    statement: |
+      p = create($nothing);
+      c = create(p);
+      add_verb(c, {player, "rxd", "foo"}, {"this", "none", "this"});
+      set_verb_code(c, "foo", {"return pass();"});
+      return `c:foo() ! ANY';
+    expect:
+      value: E_VERBNF
+
+  - name: pass_parent_with_verb_calls_it
+    statement: |
+      p = create($nothing);
+      add_verb(p, {player, "rxd", "foo"}, {"this", "none", "this"});
+      set_verb_code(p, "foo", {"return 42;"});
+      c = create(p);
+      add_verb(c, {player, "rxd", "foo"}, {"this", "none", "this"});
+      set_verb_code(c, "foo", {"return pass();"});
+      return c:foo();
+    expect:
+      value: 42
+
+  - name: pass_forwards_arguments
+    statement: |
+      p = create($nothing);
+      add_verb(p, {player, "rxd", "foo"}, {"this", "none", "this"});
+      set_verb_code(p, "foo", {"return args;"});
+      c = create(p);
+      add_verb(c, {player, "rxd", "foo"}, {"this", "none", "this"});
+      set_verb_code(c, "foo", {"return pass(1, 2);"});
+      return c:foo();
+    expect:
+      value: [1, 2]

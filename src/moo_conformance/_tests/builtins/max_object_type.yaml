@@ -1,0 +1,28 @@
+name: max_object_type
+description: >
+  max_object() returns the largest object number ever assigned, as an OBJ value
+  (e.g. #7), not an integer. typeof() of the result must be OBJ (1). Verified
+  against ToastStunt. The concrete number is environment-dependent, so these
+  pin the TYPE rather than the value.
+
+requires:
+  builtins: [max_object, typeof, valid]
+
+tests:
+  - name: max_object_returns_an_object_typed_value
+    description: typeof(max_object()) is OBJ (1), not INT (0).
+    code: "typeof(max_object())"
+    expect:
+      value: 1
+
+  - name: max_object_result_is_a_valid_object
+    description: The returned value is a real object, so valid() accepts it.
+    code: "valid(max_object())"
+    expect:
+      value: 1
+
+  - name: max_object_tostr_has_object_sigil
+    description: Rendering max_object() yields an object literal beginning with '#'.
+    code: 'tostr(max_object())[1]'
+    expect:
+      value: "#"

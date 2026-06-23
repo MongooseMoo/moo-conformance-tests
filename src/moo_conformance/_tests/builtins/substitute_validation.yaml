@@ -1,0 +1,29 @@
+name: substitute_validation
+description: >
+  substitute(template, subs) requires subs to be a well-formed match() result:
+  a 4-element list {start, end, groups, subject} where groups holds exactly nine
+  {start, end} marker pairs and all indices lie within subject. ToastStunt raises
+  E_INVARG for malformed match data instead of best-effort substituting. Verified
+  against ToastStunt; Barn currently substitutes permissively and must reject these.
+
+requires:
+  builtins: [substitute, match]
+
+tests:
+  - name: substitute_rejects_empty_match_data
+    description: An empty list is not a valid match result; substitute raises E_INVARG.
+    code: 'substitute("x", {})'
+    expect:
+      error: E_INVARG
+
+  - name: substitute_rejects_out_of_range_indices
+    description: end index 9 is past the end of the 3-char subject -> E_INVARG.
+    code: 'substitute("%1", {1, 9, {{1, 1}}, "abc"})'
+    expect:
+      error: E_INVARG
+
+  - name: substitute_rejects_wrong_group_count
+    description: The groups element must hold nine marker pairs; an empty list -> E_INVARG.
+    code: 'substitute("%0", {1, 3, {}, "abc"})'
+    expect:
+      error: E_INVARG

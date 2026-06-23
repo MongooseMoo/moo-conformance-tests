@@ -46,13 +46,14 @@ def _has_feature(runner, feature: str) -> bool:
 
 
 def _has_option(runner, option: str) -> bool:
-    result = runner.transport.execute(f'return server_version("options.{option}");')
-    if not result.success:
-        return False
-    value = result.value
-    if value in (None, 0, "#-1", "OFF"):
-        return False
-    return True
+    for key in (f"options.{option}", f"options/{option}"):
+        result = runner.transport.execute(f'return server_version({_moo_string_literal(key)});')
+        if not result.success:
+            continue
+        value = result.value
+        if value not in (None, 0, "#-1", "OFF"):
+            return True
+    return False
 
 
 def _uses_managed_restart(test) -> bool:

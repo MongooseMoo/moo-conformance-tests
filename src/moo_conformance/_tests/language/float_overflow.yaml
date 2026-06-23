@@ -1,0 +1,33 @@
+name: float_overflow
+description: >
+  ToastStunt traps floating-point overflow in the arithmetic operators. When a
+  float +, - or * produces a result outside the representable range (i.e. it
+  would become an infinity), the operation raises E_FLOAT rather than yielding
+  an Inf value. (Division by zero is E_DIV, tested elsewhere; the math builtins
+  such as exp()/log() already have their own E_FLOAT tests in math.yaml.)
+
+tests:
+  - name: mul_overflow_raises_e_float
+    code: '1.0e308 * 10.0'
+    expect:
+      error: E_FLOAT
+
+  - name: mul_overflow_both_huge
+    code: '1.0e200 * 1.0e200'
+    expect:
+      error: E_FLOAT
+
+  - name: add_overflow_raises_e_float
+    code: '1.0e308 + 1.0e308'
+    expect:
+      error: E_FLOAT
+
+  - name: sub_overflow_raises_e_float
+    code: '-1.0e308 - 1.0e308'
+    expect:
+      error: E_FLOAT
+
+  - name: chained_overflow_propagates
+    code: 'floor(1.0e308 * 10.0)'
+    expect:
+      error: E_FLOAT

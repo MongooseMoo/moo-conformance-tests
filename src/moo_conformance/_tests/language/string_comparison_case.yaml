@@ -1,0 +1,72 @@
+name: string_comparison_case
+description: >
+  In MOO the string relational operators <, <=, >, >= compare case-INSENSITIVELY
+  (folding case before ordering), while == / != and strcmp() remain
+  case-SENSITIVE. So "a" < "B" is true (a before b) even though 'a' (97) sorts
+  after 'B' (66) in ASCII. Verified against ToastStunt; Barn currently uses a
+  raw case-sensitive byte comparison for the relational operators.
+
+requires:
+  builtins: [strcmp, equal]
+
+tests:
+  - name: lower_a_less_than_upper_b
+    description: '"a" < "B" is true: case folded, a precedes b.'
+    code: '"a" < "B"'
+    expect:
+      value: 1
+
+  - name: upper_b_not_less_than_lower_a
+    code: '"B" < "a"'
+    expect:
+      value: 0
+
+  - name: case_differing_equal_strings_compare_as_equal_for_le
+    description: '"a" <= "A" is true because they are equal when case is folded.'
+    code: '"a" <= "A"'
+    expect:
+      value: 1
+
+  - name: lower_a_not_greater_than_upper_b
+    code: '"a" > "B"'
+    expect:
+      value: 0
+
+  - name: mixed_case_word_ordering
+    code: '"abc" < "ABD"'
+    expect:
+      value: 1
+
+  - name: uppercase_z_word_sorts_after_lowercase_a_word
+    description: '"Zebra" > "apple" -- z folds after a regardless of ASCII case bits.'
+    code: '"Zebra" < "apple"'
+    expect:
+      value: 0
+
+  - name: same_word_different_case_is_le
+    code: '"hello" <= "HELLO"'
+    expect:
+      value: 1
+
+  - name: same_word_different_case_is_not_gt
+    code: '"hello" > "HELLO"'
+    expect:
+      value: 0
+
+  - name: equality_operator_is_also_case_insensitive
+    description: The == operator likewise folds case, so "a" == "A" is true.
+    code: '"a" == "A"'
+    expect:
+      value: 1
+
+  - name: equal_builtin_is_case_sensitive
+    description: Contrast -- equal() is an exact (case-sensitive) compare, so equal("a","A") is false.
+    code: 'equal("a", "A")'
+    expect:
+      value: 0
+
+  - name: strcmp_remains_case_sensitive
+    description: Contrast -- strcmp() is a case-sensitive byte compare, so "a" vs "A" is nonzero.
+    code: 'strcmp("a", "A") != 0'
+    expect:
+      value: 1

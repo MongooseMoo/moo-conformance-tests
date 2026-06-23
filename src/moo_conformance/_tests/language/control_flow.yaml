@@ -170,6 +170,33 @@ tests:
     expect:
       value: "no"
 
+  - name: ternary_concatenated_string_truthy
+    description: >
+      A string built via repeated self-concatenation (a = a + b) is still
+      truthy when non-empty. Regression test for a Barn bug where a
+      builder-backed string (the result of in-place append optimization)
+      always evaluated as falsy regardless of content.
+    setup:
+      code: |
+        a = "x";
+        a = a + "y";
+    code: 'a ? "yes" | "no"'
+    expect:
+      value: "yes"
+
+  - name: ternary_concatenated_string_from_empty_truthy
+    description: >
+      A string built by appending onto an initially empty string is truthy
+      once it has content. Regression test for the same builder-backed
+      string truthiness bug.
+    setup:
+      code: |
+        a = "";
+        a = a + "fluffytoes";
+    code: 'a ? "yes" | "no"'
+    expect:
+      value: "yes"
+
   - name: ternary_list_truthy
     description: Nonempty list is truthy
     code: "{1} ? \"yes\" | \"no\""

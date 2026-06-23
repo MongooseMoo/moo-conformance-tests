@@ -105,6 +105,80 @@ tests:
       error: E_INVARG
   cleanup:
   - run: recycle({obj})
+- name: add_property_named_player_is_not_builtin
+  description: >
+    "player" is not a reserved/built-in dot-property name (unlike "name",
+    "owner", "location", "contents"). A custom property literally named
+    "player" must be definable and must round-trip its own value rather
+    than being shadowed by the player flag. This is the convention used by
+    every LambdaMOO/ToastCore-derived database for $player = #0.player.
+    Regression test for a Barn bug that treated "player" as a builtin
+    pseudo-property.
+  permission: programmer
+  steps:
+  - run: create($nothing)
+    capture: obj
+  - run: add_property({obj}, "player", 42, {player, ""})
+    expect:
+      value: 0
+  - run: '{obj}.player'
+    expect:
+      value: 42
+  cleanup:
+  - run: recycle({obj})
+- name: add_property_named_parents_is_not_builtin
+  description: >
+    "parents" is not a reserved/built-in dot-property name in ToastStunt;
+    only the parents() builtin function exposes ancestry. Regression test
+    for a Barn bug that treated "parents" as a builtin pseudo-property.
+  permission: programmer
+  steps:
+  - run: create($nothing)
+    capture: obj
+  - run: add_property({obj}, "parents", "custom", {player, ""})
+    expect:
+      value: 0
+  - run: '{obj}.parents'
+    expect:
+      value: custom
+  cleanup:
+  - run: recycle({obj})
+- name: add_property_named_parent_is_not_builtin
+  description: >
+    "parent" is not a reserved/built-in dot-property name in ToastStunt;
+    only the parent() builtin function exposes the first ancestor.
+    Regression test for a Barn bug that treated "parent" as a builtin
+    pseudo-property.
+  permission: programmer
+  steps:
+  - run: create($nothing)
+    capture: obj
+  - run: add_property({obj}, "parent", "custom", {player, ""})
+    expect:
+      value: 0
+  - run: '{obj}.parent'
+    expect:
+      value: custom
+  cleanup:
+  - run: recycle({obj})
+- name: add_property_named_children_is_not_builtin
+  description: >
+    "children" is not a reserved/built-in dot-property name in ToastStunt;
+    only the children() builtin function exposes child objects. Regression
+    test for a Barn bug that treated "children" as a builtin
+    pseudo-property.
+  permission: programmer
+  steps:
+  - run: create($nothing)
+    capture: obj
+  - run: add_property({obj}, "children", "custom", {player, ""})
+    expect:
+      value: 0
+  - run: '{obj}.children'
+    expect:
+      value: custom
+  cleanup:
+  - run: recycle({obj})
 - name: add_property_defined_on_ancestor
   description: add_property fails with E_INVARG if property already defined on ancestor
   permission: programmer

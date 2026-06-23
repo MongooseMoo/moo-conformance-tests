@@ -165,6 +165,26 @@ tests:
       - run: recycle({obj});
         as: wizard
 
+  - name: audit_non_executable_verb_does_not_shadow_executable_ancestor
+    description: >
+      A non-executable verb does not hide a same-named, executable verb
+      defined further up the ancestry chain; call dispatch skips past it and
+      keeps searching rather than failing with E_VERBNF.
+    permission: wizard
+    statement: |
+      parent = create($nothing);
+      add_verb(parent, {player, "xd", "auditshadow"}, {"this", "none", "this"});
+      set_verb_code(parent, "auditshadow", {"return \"parent\";"});
+      child = create(parent);
+      add_verb(child, {player, "d", "auditshadow"}, {"this", "none", "this"});
+      set_verb_code(child, "auditshadow", {"return \"child\";"});
+      result = child:auditshadow();
+      recycle(child);
+      recycle(parent);
+      return result;
+    expect:
+      value: parent
+
   - name: audit_set_verb_info_nonowner_denied_even_with_writable_object
     description: set_verb_info denies a non-owner programmer even when the object is writable.
     steps:

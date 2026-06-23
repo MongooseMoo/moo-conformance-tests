@@ -1,0 +1,52 @@
+name: move_invalid_args
+description: >
+  move(what, where) validates both arguments before performing the move. If
+  `what` is not a valid object, or `where` is neither #-1 nor a valid object
+  (e.g. a recycled object, a positive number with no object, or a negative
+  number other than #-1), move() raises E_INVARG. (This validity check happens
+  before any accept()/permission handling.) Pins this against ToastStunt.
+
+requires:
+  builtins:
+    - move
+    - create
+    - recycle
+
+tests:
+  - name: move_to_nonexistent_positive_dest
+    statement: |
+      o = create($nothing);
+      r = `move(o, #99999) ! ANY';
+      recycle(o);
+      return r;
+    expect:
+      value: E_INVARG
+
+  - name: move_to_negative_dest
+    statement: |
+      o = create($nothing);
+      r = `move(o, #-5) ! ANY';
+      recycle(o);
+      return r;
+    expect:
+      value: E_INVARG
+
+  - name: move_to_recycled_dest
+    statement: |
+      o = create($nothing);
+      d = create($nothing);
+      recycle(d);
+      r = `move(o, d) ! ANY';
+      recycle(o);
+      return r;
+    expect:
+      value: E_INVARG
+
+  - name: move_invalid_object
+    statement: |
+      a = create($nothing);
+      r = `move(#99999, a) ! ANY';
+      recycle(a);
+      return r;
+    expect:
+      value: E_INVARG

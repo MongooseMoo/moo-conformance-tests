@@ -1,0 +1,36 @@
+name: toint_overflow
+description: >
+  toint() parsing a numeric string whose magnitude exceeds the 64-bit integer
+  range SATURATES (clamps) to the nearest representable integer -- the maximum
+  for a positive overflow and the minimum for a negative one -- matching
+  ToastStunt's strtoll-based conversion. (The boundary values parse exactly.)
+
+requires:
+  builtins:
+    - toint
+
+tests:
+  - name: toint_positive_overflow_clamps_to_max
+    code: 'toint("99999999999999999999")'
+    expect:
+      value: 9223372036854775807
+
+  - name: toint_just_over_max_clamps
+    code: 'toint("9223372036854775808")'
+    expect:
+      value: 9223372036854775807
+
+  - name: toint_negative_overflow_clamps_to_min
+    code: 'toint("-99999999999999999999")'
+    expect:
+      value: -9223372036854775808
+
+  - name: toint_max_parses_exactly
+    code: 'toint("9223372036854775807")'
+    expect:
+      value: 9223372036854775807
+
+  - name: toint_min_parses_exactly
+    code: 'toint("-9223372036854775808")'
+    expect:
+      value: -9223372036854775808

@@ -1,0 +1,131 @@
+name: match_percent_escapes
+description: >
+  MOO regex uses '%' (not backslash) as its escape character. ToastStunt's regex
+  engine (Henry Spencer's "rx") defines only a small set of '%'-escapes as
+  special: %w/%W (word / non-word constituent), %b/%B (word boundary / non),
+  %</%> (beginning / end of word) and %1-%9 (backreferences). Every OTHER
+  '% + char' sequence is the LITERAL following character -- including %d, %s,
+  %. , %+ , %* , %[ , %? , %^ , %$ . In particular MOO regex has NO Perl-style
+  %d (digit) or %s (whitespace) classes: "%d" matches a literal 'd'.
+  These tests pin that behavior against the ToastStunt reference.
+
+requires:
+  builtins:
+    - match
+    - rmatch
+
+tests:
+  # ===========================================================================
+  # '%' + punctuation == literal punctuation (NOT a metacharacter)
+  # ===========================================================================
+
+  - name: percent_dot_is_literal_dot
+    code: 'match("a.b", "%.")'
+    expect:
+      value: [2, 2, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "a.b"]
+
+  - name: percent_dot_not_any_char
+    code: 'match("axb", "%.")'
+    expect:
+      value: []
+
+  - name: percent_plus_is_literal_plus
+    code: 'match("a+b", "%+")'
+    expect:
+      value: [2, 2, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "a+b"]
+
+  - name: percent_star_is_literal_star
+    code: 'match("a*b", "%*")'
+    expect:
+      value: [2, 2, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "a*b"]
+
+  - name: percent_lbracket_is_literal
+    code: 'match("a[b", "%[")'
+    expect:
+      value: [2, 2, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "a[b"]
+
+  - name: percent_question_is_literal
+    code: 'match("a?b", "%?")'
+    expect:
+      value: [2, 2, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "a?b"]
+
+  - name: percent_caret_is_literal
+    code: 'match("a^b", "%^")'
+    expect:
+      value: [2, 2, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "a^b"]
+
+  - name: percent_dollar_is_literal
+    code: 'match("a$b", "%$")'
+    expect:
+      value: [2, 2, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "a$b"]
+
+  # ===========================================================================
+  # '%' + letter (other than w/W/b/B) == literal letter, NOT a char class
+  # ===========================================================================
+
+  - name: percent_d_is_literal_d
+    code: 'match("abd", "%d")'
+    expect:
+      value: [3, 3, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "abd"]
+
+  - name: percent_d_is_not_digit_class
+    code: 'match("a1b2", "%d")'
+    expect:
+      value: []
+
+  - name: percent_s_is_literal_s
+    code: 'match("sun", "%s")'
+    expect:
+      value: [1, 1, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "sun"]
+
+  - name: percent_s_is_not_whitespace_class
+    code: 'match("  hi", "%s")'
+    expect:
+      value: []
+
+  # ===========================================================================
+  # %b -- word boundary (matches the empty string at a word edge)
+  # ===========================================================================
+
+  - name: percent_b_empty_match_at_start
+    code: 'match("hello", "%b")'
+    expect:
+      value: [1, 0, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "hello"]
+
+  - name: percent_b_before_word
+    code: 'match("foo bar", "%bbar")'
+    expect:
+      value: [5, 7, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "foo bar"]
+
+  # ===========================================================================
+  # %< / %> -- beginning / end of word
+  # ===========================================================================
+
+  - name: percent_langle_begin_word
+    code: 'match("foo bar", "%<bar")'
+    expect:
+      value: [5, 7, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "foo bar"]
+
+  - name: percent_langle_not_midword
+    code: 'match("foobar", "%<bar")'
+    expect:
+      value: []
+
+  - name: percent_rangle_end_word
+    code: 'match("foo bar", "foo%>")'
+    expect:
+      value: [1, 3, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "foo bar"]
+
+  - name: percent_rangle_not_midword
+    code: 'match("foobar", "foo%>")'
+    expect:
+      value: []
+
+  # ===========================================================================
+  # rmatch honors literal escapes too (rightmost literal '.')
+  # ===========================================================================
+
+  - name: rmatch_percent_dot_literal
+    code: 'rmatch("a.b.c", "%.")'
+    expect:
+      value: [4, 4, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "a.b.c"]

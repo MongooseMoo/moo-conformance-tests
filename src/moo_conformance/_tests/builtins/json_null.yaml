@@ -1,0 +1,37 @@
+name: json_null
+description: >
+  MOO has no native "null" value, so ToastStunt's parse_json() maps the JSON
+  literal `null` to the error value E_NONE (an ERR, typeof == 3), in both the
+  default and "common-subset" modes. This holds for a bare null, and for null
+  appearing inside arrays and objects. Pins parse_json("null") -> E_NONE.
+
+requires:
+  builtins:
+    - parse_json
+    - generate_json
+
+tests:
+  - name: parse_json_bare_null_is_e_none
+    code: 'parse_json("null")'
+    expect:
+      value: E_NONE
+
+  - name: parse_json_null_type_is_err
+    code: 'typeof(parse_json("null"))'
+    expect:
+      value: 3
+
+  - name: parse_json_null_in_array
+    code: 'parse_json("[null, 1]")'
+    expect:
+      value: [E_NONE, 1]
+
+  - name: parse_json_null_in_object
+    code: 'parse_json("{\"a\": null}")'
+    expect:
+      value: {"a": E_NONE}
+
+  - name: parse_json_null_common_subset
+    code: 'parse_json("null", "common-subset")'
+    expect:
+      value: E_NONE

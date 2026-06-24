@@ -185,6 +185,31 @@ tests:
     expect:
       value: parent
 
+  - name: audit_pass_skips_non_executable_shadowing_verb
+    description: >
+      pass() resolves the parent verb the same way call dispatch does: a
+      non-executable same-named verb on an intermediate ancestor does not
+      shadow an executable same-named verb defined further up the chain.
+      pass() must skip past it and keep searching, not raise E_PERM.
+    permission: wizard
+    statement: |
+      root = create($nothing);
+      add_verb(root, {player, "xd", "auditpassshadow"}, {"this", "none", "this"});
+      set_verb_code(root, "auditpassshadow", {"return \"root\";"});
+      mid = create(root);
+      add_verb(mid, {player, "d", "auditpassshadow"}, {"this", "none", "this"});
+      set_verb_code(mid, "auditpassshadow", {"return \"mid\";"});
+      leaf = create(mid);
+      add_verb(leaf, {player, "xd", "auditpassshadow"}, {"this", "none", "this"});
+      set_verb_code(leaf, "auditpassshadow", {"return pass();"});
+      result = leaf:auditpassshadow();
+      recycle(leaf);
+      recycle(mid);
+      recycle(root);
+      return result;
+    expect:
+      value: root
+
   - name: audit_set_verb_info_nonowner_denied_even_with_writable_object
     description: set_verb_info denies a non-owner programmer even when the object is writable.
     steps:

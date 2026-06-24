@@ -631,9 +631,13 @@ def _parse_test_step(data: dict) -> TestStep:
     assert_log = None
     if 'assert_log' in data:
         al_data = data['assert_log']
+        contains = al_data.get('contains')
+        not_contains = al_data.get('not_contains')
+        if contains is None and not_contains is None:
+            raise ValueError("assert_log must specify contains or not_contains")
         assert_log = LogAssertion(
-            contains=al_data.get('contains'),
-            not_contains=al_data.get('not_contains'),
+            contains=contains,
+            not_contains=not_contains,
         )
 
     # Parse assert_file if present

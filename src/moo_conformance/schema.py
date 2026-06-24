@@ -219,7 +219,8 @@ class LogAssertion:
     Used with the assert_log step type to verify server_log() output.
     Only checks log entries written since the current test started.
     """
-    contains: str         # Text to search for in recent log entries
+    contains: str | None = None     # Text that must be present in recent log entries
+    not_contains: str | None = None  # Text that must be absent from recent log entries
 
 
 @dataclass
@@ -250,6 +251,7 @@ class WriteFile:
 class RestartServer:
     """Restart the managed server process and reconnect transport."""
     wait_ms: int = 0  # Optional pause after restart before next step
+    down_ms: int = 0  # Optional pause while the process is fully stopped, before restart
 
 
 @dataclass
@@ -630,7 +632,8 @@ def _parse_test_step(data: dict) -> TestStep:
     if 'assert_log' in data:
         al_data = data['assert_log']
         assert_log = LogAssertion(
-            contains=al_data['contains'],
+            contains=al_data.get('contains'),
+            not_contains=al_data.get('not_contains'),
         )
 
     # Parse assert_file if present
@@ -657,7 +660,10 @@ def _parse_test_step(data: dict) -> TestStep:
     if 'restart_server' in data:
         rs_data = data['restart_server']
         if isinstance(rs_data, dict):
-            restart_server = RestartServer(wait_ms=rs_data.get('wait_ms', 0))
+            restart_server = RestartServer(
+                wait_ms=rs_data.get('wait_ms', 0),
+                down_ms=rs_data.get('down_ms', 0),
+            )
         else:
             restart_server = RestartServer()
 

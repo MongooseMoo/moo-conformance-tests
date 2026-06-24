@@ -15,8 +15,8 @@ Standalone pytest plugin for MOO language conformance testing. YAML-based tests 
 ## Key Paths
 
 **ToastStunt (Reference)**:
-- Binary: `~/src/toaststunt/build-msvc/Release/moo.exe` (also `test/moo.exe`)
-- Test database: `~/src/toaststunt/test/Test.db`
+- Barn oracle binary: `/root/src/toaststunt/build-release/moo` in WSL
+- Canonical Barn oracle core: `/root/src/toastcore/toastcore.db` in WSL
 - Ruby tests (original source): `~/src/toaststunt/test/tests/test_*.rb`
 
 **This Project**:
@@ -84,13 +84,13 @@ The `--server-command` flag starts and stops the server automatically. It uses t
 
 ```bash
 # Auto-managed ToastStunt
-uv run moo-conformance --server-command="~/src/toaststunt/test/moo.exe {db} NUL {port}" -v
+wsl --cd /mnt/c/Users/Q/code/moo-conformance-tests --exec bash -lc 'uv run moo-conformance --server-command="/root/src/toaststunt/build-release/moo {db} {db}.out -p {port}" -v'
 
 # Specific category
-uv run moo-conformance --server-command="~/src/toaststunt/test/moo.exe {db} NUL {port}" -k "arithmetic" -v
+wsl --cd /mnt/c/Users/Q/code/moo-conformance-tests --exec bash -lc 'uv run moo-conformance --server-command="/root/src/toaststunt/build-release/moo {db} {db}.out -p {port}" -k "arithmetic" -v'
 
 # Stop on first failure
-uv run moo-conformance --server-command="~/src/toaststunt/test/moo.exe {db} NUL {port}" -x -v
+wsl --cd /mnt/c/Users/Q/code/moo-conformance-tests --exec bash -lc 'uv run moo-conformance --server-command="/root/src/toaststunt/build-release/moo {db} {db}.out -p {port}" -x -v'
 ```
 
 Managed mode also auto-detects `--moo-server-dir` (needed for fileio_verified, fileio_host_write tests).
@@ -101,8 +101,7 @@ Connect to a server you started yourself:
 
 ```bash
 # Start ToastStunt manually
-cd /c/Users/Q/src/toaststunt/test
-./moo.exe Test.db NUL 9898
+wsl --cd /root --exec bash -lc 'setsid /root/src/toaststunt/build-release/moo /root/src/toastcore/toastcore.db /tmp/toastcore.out.db -p 9898 < /dev/null > /tmp/toast-oracle.log 2>&1 & disown'
 
 # Run against it
 uv run moo-conformance --moo-port=9898 -v

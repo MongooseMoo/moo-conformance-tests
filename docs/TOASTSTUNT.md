@@ -2,11 +2,19 @@
 
 This documents how to run conformance tests against the Toaststunt C implementation to verify expected behavior.
 
+## Local Barn Oracle
+
+For Barn oracle work on this machine, use WSL Toast, not a Windows build. The Barn-local source of truth is `C:\Users\Q\code\barn\reports\toast-oracle-wsl.md`.
+
+- WSL binary: `/root/src/toaststunt/build-release/moo`
+- Canonical WSL core: `/root/src/toastcore/toastcore.db`
+- Command shape inside WSL: `/root/src/toaststunt/build-release/moo <in-db> <out-db> -p <port>`
+
 ## Prerequisites
 
 1. **Toaststunt** - Get it from https://github.com/lisdude/toaststunt
    - Build instructions in the toaststunt README
-   - You need `moo.exe` (or `moo` on Linux/Mac)
+   - You need the `moo` server binary
    - Required: `Test.db` from `<toaststunt>/test/`
 
 2. **This package** installed:
@@ -30,7 +38,7 @@ The conformance tests connect to a running MOO server via TCP:
 ```bash
 cd <toaststunt>/test
 
-# moo.exe syntax: moo <indb> <outdb> <port>
+# Generic syntax: moo <indb> <outdb> <port>
 ./moo Test.db Test.out.db 9898
 ```
 

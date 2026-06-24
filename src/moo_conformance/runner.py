@@ -373,7 +373,9 @@ class YamlTestRunner:
 
                 # Handle restart_server step
                 if step.restart_server:
-                    self._execute_restart_server(step.restart_server.wait_ms, test.name)
+                    self._execute_restart_server(
+                        step.restart_server.wait_ms, test.name, down_ms=step.restart_server.down_ms
+                    )
                     continue
 
                 # Check if this is a verb_setup step
@@ -459,7 +461,7 @@ class YamlTestRunner:
                 except Exception:
                     pass
 
-    def _execute_restart_server(self, wait_ms: int, test_name: str) -> None:
+    def _execute_restart_server(self, wait_ms: int, test_name: str, down_ms: int = 0) -> None:
         """Restart managed server and reconnect transport to the same user."""
         if self.managed_server is None:
             raise AssertionError(
@@ -470,7 +472,7 @@ class YamlTestRunner:
         current_user = getattr(self.transport, "current_user", "programmer")
 
         self.transport.disconnect()
-        self.managed_server.restart()
+        self.managed_server.restart(down_ms=down_ms)
 
         # Update transport endpoint in case a dynamic port changed.
         self.transport.host = self.managed_server.host
@@ -551,15 +553,25 @@ class YamlTestRunner:
             )
 
         new_content = self._read_log_since_offset()
-        if assertion.contains not in new_content:
-            # Truncate log excerpt for readability
+
+        def _excerpt() -> str:
             excerpt = new_content[:500]
             if len(new_content) > 500:
                 excerpt += f"... ({len(new_content)} bytes total)"
+            return excerpt
+
+        if assertion.contains is not None and assertion.contains not in new_content:
             raise AssertionError(
                 f"Test '{test_name}' assert_log: expected log to contain "
                 f"{assertion.contains!r}, but it was not found in new log entries.\n"
-                f"Log content since test start:\n{excerpt}"
+                f"Log content since test start:\n{_excerpt()}"
+            )
+
+        if assertion.not_contains is not None and assertion.not_contains in new_content:
+            raise AssertionError(
+                f"Test '{test_name}' assert_log: expected log to NOT contain "
+                f"{assertion.not_contains!r}, but it was found in new log entries.\n"
+                f"Log content since test start:\n{_excerpt()}"
             )
 
     def _execute_assert_file(self, assertion: FileAssertion, test_name: str) -> None:

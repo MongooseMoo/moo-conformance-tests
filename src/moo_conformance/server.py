@@ -157,9 +157,17 @@ class ManagedServer:
             self._db_copy_path = None
             self._manifest_path = None
 
-    def restart(self, db_path: Path | None = None, wait_for_port: bool = True) -> None:
-        """Restart the server process in-place, preserving the working database."""
+    def restart(self, db_path: Path | None = None, wait_for_port: bool = True, down_ms: int = 0) -> None:
+        """Restart the server process in-place, preserving the working database.
+
+        down_ms keeps the process fully stopped for that long before starting
+        it back up, simulating genuine offline downtime (e.g. between a
+        checkpoint and the next boot) -- unlike a post-restart wait, which
+        only delays after the new process is already up and reconnected.
+        """
         self.stop(preserve_temp=True)
+        if down_ms > 0:
+            time.sleep(down_ms / 1000.0)
         if db_path is None:
             self._sync_checkpoint_output()
             self.start(wait_for_port=wait_for_port)

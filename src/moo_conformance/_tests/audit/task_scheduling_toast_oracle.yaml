@@ -474,6 +474,57 @@ tests:
           endtry
         as: wizard
 
+  - name: audit_pending_forked_task_survives_genuine_offline_restart
+    description: >
+      A forked task whose original scheduled run time has already elapsed by
+      the time the server comes back up (genuine offline downtime, not just a
+      fast restart) still runs cleanly, with no error logged.
+    steps:
+      - run: |
+          try
+            add_property($server_options, "bg_seconds", 2, {player, "r"});
+          except (E_INVARG)
+            $server_options.bg_seconds = 2;
+          endtry
+          load_server_options();
+          try
+            add_property(#0, "audit_offline_marker", "before", {#0, "rw"});
+          except (E_INVARG)
+            #0.audit_offline_marker = "before";
+          endtry
+          fork (3)
+            #0.audit_offline_marker = "after";
+          endfork
+          return #0.audit_offline_marker;
+        as: wizard
+        expect:
+          value: before
+      - run: "return dump_database();"
+        as: wizard
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+          down_ms: 8000
+      - run: "return #0.audit_offline_marker;"
+        as: wizard
+        expect:
+          value: after
+      - assert_log:
+          not_contains: "context deadline exceeded"
+    cleanup:
+      - run: |
+          try
+            delete_property($server_options, "bg_seconds");
+          except (ANY)
+          endtry
+          try
+            delete_property(#0, "audit_offline_marker");
+          except (ANY)
+          endtry
+          load_server_options();
+        as: wizard
+
   - name: audit_force_input_live_login_connection
     description: force_input() to a live negative connection runs the login input path and can log it in.
     steps:

@@ -503,6 +503,7 @@ tests:
         as: wizard
         expect:
           value: 0
+      - wait: 1500
       - restart_server:
           down_ms: 8000
       - run: "return #0.audit_offline_marker;"

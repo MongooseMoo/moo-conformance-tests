@@ -1,0 +1,131 @@
+name: sqlite_security
+description: |
+  Security boundary tests for MOO SQLite builtins.
+  Tests path traversal prevention, ensuring sqlite_open cannot escape
+  the files/ root directory. Mirrors the fileio_security tests for
+  the same path sanitization guarantees.
+
+requires:
+  builtins: [sqlite_open, sqlite_close, file_remove, file_mkdir, file_rmdir]
+
+tests:
+  # ============================================================
+  # Path traversal: sqlite_open
+  # Same rules as file_verify_path: starts with "..", contains "/."
+  # ============================================================
+  - name: traversal_open_dotdot_start
+    permission: wizard
+    code: 'return sqlite_open("..");'
+    expect:
+      error: E_INVARG
+
+  - name: traversal_open_dotdot_slash
+    permission: wizard
+    code: 'return sqlite_open("../foo.sqlite");'
+    expect:
+      error: E_INVARG
+
+  - name: traversal_open_mid_dotdot
+    permission: wizard
+    code: 'return sqlite_open("foo/../bar.sqlite");'
+    expect:
+      error: E_INVARG
+
+  - name: traversal_open_deep
+    permission: wizard
+    code: 'return sqlite_open("foo/bar/../../baz.sqlite");'
+    expect:
+      error: E_INVARG
+
+  - name: traversal_open_hidden_file
+    permission: wizard
+    code: 'return sqlite_open("foo/.hidden.sqlite");'
+    expect:
+      error: E_INVARG
+
+  - name: traversal_open_dot_segment
+    permission: wizard
+    code: 'return sqlite_open("foo/./bar.sqlite");'
+    expect:
+      error: E_INVARG
+
+  # ============================================================
+  # Absolute paths: sqlite_open
+  # Toast does not reject absolute paths with E_INVARG; instead
+  # the underlying SQLite open fails, yielding E_NONE.
+  # ============================================================
+  - name: absolute_path_unix
+    permission: wizard
+    code: 'return sqlite_open("/tmp/escape.sqlite");'
+    expect:
+      error: E_NONE
+
+  # ============================================================
+  # Backslash traversal
+  # On Unix, "\" is not a path separator, so "..\foo" starts
+  # with ".." and is blocked with E_INVARG.
+  # ============================================================
+  - name: traversal_backslash_dotdot
+    permission: wizard
+    code: "return sqlite_open(\"..\\\\foo.sqlite\");"
+    expect:
+      error: E_INVARG
+
+  - name: traversal_backslash_mid
+    permission: wizard
+    description: |
+      On Unix-like Toast builds, backslash is not a path separator,
+      so "foo\..\.bar.sqlite" is a literal filename with backslashes —
+      not a traversal. It opens successfully inside files/.
+      A file_open is done first to ensure the files/ directory exists,
+      since sqlite_open does not create it automatically.
+    steps:
+      - run: |
+          file_mkdir("__sqlite_sec_ensure_dir");
+          file_rmdir("__sqlite_sec_ensure_dir");
+          return 1;
+        expect:
+          value: 1
+      - run: 'sqlite_open("foo\\..\\bar.sqlite")'
+        capture: h
+        expect:
+          range: [1, 2147483647]
+    cleanup:
+      - run: "sqlite_close({h});"
+        as: wizard
+
+  # ============================================================
+  # :memory: is always allowed
+  # ============================================================
+  - name: memory_db_allowed
+    permission: wizard
+    steps:
+      - run: 'sqlite_open(":memory:")'
+        capture: h
+        expect:
+          range: [1, 2147483647]
+    cleanup:
+      - run: "sqlite_close({h});"
+        as: wizard
+
+  # ============================================================
+  # Valid path opens/creates inside files/
+  # A file_open is done first to ensure the files/ directory exists,
+  # since sqlite_open does not create it automatically.
+  # ============================================================
+  - name: valid_path_opens_in_files_root
+    permission: wizard
+    steps:
+      - run: |
+          file_mkdir("__sqlite_sec_ensure_dir");
+          file_rmdir("__sqlite_sec_ensure_dir");
+          return 1;
+        expect:
+          value: 1
+      - run: 'sqlite_open("__test_sec_sqlite.db")'
+        capture: h
+        expect:
+          range: [1, 2147483647]
+    cleanup:
+      - run: "sqlite_close({h}); file_remove(\"__test_sec_sqlite.db\");"
+        as: wizard

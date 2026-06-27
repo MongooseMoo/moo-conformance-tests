@@ -316,6 +316,102 @@ tests:
   expect:
     value: [2, E_INVARG]
 
+- name: waif_wildcard_verb_abbreviated_call
+  description: A waif verb defined with a wildcard name (:greet*ing) is callable via its minimum abbreviation (greet)
+  statement: |
+    c = create($waif);
+    add_verb(c, {player, "xd", ":greet*ing"}, {"this", "none", "this"});
+    set_verb_code(c, ":greeting", {"return \"hello\";"});
+    w = c:new();
+    result = w:greet();
+    recycle(c);
+    return result;
+  expect:
+    value: hello
+
+- name: waif_wildcard_verb_full_name_call
+  description: A waif verb defined with a wildcard name (:greet*ing) is callable via its full expanded name (greeting)
+  statement: |
+    c = create($waif);
+    add_verb(c, {player, "xd", ":greet*ing"}, {"this", "none", "this"});
+    set_verb_code(c, ":greeting", {"return \"hello\";"});
+    w = c:new();
+    result = w:greeting();
+    recycle(c);
+    return result;
+  expect:
+    value: hello
+
+- name: waif_colon_star_catchall_matches_any_call
+  description: A waif verb named :* catches any verb call on a waif instance
+  statement: |
+    c = create($waif);
+    add_verb(c, {player, "xd", ":*"}, {"this", "none", "this"});
+    set_verb_code(c, ":*", {"return 42;"});
+    w = c:new();
+    result = w:anything();
+    recycle(c);
+    return result;
+  expect:
+    value: 42
+
+- name: waif_colon_star_matches_preexisting_instance
+  description: A :* verb added to the class after instance creation is visible to existing waif instances
+  statement: |
+    c = create($waif);
+    w = c:new();
+    add_verb(c, {player, "xd", ":*"}, {"this", "none", "this"});
+    set_verb_code(c, ":*", {"return 42;"});
+    result = w:anything();
+    recycle(c);
+    return result;
+  expect:
+    value: 42
+
+- name: waif_bare_star_matches_preexisting_instance
+  description: A bare * verb added to the class after instance creation also dispatches on waif calls
+  statement: |
+    c = create($waif);
+    w = c:new();
+    add_verb(c, {player, "xd", "*"}, {"this", "none", "this"});
+    result = w:anything();
+    recycle(c);
+    return result;
+  expect:
+    value: 0
+
+- name: waif_object_call_ignores_waif_only_verbs
+  description: Calling a verb directly on the class object does not find verbs with a colon prefix
+  statement: |
+    c = create($waif);
+    add_verb(c, {player, "xd", ":foo"}, {"this", "none", "this"});
+    set_verb_code(c, ":foo", {"return 99;"});
+    try
+      result = c:foo();
+    except e (ANY)
+      result = e[1];
+    endtry
+    recycle(c);
+    return result;
+  expect:
+    value: E_VERBNF
+
+- name: waif_bare_wildcard_prefix_verb_not_found
+  description: A waif verb named *test (without colon prefix) is not found for any call on a waif instance
+  statement: |
+    c = create($waif);
+    add_verb(c, {player, "xd", "*test"}, {"this", "none", "this"});
+    w = c:new();
+    try
+      w:test();
+    except e (ANY)
+      result = e[1];
+    endtry
+    recycle(c);
+    return result;
+  expect:
+    value: E_VERBNF
+
 - name: waif_colon_verbs_are_instance_verbs
   statement: |
     x = create($waif);

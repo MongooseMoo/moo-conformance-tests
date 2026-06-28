@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T05:39:59Z`
+- generated_at: `2026-06-28T05:43:05Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `243`
 - required_call_shapes: `7721`
-- covered_call_shapes: `505`
-- missing_call_shapes: `7216`
+- covered_call_shapes: `507`
+- missing_call_shapes: `7214`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3609,9 +3609,6 @@ still needs explicit human review.
   - [ ] `isa/3 (map, err, int)`
   - [ ] `isa/3 (map, list, int)`
   - [ ] `isa/3 (map, map, int)`
-- `length` signature `1..1 (any)`
-  - [ ] `length/1 (float)`
-  - [ ] `length/1 (err)`
 - `listappend` signature `2..3 (list, any, int)`
   - [ ] `listappend/2 (list, float)`
   - [ ] `listappend/2 (list, obj)`
@@ -11674,10 +11671,10 @@ still needs explicit human review.
 - signature: `1..1 (any)`
 - source: `list.cc`
 - [x] `length/1 (int)` covered by `basic/string.yaml`
-- [ ] `length/1 (float)`
+- [x] `length/1 (float)` covered by `builtins/length_call_shapes.yaml`
 - [x] `length/1 (obj)` covered by `basic/string.yaml`
 - [x] `length/1 (str)` covered by `basic/string.yaml`, `basic/string.yaml`, `language/splice.yaml`
-- [ ] `length/1 (err)`
+- [x] `length/1 (err)` covered by `builtins/length_call_shapes.yaml`
 - [x] `length/1 (list)` covered by `audit/time_server_builtins_toast_oracle.yaml`, `basic/list.yaml`, `features/steps_basic.yaml`
 - [x] `length/1 (map)` covered by `builtins/map.yaml`
 - [?] `length/1` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/time_server_builtins_toast_oracle.yaml`, `builtins/algorithms.yaml` and 133 more

@@ -1,0 +1,18 @@
+name: length_call_shapes
+description: Table-driven TYPE_ANY coverage for length().
+
+requires:
+  builtins:
+    - length
+
+tests:
+  - name: length_arg_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [float, "length(1.5)"]
+        - [err, "length(E_ARGS)"]
+    code: "{expr}"
+    expect:
+      error: E_TYPE

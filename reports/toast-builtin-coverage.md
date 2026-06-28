@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T08:26:07Z`
+- generated_at: `2026-06-28T08:33:13Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `1033`
-- missing_call_shapes: `6568`
+- covered_call_shapes: `1083`
+- missing_call_shapes: `6518`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -21,56 +21,6 @@ still needs explicit human review.
 ## Missing Call-Shape Checklist
 
 - `create` signature `1..4 (any, any, any, any)`
-  - [ ] `create/1 (float)`
-  - [ ] `create/1 (err)`
-  - [ ] `create/1 (map)`
-  - [ ] `create/2 (int, float)`
-  - [ ] `create/2 (int, obj)`
-  - [ ] `create/2 (int, str)`
-  - [ ] `create/2 (int, err)`
-  - [ ] `create/2 (int, list)`
-  - [ ] `create/2 (int, map)`
-  - [ ] `create/2 (float, int)`
-  - [ ] `create/2 (float, float)`
-  - [ ] `create/2 (float, obj)`
-  - [ ] `create/2 (float, str)`
-  - [ ] `create/2 (float, err)`
-  - [ ] `create/2 (float, list)`
-  - [ ] `create/2 (float, map)`
-  - [ ] `create/2 (obj, int)`
-  - [ ] `create/2 (obj, float)`
-  - [ ] `create/2 (obj, obj)`
-  - [ ] `create/2 (obj, str)`
-  - [ ] `create/2 (obj, err)`
-  - [ ] `create/2 (obj, list)`
-  - [ ] `create/2 (obj, map)`
-  - [ ] `create/2 (str, int)`
-  - [ ] `create/2 (str, float)`
-  - [ ] `create/2 (str, obj)`
-  - [ ] `create/2 (str, str)`
-  - [ ] `create/2 (str, err)`
-  - [ ] `create/2 (str, list)`
-  - [ ] `create/2 (str, map)`
-  - [ ] `create/2 (err, int)`
-  - [ ] `create/2 (err, float)`
-  - [ ] `create/2 (err, obj)`
-  - [ ] `create/2 (err, str)`
-  - [ ] `create/2 (err, err)`
-  - [ ] `create/2 (err, list)`
-  - [ ] `create/2 (err, map)`
-  - [ ] `create/2 (list, float)`
-  - [ ] `create/2 (list, obj)`
-  - [ ] `create/2 (list, str)`
-  - [ ] `create/2 (list, err)`
-  - [ ] `create/2 (list, list)`
-  - [ ] `create/2 (list, map)`
-  - [ ] `create/2 (map, int)`
-  - [ ] `create/2 (map, float)`
-  - [ ] `create/2 (map, obj)`
-  - [ ] `create/2 (map, str)`
-  - [ ] `create/2 (map, err)`
-  - [ ] `create/2 (map, list)`
-  - [ ] `create/2 (map, map)`
   - [ ] `create/3 (int, int, int)`
   - [ ] `create/3 (int, int, float)`
   - [ ] `create/3 (int, int, obj)`
@@ -7055,62 +7005,62 @@ still needs explicit human review.
 
 - signature: `1..4 (any, any, any, any)`
 - source: `objects.cc`
-- [x] `create/1 (int)` covered by `builtins/create.yaml`, `builtins/objects.yaml`, `builtins/objects.yaml`
-- [ ] `create/1 (float)`
-- [x] `create/1 (obj)` covered by `basic/object.yaml`, `basic/object.yaml`, `basic/object.yaml` and 5 more
-- [x] `create/1 (str)` covered by `builtins/objects.yaml`
-- [ ] `create/1 (err)`
-- [x] `create/1 (list)` covered by `audit/verb_dispatch_toast_oracle.yaml`, `audit/verb_dispatch_toast_oracle.yaml`, `builtins/create.yaml` and 101 more
-- [ ] `create/1 (map)`
-- [x] `create/2 (int, int)` covered by `builtins/objects.yaml`
-- [ ] `create/2 (int, float)`
-- [ ] `create/2 (int, obj)`
-- [ ] `create/2 (int, str)`
-- [ ] `create/2 (int, err)`
-- [ ] `create/2 (int, list)`
-- [ ] `create/2 (int, map)`
-- [ ] `create/2 (float, int)`
-- [ ] `create/2 (float, float)`
-- [ ] `create/2 (float, obj)`
-- [ ] `create/2 (float, str)`
-- [ ] `create/2 (float, err)`
-- [ ] `create/2 (float, list)`
-- [ ] `create/2 (float, map)`
-- [ ] `create/2 (obj, int)`
-- [ ] `create/2 (obj, float)`
-- [ ] `create/2 (obj, obj)`
-- [ ] `create/2 (obj, str)`
-- [ ] `create/2 (obj, err)`
-- [ ] `create/2 (obj, list)`
-- [ ] `create/2 (obj, map)`
-- [ ] `create/2 (str, int)`
-- [ ] `create/2 (str, float)`
-- [ ] `create/2 (str, obj)`
-- [ ] `create/2 (str, str)`
-- [ ] `create/2 (str, err)`
-- [ ] `create/2 (str, list)`
-- [ ] `create/2 (str, map)`
-- [ ] `create/2 (err, int)`
-- [ ] `create/2 (err, float)`
-- [ ] `create/2 (err, obj)`
-- [ ] `create/2 (err, str)`
-- [ ] `create/2 (err, err)`
-- [ ] `create/2 (err, list)`
-- [ ] `create/2 (err, map)`
-- [x] `create/2 (list, int)` covered by `builtins/create.yaml`, `builtins/create.yaml`, `builtins/create.yaml` and 3 more
-- [ ] `create/2 (list, float)`
-- [ ] `create/2 (list, obj)`
-- [ ] `create/2 (list, str)`
-- [ ] `create/2 (list, err)`
-- [ ] `create/2 (list, list)`
-- [ ] `create/2 (list, map)`
-- [ ] `create/2 (map, int)`
-- [ ] `create/2 (map, float)`
-- [ ] `create/2 (map, obj)`
-- [ ] `create/2 (map, str)`
-- [ ] `create/2 (map, err)`
-- [ ] `create/2 (map, list)`
-- [ ] `create/2 (map, map)`
+- [x] `create/1 (int)` covered by `builtins/create.yaml`, `builtins/create_call_shapes.yaml`, `builtins/objects.yaml` and 1 more
+- [x] `create/1 (float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/1 (obj)` covered by `basic/object.yaml`, `basic/object.yaml`, `basic/object.yaml` and 6 more
+- [x] `create/1 (str)` covered by `builtins/create_call_shapes.yaml`, `builtins/objects.yaml`
+- [x] `create/1 (err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/1 (list)` covered by `audit/verb_dispatch_toast_oracle.yaml`, `audit/verb_dispatch_toast_oracle.yaml`, `builtins/create.yaml` and 102 more
+- [x] `create/1 (map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (int, int)` covered by `builtins/create_call_shapes.yaml`, `builtins/objects.yaml`
+- [x] `create/2 (int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (list, int)` covered by `builtins/create.yaml`, `builtins/create.yaml`, `builtins/create.yaml` and 4 more
+- [x] `create/2 (list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/2 (map, map)` covered by `builtins/create_call_shapes.yaml`
 - [ ] `create/3 (int, int, int)`
 - [ ] `create/3 (int, int, float)`
 - [ ] `create/3 (int, int, obj)`

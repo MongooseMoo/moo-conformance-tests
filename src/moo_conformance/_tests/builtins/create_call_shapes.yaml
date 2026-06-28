@@ -1,0 +1,82 @@
+name: create_call_shapes
+description: Product-table TYPE_ANY coverage for create().
+
+requires:
+  builtins:
+    - create
+
+tests:
+  - name: create_one_arg_parent_type_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr, error]
+      rows:
+        - [int, "1", E_TYPE]
+        - [float, "1.5", E_TYPE]
+        - [obj, "#999999", E_INVARG]
+        - [str, '"x"', E_TYPE]
+        - [err, "E_ARGS", E_TYPE]
+        - [list, "{#999999}", E_INVARG]
+        - [map, "[1 -> 2]", E_TYPE]
+    code: "create({expr})"
+    expect:
+      error: "{error}"
+
+  - name: create_two_args_non_parent_{parent_kind}_{arg_kind}
+    permission: wizard
+    table:
+      product:
+        - columns: [parent_kind, parent_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [map, "[1 -> 2]"]
+        - columns: [arg_kind, arg_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+    code: "create({parent_expr}, {arg_expr})"
+    expect:
+      error: E_TYPE
+
+  - name: create_two_args_invalid_parent_bad_arg_{parent_kind}_{arg_kind}
+    permission: wizard
+    table:
+      product:
+        - columns: [parent_kind, parent_expr]
+          rows:
+            - [obj, "#999999"]
+            - [list, "{#999999}"]
+        - columns: [arg_kind, arg_expr]
+          rows:
+            - [float, "1.5"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [map, "[1 -> 2]"]
+    code: "create({parent_expr}, {arg_expr})"
+    expect:
+      error: E_TYPE
+
+  - name: create_two_args_invalid_parent_valid_arg_{parent_kind}_{arg_kind}
+    permission: wizard
+    table:
+      product:
+        - columns: [parent_kind, parent_expr]
+          rows:
+            - [obj, "#999999"]
+            - [list, "{#999999}"]
+        - columns: [arg_kind, arg_expr]
+          rows:
+            - [int, "1"]
+            - [obj, "#0"]
+            - [list, "{}"]
+    code: "create({parent_expr}, {arg_expr})"
+    expect:
+      error: E_INVARG

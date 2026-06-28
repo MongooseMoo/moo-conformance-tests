@@ -237,3 +237,231 @@ tests:
     code: "create({parent_expr}, #0, {arg3_expr})"
     expect:
       error: E_TYPE
+
+  - name: create_four_args_non_parent_{parent_kind}_{arg2_kind}_{arg3_kind}_{arg4_kind}
+    permission: wizard
+    table:
+      product:
+        - columns: [parent_kind, parent_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [map, "[1 -> 2]"]
+        - columns: [arg2_kind, arg2_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+        - columns: [arg3_kind, arg3_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+        - columns: [arg4_kind, arg4_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+    code: "create({parent_expr}, {arg2_expr}, {arg3_expr}, {arg4_expr})"
+    expect:
+      error: E_TYPE
+
+  - name: create_four_args_invalid_parent_bad_second_{parent_kind}_{arg2_kind}_{arg3_kind}_{arg4_kind}
+    permission: wizard
+    table:
+      product:
+        - columns: [parent_kind, parent_expr]
+          rows:
+            - [obj, "#999999"]
+            - [list, "{#999999}"]
+        - columns: [arg2_kind, arg2_expr]
+          rows:
+            - [float, "1.5"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [map, "[1 -> 2]"]
+        - columns: [arg3_kind, arg3_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+        - columns: [arg4_kind, arg4_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+    code: "create({parent_expr}, {arg2_expr}, {arg3_expr}, {arg4_expr})"
+    expect:
+      error: E_TYPE
+
+  - name: create_four_args_invalid_parent_int_second_{parent_kind}_{arg3_kind}_{arg4_kind}
+    permission: wizard
+    table:
+      product:
+        - columns: [parent_kind, parent_expr]
+          rows:
+            - [obj, "#999999"]
+            - [list, "{#999999}"]
+        - columns: [arg3_kind, arg3_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+        - columns: [arg4_kind, arg4_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+    code: "create({parent_expr}, 1, {arg3_expr}, {arg4_expr})"
+    expect:
+      error: E_TYPE
+
+  - name: create_four_args_invalid_parent_list_second_{parent_kind}_{arg3_kind}_{arg4_kind}
+    permission: wizard
+    table:
+      product:
+        - columns: [parent_kind, parent_expr]
+          rows:
+            - [obj, "#999999"]
+            - [list, "{#999999}"]
+        - columns: [arg3_kind, arg3_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+        - columns: [arg4_kind, arg4_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+    code: "create({parent_expr}, {}, {arg3_expr}, {arg4_expr})"
+    expect:
+      error: E_TYPE
+
+  - name: create_four_args_invalid_parent_obj_second_bad_third_{parent_kind}_{arg3_kind}_{arg4_kind}
+    permission: wizard
+    table:
+      product:
+        - columns: [parent_kind, parent_expr]
+          rows:
+            - [obj, "#999999"]
+            - [list, "{#999999}"]
+        - columns: [arg3_kind, arg3_expr]
+          rows:
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [map, "[1 -> 2]"]
+        - columns: [arg4_kind, arg4_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+    code: "create({parent_expr}, #0, {arg3_expr}, {arg4_expr})"
+    expect:
+      error: E_TYPE
+
+  - name: create_four_args_invalid_parent_obj_second_int_third_bad_fourth_{parent_kind}_{arg4_kind}
+    permission: wizard
+    table:
+      product:
+        - columns: [parent_kind, parent_expr]
+          rows:
+            - [obj, "#999999"]
+            - [list, "{#999999}"]
+        - columns: [arg4_kind, arg4_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [map, "[1 -> 2]"]
+    code: "create({parent_expr}, #0, 1, {arg4_expr})"
+    expect:
+      error: E_TYPE
+
+  - name: create_four_args_invalid_parent_obj_second_int_third_valid_fourth_{parent_kind}
+    permission: wizard
+    table:
+      columns: [parent_kind, parent_expr]
+      rows:
+        - [obj, "#999999"]
+        - [list, "{#999999}"]
+    code: "create({parent_expr}, #0, 1, {})"
+    expect:
+      error: E_INVARG
+
+  - name: create_four_args_invalid_parent_obj_second_list_third_bad_fourth_{parent_kind}_{arg4_kind}
+    permission: wizard
+    table:
+      product:
+        - columns: [parent_kind, parent_expr]
+          rows:
+            - [obj, "#999999"]
+            - [list, "{#999999}"]
+        - columns: [arg4_kind, arg4_expr]
+          rows:
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+    code: "create({parent_expr}, #0, {}, {arg4_expr})"
+    expect:
+      error: E_TYPE
+
+  - name: create_four_args_invalid_parent_obj_second_list_third_valid_fourth_{parent_kind}
+    permission: wizard
+    table:
+      columns: [parent_kind, parent_expr]
+      rows:
+        - [obj, "#999999"]
+        - [list, "{#999999}"]
+    code: "create({parent_expr}, #0, {}, 1)"
+    expect:
+      error: E_INVARG

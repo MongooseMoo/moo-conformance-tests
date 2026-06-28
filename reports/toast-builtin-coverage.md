@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T08:35:38Z`
+- generated_at: `2026-06-28T08:38:34Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `1426`
-- missing_call_shapes: `6175`
+- covered_call_shapes: `3827`
+- missing_call_shapes: `3774`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,2408 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `create` signature `1..4 (any, any, any, any)`
-  - [ ] `create/4 (int, int, int, int)`
-  - [ ] `create/4 (int, int, int, float)`
-  - [ ] `create/4 (int, int, int, obj)`
-  - [ ] `create/4 (int, int, int, str)`
-  - [ ] `create/4 (int, int, int, err)`
-  - [ ] `create/4 (int, int, int, list)`
-  - [ ] `create/4 (int, int, int, map)`
-  - [ ] `create/4 (int, int, float, int)`
-  - [ ] `create/4 (int, int, float, float)`
-  - [ ] `create/4 (int, int, float, obj)`
-  - [ ] `create/4 (int, int, float, str)`
-  - [ ] `create/4 (int, int, float, err)`
-  - [ ] `create/4 (int, int, float, list)`
-  - [ ] `create/4 (int, int, float, map)`
-  - [ ] `create/4 (int, int, obj, int)`
-  - [ ] `create/4 (int, int, obj, float)`
-  - [ ] `create/4 (int, int, obj, obj)`
-  - [ ] `create/4 (int, int, obj, str)`
-  - [ ] `create/4 (int, int, obj, err)`
-  - [ ] `create/4 (int, int, obj, list)`
-  - [ ] `create/4 (int, int, obj, map)`
-  - [ ] `create/4 (int, int, str, int)`
-  - [ ] `create/4 (int, int, str, float)`
-  - [ ] `create/4 (int, int, str, obj)`
-  - [ ] `create/4 (int, int, str, str)`
-  - [ ] `create/4 (int, int, str, err)`
-  - [ ] `create/4 (int, int, str, list)`
-  - [ ] `create/4 (int, int, str, map)`
-  - [ ] `create/4 (int, int, err, int)`
-  - [ ] `create/4 (int, int, err, float)`
-  - [ ] `create/4 (int, int, err, obj)`
-  - [ ] `create/4 (int, int, err, str)`
-  - [ ] `create/4 (int, int, err, err)`
-  - [ ] `create/4 (int, int, err, list)`
-  - [ ] `create/4 (int, int, err, map)`
-  - [ ] `create/4 (int, int, list, int)`
-  - [ ] `create/4 (int, int, list, float)`
-  - [ ] `create/4 (int, int, list, obj)`
-  - [ ] `create/4 (int, int, list, str)`
-  - [ ] `create/4 (int, int, list, err)`
-  - [ ] `create/4 (int, int, list, list)`
-  - [ ] `create/4 (int, int, list, map)`
-  - [ ] `create/4 (int, int, map, int)`
-  - [ ] `create/4 (int, int, map, float)`
-  - [ ] `create/4 (int, int, map, obj)`
-  - [ ] `create/4 (int, int, map, str)`
-  - [ ] `create/4 (int, int, map, err)`
-  - [ ] `create/4 (int, int, map, list)`
-  - [ ] `create/4 (int, int, map, map)`
-  - [ ] `create/4 (int, float, int, int)`
-  - [ ] `create/4 (int, float, int, float)`
-  - [ ] `create/4 (int, float, int, obj)`
-  - [ ] `create/4 (int, float, int, str)`
-  - [ ] `create/4 (int, float, int, err)`
-  - [ ] `create/4 (int, float, int, list)`
-  - [ ] `create/4 (int, float, int, map)`
-  - [ ] `create/4 (int, float, float, int)`
-  - [ ] `create/4 (int, float, float, float)`
-  - [ ] `create/4 (int, float, float, obj)`
-  - [ ] `create/4 (int, float, float, str)`
-  - [ ] `create/4 (int, float, float, err)`
-  - [ ] `create/4 (int, float, float, list)`
-  - [ ] `create/4 (int, float, float, map)`
-  - [ ] `create/4 (int, float, obj, int)`
-  - [ ] `create/4 (int, float, obj, float)`
-  - [ ] `create/4 (int, float, obj, obj)`
-  - [ ] `create/4 (int, float, obj, str)`
-  - [ ] `create/4 (int, float, obj, err)`
-  - [ ] `create/4 (int, float, obj, list)`
-  - [ ] `create/4 (int, float, obj, map)`
-  - [ ] `create/4 (int, float, str, int)`
-  - [ ] `create/4 (int, float, str, float)`
-  - [ ] `create/4 (int, float, str, obj)`
-  - [ ] `create/4 (int, float, str, str)`
-  - [ ] `create/4 (int, float, str, err)`
-  - [ ] `create/4 (int, float, str, list)`
-  - [ ] `create/4 (int, float, str, map)`
-  - [ ] `create/4 (int, float, err, int)`
-  - [ ] `create/4 (int, float, err, float)`
-  - [ ] `create/4 (int, float, err, obj)`
-  - [ ] `create/4 (int, float, err, str)`
-  - [ ] `create/4 (int, float, err, err)`
-  - [ ] `create/4 (int, float, err, list)`
-  - [ ] `create/4 (int, float, err, map)`
-  - [ ] `create/4 (int, float, list, int)`
-  - [ ] `create/4 (int, float, list, float)`
-  - [ ] `create/4 (int, float, list, obj)`
-  - [ ] `create/4 (int, float, list, str)`
-  - [ ] `create/4 (int, float, list, err)`
-  - [ ] `create/4 (int, float, list, list)`
-  - [ ] `create/4 (int, float, list, map)`
-  - [ ] `create/4 (int, float, map, int)`
-  - [ ] `create/4 (int, float, map, float)`
-  - [ ] `create/4 (int, float, map, obj)`
-  - [ ] `create/4 (int, float, map, str)`
-  - [ ] `create/4 (int, float, map, err)`
-  - [ ] `create/4 (int, float, map, list)`
-  - [ ] `create/4 (int, float, map, map)`
-  - [ ] `create/4 (int, obj, int, int)`
-  - [ ] `create/4 (int, obj, int, float)`
-  - [ ] `create/4 (int, obj, int, obj)`
-  - [ ] `create/4 (int, obj, int, str)`
-  - [ ] `create/4 (int, obj, int, err)`
-  - [ ] `create/4 (int, obj, int, list)`
-  - [ ] `create/4 (int, obj, int, map)`
-  - [ ] `create/4 (int, obj, float, int)`
-  - [ ] `create/4 (int, obj, float, float)`
-  - [ ] `create/4 (int, obj, float, obj)`
-  - [ ] `create/4 (int, obj, float, str)`
-  - [ ] `create/4 (int, obj, float, err)`
-  - [ ] `create/4 (int, obj, float, list)`
-  - [ ] `create/4 (int, obj, float, map)`
-  - [ ] `create/4 (int, obj, obj, int)`
-  - [ ] `create/4 (int, obj, obj, float)`
-  - [ ] `create/4 (int, obj, obj, obj)`
-  - [ ] `create/4 (int, obj, obj, str)`
-  - [ ] `create/4 (int, obj, obj, err)`
-  - [ ] `create/4 (int, obj, obj, list)`
-  - [ ] `create/4 (int, obj, obj, map)`
-  - [ ] `create/4 (int, obj, str, int)`
-  - [ ] `create/4 (int, obj, str, float)`
-  - [ ] `create/4 (int, obj, str, obj)`
-  - [ ] `create/4 (int, obj, str, str)`
-  - [ ] `create/4 (int, obj, str, err)`
-  - [ ] `create/4 (int, obj, str, list)`
-  - [ ] `create/4 (int, obj, str, map)`
-  - [ ] `create/4 (int, obj, err, int)`
-  - [ ] `create/4 (int, obj, err, float)`
-  - [ ] `create/4 (int, obj, err, obj)`
-  - [ ] `create/4 (int, obj, err, str)`
-  - [ ] `create/4 (int, obj, err, err)`
-  - [ ] `create/4 (int, obj, err, list)`
-  - [ ] `create/4 (int, obj, err, map)`
-  - [ ] `create/4 (int, obj, list, int)`
-  - [ ] `create/4 (int, obj, list, float)`
-  - [ ] `create/4 (int, obj, list, obj)`
-  - [ ] `create/4 (int, obj, list, str)`
-  - [ ] `create/4 (int, obj, list, err)`
-  - [ ] `create/4 (int, obj, list, list)`
-  - [ ] `create/4 (int, obj, list, map)`
-  - [ ] `create/4 (int, obj, map, int)`
-  - [ ] `create/4 (int, obj, map, float)`
-  - [ ] `create/4 (int, obj, map, obj)`
-  - [ ] `create/4 (int, obj, map, str)`
-  - [ ] `create/4 (int, obj, map, err)`
-  - [ ] `create/4 (int, obj, map, list)`
-  - [ ] `create/4 (int, obj, map, map)`
-  - [ ] `create/4 (int, str, int, int)`
-  - [ ] `create/4 (int, str, int, float)`
-  - [ ] `create/4 (int, str, int, obj)`
-  - [ ] `create/4 (int, str, int, str)`
-  - [ ] `create/4 (int, str, int, err)`
-  - [ ] `create/4 (int, str, int, list)`
-  - [ ] `create/4 (int, str, int, map)`
-  - [ ] `create/4 (int, str, float, int)`
-  - [ ] `create/4 (int, str, float, float)`
-  - [ ] `create/4 (int, str, float, obj)`
-  - [ ] `create/4 (int, str, float, str)`
-  - [ ] `create/4 (int, str, float, err)`
-  - [ ] `create/4 (int, str, float, list)`
-  - [ ] `create/4 (int, str, float, map)`
-  - [ ] `create/4 (int, str, obj, int)`
-  - [ ] `create/4 (int, str, obj, float)`
-  - [ ] `create/4 (int, str, obj, obj)`
-  - [ ] `create/4 (int, str, obj, str)`
-  - [ ] `create/4 (int, str, obj, err)`
-  - [ ] `create/4 (int, str, obj, list)`
-  - [ ] `create/4 (int, str, obj, map)`
-  - [ ] `create/4 (int, str, str, int)`
-  - [ ] `create/4 (int, str, str, float)`
-  - [ ] `create/4 (int, str, str, obj)`
-  - [ ] `create/4 (int, str, str, str)`
-  - [ ] `create/4 (int, str, str, err)`
-  - [ ] `create/4 (int, str, str, list)`
-  - [ ] `create/4 (int, str, str, map)`
-  - [ ] `create/4 (int, str, err, int)`
-  - [ ] `create/4 (int, str, err, float)`
-  - [ ] `create/4 (int, str, err, obj)`
-  - [ ] `create/4 (int, str, err, str)`
-  - [ ] `create/4 (int, str, err, err)`
-  - [ ] `create/4 (int, str, err, list)`
-  - [ ] `create/4 (int, str, err, map)`
-  - [ ] `create/4 (int, str, list, int)`
-  - [ ] `create/4 (int, str, list, float)`
-  - [ ] `create/4 (int, str, list, obj)`
-  - [ ] `create/4 (int, str, list, str)`
-  - [ ] `create/4 (int, str, list, err)`
-  - [ ] `create/4 (int, str, list, list)`
-  - [ ] `create/4 (int, str, list, map)`
-  - [ ] `create/4 (int, str, map, int)`
-  - [ ] `create/4 (int, str, map, float)`
-  - [ ] `create/4 (int, str, map, obj)`
-  - [ ] `create/4 (int, str, map, str)`
-  - [ ] `create/4 (int, str, map, err)`
-  - [ ] `create/4 (int, str, map, list)`
-  - [ ] `create/4 (int, str, map, map)`
-  - [ ] `create/4 (int, err, int, int)`
-  - [ ] `create/4 (int, err, int, float)`
-  - [ ] `create/4 (int, err, int, obj)`
-  - [ ] `create/4 (int, err, int, str)`
-  - [ ] `create/4 (int, err, int, err)`
-  - [ ] `create/4 (int, err, int, list)`
-  - [ ] `create/4 (int, err, int, map)`
-  - [ ] `create/4 (int, err, float, int)`
-  - [ ] `create/4 (int, err, float, float)`
-  - [ ] `create/4 (int, err, float, obj)`
-  - [ ] `create/4 (int, err, float, str)`
-  - [ ] `create/4 (int, err, float, err)`
-  - [ ] `create/4 (int, err, float, list)`
-  - [ ] `create/4 (int, err, float, map)`
-  - [ ] `create/4 (int, err, obj, int)`
-  - [ ] `create/4 (int, err, obj, float)`
-  - [ ] `create/4 (int, err, obj, obj)`
-  - [ ] `create/4 (int, err, obj, str)`
-  - [ ] `create/4 (int, err, obj, err)`
-  - [ ] `create/4 (int, err, obj, list)`
-  - [ ] `create/4 (int, err, obj, map)`
-  - [ ] `create/4 (int, err, str, int)`
-  - [ ] `create/4 (int, err, str, float)`
-  - [ ] `create/4 (int, err, str, obj)`
-  - [ ] `create/4 (int, err, str, str)`
-  - [ ] `create/4 (int, err, str, err)`
-  - [ ] `create/4 (int, err, str, list)`
-  - [ ] `create/4 (int, err, str, map)`
-  - [ ] `create/4 (int, err, err, int)`
-  - [ ] `create/4 (int, err, err, float)`
-  - [ ] `create/4 (int, err, err, obj)`
-  - [ ] `create/4 (int, err, err, str)`
-  - [ ] `create/4 (int, err, err, err)`
-  - [ ] `create/4 (int, err, err, list)`
-  - [ ] `create/4 (int, err, err, map)`
-  - [ ] `create/4 (int, err, list, int)`
-  - [ ] `create/4 (int, err, list, float)`
-  - [ ] `create/4 (int, err, list, obj)`
-  - [ ] `create/4 (int, err, list, str)`
-  - [ ] `create/4 (int, err, list, err)`
-  - [ ] `create/4 (int, err, list, list)`
-  - [ ] `create/4 (int, err, list, map)`
-  - [ ] `create/4 (int, err, map, int)`
-  - [ ] `create/4 (int, err, map, float)`
-  - [ ] `create/4 (int, err, map, obj)`
-  - [ ] `create/4 (int, err, map, str)`
-  - [ ] `create/4 (int, err, map, err)`
-  - [ ] `create/4 (int, err, map, list)`
-  - [ ] `create/4 (int, err, map, map)`
-  - [ ] `create/4 (int, list, int, int)`
-  - [ ] `create/4 (int, list, int, float)`
-  - [ ] `create/4 (int, list, int, obj)`
-  - [ ] `create/4 (int, list, int, str)`
-  - [ ] `create/4 (int, list, int, err)`
-  - [ ] `create/4 (int, list, int, list)`
-  - [ ] `create/4 (int, list, int, map)`
-  - [ ] `create/4 (int, list, float, int)`
-  - [ ] `create/4 (int, list, float, float)`
-  - [ ] `create/4 (int, list, float, obj)`
-  - [ ] `create/4 (int, list, float, str)`
-  - [ ] `create/4 (int, list, float, err)`
-  - [ ] `create/4 (int, list, float, list)`
-  - [ ] `create/4 (int, list, float, map)`
-  - [ ] `create/4 (int, list, obj, int)`
-  - [ ] `create/4 (int, list, obj, float)`
-  - [ ] `create/4 (int, list, obj, obj)`
-  - [ ] `create/4 (int, list, obj, str)`
-  - [ ] `create/4 (int, list, obj, err)`
-  - [ ] `create/4 (int, list, obj, list)`
-  - [ ] `create/4 (int, list, obj, map)`
-  - [ ] `create/4 (int, list, str, int)`
-  - [ ] `create/4 (int, list, str, float)`
-  - [ ] `create/4 (int, list, str, obj)`
-  - [ ] `create/4 (int, list, str, str)`
-  - [ ] `create/4 (int, list, str, err)`
-  - [ ] `create/4 (int, list, str, list)`
-  - [ ] `create/4 (int, list, str, map)`
-  - [ ] `create/4 (int, list, err, int)`
-  - [ ] `create/4 (int, list, err, float)`
-  - [ ] `create/4 (int, list, err, obj)`
-  - [ ] `create/4 (int, list, err, str)`
-  - [ ] `create/4 (int, list, err, err)`
-  - [ ] `create/4 (int, list, err, list)`
-  - [ ] `create/4 (int, list, err, map)`
-  - [ ] `create/4 (int, list, list, int)`
-  - [ ] `create/4 (int, list, list, float)`
-  - [ ] `create/4 (int, list, list, obj)`
-  - [ ] `create/4 (int, list, list, str)`
-  - [ ] `create/4 (int, list, list, err)`
-  - [ ] `create/4 (int, list, list, list)`
-  - [ ] `create/4 (int, list, list, map)`
-  - [ ] `create/4 (int, list, map, int)`
-  - [ ] `create/4 (int, list, map, float)`
-  - [ ] `create/4 (int, list, map, obj)`
-  - [ ] `create/4 (int, list, map, str)`
-  - [ ] `create/4 (int, list, map, err)`
-  - [ ] `create/4 (int, list, map, list)`
-  - [ ] `create/4 (int, list, map, map)`
-  - [ ] `create/4 (int, map, int, int)`
-  - [ ] `create/4 (int, map, int, float)`
-  - [ ] `create/4 (int, map, int, obj)`
-  - [ ] `create/4 (int, map, int, str)`
-  - [ ] `create/4 (int, map, int, err)`
-  - [ ] `create/4 (int, map, int, list)`
-  - [ ] `create/4 (int, map, int, map)`
-  - [ ] `create/4 (int, map, float, int)`
-  - [ ] `create/4 (int, map, float, float)`
-  - [ ] `create/4 (int, map, float, obj)`
-  - [ ] `create/4 (int, map, float, str)`
-  - [ ] `create/4 (int, map, float, err)`
-  - [ ] `create/4 (int, map, float, list)`
-  - [ ] `create/4 (int, map, float, map)`
-  - [ ] `create/4 (int, map, obj, int)`
-  - [ ] `create/4 (int, map, obj, float)`
-  - [ ] `create/4 (int, map, obj, obj)`
-  - [ ] `create/4 (int, map, obj, str)`
-  - [ ] `create/4 (int, map, obj, err)`
-  - [ ] `create/4 (int, map, obj, list)`
-  - [ ] `create/4 (int, map, obj, map)`
-  - [ ] `create/4 (int, map, str, int)`
-  - [ ] `create/4 (int, map, str, float)`
-  - [ ] `create/4 (int, map, str, obj)`
-  - [ ] `create/4 (int, map, str, str)`
-  - [ ] `create/4 (int, map, str, err)`
-  - [ ] `create/4 (int, map, str, list)`
-  - [ ] `create/4 (int, map, str, map)`
-  - [ ] `create/4 (int, map, err, int)`
-  - [ ] `create/4 (int, map, err, float)`
-  - [ ] `create/4 (int, map, err, obj)`
-  - [ ] `create/4 (int, map, err, str)`
-  - [ ] `create/4 (int, map, err, err)`
-  - [ ] `create/4 (int, map, err, list)`
-  - [ ] `create/4 (int, map, err, map)`
-  - [ ] `create/4 (int, map, list, int)`
-  - [ ] `create/4 (int, map, list, float)`
-  - [ ] `create/4 (int, map, list, obj)`
-  - [ ] `create/4 (int, map, list, str)`
-  - [ ] `create/4 (int, map, list, err)`
-  - [ ] `create/4 (int, map, list, list)`
-  - [ ] `create/4 (int, map, list, map)`
-  - [ ] `create/4 (int, map, map, int)`
-  - [ ] `create/4 (int, map, map, float)`
-  - [ ] `create/4 (int, map, map, obj)`
-  - [ ] `create/4 (int, map, map, str)`
-  - [ ] `create/4 (int, map, map, err)`
-  - [ ] `create/4 (int, map, map, list)`
-  - [ ] `create/4 (int, map, map, map)`
-  - [ ] `create/4 (float, int, int, int)`
-  - [ ] `create/4 (float, int, int, float)`
-  - [ ] `create/4 (float, int, int, obj)`
-  - [ ] `create/4 (float, int, int, str)`
-  - [ ] `create/4 (float, int, int, err)`
-  - [ ] `create/4 (float, int, int, list)`
-  - [ ] `create/4 (float, int, int, map)`
-  - [ ] `create/4 (float, int, float, int)`
-  - [ ] `create/4 (float, int, float, float)`
-  - [ ] `create/4 (float, int, float, obj)`
-  - [ ] `create/4 (float, int, float, str)`
-  - [ ] `create/4 (float, int, float, err)`
-  - [ ] `create/4 (float, int, float, list)`
-  - [ ] `create/4 (float, int, float, map)`
-  - [ ] `create/4 (float, int, obj, int)`
-  - [ ] `create/4 (float, int, obj, float)`
-  - [ ] `create/4 (float, int, obj, obj)`
-  - [ ] `create/4 (float, int, obj, str)`
-  - [ ] `create/4 (float, int, obj, err)`
-  - [ ] `create/4 (float, int, obj, list)`
-  - [ ] `create/4 (float, int, obj, map)`
-  - [ ] `create/4 (float, int, str, int)`
-  - [ ] `create/4 (float, int, str, float)`
-  - [ ] `create/4 (float, int, str, obj)`
-  - [ ] `create/4 (float, int, str, str)`
-  - [ ] `create/4 (float, int, str, err)`
-  - [ ] `create/4 (float, int, str, list)`
-  - [ ] `create/4 (float, int, str, map)`
-  - [ ] `create/4 (float, int, err, int)`
-  - [ ] `create/4 (float, int, err, float)`
-  - [ ] `create/4 (float, int, err, obj)`
-  - [ ] `create/4 (float, int, err, str)`
-  - [ ] `create/4 (float, int, err, err)`
-  - [ ] `create/4 (float, int, err, list)`
-  - [ ] `create/4 (float, int, err, map)`
-  - [ ] `create/4 (float, int, list, int)`
-  - [ ] `create/4 (float, int, list, float)`
-  - [ ] `create/4 (float, int, list, obj)`
-  - [ ] `create/4 (float, int, list, str)`
-  - [ ] `create/4 (float, int, list, err)`
-  - [ ] `create/4 (float, int, list, list)`
-  - [ ] `create/4 (float, int, list, map)`
-  - [ ] `create/4 (float, int, map, int)`
-  - [ ] `create/4 (float, int, map, float)`
-  - [ ] `create/4 (float, int, map, obj)`
-  - [ ] `create/4 (float, int, map, str)`
-  - [ ] `create/4 (float, int, map, err)`
-  - [ ] `create/4 (float, int, map, list)`
-  - [ ] `create/4 (float, int, map, map)`
-  - [ ] `create/4 (float, float, int, int)`
-  - [ ] `create/4 (float, float, int, float)`
-  - [ ] `create/4 (float, float, int, obj)`
-  - [ ] `create/4 (float, float, int, str)`
-  - [ ] `create/4 (float, float, int, err)`
-  - [ ] `create/4 (float, float, int, list)`
-  - [ ] `create/4 (float, float, int, map)`
-  - [ ] `create/4 (float, float, float, int)`
-  - [ ] `create/4 (float, float, float, float)`
-  - [ ] `create/4 (float, float, float, obj)`
-  - [ ] `create/4 (float, float, float, str)`
-  - [ ] `create/4 (float, float, float, err)`
-  - [ ] `create/4 (float, float, float, list)`
-  - [ ] `create/4 (float, float, float, map)`
-  - [ ] `create/4 (float, float, obj, int)`
-  - [ ] `create/4 (float, float, obj, float)`
-  - [ ] `create/4 (float, float, obj, obj)`
-  - [ ] `create/4 (float, float, obj, str)`
-  - [ ] `create/4 (float, float, obj, err)`
-  - [ ] `create/4 (float, float, obj, list)`
-  - [ ] `create/4 (float, float, obj, map)`
-  - [ ] `create/4 (float, float, str, int)`
-  - [ ] `create/4 (float, float, str, float)`
-  - [ ] `create/4 (float, float, str, obj)`
-  - [ ] `create/4 (float, float, str, str)`
-  - [ ] `create/4 (float, float, str, err)`
-  - [ ] `create/4 (float, float, str, list)`
-  - [ ] `create/4 (float, float, str, map)`
-  - [ ] `create/4 (float, float, err, int)`
-  - [ ] `create/4 (float, float, err, float)`
-  - [ ] `create/4 (float, float, err, obj)`
-  - [ ] `create/4 (float, float, err, str)`
-  - [ ] `create/4 (float, float, err, err)`
-  - [ ] `create/4 (float, float, err, list)`
-  - [ ] `create/4 (float, float, err, map)`
-  - [ ] `create/4 (float, float, list, int)`
-  - [ ] `create/4 (float, float, list, float)`
-  - [ ] `create/4 (float, float, list, obj)`
-  - [ ] `create/4 (float, float, list, str)`
-  - [ ] `create/4 (float, float, list, err)`
-  - [ ] `create/4 (float, float, list, list)`
-  - [ ] `create/4 (float, float, list, map)`
-  - [ ] `create/4 (float, float, map, int)`
-  - [ ] `create/4 (float, float, map, float)`
-  - [ ] `create/4 (float, float, map, obj)`
-  - [ ] `create/4 (float, float, map, str)`
-  - [ ] `create/4 (float, float, map, err)`
-  - [ ] `create/4 (float, float, map, list)`
-  - [ ] `create/4 (float, float, map, map)`
-  - [ ] `create/4 (float, obj, int, int)`
-  - [ ] `create/4 (float, obj, int, float)`
-  - [ ] `create/4 (float, obj, int, obj)`
-  - [ ] `create/4 (float, obj, int, str)`
-  - [ ] `create/4 (float, obj, int, err)`
-  - [ ] `create/4 (float, obj, int, list)`
-  - [ ] `create/4 (float, obj, int, map)`
-  - [ ] `create/4 (float, obj, float, int)`
-  - [ ] `create/4 (float, obj, float, float)`
-  - [ ] `create/4 (float, obj, float, obj)`
-  - [ ] `create/4 (float, obj, float, str)`
-  - [ ] `create/4 (float, obj, float, err)`
-  - [ ] `create/4 (float, obj, float, list)`
-  - [ ] `create/4 (float, obj, float, map)`
-  - [ ] `create/4 (float, obj, obj, int)`
-  - [ ] `create/4 (float, obj, obj, float)`
-  - [ ] `create/4 (float, obj, obj, obj)`
-  - [ ] `create/4 (float, obj, obj, str)`
-  - [ ] `create/4 (float, obj, obj, err)`
-  - [ ] `create/4 (float, obj, obj, list)`
-  - [ ] `create/4 (float, obj, obj, map)`
-  - [ ] `create/4 (float, obj, str, int)`
-  - [ ] `create/4 (float, obj, str, float)`
-  - [ ] `create/4 (float, obj, str, obj)`
-  - [ ] `create/4 (float, obj, str, str)`
-  - [ ] `create/4 (float, obj, str, err)`
-  - [ ] `create/4 (float, obj, str, list)`
-  - [ ] `create/4 (float, obj, str, map)`
-  - [ ] `create/4 (float, obj, err, int)`
-  - [ ] `create/4 (float, obj, err, float)`
-  - [ ] `create/4 (float, obj, err, obj)`
-  - [ ] `create/4 (float, obj, err, str)`
-  - [ ] `create/4 (float, obj, err, err)`
-  - [ ] `create/4 (float, obj, err, list)`
-  - [ ] `create/4 (float, obj, err, map)`
-  - [ ] `create/4 (float, obj, list, int)`
-  - [ ] `create/4 (float, obj, list, float)`
-  - [ ] `create/4 (float, obj, list, obj)`
-  - [ ] `create/4 (float, obj, list, str)`
-  - [ ] `create/4 (float, obj, list, err)`
-  - [ ] `create/4 (float, obj, list, list)`
-  - [ ] `create/4 (float, obj, list, map)`
-  - [ ] `create/4 (float, obj, map, int)`
-  - [ ] `create/4 (float, obj, map, float)`
-  - [ ] `create/4 (float, obj, map, obj)`
-  - [ ] `create/4 (float, obj, map, str)`
-  - [ ] `create/4 (float, obj, map, err)`
-  - [ ] `create/4 (float, obj, map, list)`
-  - [ ] `create/4 (float, obj, map, map)`
-  - [ ] `create/4 (float, str, int, int)`
-  - [ ] `create/4 (float, str, int, float)`
-  - [ ] `create/4 (float, str, int, obj)`
-  - [ ] `create/4 (float, str, int, str)`
-  - [ ] `create/4 (float, str, int, err)`
-  - [ ] `create/4 (float, str, int, list)`
-  - [ ] `create/4 (float, str, int, map)`
-  - [ ] `create/4 (float, str, float, int)`
-  - [ ] `create/4 (float, str, float, float)`
-  - [ ] `create/4 (float, str, float, obj)`
-  - [ ] `create/4 (float, str, float, str)`
-  - [ ] `create/4 (float, str, float, err)`
-  - [ ] `create/4 (float, str, float, list)`
-  - [ ] `create/4 (float, str, float, map)`
-  - [ ] `create/4 (float, str, obj, int)`
-  - [ ] `create/4 (float, str, obj, float)`
-  - [ ] `create/4 (float, str, obj, obj)`
-  - [ ] `create/4 (float, str, obj, str)`
-  - [ ] `create/4 (float, str, obj, err)`
-  - [ ] `create/4 (float, str, obj, list)`
-  - [ ] `create/4 (float, str, obj, map)`
-  - [ ] `create/4 (float, str, str, int)`
-  - [ ] `create/4 (float, str, str, float)`
-  - [ ] `create/4 (float, str, str, obj)`
-  - [ ] `create/4 (float, str, str, str)`
-  - [ ] `create/4 (float, str, str, err)`
-  - [ ] `create/4 (float, str, str, list)`
-  - [ ] `create/4 (float, str, str, map)`
-  - [ ] `create/4 (float, str, err, int)`
-  - [ ] `create/4 (float, str, err, float)`
-  - [ ] `create/4 (float, str, err, obj)`
-  - [ ] `create/4 (float, str, err, str)`
-  - [ ] `create/4 (float, str, err, err)`
-  - [ ] `create/4 (float, str, err, list)`
-  - [ ] `create/4 (float, str, err, map)`
-  - [ ] `create/4 (float, str, list, int)`
-  - [ ] `create/4 (float, str, list, float)`
-  - [ ] `create/4 (float, str, list, obj)`
-  - [ ] `create/4 (float, str, list, str)`
-  - [ ] `create/4 (float, str, list, err)`
-  - [ ] `create/4 (float, str, list, list)`
-  - [ ] `create/4 (float, str, list, map)`
-  - [ ] `create/4 (float, str, map, int)`
-  - [ ] `create/4 (float, str, map, float)`
-  - [ ] `create/4 (float, str, map, obj)`
-  - [ ] `create/4 (float, str, map, str)`
-  - [ ] `create/4 (float, str, map, err)`
-  - [ ] `create/4 (float, str, map, list)`
-  - [ ] `create/4 (float, str, map, map)`
-  - [ ] `create/4 (float, err, int, int)`
-  - [ ] `create/4 (float, err, int, float)`
-  - [ ] `create/4 (float, err, int, obj)`
-  - [ ] `create/4 (float, err, int, str)`
-  - [ ] `create/4 (float, err, int, err)`
-  - [ ] `create/4 (float, err, int, list)`
-  - [ ] `create/4 (float, err, int, map)`
-  - [ ] `create/4 (float, err, float, int)`
-  - [ ] `create/4 (float, err, float, float)`
-  - [ ] `create/4 (float, err, float, obj)`
-  - [ ] `create/4 (float, err, float, str)`
-  - [ ] `create/4 (float, err, float, err)`
-  - [ ] `create/4 (float, err, float, list)`
-  - [ ] `create/4 (float, err, float, map)`
-  - [ ] `create/4 (float, err, obj, int)`
-  - [ ] `create/4 (float, err, obj, float)`
-  - [ ] `create/4 (float, err, obj, obj)`
-  - [ ] `create/4 (float, err, obj, str)`
-  - [ ] `create/4 (float, err, obj, err)`
-  - [ ] `create/4 (float, err, obj, list)`
-  - [ ] `create/4 (float, err, obj, map)`
-  - [ ] `create/4 (float, err, str, int)`
-  - [ ] `create/4 (float, err, str, float)`
-  - [ ] `create/4 (float, err, str, obj)`
-  - [ ] `create/4 (float, err, str, str)`
-  - [ ] `create/4 (float, err, str, err)`
-  - [ ] `create/4 (float, err, str, list)`
-  - [ ] `create/4 (float, err, str, map)`
-  - [ ] `create/4 (float, err, err, int)`
-  - [ ] `create/4 (float, err, err, float)`
-  - [ ] `create/4 (float, err, err, obj)`
-  - [ ] `create/4 (float, err, err, str)`
-  - [ ] `create/4 (float, err, err, err)`
-  - [ ] `create/4 (float, err, err, list)`
-  - [ ] `create/4 (float, err, err, map)`
-  - [ ] `create/4 (float, err, list, int)`
-  - [ ] `create/4 (float, err, list, float)`
-  - [ ] `create/4 (float, err, list, obj)`
-  - [ ] `create/4 (float, err, list, str)`
-  - [ ] `create/4 (float, err, list, err)`
-  - [ ] `create/4 (float, err, list, list)`
-  - [ ] `create/4 (float, err, list, map)`
-  - [ ] `create/4 (float, err, map, int)`
-  - [ ] `create/4 (float, err, map, float)`
-  - [ ] `create/4 (float, err, map, obj)`
-  - [ ] `create/4 (float, err, map, str)`
-  - [ ] `create/4 (float, err, map, err)`
-  - [ ] `create/4 (float, err, map, list)`
-  - [ ] `create/4 (float, err, map, map)`
-  - [ ] `create/4 (float, list, int, int)`
-  - [ ] `create/4 (float, list, int, float)`
-  - [ ] `create/4 (float, list, int, obj)`
-  - [ ] `create/4 (float, list, int, str)`
-  - [ ] `create/4 (float, list, int, err)`
-  - [ ] `create/4 (float, list, int, list)`
-  - [ ] `create/4 (float, list, int, map)`
-  - [ ] `create/4 (float, list, float, int)`
-  - [ ] `create/4 (float, list, float, float)`
-  - [ ] `create/4 (float, list, float, obj)`
-  - [ ] `create/4 (float, list, float, str)`
-  - [ ] `create/4 (float, list, float, err)`
-  - [ ] `create/4 (float, list, float, list)`
-  - [ ] `create/4 (float, list, float, map)`
-  - [ ] `create/4 (float, list, obj, int)`
-  - [ ] `create/4 (float, list, obj, float)`
-  - [ ] `create/4 (float, list, obj, obj)`
-  - [ ] `create/4 (float, list, obj, str)`
-  - [ ] `create/4 (float, list, obj, err)`
-  - [ ] `create/4 (float, list, obj, list)`
-  - [ ] `create/4 (float, list, obj, map)`
-  - [ ] `create/4 (float, list, str, int)`
-  - [ ] `create/4 (float, list, str, float)`
-  - [ ] `create/4 (float, list, str, obj)`
-  - [ ] `create/4 (float, list, str, str)`
-  - [ ] `create/4 (float, list, str, err)`
-  - [ ] `create/4 (float, list, str, list)`
-  - [ ] `create/4 (float, list, str, map)`
-  - [ ] `create/4 (float, list, err, int)`
-  - [ ] `create/4 (float, list, err, float)`
-  - [ ] `create/4 (float, list, err, obj)`
-  - [ ] `create/4 (float, list, err, str)`
-  - [ ] `create/4 (float, list, err, err)`
-  - [ ] `create/4 (float, list, err, list)`
-  - [ ] `create/4 (float, list, err, map)`
-  - [ ] `create/4 (float, list, list, int)`
-  - [ ] `create/4 (float, list, list, float)`
-  - [ ] `create/4 (float, list, list, obj)`
-  - [ ] `create/4 (float, list, list, str)`
-  - [ ] `create/4 (float, list, list, err)`
-  - [ ] `create/4 (float, list, list, list)`
-  - [ ] `create/4 (float, list, list, map)`
-  - [ ] `create/4 (float, list, map, int)`
-  - [ ] `create/4 (float, list, map, float)`
-  - [ ] `create/4 (float, list, map, obj)`
-  - [ ] `create/4 (float, list, map, str)`
-  - [ ] `create/4 (float, list, map, err)`
-  - [ ] `create/4 (float, list, map, list)`
-  - [ ] `create/4 (float, list, map, map)`
-  - [ ] `create/4 (float, map, int, int)`
-  - [ ] `create/4 (float, map, int, float)`
-  - [ ] `create/4 (float, map, int, obj)`
-  - [ ] `create/4 (float, map, int, str)`
-  - [ ] `create/4 (float, map, int, err)`
-  - [ ] `create/4 (float, map, int, list)`
-  - [ ] `create/4 (float, map, int, map)`
-  - [ ] `create/4 (float, map, float, int)`
-  - [ ] `create/4 (float, map, float, float)`
-  - [ ] `create/4 (float, map, float, obj)`
-  - [ ] `create/4 (float, map, float, str)`
-  - [ ] `create/4 (float, map, float, err)`
-  - [ ] `create/4 (float, map, float, list)`
-  - [ ] `create/4 (float, map, float, map)`
-  - [ ] `create/4 (float, map, obj, int)`
-  - [ ] `create/4 (float, map, obj, float)`
-  - [ ] `create/4 (float, map, obj, obj)`
-  - [ ] `create/4 (float, map, obj, str)`
-  - [ ] `create/4 (float, map, obj, err)`
-  - [ ] `create/4 (float, map, obj, list)`
-  - [ ] `create/4 (float, map, obj, map)`
-  - [ ] `create/4 (float, map, str, int)`
-  - [ ] `create/4 (float, map, str, float)`
-  - [ ] `create/4 (float, map, str, obj)`
-  - [ ] `create/4 (float, map, str, str)`
-  - [ ] `create/4 (float, map, str, err)`
-  - [ ] `create/4 (float, map, str, list)`
-  - [ ] `create/4 (float, map, str, map)`
-  - [ ] `create/4 (float, map, err, int)`
-  - [ ] `create/4 (float, map, err, float)`
-  - [ ] `create/4 (float, map, err, obj)`
-  - [ ] `create/4 (float, map, err, str)`
-  - [ ] `create/4 (float, map, err, err)`
-  - [ ] `create/4 (float, map, err, list)`
-  - [ ] `create/4 (float, map, err, map)`
-  - [ ] `create/4 (float, map, list, int)`
-  - [ ] `create/4 (float, map, list, float)`
-  - [ ] `create/4 (float, map, list, obj)`
-  - [ ] `create/4 (float, map, list, str)`
-  - [ ] `create/4 (float, map, list, err)`
-  - [ ] `create/4 (float, map, list, list)`
-  - [ ] `create/4 (float, map, list, map)`
-  - [ ] `create/4 (float, map, map, int)`
-  - [ ] `create/4 (float, map, map, float)`
-  - [ ] `create/4 (float, map, map, obj)`
-  - [ ] `create/4 (float, map, map, str)`
-  - [ ] `create/4 (float, map, map, err)`
-  - [ ] `create/4 (float, map, map, list)`
-  - [ ] `create/4 (float, map, map, map)`
-  - [ ] `create/4 (obj, int, int, int)`
-  - [ ] `create/4 (obj, int, int, float)`
-  - [ ] `create/4 (obj, int, int, obj)`
-  - [ ] `create/4 (obj, int, int, str)`
-  - [ ] `create/4 (obj, int, int, err)`
-  - [ ] `create/4 (obj, int, int, list)`
-  - [ ] `create/4 (obj, int, int, map)`
-  - [ ] `create/4 (obj, int, float, int)`
-  - [ ] `create/4 (obj, int, float, float)`
-  - [ ] `create/4 (obj, int, float, obj)`
-  - [ ] `create/4 (obj, int, float, str)`
-  - [ ] `create/4 (obj, int, float, err)`
-  - [ ] `create/4 (obj, int, float, list)`
-  - [ ] `create/4 (obj, int, float, map)`
-  - [ ] `create/4 (obj, int, obj, int)`
-  - [ ] `create/4 (obj, int, obj, float)`
-  - [ ] `create/4 (obj, int, obj, obj)`
-  - [ ] `create/4 (obj, int, obj, str)`
-  - [ ] `create/4 (obj, int, obj, err)`
-  - [ ] `create/4 (obj, int, obj, list)`
-  - [ ] `create/4 (obj, int, obj, map)`
-  - [ ] `create/4 (obj, int, str, int)`
-  - [ ] `create/4 (obj, int, str, float)`
-  - [ ] `create/4 (obj, int, str, obj)`
-  - [ ] `create/4 (obj, int, str, str)`
-  - [ ] `create/4 (obj, int, str, err)`
-  - [ ] `create/4 (obj, int, str, list)`
-  - [ ] `create/4 (obj, int, str, map)`
-  - [ ] `create/4 (obj, int, err, int)`
-  - [ ] `create/4 (obj, int, err, float)`
-  - [ ] `create/4 (obj, int, err, obj)`
-  - [ ] `create/4 (obj, int, err, str)`
-  - [ ] `create/4 (obj, int, err, err)`
-  - [ ] `create/4 (obj, int, err, list)`
-  - [ ] `create/4 (obj, int, err, map)`
-  - [ ] `create/4 (obj, int, list, int)`
-  - [ ] `create/4 (obj, int, list, float)`
-  - [ ] `create/4 (obj, int, list, obj)`
-  - [ ] `create/4 (obj, int, list, str)`
-  - [ ] `create/4 (obj, int, list, err)`
-  - [ ] `create/4 (obj, int, list, list)`
-  - [ ] `create/4 (obj, int, list, map)`
-  - [ ] `create/4 (obj, int, map, int)`
-  - [ ] `create/4 (obj, int, map, float)`
-  - [ ] `create/4 (obj, int, map, obj)`
-  - [ ] `create/4 (obj, int, map, str)`
-  - [ ] `create/4 (obj, int, map, err)`
-  - [ ] `create/4 (obj, int, map, list)`
-  - [ ] `create/4 (obj, int, map, map)`
-  - [ ] `create/4 (obj, float, int, int)`
-  - [ ] `create/4 (obj, float, int, float)`
-  - [ ] `create/4 (obj, float, int, obj)`
-  - [ ] `create/4 (obj, float, int, str)`
-  - [ ] `create/4 (obj, float, int, err)`
-  - [ ] `create/4 (obj, float, int, list)`
-  - [ ] `create/4 (obj, float, int, map)`
-  - [ ] `create/4 (obj, float, float, int)`
-  - [ ] `create/4 (obj, float, float, float)`
-  - [ ] `create/4 (obj, float, float, obj)`
-  - [ ] `create/4 (obj, float, float, str)`
-  - [ ] `create/4 (obj, float, float, err)`
-  - [ ] `create/4 (obj, float, float, list)`
-  - [ ] `create/4 (obj, float, float, map)`
-  - [ ] `create/4 (obj, float, obj, int)`
-  - [ ] `create/4 (obj, float, obj, float)`
-  - [ ] `create/4 (obj, float, obj, obj)`
-  - [ ] `create/4 (obj, float, obj, str)`
-  - [ ] `create/4 (obj, float, obj, err)`
-  - [ ] `create/4 (obj, float, obj, list)`
-  - [ ] `create/4 (obj, float, obj, map)`
-  - [ ] `create/4 (obj, float, str, int)`
-  - [ ] `create/4 (obj, float, str, float)`
-  - [ ] `create/4 (obj, float, str, obj)`
-  - [ ] `create/4 (obj, float, str, str)`
-  - [ ] `create/4 (obj, float, str, err)`
-  - [ ] `create/4 (obj, float, str, list)`
-  - [ ] `create/4 (obj, float, str, map)`
-  - [ ] `create/4 (obj, float, err, int)`
-  - [ ] `create/4 (obj, float, err, float)`
-  - [ ] `create/4 (obj, float, err, obj)`
-  - [ ] `create/4 (obj, float, err, str)`
-  - [ ] `create/4 (obj, float, err, err)`
-  - [ ] `create/4 (obj, float, err, list)`
-  - [ ] `create/4 (obj, float, err, map)`
-  - [ ] `create/4 (obj, float, list, int)`
-  - [ ] `create/4 (obj, float, list, float)`
-  - [ ] `create/4 (obj, float, list, obj)`
-  - [ ] `create/4 (obj, float, list, str)`
-  - [ ] `create/4 (obj, float, list, err)`
-  - [ ] `create/4 (obj, float, list, list)`
-  - [ ] `create/4 (obj, float, list, map)`
-  - [ ] `create/4 (obj, float, map, int)`
-  - [ ] `create/4 (obj, float, map, float)`
-  - [ ] `create/4 (obj, float, map, obj)`
-  - [ ] `create/4 (obj, float, map, str)`
-  - [ ] `create/4 (obj, float, map, err)`
-  - [ ] `create/4 (obj, float, map, list)`
-  - [ ] `create/4 (obj, float, map, map)`
-  - [ ] `create/4 (obj, obj, int, int)`
-  - [ ] `create/4 (obj, obj, int, float)`
-  - [ ] `create/4 (obj, obj, int, obj)`
-  - [ ] `create/4 (obj, obj, int, str)`
-  - [ ] `create/4 (obj, obj, int, err)`
-  - [ ] `create/4 (obj, obj, int, list)`
-  - [ ] `create/4 (obj, obj, int, map)`
-  - [ ] `create/4 (obj, obj, float, int)`
-  - [ ] `create/4 (obj, obj, float, float)`
-  - [ ] `create/4 (obj, obj, float, obj)`
-  - [ ] `create/4 (obj, obj, float, str)`
-  - [ ] `create/4 (obj, obj, float, err)`
-  - [ ] `create/4 (obj, obj, float, list)`
-  - [ ] `create/4 (obj, obj, float, map)`
-  - [ ] `create/4 (obj, obj, obj, int)`
-  - [ ] `create/4 (obj, obj, obj, float)`
-  - [ ] `create/4 (obj, obj, obj, obj)`
-  - [ ] `create/4 (obj, obj, obj, str)`
-  - [ ] `create/4 (obj, obj, obj, err)`
-  - [ ] `create/4 (obj, obj, obj, list)`
-  - [ ] `create/4 (obj, obj, obj, map)`
-  - [ ] `create/4 (obj, obj, str, int)`
-  - [ ] `create/4 (obj, obj, str, float)`
-  - [ ] `create/4 (obj, obj, str, obj)`
-  - [ ] `create/4 (obj, obj, str, str)`
-  - [ ] `create/4 (obj, obj, str, err)`
-  - [ ] `create/4 (obj, obj, str, list)`
-  - [ ] `create/4 (obj, obj, str, map)`
-  - [ ] `create/4 (obj, obj, err, int)`
-  - [ ] `create/4 (obj, obj, err, float)`
-  - [ ] `create/4 (obj, obj, err, obj)`
-  - [ ] `create/4 (obj, obj, err, str)`
-  - [ ] `create/4 (obj, obj, err, err)`
-  - [ ] `create/4 (obj, obj, err, list)`
-  - [ ] `create/4 (obj, obj, err, map)`
-  - [ ] `create/4 (obj, obj, list, int)`
-  - [ ] `create/4 (obj, obj, list, float)`
-  - [ ] `create/4 (obj, obj, list, obj)`
-  - [ ] `create/4 (obj, obj, list, str)`
-  - [ ] `create/4 (obj, obj, list, err)`
-  - [ ] `create/4 (obj, obj, list, list)`
-  - [ ] `create/4 (obj, obj, list, map)`
-  - [ ] `create/4 (obj, obj, map, int)`
-  - [ ] `create/4 (obj, obj, map, float)`
-  - [ ] `create/4 (obj, obj, map, obj)`
-  - [ ] `create/4 (obj, obj, map, str)`
-  - [ ] `create/4 (obj, obj, map, err)`
-  - [ ] `create/4 (obj, obj, map, list)`
-  - [ ] `create/4 (obj, obj, map, map)`
-  - [ ] `create/4 (obj, str, int, int)`
-  - [ ] `create/4 (obj, str, int, float)`
-  - [ ] `create/4 (obj, str, int, obj)`
-  - [ ] `create/4 (obj, str, int, str)`
-  - [ ] `create/4 (obj, str, int, err)`
-  - [ ] `create/4 (obj, str, int, list)`
-  - [ ] `create/4 (obj, str, int, map)`
-  - [ ] `create/4 (obj, str, float, int)`
-  - [ ] `create/4 (obj, str, float, float)`
-  - [ ] `create/4 (obj, str, float, obj)`
-  - [ ] `create/4 (obj, str, float, str)`
-  - [ ] `create/4 (obj, str, float, err)`
-  - [ ] `create/4 (obj, str, float, list)`
-  - [ ] `create/4 (obj, str, float, map)`
-  - [ ] `create/4 (obj, str, obj, int)`
-  - [ ] `create/4 (obj, str, obj, float)`
-  - [ ] `create/4 (obj, str, obj, obj)`
-  - [ ] `create/4 (obj, str, obj, str)`
-  - [ ] `create/4 (obj, str, obj, err)`
-  - [ ] `create/4 (obj, str, obj, list)`
-  - [ ] `create/4 (obj, str, obj, map)`
-  - [ ] `create/4 (obj, str, str, int)`
-  - [ ] `create/4 (obj, str, str, float)`
-  - [ ] `create/4 (obj, str, str, obj)`
-  - [ ] `create/4 (obj, str, str, str)`
-  - [ ] `create/4 (obj, str, str, err)`
-  - [ ] `create/4 (obj, str, str, list)`
-  - [ ] `create/4 (obj, str, str, map)`
-  - [ ] `create/4 (obj, str, err, int)`
-  - [ ] `create/4 (obj, str, err, float)`
-  - [ ] `create/4 (obj, str, err, obj)`
-  - [ ] `create/4 (obj, str, err, str)`
-  - [ ] `create/4 (obj, str, err, err)`
-  - [ ] `create/4 (obj, str, err, list)`
-  - [ ] `create/4 (obj, str, err, map)`
-  - [ ] `create/4 (obj, str, list, int)`
-  - [ ] `create/4 (obj, str, list, float)`
-  - [ ] `create/4 (obj, str, list, obj)`
-  - [ ] `create/4 (obj, str, list, str)`
-  - [ ] `create/4 (obj, str, list, err)`
-  - [ ] `create/4 (obj, str, list, list)`
-  - [ ] `create/4 (obj, str, list, map)`
-  - [ ] `create/4 (obj, str, map, int)`
-  - [ ] `create/4 (obj, str, map, float)`
-  - [ ] `create/4 (obj, str, map, obj)`
-  - [ ] `create/4 (obj, str, map, str)`
-  - [ ] `create/4 (obj, str, map, err)`
-  - [ ] `create/4 (obj, str, map, list)`
-  - [ ] `create/4 (obj, str, map, map)`
-  - [ ] `create/4 (obj, err, int, int)`
-  - [ ] `create/4 (obj, err, int, float)`
-  - [ ] `create/4 (obj, err, int, obj)`
-  - [ ] `create/4 (obj, err, int, str)`
-  - [ ] `create/4 (obj, err, int, err)`
-  - [ ] `create/4 (obj, err, int, list)`
-  - [ ] `create/4 (obj, err, int, map)`
-  - [ ] `create/4 (obj, err, float, int)`
-  - [ ] `create/4 (obj, err, float, float)`
-  - [ ] `create/4 (obj, err, float, obj)`
-  - [ ] `create/4 (obj, err, float, str)`
-  - [ ] `create/4 (obj, err, float, err)`
-  - [ ] `create/4 (obj, err, float, list)`
-  - [ ] `create/4 (obj, err, float, map)`
-  - [ ] `create/4 (obj, err, obj, int)`
-  - [ ] `create/4 (obj, err, obj, float)`
-  - [ ] `create/4 (obj, err, obj, obj)`
-  - [ ] `create/4 (obj, err, obj, str)`
-  - [ ] `create/4 (obj, err, obj, err)`
-  - [ ] `create/4 (obj, err, obj, list)`
-  - [ ] `create/4 (obj, err, obj, map)`
-  - [ ] `create/4 (obj, err, str, int)`
-  - [ ] `create/4 (obj, err, str, float)`
-  - [ ] `create/4 (obj, err, str, obj)`
-  - [ ] `create/4 (obj, err, str, str)`
-  - [ ] `create/4 (obj, err, str, err)`
-  - [ ] `create/4 (obj, err, str, list)`
-  - [ ] `create/4 (obj, err, str, map)`
-  - [ ] `create/4 (obj, err, err, int)`
-  - [ ] `create/4 (obj, err, err, float)`
-  - [ ] `create/4 (obj, err, err, obj)`
-  - [ ] `create/4 (obj, err, err, str)`
-  - [ ] `create/4 (obj, err, err, err)`
-  - [ ] `create/4 (obj, err, err, list)`
-  - [ ] `create/4 (obj, err, err, map)`
-  - [ ] `create/4 (obj, err, list, int)`
-  - [ ] `create/4 (obj, err, list, float)`
-  - [ ] `create/4 (obj, err, list, obj)`
-  - [ ] `create/4 (obj, err, list, str)`
-  - [ ] `create/4 (obj, err, list, err)`
-  - [ ] `create/4 (obj, err, list, list)`
-  - [ ] `create/4 (obj, err, list, map)`
-  - [ ] `create/4 (obj, err, map, int)`
-  - [ ] `create/4 (obj, err, map, float)`
-  - [ ] `create/4 (obj, err, map, obj)`
-  - [ ] `create/4 (obj, err, map, str)`
-  - [ ] `create/4 (obj, err, map, err)`
-  - [ ] `create/4 (obj, err, map, list)`
-  - [ ] `create/4 (obj, err, map, map)`
-  - [ ] `create/4 (obj, list, int, int)`
-  - [ ] `create/4 (obj, list, int, float)`
-  - [ ] `create/4 (obj, list, int, obj)`
-  - [ ] `create/4 (obj, list, int, str)`
-  - [ ] `create/4 (obj, list, int, err)`
-  - [ ] `create/4 (obj, list, int, list)`
-  - [ ] `create/4 (obj, list, int, map)`
-  - [ ] `create/4 (obj, list, float, int)`
-  - [ ] `create/4 (obj, list, float, float)`
-  - [ ] `create/4 (obj, list, float, obj)`
-  - [ ] `create/4 (obj, list, float, str)`
-  - [ ] `create/4 (obj, list, float, err)`
-  - [ ] `create/4 (obj, list, float, list)`
-  - [ ] `create/4 (obj, list, float, map)`
-  - [ ] `create/4 (obj, list, obj, int)`
-  - [ ] `create/4 (obj, list, obj, float)`
-  - [ ] `create/4 (obj, list, obj, obj)`
-  - [ ] `create/4 (obj, list, obj, str)`
-  - [ ] `create/4 (obj, list, obj, err)`
-  - [ ] `create/4 (obj, list, obj, list)`
-  - [ ] `create/4 (obj, list, obj, map)`
-  - [ ] `create/4 (obj, list, str, int)`
-  - [ ] `create/4 (obj, list, str, float)`
-  - [ ] `create/4 (obj, list, str, obj)`
-  - [ ] `create/4 (obj, list, str, str)`
-  - [ ] `create/4 (obj, list, str, err)`
-  - [ ] `create/4 (obj, list, str, list)`
-  - [ ] `create/4 (obj, list, str, map)`
-  - [ ] `create/4 (obj, list, err, int)`
-  - [ ] `create/4 (obj, list, err, float)`
-  - [ ] `create/4 (obj, list, err, obj)`
-  - [ ] `create/4 (obj, list, err, str)`
-  - [ ] `create/4 (obj, list, err, err)`
-  - [ ] `create/4 (obj, list, err, list)`
-  - [ ] `create/4 (obj, list, err, map)`
-  - [ ] `create/4 (obj, list, list, int)`
-  - [ ] `create/4 (obj, list, list, float)`
-  - [ ] `create/4 (obj, list, list, obj)`
-  - [ ] `create/4 (obj, list, list, str)`
-  - [ ] `create/4 (obj, list, list, err)`
-  - [ ] `create/4 (obj, list, list, list)`
-  - [ ] `create/4 (obj, list, list, map)`
-  - [ ] `create/4 (obj, list, map, int)`
-  - [ ] `create/4 (obj, list, map, float)`
-  - [ ] `create/4 (obj, list, map, obj)`
-  - [ ] `create/4 (obj, list, map, str)`
-  - [ ] `create/4 (obj, list, map, err)`
-  - [ ] `create/4 (obj, list, map, list)`
-  - [ ] `create/4 (obj, list, map, map)`
-  - [ ] `create/4 (obj, map, int, int)`
-  - [ ] `create/4 (obj, map, int, float)`
-  - [ ] `create/4 (obj, map, int, obj)`
-  - [ ] `create/4 (obj, map, int, str)`
-  - [ ] `create/4 (obj, map, int, err)`
-  - [ ] `create/4 (obj, map, int, list)`
-  - [ ] `create/4 (obj, map, int, map)`
-  - [ ] `create/4 (obj, map, float, int)`
-  - [ ] `create/4 (obj, map, float, float)`
-  - [ ] `create/4 (obj, map, float, obj)`
-  - [ ] `create/4 (obj, map, float, str)`
-  - [ ] `create/4 (obj, map, float, err)`
-  - [ ] `create/4 (obj, map, float, list)`
-  - [ ] `create/4 (obj, map, float, map)`
-  - [ ] `create/4 (obj, map, obj, int)`
-  - [ ] `create/4 (obj, map, obj, float)`
-  - [ ] `create/4 (obj, map, obj, obj)`
-  - [ ] `create/4 (obj, map, obj, str)`
-  - [ ] `create/4 (obj, map, obj, err)`
-  - [ ] `create/4 (obj, map, obj, list)`
-  - [ ] `create/4 (obj, map, obj, map)`
-  - [ ] `create/4 (obj, map, str, int)`
-  - [ ] `create/4 (obj, map, str, float)`
-  - [ ] `create/4 (obj, map, str, obj)`
-  - [ ] `create/4 (obj, map, str, str)`
-  - [ ] `create/4 (obj, map, str, err)`
-  - [ ] `create/4 (obj, map, str, list)`
-  - [ ] `create/4 (obj, map, str, map)`
-  - [ ] `create/4 (obj, map, err, int)`
-  - [ ] `create/4 (obj, map, err, float)`
-  - [ ] `create/4 (obj, map, err, obj)`
-  - [ ] `create/4 (obj, map, err, str)`
-  - [ ] `create/4 (obj, map, err, err)`
-  - [ ] `create/4 (obj, map, err, list)`
-  - [ ] `create/4 (obj, map, err, map)`
-  - [ ] `create/4 (obj, map, list, int)`
-  - [ ] `create/4 (obj, map, list, float)`
-  - [ ] `create/4 (obj, map, list, obj)`
-  - [ ] `create/4 (obj, map, list, str)`
-  - [ ] `create/4 (obj, map, list, err)`
-  - [ ] `create/4 (obj, map, list, list)`
-  - [ ] `create/4 (obj, map, list, map)`
-  - [ ] `create/4 (obj, map, map, int)`
-  - [ ] `create/4 (obj, map, map, float)`
-  - [ ] `create/4 (obj, map, map, obj)`
-  - [ ] `create/4 (obj, map, map, str)`
-  - [ ] `create/4 (obj, map, map, err)`
-  - [ ] `create/4 (obj, map, map, list)`
-  - [ ] `create/4 (obj, map, map, map)`
-  - [ ] `create/4 (str, int, int, int)`
-  - [ ] `create/4 (str, int, int, float)`
-  - [ ] `create/4 (str, int, int, obj)`
-  - [ ] `create/4 (str, int, int, str)`
-  - [ ] `create/4 (str, int, int, err)`
-  - [ ] `create/4 (str, int, int, list)`
-  - [ ] `create/4 (str, int, int, map)`
-  - [ ] `create/4 (str, int, float, int)`
-  - [ ] `create/4 (str, int, float, float)`
-  - [ ] `create/4 (str, int, float, obj)`
-  - [ ] `create/4 (str, int, float, str)`
-  - [ ] `create/4 (str, int, float, err)`
-  - [ ] `create/4 (str, int, float, list)`
-  - [ ] `create/4 (str, int, float, map)`
-  - [ ] `create/4 (str, int, obj, int)`
-  - [ ] `create/4 (str, int, obj, float)`
-  - [ ] `create/4 (str, int, obj, obj)`
-  - [ ] `create/4 (str, int, obj, str)`
-  - [ ] `create/4 (str, int, obj, err)`
-  - [ ] `create/4 (str, int, obj, list)`
-  - [ ] `create/4 (str, int, obj, map)`
-  - [ ] `create/4 (str, int, str, int)`
-  - [ ] `create/4 (str, int, str, float)`
-  - [ ] `create/4 (str, int, str, obj)`
-  - [ ] `create/4 (str, int, str, str)`
-  - [ ] `create/4 (str, int, str, err)`
-  - [ ] `create/4 (str, int, str, list)`
-  - [ ] `create/4 (str, int, str, map)`
-  - [ ] `create/4 (str, int, err, int)`
-  - [ ] `create/4 (str, int, err, float)`
-  - [ ] `create/4 (str, int, err, obj)`
-  - [ ] `create/4 (str, int, err, str)`
-  - [ ] `create/4 (str, int, err, err)`
-  - [ ] `create/4 (str, int, err, list)`
-  - [ ] `create/4 (str, int, err, map)`
-  - [ ] `create/4 (str, int, list, int)`
-  - [ ] `create/4 (str, int, list, float)`
-  - [ ] `create/4 (str, int, list, obj)`
-  - [ ] `create/4 (str, int, list, str)`
-  - [ ] `create/4 (str, int, list, err)`
-  - [ ] `create/4 (str, int, list, list)`
-  - [ ] `create/4 (str, int, list, map)`
-  - [ ] `create/4 (str, int, map, int)`
-  - [ ] `create/4 (str, int, map, float)`
-  - [ ] `create/4 (str, int, map, obj)`
-  - [ ] `create/4 (str, int, map, str)`
-  - [ ] `create/4 (str, int, map, err)`
-  - [ ] `create/4 (str, int, map, list)`
-  - [ ] `create/4 (str, int, map, map)`
-  - [ ] `create/4 (str, float, int, int)`
-  - [ ] `create/4 (str, float, int, float)`
-  - [ ] `create/4 (str, float, int, obj)`
-  - [ ] `create/4 (str, float, int, str)`
-  - [ ] `create/4 (str, float, int, err)`
-  - [ ] `create/4 (str, float, int, list)`
-  - [ ] `create/4 (str, float, int, map)`
-  - [ ] `create/4 (str, float, float, int)`
-  - [ ] `create/4 (str, float, float, float)`
-  - [ ] `create/4 (str, float, float, obj)`
-  - [ ] `create/4 (str, float, float, str)`
-  - [ ] `create/4 (str, float, float, err)`
-  - [ ] `create/4 (str, float, float, list)`
-  - [ ] `create/4 (str, float, float, map)`
-  - [ ] `create/4 (str, float, obj, int)`
-  - [ ] `create/4 (str, float, obj, float)`
-  - [ ] `create/4 (str, float, obj, obj)`
-  - [ ] `create/4 (str, float, obj, str)`
-  - [ ] `create/4 (str, float, obj, err)`
-  - [ ] `create/4 (str, float, obj, list)`
-  - [ ] `create/4 (str, float, obj, map)`
-  - [ ] `create/4 (str, float, str, int)`
-  - [ ] `create/4 (str, float, str, float)`
-  - [ ] `create/4 (str, float, str, obj)`
-  - [ ] `create/4 (str, float, str, str)`
-  - [ ] `create/4 (str, float, str, err)`
-  - [ ] `create/4 (str, float, str, list)`
-  - [ ] `create/4 (str, float, str, map)`
-  - [ ] `create/4 (str, float, err, int)`
-  - [ ] `create/4 (str, float, err, float)`
-  - [ ] `create/4 (str, float, err, obj)`
-  - [ ] `create/4 (str, float, err, str)`
-  - [ ] `create/4 (str, float, err, err)`
-  - [ ] `create/4 (str, float, err, list)`
-  - [ ] `create/4 (str, float, err, map)`
-  - [ ] `create/4 (str, float, list, int)`
-  - [ ] `create/4 (str, float, list, float)`
-  - [ ] `create/4 (str, float, list, obj)`
-  - [ ] `create/4 (str, float, list, str)`
-  - [ ] `create/4 (str, float, list, err)`
-  - [ ] `create/4 (str, float, list, list)`
-  - [ ] `create/4 (str, float, list, map)`
-  - [ ] `create/4 (str, float, map, int)`
-  - [ ] `create/4 (str, float, map, float)`
-  - [ ] `create/4 (str, float, map, obj)`
-  - [ ] `create/4 (str, float, map, str)`
-  - [ ] `create/4 (str, float, map, err)`
-  - [ ] `create/4 (str, float, map, list)`
-  - [ ] `create/4 (str, float, map, map)`
-  - [ ] `create/4 (str, obj, int, int)`
-  - [ ] `create/4 (str, obj, int, float)`
-  - [ ] `create/4 (str, obj, int, obj)`
-  - [ ] `create/4 (str, obj, int, str)`
-  - [ ] `create/4 (str, obj, int, err)`
-  - [ ] `create/4 (str, obj, int, list)`
-  - [ ] `create/4 (str, obj, int, map)`
-  - [ ] `create/4 (str, obj, float, int)`
-  - [ ] `create/4 (str, obj, float, float)`
-  - [ ] `create/4 (str, obj, float, obj)`
-  - [ ] `create/4 (str, obj, float, str)`
-  - [ ] `create/4 (str, obj, float, err)`
-  - [ ] `create/4 (str, obj, float, list)`
-  - [ ] `create/4 (str, obj, float, map)`
-  - [ ] `create/4 (str, obj, obj, int)`
-  - [ ] `create/4 (str, obj, obj, float)`
-  - [ ] `create/4 (str, obj, obj, obj)`
-  - [ ] `create/4 (str, obj, obj, str)`
-  - [ ] `create/4 (str, obj, obj, err)`
-  - [ ] `create/4 (str, obj, obj, list)`
-  - [ ] `create/4 (str, obj, obj, map)`
-  - [ ] `create/4 (str, obj, str, int)`
-  - [ ] `create/4 (str, obj, str, float)`
-  - [ ] `create/4 (str, obj, str, obj)`
-  - [ ] `create/4 (str, obj, str, str)`
-  - [ ] `create/4 (str, obj, str, err)`
-  - [ ] `create/4 (str, obj, str, list)`
-  - [ ] `create/4 (str, obj, str, map)`
-  - [ ] `create/4 (str, obj, err, int)`
-  - [ ] `create/4 (str, obj, err, float)`
-  - [ ] `create/4 (str, obj, err, obj)`
-  - [ ] `create/4 (str, obj, err, str)`
-  - [ ] `create/4 (str, obj, err, err)`
-  - [ ] `create/4 (str, obj, err, list)`
-  - [ ] `create/4 (str, obj, err, map)`
-  - [ ] `create/4 (str, obj, list, int)`
-  - [ ] `create/4 (str, obj, list, float)`
-  - [ ] `create/4 (str, obj, list, obj)`
-  - [ ] `create/4 (str, obj, list, str)`
-  - [ ] `create/4 (str, obj, list, err)`
-  - [ ] `create/4 (str, obj, list, list)`
-  - [ ] `create/4 (str, obj, list, map)`
-  - [ ] `create/4 (str, obj, map, int)`
-  - [ ] `create/4 (str, obj, map, float)`
-  - [ ] `create/4 (str, obj, map, obj)`
-  - [ ] `create/4 (str, obj, map, str)`
-  - [ ] `create/4 (str, obj, map, err)`
-  - [ ] `create/4 (str, obj, map, list)`
-  - [ ] `create/4 (str, obj, map, map)`
-  - [ ] `create/4 (str, str, int, int)`
-  - [ ] `create/4 (str, str, int, float)`
-  - [ ] `create/4 (str, str, int, obj)`
-  - [ ] `create/4 (str, str, int, str)`
-  - [ ] `create/4 (str, str, int, err)`
-  - [ ] `create/4 (str, str, int, list)`
-  - [ ] `create/4 (str, str, int, map)`
-  - [ ] `create/4 (str, str, float, int)`
-  - [ ] `create/4 (str, str, float, float)`
-  - [ ] `create/4 (str, str, float, obj)`
-  - [ ] `create/4 (str, str, float, str)`
-  - [ ] `create/4 (str, str, float, err)`
-  - [ ] `create/4 (str, str, float, list)`
-  - [ ] `create/4 (str, str, float, map)`
-  - [ ] `create/4 (str, str, obj, int)`
-  - [ ] `create/4 (str, str, obj, float)`
-  - [ ] `create/4 (str, str, obj, obj)`
-  - [ ] `create/4 (str, str, obj, str)`
-  - [ ] `create/4 (str, str, obj, err)`
-  - [ ] `create/4 (str, str, obj, list)`
-  - [ ] `create/4 (str, str, obj, map)`
-  - [ ] `create/4 (str, str, str, int)`
-  - [ ] `create/4 (str, str, str, float)`
-  - [ ] `create/4 (str, str, str, obj)`
-  - [ ] `create/4 (str, str, str, str)`
-  - [ ] `create/4 (str, str, str, err)`
-  - [ ] `create/4 (str, str, str, list)`
-  - [ ] `create/4 (str, str, str, map)`
-  - [ ] `create/4 (str, str, err, int)`
-  - [ ] `create/4 (str, str, err, float)`
-  - [ ] `create/4 (str, str, err, obj)`
-  - [ ] `create/4 (str, str, err, str)`
-  - [ ] `create/4 (str, str, err, err)`
-  - [ ] `create/4 (str, str, err, list)`
-  - [ ] `create/4 (str, str, err, map)`
-  - [ ] `create/4 (str, str, list, int)`
-  - [ ] `create/4 (str, str, list, float)`
-  - [ ] `create/4 (str, str, list, obj)`
-  - [ ] `create/4 (str, str, list, str)`
-  - [ ] `create/4 (str, str, list, err)`
-  - [ ] `create/4 (str, str, list, list)`
-  - [ ] `create/4 (str, str, list, map)`
-  - [ ] `create/4 (str, str, map, int)`
-  - [ ] `create/4 (str, str, map, float)`
-  - [ ] `create/4 (str, str, map, obj)`
-  - [ ] `create/4 (str, str, map, str)`
-  - [ ] `create/4 (str, str, map, err)`
-  - [ ] `create/4 (str, str, map, list)`
-  - [ ] `create/4 (str, str, map, map)`
-  - [ ] `create/4 (str, err, int, int)`
-  - [ ] `create/4 (str, err, int, float)`
-  - [ ] `create/4 (str, err, int, obj)`
-  - [ ] `create/4 (str, err, int, str)`
-  - [ ] `create/4 (str, err, int, err)`
-  - [ ] `create/4 (str, err, int, list)`
-  - [ ] `create/4 (str, err, int, map)`
-  - [ ] `create/4 (str, err, float, int)`
-  - [ ] `create/4 (str, err, float, float)`
-  - [ ] `create/4 (str, err, float, obj)`
-  - [ ] `create/4 (str, err, float, str)`
-  - [ ] `create/4 (str, err, float, err)`
-  - [ ] `create/4 (str, err, float, list)`
-  - [ ] `create/4 (str, err, float, map)`
-  - [ ] `create/4 (str, err, obj, int)`
-  - [ ] `create/4 (str, err, obj, float)`
-  - [ ] `create/4 (str, err, obj, obj)`
-  - [ ] `create/4 (str, err, obj, str)`
-  - [ ] `create/4 (str, err, obj, err)`
-  - [ ] `create/4 (str, err, obj, list)`
-  - [ ] `create/4 (str, err, obj, map)`
-  - [ ] `create/4 (str, err, str, int)`
-  - [ ] `create/4 (str, err, str, float)`
-  - [ ] `create/4 (str, err, str, obj)`
-  - [ ] `create/4 (str, err, str, str)`
-  - [ ] `create/4 (str, err, str, err)`
-  - [ ] `create/4 (str, err, str, list)`
-  - [ ] `create/4 (str, err, str, map)`
-  - [ ] `create/4 (str, err, err, int)`
-  - [ ] `create/4 (str, err, err, float)`
-  - [ ] `create/4 (str, err, err, obj)`
-  - [ ] `create/4 (str, err, err, str)`
-  - [ ] `create/4 (str, err, err, err)`
-  - [ ] `create/4 (str, err, err, list)`
-  - [ ] `create/4 (str, err, err, map)`
-  - [ ] `create/4 (str, err, list, int)`
-  - [ ] `create/4 (str, err, list, float)`
-  - [ ] `create/4 (str, err, list, obj)`
-  - [ ] `create/4 (str, err, list, str)`
-  - [ ] `create/4 (str, err, list, err)`
-  - [ ] `create/4 (str, err, list, list)`
-  - [ ] `create/4 (str, err, list, map)`
-  - [ ] `create/4 (str, err, map, int)`
-  - [ ] `create/4 (str, err, map, float)`
-  - [ ] `create/4 (str, err, map, obj)`
-  - [ ] `create/4 (str, err, map, str)`
-  - [ ] `create/4 (str, err, map, err)`
-  - [ ] `create/4 (str, err, map, list)`
-  - [ ] `create/4 (str, err, map, map)`
-  - [ ] `create/4 (str, list, int, int)`
-  - [ ] `create/4 (str, list, int, float)`
-  - [ ] `create/4 (str, list, int, obj)`
-  - [ ] `create/4 (str, list, int, str)`
-  - [ ] `create/4 (str, list, int, err)`
-  - [ ] `create/4 (str, list, int, list)`
-  - [ ] `create/4 (str, list, int, map)`
-  - [ ] `create/4 (str, list, float, int)`
-  - [ ] `create/4 (str, list, float, float)`
-  - [ ] `create/4 (str, list, float, obj)`
-  - [ ] `create/4 (str, list, float, str)`
-  - [ ] `create/4 (str, list, float, err)`
-  - [ ] `create/4 (str, list, float, list)`
-  - [ ] `create/4 (str, list, float, map)`
-  - [ ] `create/4 (str, list, obj, int)`
-  - [ ] `create/4 (str, list, obj, float)`
-  - [ ] `create/4 (str, list, obj, obj)`
-  - [ ] `create/4 (str, list, obj, str)`
-  - [ ] `create/4 (str, list, obj, err)`
-  - [ ] `create/4 (str, list, obj, list)`
-  - [ ] `create/4 (str, list, obj, map)`
-  - [ ] `create/4 (str, list, str, int)`
-  - [ ] `create/4 (str, list, str, float)`
-  - [ ] `create/4 (str, list, str, obj)`
-  - [ ] `create/4 (str, list, str, str)`
-  - [ ] `create/4 (str, list, str, err)`
-  - [ ] `create/4 (str, list, str, list)`
-  - [ ] `create/4 (str, list, str, map)`
-  - [ ] `create/4 (str, list, err, int)`
-  - [ ] `create/4 (str, list, err, float)`
-  - [ ] `create/4 (str, list, err, obj)`
-  - [ ] `create/4 (str, list, err, str)`
-  - [ ] `create/4 (str, list, err, err)`
-  - [ ] `create/4 (str, list, err, list)`
-  - [ ] `create/4 (str, list, err, map)`
-  - [ ] `create/4 (str, list, list, int)`
-  - [ ] `create/4 (str, list, list, float)`
-  - [ ] `create/4 (str, list, list, obj)`
-  - [ ] `create/4 (str, list, list, str)`
-  - [ ] `create/4 (str, list, list, err)`
-  - [ ] `create/4 (str, list, list, list)`
-  - [ ] `create/4 (str, list, list, map)`
-  - [ ] `create/4 (str, list, map, int)`
-  - [ ] `create/4 (str, list, map, float)`
-  - [ ] `create/4 (str, list, map, obj)`
-  - [ ] `create/4 (str, list, map, str)`
-  - [ ] `create/4 (str, list, map, err)`
-  - [ ] `create/4 (str, list, map, list)`
-  - [ ] `create/4 (str, list, map, map)`
-  - [ ] `create/4 (str, map, int, int)`
-  - [ ] `create/4 (str, map, int, float)`
-  - [ ] `create/4 (str, map, int, obj)`
-  - [ ] `create/4 (str, map, int, str)`
-  - [ ] `create/4 (str, map, int, err)`
-  - [ ] `create/4 (str, map, int, list)`
-  - [ ] `create/4 (str, map, int, map)`
-  - [ ] `create/4 (str, map, float, int)`
-  - [ ] `create/4 (str, map, float, float)`
-  - [ ] `create/4 (str, map, float, obj)`
-  - [ ] `create/4 (str, map, float, str)`
-  - [ ] `create/4 (str, map, float, err)`
-  - [ ] `create/4 (str, map, float, list)`
-  - [ ] `create/4 (str, map, float, map)`
-  - [ ] `create/4 (str, map, obj, int)`
-  - [ ] `create/4 (str, map, obj, float)`
-  - [ ] `create/4 (str, map, obj, obj)`
-  - [ ] `create/4 (str, map, obj, str)`
-  - [ ] `create/4 (str, map, obj, err)`
-  - [ ] `create/4 (str, map, obj, list)`
-  - [ ] `create/4 (str, map, obj, map)`
-  - [ ] `create/4 (str, map, str, int)`
-  - [ ] `create/4 (str, map, str, float)`
-  - [ ] `create/4 (str, map, str, obj)`
-  - [ ] `create/4 (str, map, str, str)`
-  - [ ] `create/4 (str, map, str, err)`
-  - [ ] `create/4 (str, map, str, list)`
-  - [ ] `create/4 (str, map, str, map)`
-  - [ ] `create/4 (str, map, err, int)`
-  - [ ] `create/4 (str, map, err, float)`
-  - [ ] `create/4 (str, map, err, obj)`
-  - [ ] `create/4 (str, map, err, str)`
-  - [ ] `create/4 (str, map, err, err)`
-  - [ ] `create/4 (str, map, err, list)`
-  - [ ] `create/4 (str, map, err, map)`
-  - [ ] `create/4 (str, map, list, int)`
-  - [ ] `create/4 (str, map, list, float)`
-  - [ ] `create/4 (str, map, list, obj)`
-  - [ ] `create/4 (str, map, list, str)`
-  - [ ] `create/4 (str, map, list, err)`
-  - [ ] `create/4 (str, map, list, list)`
-  - [ ] `create/4 (str, map, list, map)`
-  - [ ] `create/4 (str, map, map, int)`
-  - [ ] `create/4 (str, map, map, float)`
-  - [ ] `create/4 (str, map, map, obj)`
-  - [ ] `create/4 (str, map, map, str)`
-  - [ ] `create/4 (str, map, map, err)`
-  - [ ] `create/4 (str, map, map, list)`
-  - [ ] `create/4 (str, map, map, map)`
-  - [ ] `create/4 (err, int, int, int)`
-  - [ ] `create/4 (err, int, int, float)`
-  - [ ] `create/4 (err, int, int, obj)`
-  - [ ] `create/4 (err, int, int, str)`
-  - [ ] `create/4 (err, int, int, err)`
-  - [ ] `create/4 (err, int, int, list)`
-  - [ ] `create/4 (err, int, int, map)`
-  - [ ] `create/4 (err, int, float, int)`
-  - [ ] `create/4 (err, int, float, float)`
-  - [ ] `create/4 (err, int, float, obj)`
-  - [ ] `create/4 (err, int, float, str)`
-  - [ ] `create/4 (err, int, float, err)`
-  - [ ] `create/4 (err, int, float, list)`
-  - [ ] `create/4 (err, int, float, map)`
-  - [ ] `create/4 (err, int, obj, int)`
-  - [ ] `create/4 (err, int, obj, float)`
-  - [ ] `create/4 (err, int, obj, obj)`
-  - [ ] `create/4 (err, int, obj, str)`
-  - [ ] `create/4 (err, int, obj, err)`
-  - [ ] `create/4 (err, int, obj, list)`
-  - [ ] `create/4 (err, int, obj, map)`
-  - [ ] `create/4 (err, int, str, int)`
-  - [ ] `create/4 (err, int, str, float)`
-  - [ ] `create/4 (err, int, str, obj)`
-  - [ ] `create/4 (err, int, str, str)`
-  - [ ] `create/4 (err, int, str, err)`
-  - [ ] `create/4 (err, int, str, list)`
-  - [ ] `create/4 (err, int, str, map)`
-  - [ ] `create/4 (err, int, err, int)`
-  - [ ] `create/4 (err, int, err, float)`
-  - [ ] `create/4 (err, int, err, obj)`
-  - [ ] `create/4 (err, int, err, str)`
-  - [ ] `create/4 (err, int, err, err)`
-  - [ ] `create/4 (err, int, err, list)`
-  - [ ] `create/4 (err, int, err, map)`
-  - [ ] `create/4 (err, int, list, int)`
-  - [ ] `create/4 (err, int, list, float)`
-  - [ ] `create/4 (err, int, list, obj)`
-  - [ ] `create/4 (err, int, list, str)`
-  - [ ] `create/4 (err, int, list, err)`
-  - [ ] `create/4 (err, int, list, list)`
-  - [ ] `create/4 (err, int, list, map)`
-  - [ ] `create/4 (err, int, map, int)`
-  - [ ] `create/4 (err, int, map, float)`
-  - [ ] `create/4 (err, int, map, obj)`
-  - [ ] `create/4 (err, int, map, str)`
-  - [ ] `create/4 (err, int, map, err)`
-  - [ ] `create/4 (err, int, map, list)`
-  - [ ] `create/4 (err, int, map, map)`
-  - [ ] `create/4 (err, float, int, int)`
-  - [ ] `create/4 (err, float, int, float)`
-  - [ ] `create/4 (err, float, int, obj)`
-  - [ ] `create/4 (err, float, int, str)`
-  - [ ] `create/4 (err, float, int, err)`
-  - [ ] `create/4 (err, float, int, list)`
-  - [ ] `create/4 (err, float, int, map)`
-  - [ ] `create/4 (err, float, float, int)`
-  - [ ] `create/4 (err, float, float, float)`
-  - [ ] `create/4 (err, float, float, obj)`
-  - [ ] `create/4 (err, float, float, str)`
-  - [ ] `create/4 (err, float, float, err)`
-  - [ ] `create/4 (err, float, float, list)`
-  - [ ] `create/4 (err, float, float, map)`
-  - [ ] `create/4 (err, float, obj, int)`
-  - [ ] `create/4 (err, float, obj, float)`
-  - [ ] `create/4 (err, float, obj, obj)`
-  - [ ] `create/4 (err, float, obj, str)`
-  - [ ] `create/4 (err, float, obj, err)`
-  - [ ] `create/4 (err, float, obj, list)`
-  - [ ] `create/4 (err, float, obj, map)`
-  - [ ] `create/4 (err, float, str, int)`
-  - [ ] `create/4 (err, float, str, float)`
-  - [ ] `create/4 (err, float, str, obj)`
-  - [ ] `create/4 (err, float, str, str)`
-  - [ ] `create/4 (err, float, str, err)`
-  - [ ] `create/4 (err, float, str, list)`
-  - [ ] `create/4 (err, float, str, map)`
-  - [ ] `create/4 (err, float, err, int)`
-  - [ ] `create/4 (err, float, err, float)`
-  - [ ] `create/4 (err, float, err, obj)`
-  - [ ] `create/4 (err, float, err, str)`
-  - [ ] `create/4 (err, float, err, err)`
-  - [ ] `create/4 (err, float, err, list)`
-  - [ ] `create/4 (err, float, err, map)`
-  - [ ] `create/4 (err, float, list, int)`
-  - [ ] `create/4 (err, float, list, float)`
-  - [ ] `create/4 (err, float, list, obj)`
-  - [ ] `create/4 (err, float, list, str)`
-  - [ ] `create/4 (err, float, list, err)`
-  - [ ] `create/4 (err, float, list, list)`
-  - [ ] `create/4 (err, float, list, map)`
-  - [ ] `create/4 (err, float, map, int)`
-  - [ ] `create/4 (err, float, map, float)`
-  - [ ] `create/4 (err, float, map, obj)`
-  - [ ] `create/4 (err, float, map, str)`
-  - [ ] `create/4 (err, float, map, err)`
-  - [ ] `create/4 (err, float, map, list)`
-  - [ ] `create/4 (err, float, map, map)`
-  - [ ] `create/4 (err, obj, int, int)`
-  - [ ] `create/4 (err, obj, int, float)`
-  - [ ] `create/4 (err, obj, int, obj)`
-  - [ ] `create/4 (err, obj, int, str)`
-  - [ ] `create/4 (err, obj, int, err)`
-  - [ ] `create/4 (err, obj, int, list)`
-  - [ ] `create/4 (err, obj, int, map)`
-  - [ ] `create/4 (err, obj, float, int)`
-  - [ ] `create/4 (err, obj, float, float)`
-  - [ ] `create/4 (err, obj, float, obj)`
-  - [ ] `create/4 (err, obj, float, str)`
-  - [ ] `create/4 (err, obj, float, err)`
-  - [ ] `create/4 (err, obj, float, list)`
-  - [ ] `create/4 (err, obj, float, map)`
-  - [ ] `create/4 (err, obj, obj, int)`
-  - [ ] `create/4 (err, obj, obj, float)`
-  - [ ] `create/4 (err, obj, obj, obj)`
-  - [ ] `create/4 (err, obj, obj, str)`
-  - [ ] `create/4 (err, obj, obj, err)`
-  - [ ] `create/4 (err, obj, obj, list)`
-  - [ ] `create/4 (err, obj, obj, map)`
-  - [ ] `create/4 (err, obj, str, int)`
-  - [ ] `create/4 (err, obj, str, float)`
-  - [ ] `create/4 (err, obj, str, obj)`
-  - [ ] `create/4 (err, obj, str, str)`
-  - [ ] `create/4 (err, obj, str, err)`
-  - [ ] `create/4 (err, obj, str, list)`
-  - [ ] `create/4 (err, obj, str, map)`
-  - [ ] `create/4 (err, obj, err, int)`
-  - [ ] `create/4 (err, obj, err, float)`
-  - [ ] `create/4 (err, obj, err, obj)`
-  - [ ] `create/4 (err, obj, err, str)`
-  - [ ] `create/4 (err, obj, err, err)`
-  - [ ] `create/4 (err, obj, err, list)`
-  - [ ] `create/4 (err, obj, err, map)`
-  - [ ] `create/4 (err, obj, list, int)`
-  - [ ] `create/4 (err, obj, list, float)`
-  - [ ] `create/4 (err, obj, list, obj)`
-  - [ ] `create/4 (err, obj, list, str)`
-  - [ ] `create/4 (err, obj, list, err)`
-  - [ ] `create/4 (err, obj, list, list)`
-  - [ ] `create/4 (err, obj, list, map)`
-  - [ ] `create/4 (err, obj, map, int)`
-  - [ ] `create/4 (err, obj, map, float)`
-  - [ ] `create/4 (err, obj, map, obj)`
-  - [ ] `create/4 (err, obj, map, str)`
-  - [ ] `create/4 (err, obj, map, err)`
-  - [ ] `create/4 (err, obj, map, list)`
-  - [ ] `create/4 (err, obj, map, map)`
-  - [ ] `create/4 (err, str, int, int)`
-  - [ ] `create/4 (err, str, int, float)`
-  - [ ] `create/4 (err, str, int, obj)`
-  - [ ] `create/4 (err, str, int, str)`
-  - [ ] `create/4 (err, str, int, err)`
-  - [ ] `create/4 (err, str, int, list)`
-  - [ ] `create/4 (err, str, int, map)`
-  - [ ] `create/4 (err, str, float, int)`
-  - [ ] `create/4 (err, str, float, float)`
-  - [ ] `create/4 (err, str, float, obj)`
-  - [ ] `create/4 (err, str, float, str)`
-  - [ ] `create/4 (err, str, float, err)`
-  - [ ] `create/4 (err, str, float, list)`
-  - [ ] `create/4 (err, str, float, map)`
-  - [ ] `create/4 (err, str, obj, int)`
-  - [ ] `create/4 (err, str, obj, float)`
-  - [ ] `create/4 (err, str, obj, obj)`
-  - [ ] `create/4 (err, str, obj, str)`
-  - [ ] `create/4 (err, str, obj, err)`
-  - [ ] `create/4 (err, str, obj, list)`
-  - [ ] `create/4 (err, str, obj, map)`
-  - [ ] `create/4 (err, str, str, int)`
-  - [ ] `create/4 (err, str, str, float)`
-  - [ ] `create/4 (err, str, str, obj)`
-  - [ ] `create/4 (err, str, str, str)`
-  - [ ] `create/4 (err, str, str, err)`
-  - [ ] `create/4 (err, str, str, list)`
-  - [ ] `create/4 (err, str, str, map)`
-  - [ ] `create/4 (err, str, err, int)`
-  - [ ] `create/4 (err, str, err, float)`
-  - [ ] `create/4 (err, str, err, obj)`
-  - [ ] `create/4 (err, str, err, str)`
-  - [ ] `create/4 (err, str, err, err)`
-  - [ ] `create/4 (err, str, err, list)`
-  - [ ] `create/4 (err, str, err, map)`
-  - [ ] `create/4 (err, str, list, int)`
-  - [ ] `create/4 (err, str, list, float)`
-  - [ ] `create/4 (err, str, list, obj)`
-  - [ ] `create/4 (err, str, list, str)`
-  - [ ] `create/4 (err, str, list, err)`
-  - [ ] `create/4 (err, str, list, list)`
-  - [ ] `create/4 (err, str, list, map)`
-  - [ ] `create/4 (err, str, map, int)`
-  - [ ] `create/4 (err, str, map, float)`
-  - [ ] `create/4 (err, str, map, obj)`
-  - [ ] `create/4 (err, str, map, str)`
-  - [ ] `create/4 (err, str, map, err)`
-  - [ ] `create/4 (err, str, map, list)`
-  - [ ] `create/4 (err, str, map, map)`
-  - [ ] `create/4 (err, err, int, int)`
-  - [ ] `create/4 (err, err, int, float)`
-  - [ ] `create/4 (err, err, int, obj)`
-  - [ ] `create/4 (err, err, int, str)`
-  - [ ] `create/4 (err, err, int, err)`
-  - [ ] `create/4 (err, err, int, list)`
-  - [ ] `create/4 (err, err, int, map)`
-  - [ ] `create/4 (err, err, float, int)`
-  - [ ] `create/4 (err, err, float, float)`
-  - [ ] `create/4 (err, err, float, obj)`
-  - [ ] `create/4 (err, err, float, str)`
-  - [ ] `create/4 (err, err, float, err)`
-  - [ ] `create/4 (err, err, float, list)`
-  - [ ] `create/4 (err, err, float, map)`
-  - [ ] `create/4 (err, err, obj, int)`
-  - [ ] `create/4 (err, err, obj, float)`
-  - [ ] `create/4 (err, err, obj, obj)`
-  - [ ] `create/4 (err, err, obj, str)`
-  - [ ] `create/4 (err, err, obj, err)`
-  - [ ] `create/4 (err, err, obj, list)`
-  - [ ] `create/4 (err, err, obj, map)`
-  - [ ] `create/4 (err, err, str, int)`
-  - [ ] `create/4 (err, err, str, float)`
-  - [ ] `create/4 (err, err, str, obj)`
-  - [ ] `create/4 (err, err, str, str)`
-  - [ ] `create/4 (err, err, str, err)`
-  - [ ] `create/4 (err, err, str, list)`
-  - [ ] `create/4 (err, err, str, map)`
-  - [ ] `create/4 (err, err, err, int)`
-  - [ ] `create/4 (err, err, err, float)`
-  - [ ] `create/4 (err, err, err, obj)`
-  - [ ] `create/4 (err, err, err, str)`
-  - [ ] `create/4 (err, err, err, err)`
-  - [ ] `create/4 (err, err, err, list)`
-  - [ ] `create/4 (err, err, err, map)`
-  - [ ] `create/4 (err, err, list, int)`
-  - [ ] `create/4 (err, err, list, float)`
-  - [ ] `create/4 (err, err, list, obj)`
-  - [ ] `create/4 (err, err, list, str)`
-  - [ ] `create/4 (err, err, list, err)`
-  - [ ] `create/4 (err, err, list, list)`
-  - [ ] `create/4 (err, err, list, map)`
-  - [ ] `create/4 (err, err, map, int)`
-  - [ ] `create/4 (err, err, map, float)`
-  - [ ] `create/4 (err, err, map, obj)`
-  - [ ] `create/4 (err, err, map, str)`
-  - [ ] `create/4 (err, err, map, err)`
-  - [ ] `create/4 (err, err, map, list)`
-  - [ ] `create/4 (err, err, map, map)`
-  - [ ] `create/4 (err, list, int, int)`
-  - [ ] `create/4 (err, list, int, float)`
-  - [ ] `create/4 (err, list, int, obj)`
-  - [ ] `create/4 (err, list, int, str)`
-  - [ ] `create/4 (err, list, int, err)`
-  - [ ] `create/4 (err, list, int, list)`
-  - [ ] `create/4 (err, list, int, map)`
-  - [ ] `create/4 (err, list, float, int)`
-  - [ ] `create/4 (err, list, float, float)`
-  - [ ] `create/4 (err, list, float, obj)`
-  - [ ] `create/4 (err, list, float, str)`
-  - [ ] `create/4 (err, list, float, err)`
-  - [ ] `create/4 (err, list, float, list)`
-  - [ ] `create/4 (err, list, float, map)`
-  - [ ] `create/4 (err, list, obj, int)`
-  - [ ] `create/4 (err, list, obj, float)`
-  - [ ] `create/4 (err, list, obj, obj)`
-  - [ ] `create/4 (err, list, obj, str)`
-  - [ ] `create/4 (err, list, obj, err)`
-  - [ ] `create/4 (err, list, obj, list)`
-  - [ ] `create/4 (err, list, obj, map)`
-  - [ ] `create/4 (err, list, str, int)`
-  - [ ] `create/4 (err, list, str, float)`
-  - [ ] `create/4 (err, list, str, obj)`
-  - [ ] `create/4 (err, list, str, str)`
-  - [ ] `create/4 (err, list, str, err)`
-  - [ ] `create/4 (err, list, str, list)`
-  - [ ] `create/4 (err, list, str, map)`
-  - [ ] `create/4 (err, list, err, int)`
-  - [ ] `create/4 (err, list, err, float)`
-  - [ ] `create/4 (err, list, err, obj)`
-  - [ ] `create/4 (err, list, err, str)`
-  - [ ] `create/4 (err, list, err, err)`
-  - [ ] `create/4 (err, list, err, list)`
-  - [ ] `create/4 (err, list, err, map)`
-  - [ ] `create/4 (err, list, list, int)`
-  - [ ] `create/4 (err, list, list, float)`
-  - [ ] `create/4 (err, list, list, obj)`
-  - [ ] `create/4 (err, list, list, str)`
-  - [ ] `create/4 (err, list, list, err)`
-  - [ ] `create/4 (err, list, list, list)`
-  - [ ] `create/4 (err, list, list, map)`
-  - [ ] `create/4 (err, list, map, int)`
-  - [ ] `create/4 (err, list, map, float)`
-  - [ ] `create/4 (err, list, map, obj)`
-  - [ ] `create/4 (err, list, map, str)`
-  - [ ] `create/4 (err, list, map, err)`
-  - [ ] `create/4 (err, list, map, list)`
-  - [ ] `create/4 (err, list, map, map)`
-  - [ ] `create/4 (err, map, int, int)`
-  - [ ] `create/4 (err, map, int, float)`
-  - [ ] `create/4 (err, map, int, obj)`
-  - [ ] `create/4 (err, map, int, str)`
-  - [ ] `create/4 (err, map, int, err)`
-  - [ ] `create/4 (err, map, int, list)`
-  - [ ] `create/4 (err, map, int, map)`
-  - [ ] `create/4 (err, map, float, int)`
-  - [ ] `create/4 (err, map, float, float)`
-  - [ ] `create/4 (err, map, float, obj)`
-  - [ ] `create/4 (err, map, float, str)`
-  - [ ] `create/4 (err, map, float, err)`
-  - [ ] `create/4 (err, map, float, list)`
-  - [ ] `create/4 (err, map, float, map)`
-  - [ ] `create/4 (err, map, obj, int)`
-  - [ ] `create/4 (err, map, obj, float)`
-  - [ ] `create/4 (err, map, obj, obj)`
-  - [ ] `create/4 (err, map, obj, str)`
-  - [ ] `create/4 (err, map, obj, err)`
-  - [ ] `create/4 (err, map, obj, list)`
-  - [ ] `create/4 (err, map, obj, map)`
-  - [ ] `create/4 (err, map, str, int)`
-  - [ ] `create/4 (err, map, str, float)`
-  - [ ] `create/4 (err, map, str, obj)`
-  - [ ] `create/4 (err, map, str, str)`
-  - [ ] `create/4 (err, map, str, err)`
-  - [ ] `create/4 (err, map, str, list)`
-  - [ ] `create/4 (err, map, str, map)`
-  - [ ] `create/4 (err, map, err, int)`
-  - [ ] `create/4 (err, map, err, float)`
-  - [ ] `create/4 (err, map, err, obj)`
-  - [ ] `create/4 (err, map, err, str)`
-  - [ ] `create/4 (err, map, err, err)`
-  - [ ] `create/4 (err, map, err, list)`
-  - [ ] `create/4 (err, map, err, map)`
-  - [ ] `create/4 (err, map, list, int)`
-  - [ ] `create/4 (err, map, list, float)`
-  - [ ] `create/4 (err, map, list, obj)`
-  - [ ] `create/4 (err, map, list, str)`
-  - [ ] `create/4 (err, map, list, err)`
-  - [ ] `create/4 (err, map, list, list)`
-  - [ ] `create/4 (err, map, list, map)`
-  - [ ] `create/4 (err, map, map, int)`
-  - [ ] `create/4 (err, map, map, float)`
-  - [ ] `create/4 (err, map, map, obj)`
-  - [ ] `create/4 (err, map, map, str)`
-  - [ ] `create/4 (err, map, map, err)`
-  - [ ] `create/4 (err, map, map, list)`
-  - [ ] `create/4 (err, map, map, map)`
-  - [ ] `create/4 (list, int, int, int)`
-  - [ ] `create/4 (list, int, int, float)`
-  - [ ] `create/4 (list, int, int, obj)`
-  - [ ] `create/4 (list, int, int, str)`
-  - [ ] `create/4 (list, int, int, err)`
-  - [ ] `create/4 (list, int, int, list)`
-  - [ ] `create/4 (list, int, int, map)`
-  - [ ] `create/4 (list, int, float, int)`
-  - [ ] `create/4 (list, int, float, float)`
-  - [ ] `create/4 (list, int, float, obj)`
-  - [ ] `create/4 (list, int, float, str)`
-  - [ ] `create/4 (list, int, float, err)`
-  - [ ] `create/4 (list, int, float, list)`
-  - [ ] `create/4 (list, int, float, map)`
-  - [ ] `create/4 (list, int, obj, int)`
-  - [ ] `create/4 (list, int, obj, float)`
-  - [ ] `create/4 (list, int, obj, obj)`
-  - [ ] `create/4 (list, int, obj, str)`
-  - [ ] `create/4 (list, int, obj, err)`
-  - [ ] `create/4 (list, int, obj, list)`
-  - [ ] `create/4 (list, int, obj, map)`
-  - [ ] `create/4 (list, int, str, int)`
-  - [ ] `create/4 (list, int, str, float)`
-  - [ ] `create/4 (list, int, str, obj)`
-  - [ ] `create/4 (list, int, str, str)`
-  - [ ] `create/4 (list, int, str, err)`
-  - [ ] `create/4 (list, int, str, list)`
-  - [ ] `create/4 (list, int, str, map)`
-  - [ ] `create/4 (list, int, err, int)`
-  - [ ] `create/4 (list, int, err, float)`
-  - [ ] `create/4 (list, int, err, obj)`
-  - [ ] `create/4 (list, int, err, str)`
-  - [ ] `create/4 (list, int, err, err)`
-  - [ ] `create/4 (list, int, err, list)`
-  - [ ] `create/4 (list, int, err, map)`
-  - [ ] `create/4 (list, int, list, int)`
-  - [ ] `create/4 (list, int, list, float)`
-  - [ ] `create/4 (list, int, list, obj)`
-  - [ ] `create/4 (list, int, list, str)`
-  - [ ] `create/4 (list, int, list, err)`
-  - [ ] `create/4 (list, int, list, list)`
-  - [ ] `create/4 (list, int, list, map)`
-  - [ ] `create/4 (list, int, map, int)`
-  - [ ] `create/4 (list, int, map, float)`
-  - [ ] `create/4 (list, int, map, obj)`
-  - [ ] `create/4 (list, int, map, str)`
-  - [ ] `create/4 (list, int, map, err)`
-  - [ ] `create/4 (list, int, map, list)`
-  - [ ] `create/4 (list, int, map, map)`
-  - [ ] `create/4 (list, float, int, int)`
-  - [ ] `create/4 (list, float, int, float)`
-  - [ ] `create/4 (list, float, int, obj)`
-  - [ ] `create/4 (list, float, int, str)`
-  - [ ] `create/4 (list, float, int, err)`
-  - [ ] `create/4 (list, float, int, list)`
-  - [ ] `create/4 (list, float, int, map)`
-  - [ ] `create/4 (list, float, float, int)`
-  - [ ] `create/4 (list, float, float, float)`
-  - [ ] `create/4 (list, float, float, obj)`
-  - [ ] `create/4 (list, float, float, str)`
-  - [ ] `create/4 (list, float, float, err)`
-  - [ ] `create/4 (list, float, float, list)`
-  - [ ] `create/4 (list, float, float, map)`
-  - [ ] `create/4 (list, float, obj, int)`
-  - [ ] `create/4 (list, float, obj, float)`
-  - [ ] `create/4 (list, float, obj, obj)`
-  - [ ] `create/4 (list, float, obj, str)`
-  - [ ] `create/4 (list, float, obj, err)`
-  - [ ] `create/4 (list, float, obj, list)`
-  - [ ] `create/4 (list, float, obj, map)`
-  - [ ] `create/4 (list, float, str, int)`
-  - [ ] `create/4 (list, float, str, float)`
-  - [ ] `create/4 (list, float, str, obj)`
-  - [ ] `create/4 (list, float, str, str)`
-  - [ ] `create/4 (list, float, str, err)`
-  - [ ] `create/4 (list, float, str, list)`
-  - [ ] `create/4 (list, float, str, map)`
-  - [ ] `create/4 (list, float, err, int)`
-  - [ ] `create/4 (list, float, err, float)`
-  - [ ] `create/4 (list, float, err, obj)`
-  - [ ] `create/4 (list, float, err, str)`
-  - [ ] `create/4 (list, float, err, err)`
-  - [ ] `create/4 (list, float, err, list)`
-  - [ ] `create/4 (list, float, err, map)`
-  - [ ] `create/4 (list, float, list, int)`
-  - [ ] `create/4 (list, float, list, float)`
-  - [ ] `create/4 (list, float, list, obj)`
-  - [ ] `create/4 (list, float, list, str)`
-  - [ ] `create/4 (list, float, list, err)`
-  - [ ] `create/4 (list, float, list, list)`
-  - [ ] `create/4 (list, float, list, map)`
-  - [ ] `create/4 (list, float, map, int)`
-  - [ ] `create/4 (list, float, map, float)`
-  - [ ] `create/4 (list, float, map, obj)`
-  - [ ] `create/4 (list, float, map, str)`
-  - [ ] `create/4 (list, float, map, err)`
-  - [ ] `create/4 (list, float, map, list)`
-  - [ ] `create/4 (list, float, map, map)`
-  - [ ] `create/4 (list, obj, int, int)`
-  - [ ] `create/4 (list, obj, int, float)`
-  - [ ] `create/4 (list, obj, int, obj)`
-  - [ ] `create/4 (list, obj, int, str)`
-  - [ ] `create/4 (list, obj, int, err)`
-  - [ ] `create/4 (list, obj, int, list)`
-  - [ ] `create/4 (list, obj, int, map)`
-  - [ ] `create/4 (list, obj, float, int)`
-  - [ ] `create/4 (list, obj, float, float)`
-  - [ ] `create/4 (list, obj, float, obj)`
-  - [ ] `create/4 (list, obj, float, str)`
-  - [ ] `create/4 (list, obj, float, err)`
-  - [ ] `create/4 (list, obj, float, list)`
-  - [ ] `create/4 (list, obj, float, map)`
-  - [ ] `create/4 (list, obj, obj, int)`
-  - [ ] `create/4 (list, obj, obj, float)`
-  - [ ] `create/4 (list, obj, obj, obj)`
-  - [ ] `create/4 (list, obj, obj, str)`
-  - [ ] `create/4 (list, obj, obj, err)`
-  - [ ] `create/4 (list, obj, obj, list)`
-  - [ ] `create/4 (list, obj, obj, map)`
-  - [ ] `create/4 (list, obj, str, int)`
-  - [ ] `create/4 (list, obj, str, float)`
-  - [ ] `create/4 (list, obj, str, obj)`
-  - [ ] `create/4 (list, obj, str, str)`
-  - [ ] `create/4 (list, obj, str, err)`
-  - [ ] `create/4 (list, obj, str, list)`
-  - [ ] `create/4 (list, obj, str, map)`
-  - [ ] `create/4 (list, obj, err, int)`
-  - [ ] `create/4 (list, obj, err, float)`
-  - [ ] `create/4 (list, obj, err, obj)`
-  - [ ] `create/4 (list, obj, err, str)`
-  - [ ] `create/4 (list, obj, err, err)`
-  - [ ] `create/4 (list, obj, err, list)`
-  - [ ] `create/4 (list, obj, err, map)`
-  - [ ] `create/4 (list, obj, list, int)`
-  - [ ] `create/4 (list, obj, list, float)`
-  - [ ] `create/4 (list, obj, list, obj)`
-  - [ ] `create/4 (list, obj, list, str)`
-  - [ ] `create/4 (list, obj, list, err)`
-  - [ ] `create/4 (list, obj, list, list)`
-  - [ ] `create/4 (list, obj, list, map)`
-  - [ ] `create/4 (list, obj, map, int)`
-  - [ ] `create/4 (list, obj, map, float)`
-  - [ ] `create/4 (list, obj, map, obj)`
-  - [ ] `create/4 (list, obj, map, str)`
-  - [ ] `create/4 (list, obj, map, err)`
-  - [ ] `create/4 (list, obj, map, list)`
-  - [ ] `create/4 (list, obj, map, map)`
-  - [ ] `create/4 (list, str, int, int)`
-  - [ ] `create/4 (list, str, int, float)`
-  - [ ] `create/4 (list, str, int, obj)`
-  - [ ] `create/4 (list, str, int, str)`
-  - [ ] `create/4 (list, str, int, err)`
-  - [ ] `create/4 (list, str, int, list)`
-  - [ ] `create/4 (list, str, int, map)`
-  - [ ] `create/4 (list, str, float, int)`
-  - [ ] `create/4 (list, str, float, float)`
-  - [ ] `create/4 (list, str, float, obj)`
-  - [ ] `create/4 (list, str, float, str)`
-  - [ ] `create/4 (list, str, float, err)`
-  - [ ] `create/4 (list, str, float, list)`
-  - [ ] `create/4 (list, str, float, map)`
-  - [ ] `create/4 (list, str, obj, int)`
-  - [ ] `create/4 (list, str, obj, float)`
-  - [ ] `create/4 (list, str, obj, obj)`
-  - [ ] `create/4 (list, str, obj, str)`
-  - [ ] `create/4 (list, str, obj, err)`
-  - [ ] `create/4 (list, str, obj, list)`
-  - [ ] `create/4 (list, str, obj, map)`
-  - [ ] `create/4 (list, str, str, int)`
-  - [ ] `create/4 (list, str, str, float)`
-  - [ ] `create/4 (list, str, str, obj)`
-  - [ ] `create/4 (list, str, str, str)`
-  - [ ] `create/4 (list, str, str, err)`
-  - [ ] `create/4 (list, str, str, list)`
-  - [ ] `create/4 (list, str, str, map)`
-  - [ ] `create/4 (list, str, err, int)`
-  - [ ] `create/4 (list, str, err, float)`
-  - [ ] `create/4 (list, str, err, obj)`
-  - [ ] `create/4 (list, str, err, str)`
-  - [ ] `create/4 (list, str, err, err)`
-  - [ ] `create/4 (list, str, err, list)`
-  - [ ] `create/4 (list, str, err, map)`
-  - [ ] `create/4 (list, str, list, int)`
-  - [ ] `create/4 (list, str, list, float)`
-  - [ ] `create/4 (list, str, list, obj)`
-  - [ ] `create/4 (list, str, list, str)`
-  - [ ] `create/4 (list, str, list, err)`
-  - [ ] `create/4 (list, str, list, list)`
-  - [ ] `create/4 (list, str, list, map)`
-  - [ ] `create/4 (list, str, map, int)`
-  - [ ] `create/4 (list, str, map, float)`
-  - [ ] `create/4 (list, str, map, obj)`
-  - [ ] `create/4 (list, str, map, str)`
-  - [ ] `create/4 (list, str, map, err)`
-  - [ ] `create/4 (list, str, map, list)`
-  - [ ] `create/4 (list, str, map, map)`
-  - [ ] `create/4 (list, err, int, int)`
-  - [ ] `create/4 (list, err, int, float)`
-  - [ ] `create/4 (list, err, int, obj)`
-  - [ ] `create/4 (list, err, int, str)`
-  - [ ] `create/4 (list, err, int, err)`
-  - [ ] `create/4 (list, err, int, list)`
-  - [ ] `create/4 (list, err, int, map)`
-  - [ ] `create/4 (list, err, float, int)`
-  - [ ] `create/4 (list, err, float, float)`
-  - [ ] `create/4 (list, err, float, obj)`
-  - [ ] `create/4 (list, err, float, str)`
-  - [ ] `create/4 (list, err, float, err)`
-  - [ ] `create/4 (list, err, float, list)`
-  - [ ] `create/4 (list, err, float, map)`
-  - [ ] `create/4 (list, err, obj, int)`
-  - [ ] `create/4 (list, err, obj, float)`
-  - [ ] `create/4 (list, err, obj, obj)`
-  - [ ] `create/4 (list, err, obj, str)`
-  - [ ] `create/4 (list, err, obj, err)`
-  - [ ] `create/4 (list, err, obj, list)`
-  - [ ] `create/4 (list, err, obj, map)`
-  - [ ] `create/4 (list, err, str, int)`
-  - [ ] `create/4 (list, err, str, float)`
-  - [ ] `create/4 (list, err, str, obj)`
-  - [ ] `create/4 (list, err, str, str)`
-  - [ ] `create/4 (list, err, str, err)`
-  - [ ] `create/4 (list, err, str, list)`
-  - [ ] `create/4 (list, err, str, map)`
-  - [ ] `create/4 (list, err, err, int)`
-  - [ ] `create/4 (list, err, err, float)`
-  - [ ] `create/4 (list, err, err, obj)`
-  - [ ] `create/4 (list, err, err, str)`
-  - [ ] `create/4 (list, err, err, err)`
-  - [ ] `create/4 (list, err, err, list)`
-  - [ ] `create/4 (list, err, err, map)`
-  - [ ] `create/4 (list, err, list, int)`
-  - [ ] `create/4 (list, err, list, float)`
-  - [ ] `create/4 (list, err, list, obj)`
-  - [ ] `create/4 (list, err, list, str)`
-  - [ ] `create/4 (list, err, list, err)`
-  - [ ] `create/4 (list, err, list, list)`
-  - [ ] `create/4 (list, err, list, map)`
-  - [ ] `create/4 (list, err, map, int)`
-  - [ ] `create/4 (list, err, map, float)`
-  - [ ] `create/4 (list, err, map, obj)`
-  - [ ] `create/4 (list, err, map, str)`
-  - [ ] `create/4 (list, err, map, err)`
-  - [ ] `create/4 (list, err, map, list)`
-  - [ ] `create/4 (list, err, map, map)`
-  - [ ] `create/4 (list, list, int, int)`
-  - [ ] `create/4 (list, list, int, float)`
-  - [ ] `create/4 (list, list, int, obj)`
-  - [ ] `create/4 (list, list, int, str)`
-  - [ ] `create/4 (list, list, int, err)`
-  - [ ] `create/4 (list, list, int, list)`
-  - [ ] `create/4 (list, list, int, map)`
-  - [ ] `create/4 (list, list, float, int)`
-  - [ ] `create/4 (list, list, float, float)`
-  - [ ] `create/4 (list, list, float, obj)`
-  - [ ] `create/4 (list, list, float, str)`
-  - [ ] `create/4 (list, list, float, err)`
-  - [ ] `create/4 (list, list, float, list)`
-  - [ ] `create/4 (list, list, float, map)`
-  - [ ] `create/4 (list, list, obj, int)`
-  - [ ] `create/4 (list, list, obj, float)`
-  - [ ] `create/4 (list, list, obj, obj)`
-  - [ ] `create/4 (list, list, obj, str)`
-  - [ ] `create/4 (list, list, obj, err)`
-  - [ ] `create/4 (list, list, obj, list)`
-  - [ ] `create/4 (list, list, obj, map)`
-  - [ ] `create/4 (list, list, str, int)`
-  - [ ] `create/4 (list, list, str, float)`
-  - [ ] `create/4 (list, list, str, obj)`
-  - [ ] `create/4 (list, list, str, str)`
-  - [ ] `create/4 (list, list, str, err)`
-  - [ ] `create/4 (list, list, str, list)`
-  - [ ] `create/4 (list, list, str, map)`
-  - [ ] `create/4 (list, list, err, int)`
-  - [ ] `create/4 (list, list, err, float)`
-  - [ ] `create/4 (list, list, err, obj)`
-  - [ ] `create/4 (list, list, err, str)`
-  - [ ] `create/4 (list, list, err, err)`
-  - [ ] `create/4 (list, list, err, list)`
-  - [ ] `create/4 (list, list, err, map)`
-  - [ ] `create/4 (list, list, list, int)`
-  - [ ] `create/4 (list, list, list, float)`
-  - [ ] `create/4 (list, list, list, obj)`
-  - [ ] `create/4 (list, list, list, str)`
-  - [ ] `create/4 (list, list, list, err)`
-  - [ ] `create/4 (list, list, list, list)`
-  - [ ] `create/4 (list, list, list, map)`
-  - [ ] `create/4 (list, list, map, int)`
-  - [ ] `create/4 (list, list, map, float)`
-  - [ ] `create/4 (list, list, map, obj)`
-  - [ ] `create/4 (list, list, map, str)`
-  - [ ] `create/4 (list, list, map, err)`
-  - [ ] `create/4 (list, list, map, list)`
-  - [ ] `create/4 (list, list, map, map)`
-  - [ ] `create/4 (list, map, int, int)`
-  - [ ] `create/4 (list, map, int, float)`
-  - [ ] `create/4 (list, map, int, obj)`
-  - [ ] `create/4 (list, map, int, str)`
-  - [ ] `create/4 (list, map, int, err)`
-  - [ ] `create/4 (list, map, int, list)`
-  - [ ] `create/4 (list, map, int, map)`
-  - [ ] `create/4 (list, map, float, int)`
-  - [ ] `create/4 (list, map, float, float)`
-  - [ ] `create/4 (list, map, float, obj)`
-  - [ ] `create/4 (list, map, float, str)`
-  - [ ] `create/4 (list, map, float, err)`
-  - [ ] `create/4 (list, map, float, list)`
-  - [ ] `create/4 (list, map, float, map)`
-  - [ ] `create/4 (list, map, obj, int)`
-  - [ ] `create/4 (list, map, obj, float)`
-  - [ ] `create/4 (list, map, obj, obj)`
-  - [ ] `create/4 (list, map, obj, str)`
-  - [ ] `create/4 (list, map, obj, err)`
-  - [ ] `create/4 (list, map, obj, list)`
-  - [ ] `create/4 (list, map, obj, map)`
-  - [ ] `create/4 (list, map, str, int)`
-  - [ ] `create/4 (list, map, str, float)`
-  - [ ] `create/4 (list, map, str, obj)`
-  - [ ] `create/4 (list, map, str, str)`
-  - [ ] `create/4 (list, map, str, err)`
-  - [ ] `create/4 (list, map, str, list)`
-  - [ ] `create/4 (list, map, str, map)`
-  - [ ] `create/4 (list, map, err, int)`
-  - [ ] `create/4 (list, map, err, float)`
-  - [ ] `create/4 (list, map, err, obj)`
-  - [ ] `create/4 (list, map, err, str)`
-  - [ ] `create/4 (list, map, err, err)`
-  - [ ] `create/4 (list, map, err, list)`
-  - [ ] `create/4 (list, map, err, map)`
-  - [ ] `create/4 (list, map, list, int)`
-  - [ ] `create/4 (list, map, list, float)`
-  - [ ] `create/4 (list, map, list, obj)`
-  - [ ] `create/4 (list, map, list, str)`
-  - [ ] `create/4 (list, map, list, err)`
-  - [ ] `create/4 (list, map, list, list)`
-  - [ ] `create/4 (list, map, list, map)`
-  - [ ] `create/4 (list, map, map, int)`
-  - [ ] `create/4 (list, map, map, float)`
-  - [ ] `create/4 (list, map, map, obj)`
-  - [ ] `create/4 (list, map, map, str)`
-  - [ ] `create/4 (list, map, map, err)`
-  - [ ] `create/4 (list, map, map, list)`
-  - [ ] `create/4 (list, map, map, map)`
-  - [ ] `create/4 (map, int, int, int)`
-  - [ ] `create/4 (map, int, int, float)`
-  - [ ] `create/4 (map, int, int, obj)`
-  - [ ] `create/4 (map, int, int, str)`
-  - [ ] `create/4 (map, int, int, err)`
-  - [ ] `create/4 (map, int, int, list)`
-  - [ ] `create/4 (map, int, int, map)`
-  - [ ] `create/4 (map, int, float, int)`
-  - [ ] `create/4 (map, int, float, float)`
-  - [ ] `create/4 (map, int, float, obj)`
-  - [ ] `create/4 (map, int, float, str)`
-  - [ ] `create/4 (map, int, float, err)`
-  - [ ] `create/4 (map, int, float, list)`
-  - [ ] `create/4 (map, int, float, map)`
-  - [ ] `create/4 (map, int, obj, int)`
-  - [ ] `create/4 (map, int, obj, float)`
-  - [ ] `create/4 (map, int, obj, obj)`
-  - [ ] `create/4 (map, int, obj, str)`
-  - [ ] `create/4 (map, int, obj, err)`
-  - [ ] `create/4 (map, int, obj, list)`
-  - [ ] `create/4 (map, int, obj, map)`
-  - [ ] `create/4 (map, int, str, int)`
-  - [ ] `create/4 (map, int, str, float)`
-  - [ ] `create/4 (map, int, str, obj)`
-  - [ ] `create/4 (map, int, str, str)`
-  - [ ] `create/4 (map, int, str, err)`
-  - [ ] `create/4 (map, int, str, list)`
-  - [ ] `create/4 (map, int, str, map)`
-  - [ ] `create/4 (map, int, err, int)`
-  - [ ] `create/4 (map, int, err, float)`
-  - [ ] `create/4 (map, int, err, obj)`
-  - [ ] `create/4 (map, int, err, str)`
-  - [ ] `create/4 (map, int, err, err)`
-  - [ ] `create/4 (map, int, err, list)`
-  - [ ] `create/4 (map, int, err, map)`
-  - [ ] `create/4 (map, int, list, int)`
-  - [ ] `create/4 (map, int, list, float)`
-  - [ ] `create/4 (map, int, list, obj)`
-  - [ ] `create/4 (map, int, list, str)`
-  - [ ] `create/4 (map, int, list, err)`
-  - [ ] `create/4 (map, int, list, list)`
-  - [ ] `create/4 (map, int, list, map)`
-  - [ ] `create/4 (map, int, map, int)`
-  - [ ] `create/4 (map, int, map, float)`
-  - [ ] `create/4 (map, int, map, obj)`
-  - [ ] `create/4 (map, int, map, str)`
-  - [ ] `create/4 (map, int, map, err)`
-  - [ ] `create/4 (map, int, map, list)`
-  - [ ] `create/4 (map, int, map, map)`
-  - [ ] `create/4 (map, float, int, int)`
-  - [ ] `create/4 (map, float, int, float)`
-  - [ ] `create/4 (map, float, int, obj)`
-  - [ ] `create/4 (map, float, int, str)`
-  - [ ] `create/4 (map, float, int, err)`
-  - [ ] `create/4 (map, float, int, list)`
-  - [ ] `create/4 (map, float, int, map)`
-  - [ ] `create/4 (map, float, float, int)`
-  - [ ] `create/4 (map, float, float, float)`
-  - [ ] `create/4 (map, float, float, obj)`
-  - [ ] `create/4 (map, float, float, str)`
-  - [ ] `create/4 (map, float, float, err)`
-  - [ ] `create/4 (map, float, float, list)`
-  - [ ] `create/4 (map, float, float, map)`
-  - [ ] `create/4 (map, float, obj, int)`
-  - [ ] `create/4 (map, float, obj, float)`
-  - [ ] `create/4 (map, float, obj, obj)`
-  - [ ] `create/4 (map, float, obj, str)`
-  - [ ] `create/4 (map, float, obj, err)`
-  - [ ] `create/4 (map, float, obj, list)`
-  - [ ] `create/4 (map, float, obj, map)`
-  - [ ] `create/4 (map, float, str, int)`
-  - [ ] `create/4 (map, float, str, float)`
-  - [ ] `create/4 (map, float, str, obj)`
-  - [ ] `create/4 (map, float, str, str)`
-  - [ ] `create/4 (map, float, str, err)`
-  - [ ] `create/4 (map, float, str, list)`
-  - [ ] `create/4 (map, float, str, map)`
-  - [ ] `create/4 (map, float, err, int)`
-  - [ ] `create/4 (map, float, err, float)`
-  - [ ] `create/4 (map, float, err, obj)`
-  - [ ] `create/4 (map, float, err, str)`
-  - [ ] `create/4 (map, float, err, err)`
-  - [ ] `create/4 (map, float, err, list)`
-  - [ ] `create/4 (map, float, err, map)`
-  - [ ] `create/4 (map, float, list, int)`
-  - [ ] `create/4 (map, float, list, float)`
-  - [ ] `create/4 (map, float, list, obj)`
-  - [ ] `create/4 (map, float, list, str)`
-  - [ ] `create/4 (map, float, list, err)`
-  - [ ] `create/4 (map, float, list, list)`
-  - [ ] `create/4 (map, float, list, map)`
-  - [ ] `create/4 (map, float, map, int)`
-  - [ ] `create/4 (map, float, map, float)`
-  - [ ] `create/4 (map, float, map, obj)`
-  - [ ] `create/4 (map, float, map, str)`
-  - [ ] `create/4 (map, float, map, err)`
-  - [ ] `create/4 (map, float, map, list)`
-  - [ ] `create/4 (map, float, map, map)`
-  - [ ] `create/4 (map, obj, int, int)`
-  - [ ] `create/4 (map, obj, int, float)`
-  - [ ] `create/4 (map, obj, int, obj)`
-  - [ ] `create/4 (map, obj, int, str)`
-  - [ ] `create/4 (map, obj, int, err)`
-  - [ ] `create/4 (map, obj, int, list)`
-  - [ ] `create/4 (map, obj, int, map)`
-  - [ ] `create/4 (map, obj, float, int)`
-  - [ ] `create/4 (map, obj, float, float)`
-  - [ ] `create/4 (map, obj, float, obj)`
-  - [ ] `create/4 (map, obj, float, str)`
-  - [ ] `create/4 (map, obj, float, err)`
-  - [ ] `create/4 (map, obj, float, list)`
-  - [ ] `create/4 (map, obj, float, map)`
-  - [ ] `create/4 (map, obj, obj, int)`
-  - [ ] `create/4 (map, obj, obj, float)`
-  - [ ] `create/4 (map, obj, obj, obj)`
-  - [ ] `create/4 (map, obj, obj, str)`
-  - [ ] `create/4 (map, obj, obj, err)`
-  - [ ] `create/4 (map, obj, obj, list)`
-  - [ ] `create/4 (map, obj, obj, map)`
-  - [ ] `create/4 (map, obj, str, int)`
-  - [ ] `create/4 (map, obj, str, float)`
-  - [ ] `create/4 (map, obj, str, obj)`
-  - [ ] `create/4 (map, obj, str, str)`
-  - [ ] `create/4 (map, obj, str, err)`
-  - [ ] `create/4 (map, obj, str, list)`
-  - [ ] `create/4 (map, obj, str, map)`
-  - [ ] `create/4 (map, obj, err, int)`
-  - [ ] `create/4 (map, obj, err, float)`
-  - [ ] `create/4 (map, obj, err, obj)`
-  - [ ] `create/4 (map, obj, err, str)`
-  - [ ] `create/4 (map, obj, err, err)`
-  - [ ] `create/4 (map, obj, err, list)`
-  - [ ] `create/4 (map, obj, err, map)`
-  - [ ] `create/4 (map, obj, list, int)`
-  - [ ] `create/4 (map, obj, list, float)`
-  - [ ] `create/4 (map, obj, list, obj)`
-  - [ ] `create/4 (map, obj, list, str)`
-  - [ ] `create/4 (map, obj, list, err)`
-  - [ ] `create/4 (map, obj, list, list)`
-  - [ ] `create/4 (map, obj, list, map)`
-  - [ ] `create/4 (map, obj, map, int)`
-  - [ ] `create/4 (map, obj, map, float)`
-  - [ ] `create/4 (map, obj, map, obj)`
-  - [ ] `create/4 (map, obj, map, str)`
-  - [ ] `create/4 (map, obj, map, err)`
-  - [ ] `create/4 (map, obj, map, list)`
-  - [ ] `create/4 (map, obj, map, map)`
-  - [ ] `create/4 (map, str, int, int)`
-  - [ ] `create/4 (map, str, int, float)`
-  - [ ] `create/4 (map, str, int, obj)`
-  - [ ] `create/4 (map, str, int, str)`
-  - [ ] `create/4 (map, str, int, err)`
-  - [ ] `create/4 (map, str, int, list)`
-  - [ ] `create/4 (map, str, int, map)`
-  - [ ] `create/4 (map, str, float, int)`
-  - [ ] `create/4 (map, str, float, float)`
-  - [ ] `create/4 (map, str, float, obj)`
-  - [ ] `create/4 (map, str, float, str)`
-  - [ ] `create/4 (map, str, float, err)`
-  - [ ] `create/4 (map, str, float, list)`
-  - [ ] `create/4 (map, str, float, map)`
-  - [ ] `create/4 (map, str, obj, int)`
-  - [ ] `create/4 (map, str, obj, float)`
-  - [ ] `create/4 (map, str, obj, obj)`
-  - [ ] `create/4 (map, str, obj, str)`
-  - [ ] `create/4 (map, str, obj, err)`
-  - [ ] `create/4 (map, str, obj, list)`
-  - [ ] `create/4 (map, str, obj, map)`
-  - [ ] `create/4 (map, str, str, int)`
-  - [ ] `create/4 (map, str, str, float)`
-  - [ ] `create/4 (map, str, str, obj)`
-  - [ ] `create/4 (map, str, str, str)`
-  - [ ] `create/4 (map, str, str, err)`
-  - [ ] `create/4 (map, str, str, list)`
-  - [ ] `create/4 (map, str, str, map)`
-  - [ ] `create/4 (map, str, err, int)`
-  - [ ] `create/4 (map, str, err, float)`
-  - [ ] `create/4 (map, str, err, obj)`
-  - [ ] `create/4 (map, str, err, str)`
-  - [ ] `create/4 (map, str, err, err)`
-  - [ ] `create/4 (map, str, err, list)`
-  - [ ] `create/4 (map, str, err, map)`
-  - [ ] `create/4 (map, str, list, int)`
-  - [ ] `create/4 (map, str, list, float)`
-  - [ ] `create/4 (map, str, list, obj)`
-  - [ ] `create/4 (map, str, list, str)`
-  - [ ] `create/4 (map, str, list, err)`
-  - [ ] `create/4 (map, str, list, list)`
-  - [ ] `create/4 (map, str, list, map)`
-  - [ ] `create/4 (map, str, map, int)`
-  - [ ] `create/4 (map, str, map, float)`
-  - [ ] `create/4 (map, str, map, obj)`
-  - [ ] `create/4 (map, str, map, str)`
-  - [ ] `create/4 (map, str, map, err)`
-  - [ ] `create/4 (map, str, map, list)`
-  - [ ] `create/4 (map, str, map, map)`
-  - [ ] `create/4 (map, err, int, int)`
-  - [ ] `create/4 (map, err, int, float)`
-  - [ ] `create/4 (map, err, int, obj)`
-  - [ ] `create/4 (map, err, int, str)`
-  - [ ] `create/4 (map, err, int, err)`
-  - [ ] `create/4 (map, err, int, list)`
-  - [ ] `create/4 (map, err, int, map)`
-  - [ ] `create/4 (map, err, float, int)`
-  - [ ] `create/4 (map, err, float, float)`
-  - [ ] `create/4 (map, err, float, obj)`
-  - [ ] `create/4 (map, err, float, str)`
-  - [ ] `create/4 (map, err, float, err)`
-  - [ ] `create/4 (map, err, float, list)`
-  - [ ] `create/4 (map, err, float, map)`
-  - [ ] `create/4 (map, err, obj, int)`
-  - [ ] `create/4 (map, err, obj, float)`
-  - [ ] `create/4 (map, err, obj, obj)`
-  - [ ] `create/4 (map, err, obj, str)`
-  - [ ] `create/4 (map, err, obj, err)`
-  - [ ] `create/4 (map, err, obj, list)`
-  - [ ] `create/4 (map, err, obj, map)`
-  - [ ] `create/4 (map, err, str, int)`
-  - [ ] `create/4 (map, err, str, float)`
-  - [ ] `create/4 (map, err, str, obj)`
-  - [ ] `create/4 (map, err, str, str)`
-  - [ ] `create/4 (map, err, str, err)`
-  - [ ] `create/4 (map, err, str, list)`
-  - [ ] `create/4 (map, err, str, map)`
-  - [ ] `create/4 (map, err, err, int)`
-  - [ ] `create/4 (map, err, err, float)`
-  - [ ] `create/4 (map, err, err, obj)`
-  - [ ] `create/4 (map, err, err, str)`
-  - [ ] `create/4 (map, err, err, err)`
-  - [ ] `create/4 (map, err, err, list)`
-  - [ ] `create/4 (map, err, err, map)`
-  - [ ] `create/4 (map, err, list, int)`
-  - [ ] `create/4 (map, err, list, float)`
-  - [ ] `create/4 (map, err, list, obj)`
-  - [ ] `create/4 (map, err, list, str)`
-  - [ ] `create/4 (map, err, list, err)`
-  - [ ] `create/4 (map, err, list, list)`
-  - [ ] `create/4 (map, err, list, map)`
-  - [ ] `create/4 (map, err, map, int)`
-  - [ ] `create/4 (map, err, map, float)`
-  - [ ] `create/4 (map, err, map, obj)`
-  - [ ] `create/4 (map, err, map, str)`
-  - [ ] `create/4 (map, err, map, err)`
-  - [ ] `create/4 (map, err, map, list)`
-  - [ ] `create/4 (map, err, map, map)`
-  - [ ] `create/4 (map, list, int, int)`
-  - [ ] `create/4 (map, list, int, float)`
-  - [ ] `create/4 (map, list, int, obj)`
-  - [ ] `create/4 (map, list, int, str)`
-  - [ ] `create/4 (map, list, int, err)`
-  - [ ] `create/4 (map, list, int, list)`
-  - [ ] `create/4 (map, list, int, map)`
-  - [ ] `create/4 (map, list, float, int)`
-  - [ ] `create/4 (map, list, float, float)`
-  - [ ] `create/4 (map, list, float, obj)`
-  - [ ] `create/4 (map, list, float, str)`
-  - [ ] `create/4 (map, list, float, err)`
-  - [ ] `create/4 (map, list, float, list)`
-  - [ ] `create/4 (map, list, float, map)`
-  - [ ] `create/4 (map, list, obj, int)`
-  - [ ] `create/4 (map, list, obj, float)`
-  - [ ] `create/4 (map, list, obj, obj)`
-  - [ ] `create/4 (map, list, obj, str)`
-  - [ ] `create/4 (map, list, obj, err)`
-  - [ ] `create/4 (map, list, obj, list)`
-  - [ ] `create/4 (map, list, obj, map)`
-  - [ ] `create/4 (map, list, str, int)`
-  - [ ] `create/4 (map, list, str, float)`
-  - [ ] `create/4 (map, list, str, obj)`
-  - [ ] `create/4 (map, list, str, str)`
-  - [ ] `create/4 (map, list, str, err)`
-  - [ ] `create/4 (map, list, str, list)`
-  - [ ] `create/4 (map, list, str, map)`
-  - [ ] `create/4 (map, list, err, int)`
-  - [ ] `create/4 (map, list, err, float)`
-  - [ ] `create/4 (map, list, err, obj)`
-  - [ ] `create/4 (map, list, err, str)`
-  - [ ] `create/4 (map, list, err, err)`
-  - [ ] `create/4 (map, list, err, list)`
-  - [ ] `create/4 (map, list, err, map)`
-  - [ ] `create/4 (map, list, list, int)`
-  - [ ] `create/4 (map, list, list, float)`
-  - [ ] `create/4 (map, list, list, obj)`
-  - [ ] `create/4 (map, list, list, str)`
-  - [ ] `create/4 (map, list, list, err)`
-  - [ ] `create/4 (map, list, list, list)`
-  - [ ] `create/4 (map, list, list, map)`
-  - [ ] `create/4 (map, list, map, int)`
-  - [ ] `create/4 (map, list, map, float)`
-  - [ ] `create/4 (map, list, map, obj)`
-  - [ ] `create/4 (map, list, map, str)`
-  - [ ] `create/4 (map, list, map, err)`
-  - [ ] `create/4 (map, list, map, list)`
-  - [ ] `create/4 (map, list, map, map)`
-  - [ ] `create/4 (map, map, int, int)`
-  - [ ] `create/4 (map, map, int, float)`
-  - [ ] `create/4 (map, map, int, obj)`
-  - [ ] `create/4 (map, map, int, str)`
-  - [ ] `create/4 (map, map, int, err)`
-  - [ ] `create/4 (map, map, int, list)`
-  - [ ] `create/4 (map, map, int, map)`
-  - [ ] `create/4 (map, map, float, int)`
-  - [ ] `create/4 (map, map, float, float)`
-  - [ ] `create/4 (map, map, float, obj)`
-  - [ ] `create/4 (map, map, float, str)`
-  - [ ] `create/4 (map, map, float, err)`
-  - [ ] `create/4 (map, map, float, list)`
-  - [ ] `create/4 (map, map, float, map)`
-  - [ ] `create/4 (map, map, obj, int)`
-  - [ ] `create/4 (map, map, obj, float)`
-  - [ ] `create/4 (map, map, obj, obj)`
-  - [ ] `create/4 (map, map, obj, str)`
-  - [ ] `create/4 (map, map, obj, err)`
-  - [ ] `create/4 (map, map, obj, list)`
-  - [ ] `create/4 (map, map, obj, map)`
-  - [ ] `create/4 (map, map, str, int)`
-  - [ ] `create/4 (map, map, str, float)`
-  - [ ] `create/4 (map, map, str, obj)`
-  - [ ] `create/4 (map, map, str, str)`
-  - [ ] `create/4 (map, map, str, err)`
-  - [ ] `create/4 (map, map, str, list)`
-  - [ ] `create/4 (map, map, str, map)`
-  - [ ] `create/4 (map, map, err, int)`
-  - [ ] `create/4 (map, map, err, float)`
-  - [ ] `create/4 (map, map, err, obj)`
-  - [ ] `create/4 (map, map, err, str)`
-  - [ ] `create/4 (map, map, err, err)`
-  - [ ] `create/4 (map, map, err, list)`
-  - [ ] `create/4 (map, map, err, map)`
-  - [ ] `create/4 (map, map, list, int)`
-  - [ ] `create/4 (map, map, list, float)`
-  - [ ] `create/4 (map, map, list, obj)`
-  - [ ] `create/4 (map, map, list, str)`
-  - [ ] `create/4 (map, map, list, err)`
-  - [ ] `create/4 (map, map, list, list)`
-  - [ ] `create/4 (map, map, list, map)`
-  - [ ] `create/4 (map, map, map, int)`
-  - [ ] `create/4 (map, map, map, float)`
-  - [ ] `create/4 (map, map, map, obj)`
-  - [ ] `create/4 (map, map, map, str)`
-  - [ ] `create/4 (map, map, map, err)`
-  - [ ] `create/4 (map, map, map, list)`
-  - [ ] `create/4 (map, map, map, map)`
 - `crypt` signature `1..2 (str, str)`
   - [ ] `crypt/1 (str)`
 - `decode_base64` signature `1..2 (str, any)`
@@ -7061,2407 +4659,2407 @@ still needs explicit human review.
 - [x] `create/3 (map, map, err)` covered by `builtins/create_call_shapes.yaml`
 - [x] `create/3 (map, map, list)` covered by `builtins/create_call_shapes.yaml`
 - [x] `create/3 (map, map, map)` covered by `builtins/create_call_shapes.yaml`
-- [ ] `create/4 (int, int, int, int)`
-- [ ] `create/4 (int, int, int, float)`
-- [ ] `create/4 (int, int, int, obj)`
-- [ ] `create/4 (int, int, int, str)`
-- [ ] `create/4 (int, int, int, err)`
-- [ ] `create/4 (int, int, int, list)`
-- [ ] `create/4 (int, int, int, map)`
-- [ ] `create/4 (int, int, float, int)`
-- [ ] `create/4 (int, int, float, float)`
-- [ ] `create/4 (int, int, float, obj)`
-- [ ] `create/4 (int, int, float, str)`
-- [ ] `create/4 (int, int, float, err)`
-- [ ] `create/4 (int, int, float, list)`
-- [ ] `create/4 (int, int, float, map)`
-- [ ] `create/4 (int, int, obj, int)`
-- [ ] `create/4 (int, int, obj, float)`
-- [ ] `create/4 (int, int, obj, obj)`
-- [ ] `create/4 (int, int, obj, str)`
-- [ ] `create/4 (int, int, obj, err)`
-- [ ] `create/4 (int, int, obj, list)`
-- [ ] `create/4 (int, int, obj, map)`
-- [ ] `create/4 (int, int, str, int)`
-- [ ] `create/4 (int, int, str, float)`
-- [ ] `create/4 (int, int, str, obj)`
-- [ ] `create/4 (int, int, str, str)`
-- [ ] `create/4 (int, int, str, err)`
-- [ ] `create/4 (int, int, str, list)`
-- [ ] `create/4 (int, int, str, map)`
-- [ ] `create/4 (int, int, err, int)`
-- [ ] `create/4 (int, int, err, float)`
-- [ ] `create/4 (int, int, err, obj)`
-- [ ] `create/4 (int, int, err, str)`
-- [ ] `create/4 (int, int, err, err)`
-- [ ] `create/4 (int, int, err, list)`
-- [ ] `create/4 (int, int, err, map)`
-- [ ] `create/4 (int, int, list, int)`
-- [ ] `create/4 (int, int, list, float)`
-- [ ] `create/4 (int, int, list, obj)`
-- [ ] `create/4 (int, int, list, str)`
-- [ ] `create/4 (int, int, list, err)`
-- [ ] `create/4 (int, int, list, list)`
-- [ ] `create/4 (int, int, list, map)`
-- [ ] `create/4 (int, int, map, int)`
-- [ ] `create/4 (int, int, map, float)`
-- [ ] `create/4 (int, int, map, obj)`
-- [ ] `create/4 (int, int, map, str)`
-- [ ] `create/4 (int, int, map, err)`
-- [ ] `create/4 (int, int, map, list)`
-- [ ] `create/4 (int, int, map, map)`
-- [ ] `create/4 (int, float, int, int)`
-- [ ] `create/4 (int, float, int, float)`
-- [ ] `create/4 (int, float, int, obj)`
-- [ ] `create/4 (int, float, int, str)`
-- [ ] `create/4 (int, float, int, err)`
-- [ ] `create/4 (int, float, int, list)`
-- [ ] `create/4 (int, float, int, map)`
-- [ ] `create/4 (int, float, float, int)`
-- [ ] `create/4 (int, float, float, float)`
-- [ ] `create/4 (int, float, float, obj)`
-- [ ] `create/4 (int, float, float, str)`
-- [ ] `create/4 (int, float, float, err)`
-- [ ] `create/4 (int, float, float, list)`
-- [ ] `create/4 (int, float, float, map)`
-- [ ] `create/4 (int, float, obj, int)`
-- [ ] `create/4 (int, float, obj, float)`
-- [ ] `create/4 (int, float, obj, obj)`
-- [ ] `create/4 (int, float, obj, str)`
-- [ ] `create/4 (int, float, obj, err)`
-- [ ] `create/4 (int, float, obj, list)`
-- [ ] `create/4 (int, float, obj, map)`
-- [ ] `create/4 (int, float, str, int)`
-- [ ] `create/4 (int, float, str, float)`
-- [ ] `create/4 (int, float, str, obj)`
-- [ ] `create/4 (int, float, str, str)`
-- [ ] `create/4 (int, float, str, err)`
-- [ ] `create/4 (int, float, str, list)`
-- [ ] `create/4 (int, float, str, map)`
-- [ ] `create/4 (int, float, err, int)`
-- [ ] `create/4 (int, float, err, float)`
-- [ ] `create/4 (int, float, err, obj)`
-- [ ] `create/4 (int, float, err, str)`
-- [ ] `create/4 (int, float, err, err)`
-- [ ] `create/4 (int, float, err, list)`
-- [ ] `create/4 (int, float, err, map)`
-- [ ] `create/4 (int, float, list, int)`
-- [ ] `create/4 (int, float, list, float)`
-- [ ] `create/4 (int, float, list, obj)`
-- [ ] `create/4 (int, float, list, str)`
-- [ ] `create/4 (int, float, list, err)`
-- [ ] `create/4 (int, float, list, list)`
-- [ ] `create/4 (int, float, list, map)`
-- [ ] `create/4 (int, float, map, int)`
-- [ ] `create/4 (int, float, map, float)`
-- [ ] `create/4 (int, float, map, obj)`
-- [ ] `create/4 (int, float, map, str)`
-- [ ] `create/4 (int, float, map, err)`
-- [ ] `create/4 (int, float, map, list)`
-- [ ] `create/4 (int, float, map, map)`
-- [ ] `create/4 (int, obj, int, int)`
-- [ ] `create/4 (int, obj, int, float)`
-- [ ] `create/4 (int, obj, int, obj)`
-- [ ] `create/4 (int, obj, int, str)`
-- [ ] `create/4 (int, obj, int, err)`
-- [ ] `create/4 (int, obj, int, list)`
-- [ ] `create/4 (int, obj, int, map)`
-- [ ] `create/4 (int, obj, float, int)`
-- [ ] `create/4 (int, obj, float, float)`
-- [ ] `create/4 (int, obj, float, obj)`
-- [ ] `create/4 (int, obj, float, str)`
-- [ ] `create/4 (int, obj, float, err)`
-- [ ] `create/4 (int, obj, float, list)`
-- [ ] `create/4 (int, obj, float, map)`
-- [ ] `create/4 (int, obj, obj, int)`
-- [ ] `create/4 (int, obj, obj, float)`
-- [ ] `create/4 (int, obj, obj, obj)`
-- [ ] `create/4 (int, obj, obj, str)`
-- [ ] `create/4 (int, obj, obj, err)`
-- [ ] `create/4 (int, obj, obj, list)`
-- [ ] `create/4 (int, obj, obj, map)`
-- [ ] `create/4 (int, obj, str, int)`
-- [ ] `create/4 (int, obj, str, float)`
-- [ ] `create/4 (int, obj, str, obj)`
-- [ ] `create/4 (int, obj, str, str)`
-- [ ] `create/4 (int, obj, str, err)`
-- [ ] `create/4 (int, obj, str, list)`
-- [ ] `create/4 (int, obj, str, map)`
-- [ ] `create/4 (int, obj, err, int)`
-- [ ] `create/4 (int, obj, err, float)`
-- [ ] `create/4 (int, obj, err, obj)`
-- [ ] `create/4 (int, obj, err, str)`
-- [ ] `create/4 (int, obj, err, err)`
-- [ ] `create/4 (int, obj, err, list)`
-- [ ] `create/4 (int, obj, err, map)`
-- [ ] `create/4 (int, obj, list, int)`
-- [ ] `create/4 (int, obj, list, float)`
-- [ ] `create/4 (int, obj, list, obj)`
-- [ ] `create/4 (int, obj, list, str)`
-- [ ] `create/4 (int, obj, list, err)`
-- [ ] `create/4 (int, obj, list, list)`
-- [ ] `create/4 (int, obj, list, map)`
-- [ ] `create/4 (int, obj, map, int)`
-- [ ] `create/4 (int, obj, map, float)`
-- [ ] `create/4 (int, obj, map, obj)`
-- [ ] `create/4 (int, obj, map, str)`
-- [ ] `create/4 (int, obj, map, err)`
-- [ ] `create/4 (int, obj, map, list)`
-- [ ] `create/4 (int, obj, map, map)`
-- [ ] `create/4 (int, str, int, int)`
-- [ ] `create/4 (int, str, int, float)`
-- [ ] `create/4 (int, str, int, obj)`
-- [ ] `create/4 (int, str, int, str)`
-- [ ] `create/4 (int, str, int, err)`
-- [ ] `create/4 (int, str, int, list)`
-- [ ] `create/4 (int, str, int, map)`
-- [ ] `create/4 (int, str, float, int)`
-- [ ] `create/4 (int, str, float, float)`
-- [ ] `create/4 (int, str, float, obj)`
-- [ ] `create/4 (int, str, float, str)`
-- [ ] `create/4 (int, str, float, err)`
-- [ ] `create/4 (int, str, float, list)`
-- [ ] `create/4 (int, str, float, map)`
-- [ ] `create/4 (int, str, obj, int)`
-- [ ] `create/4 (int, str, obj, float)`
-- [ ] `create/4 (int, str, obj, obj)`
-- [ ] `create/4 (int, str, obj, str)`
-- [ ] `create/4 (int, str, obj, err)`
-- [ ] `create/4 (int, str, obj, list)`
-- [ ] `create/4 (int, str, obj, map)`
-- [ ] `create/4 (int, str, str, int)`
-- [ ] `create/4 (int, str, str, float)`
-- [ ] `create/4 (int, str, str, obj)`
-- [ ] `create/4 (int, str, str, str)`
-- [ ] `create/4 (int, str, str, err)`
-- [ ] `create/4 (int, str, str, list)`
-- [ ] `create/4 (int, str, str, map)`
-- [ ] `create/4 (int, str, err, int)`
-- [ ] `create/4 (int, str, err, float)`
-- [ ] `create/4 (int, str, err, obj)`
-- [ ] `create/4 (int, str, err, str)`
-- [ ] `create/4 (int, str, err, err)`
-- [ ] `create/4 (int, str, err, list)`
-- [ ] `create/4 (int, str, err, map)`
-- [ ] `create/4 (int, str, list, int)`
-- [ ] `create/4 (int, str, list, float)`
-- [ ] `create/4 (int, str, list, obj)`
-- [ ] `create/4 (int, str, list, str)`
-- [ ] `create/4 (int, str, list, err)`
-- [ ] `create/4 (int, str, list, list)`
-- [ ] `create/4 (int, str, list, map)`
-- [ ] `create/4 (int, str, map, int)`
-- [ ] `create/4 (int, str, map, float)`
-- [ ] `create/4 (int, str, map, obj)`
-- [ ] `create/4 (int, str, map, str)`
-- [ ] `create/4 (int, str, map, err)`
-- [ ] `create/4 (int, str, map, list)`
-- [ ] `create/4 (int, str, map, map)`
-- [ ] `create/4 (int, err, int, int)`
-- [ ] `create/4 (int, err, int, float)`
-- [ ] `create/4 (int, err, int, obj)`
-- [ ] `create/4 (int, err, int, str)`
-- [ ] `create/4 (int, err, int, err)`
-- [ ] `create/4 (int, err, int, list)`
-- [ ] `create/4 (int, err, int, map)`
-- [ ] `create/4 (int, err, float, int)`
-- [ ] `create/4 (int, err, float, float)`
-- [ ] `create/4 (int, err, float, obj)`
-- [ ] `create/4 (int, err, float, str)`
-- [ ] `create/4 (int, err, float, err)`
-- [ ] `create/4 (int, err, float, list)`
-- [ ] `create/4 (int, err, float, map)`
-- [ ] `create/4 (int, err, obj, int)`
-- [ ] `create/4 (int, err, obj, float)`
-- [ ] `create/4 (int, err, obj, obj)`
-- [ ] `create/4 (int, err, obj, str)`
-- [ ] `create/4 (int, err, obj, err)`
-- [ ] `create/4 (int, err, obj, list)`
-- [ ] `create/4 (int, err, obj, map)`
-- [ ] `create/4 (int, err, str, int)`
-- [ ] `create/4 (int, err, str, float)`
-- [ ] `create/4 (int, err, str, obj)`
-- [ ] `create/4 (int, err, str, str)`
-- [ ] `create/4 (int, err, str, err)`
-- [ ] `create/4 (int, err, str, list)`
-- [ ] `create/4 (int, err, str, map)`
-- [ ] `create/4 (int, err, err, int)`
-- [ ] `create/4 (int, err, err, float)`
-- [ ] `create/4 (int, err, err, obj)`
-- [ ] `create/4 (int, err, err, str)`
-- [ ] `create/4 (int, err, err, err)`
-- [ ] `create/4 (int, err, err, list)`
-- [ ] `create/4 (int, err, err, map)`
-- [ ] `create/4 (int, err, list, int)`
-- [ ] `create/4 (int, err, list, float)`
-- [ ] `create/4 (int, err, list, obj)`
-- [ ] `create/4 (int, err, list, str)`
-- [ ] `create/4 (int, err, list, err)`
-- [ ] `create/4 (int, err, list, list)`
-- [ ] `create/4 (int, err, list, map)`
-- [ ] `create/4 (int, err, map, int)`
-- [ ] `create/4 (int, err, map, float)`
-- [ ] `create/4 (int, err, map, obj)`
-- [ ] `create/4 (int, err, map, str)`
-- [ ] `create/4 (int, err, map, err)`
-- [ ] `create/4 (int, err, map, list)`
-- [ ] `create/4 (int, err, map, map)`
-- [ ] `create/4 (int, list, int, int)`
-- [ ] `create/4 (int, list, int, float)`
-- [ ] `create/4 (int, list, int, obj)`
-- [ ] `create/4 (int, list, int, str)`
-- [ ] `create/4 (int, list, int, err)`
-- [ ] `create/4 (int, list, int, list)`
-- [ ] `create/4 (int, list, int, map)`
-- [ ] `create/4 (int, list, float, int)`
-- [ ] `create/4 (int, list, float, float)`
-- [ ] `create/4 (int, list, float, obj)`
-- [ ] `create/4 (int, list, float, str)`
-- [ ] `create/4 (int, list, float, err)`
-- [ ] `create/4 (int, list, float, list)`
-- [ ] `create/4 (int, list, float, map)`
-- [ ] `create/4 (int, list, obj, int)`
-- [ ] `create/4 (int, list, obj, float)`
-- [ ] `create/4 (int, list, obj, obj)`
-- [ ] `create/4 (int, list, obj, str)`
-- [ ] `create/4 (int, list, obj, err)`
-- [ ] `create/4 (int, list, obj, list)`
-- [ ] `create/4 (int, list, obj, map)`
-- [ ] `create/4 (int, list, str, int)`
-- [ ] `create/4 (int, list, str, float)`
-- [ ] `create/4 (int, list, str, obj)`
-- [ ] `create/4 (int, list, str, str)`
-- [ ] `create/4 (int, list, str, err)`
-- [ ] `create/4 (int, list, str, list)`
-- [ ] `create/4 (int, list, str, map)`
-- [ ] `create/4 (int, list, err, int)`
-- [ ] `create/4 (int, list, err, float)`
-- [ ] `create/4 (int, list, err, obj)`
-- [ ] `create/4 (int, list, err, str)`
-- [ ] `create/4 (int, list, err, err)`
-- [ ] `create/4 (int, list, err, list)`
-- [ ] `create/4 (int, list, err, map)`
-- [ ] `create/4 (int, list, list, int)`
-- [ ] `create/4 (int, list, list, float)`
-- [ ] `create/4 (int, list, list, obj)`
-- [ ] `create/4 (int, list, list, str)`
-- [ ] `create/4 (int, list, list, err)`
-- [ ] `create/4 (int, list, list, list)`
-- [ ] `create/4 (int, list, list, map)`
-- [ ] `create/4 (int, list, map, int)`
-- [ ] `create/4 (int, list, map, float)`
-- [ ] `create/4 (int, list, map, obj)`
-- [ ] `create/4 (int, list, map, str)`
-- [ ] `create/4 (int, list, map, err)`
-- [ ] `create/4 (int, list, map, list)`
-- [ ] `create/4 (int, list, map, map)`
-- [ ] `create/4 (int, map, int, int)`
-- [ ] `create/4 (int, map, int, float)`
-- [ ] `create/4 (int, map, int, obj)`
-- [ ] `create/4 (int, map, int, str)`
-- [ ] `create/4 (int, map, int, err)`
-- [ ] `create/4 (int, map, int, list)`
-- [ ] `create/4 (int, map, int, map)`
-- [ ] `create/4 (int, map, float, int)`
-- [ ] `create/4 (int, map, float, float)`
-- [ ] `create/4 (int, map, float, obj)`
-- [ ] `create/4 (int, map, float, str)`
-- [ ] `create/4 (int, map, float, err)`
-- [ ] `create/4 (int, map, float, list)`
-- [ ] `create/4 (int, map, float, map)`
-- [ ] `create/4 (int, map, obj, int)`
-- [ ] `create/4 (int, map, obj, float)`
-- [ ] `create/4 (int, map, obj, obj)`
-- [ ] `create/4 (int, map, obj, str)`
-- [ ] `create/4 (int, map, obj, err)`
-- [ ] `create/4 (int, map, obj, list)`
-- [ ] `create/4 (int, map, obj, map)`
-- [ ] `create/4 (int, map, str, int)`
-- [ ] `create/4 (int, map, str, float)`
-- [ ] `create/4 (int, map, str, obj)`
-- [ ] `create/4 (int, map, str, str)`
-- [ ] `create/4 (int, map, str, err)`
-- [ ] `create/4 (int, map, str, list)`
-- [ ] `create/4 (int, map, str, map)`
-- [ ] `create/4 (int, map, err, int)`
-- [ ] `create/4 (int, map, err, float)`
-- [ ] `create/4 (int, map, err, obj)`
-- [ ] `create/4 (int, map, err, str)`
-- [ ] `create/4 (int, map, err, err)`
-- [ ] `create/4 (int, map, err, list)`
-- [ ] `create/4 (int, map, err, map)`
-- [ ] `create/4 (int, map, list, int)`
-- [ ] `create/4 (int, map, list, float)`
-- [ ] `create/4 (int, map, list, obj)`
-- [ ] `create/4 (int, map, list, str)`
-- [ ] `create/4 (int, map, list, err)`
-- [ ] `create/4 (int, map, list, list)`
-- [ ] `create/4 (int, map, list, map)`
-- [ ] `create/4 (int, map, map, int)`
-- [ ] `create/4 (int, map, map, float)`
-- [ ] `create/4 (int, map, map, obj)`
-- [ ] `create/4 (int, map, map, str)`
-- [ ] `create/4 (int, map, map, err)`
-- [ ] `create/4 (int, map, map, list)`
-- [ ] `create/4 (int, map, map, map)`
-- [ ] `create/4 (float, int, int, int)`
-- [ ] `create/4 (float, int, int, float)`
-- [ ] `create/4 (float, int, int, obj)`
-- [ ] `create/4 (float, int, int, str)`
-- [ ] `create/4 (float, int, int, err)`
-- [ ] `create/4 (float, int, int, list)`
-- [ ] `create/4 (float, int, int, map)`
-- [ ] `create/4 (float, int, float, int)`
-- [ ] `create/4 (float, int, float, float)`
-- [ ] `create/4 (float, int, float, obj)`
-- [ ] `create/4 (float, int, float, str)`
-- [ ] `create/4 (float, int, float, err)`
-- [ ] `create/4 (float, int, float, list)`
-- [ ] `create/4 (float, int, float, map)`
-- [ ] `create/4 (float, int, obj, int)`
-- [ ] `create/4 (float, int, obj, float)`
-- [ ] `create/4 (float, int, obj, obj)`
-- [ ] `create/4 (float, int, obj, str)`
-- [ ] `create/4 (float, int, obj, err)`
-- [ ] `create/4 (float, int, obj, list)`
-- [ ] `create/4 (float, int, obj, map)`
-- [ ] `create/4 (float, int, str, int)`
-- [ ] `create/4 (float, int, str, float)`
-- [ ] `create/4 (float, int, str, obj)`
-- [ ] `create/4 (float, int, str, str)`
-- [ ] `create/4 (float, int, str, err)`
-- [ ] `create/4 (float, int, str, list)`
-- [ ] `create/4 (float, int, str, map)`
-- [ ] `create/4 (float, int, err, int)`
-- [ ] `create/4 (float, int, err, float)`
-- [ ] `create/4 (float, int, err, obj)`
-- [ ] `create/4 (float, int, err, str)`
-- [ ] `create/4 (float, int, err, err)`
-- [ ] `create/4 (float, int, err, list)`
-- [ ] `create/4 (float, int, err, map)`
-- [ ] `create/4 (float, int, list, int)`
-- [ ] `create/4 (float, int, list, float)`
-- [ ] `create/4 (float, int, list, obj)`
-- [ ] `create/4 (float, int, list, str)`
-- [ ] `create/4 (float, int, list, err)`
-- [ ] `create/4 (float, int, list, list)`
-- [ ] `create/4 (float, int, list, map)`
-- [ ] `create/4 (float, int, map, int)`
-- [ ] `create/4 (float, int, map, float)`
-- [ ] `create/4 (float, int, map, obj)`
-- [ ] `create/4 (float, int, map, str)`
-- [ ] `create/4 (float, int, map, err)`
-- [ ] `create/4 (float, int, map, list)`
-- [ ] `create/4 (float, int, map, map)`
-- [ ] `create/4 (float, float, int, int)`
-- [ ] `create/4 (float, float, int, float)`
-- [ ] `create/4 (float, float, int, obj)`
-- [ ] `create/4 (float, float, int, str)`
-- [ ] `create/4 (float, float, int, err)`
-- [ ] `create/4 (float, float, int, list)`
-- [ ] `create/4 (float, float, int, map)`
-- [ ] `create/4 (float, float, float, int)`
-- [ ] `create/4 (float, float, float, float)`
-- [ ] `create/4 (float, float, float, obj)`
-- [ ] `create/4 (float, float, float, str)`
-- [ ] `create/4 (float, float, float, err)`
-- [ ] `create/4 (float, float, float, list)`
-- [ ] `create/4 (float, float, float, map)`
-- [ ] `create/4 (float, float, obj, int)`
-- [ ] `create/4 (float, float, obj, float)`
-- [ ] `create/4 (float, float, obj, obj)`
-- [ ] `create/4 (float, float, obj, str)`
-- [ ] `create/4 (float, float, obj, err)`
-- [ ] `create/4 (float, float, obj, list)`
-- [ ] `create/4 (float, float, obj, map)`
-- [ ] `create/4 (float, float, str, int)`
-- [ ] `create/4 (float, float, str, float)`
-- [ ] `create/4 (float, float, str, obj)`
-- [ ] `create/4 (float, float, str, str)`
-- [ ] `create/4 (float, float, str, err)`
-- [ ] `create/4 (float, float, str, list)`
-- [ ] `create/4 (float, float, str, map)`
-- [ ] `create/4 (float, float, err, int)`
-- [ ] `create/4 (float, float, err, float)`
-- [ ] `create/4 (float, float, err, obj)`
-- [ ] `create/4 (float, float, err, str)`
-- [ ] `create/4 (float, float, err, err)`
-- [ ] `create/4 (float, float, err, list)`
-- [ ] `create/4 (float, float, err, map)`
-- [ ] `create/4 (float, float, list, int)`
-- [ ] `create/4 (float, float, list, float)`
-- [ ] `create/4 (float, float, list, obj)`
-- [ ] `create/4 (float, float, list, str)`
-- [ ] `create/4 (float, float, list, err)`
-- [ ] `create/4 (float, float, list, list)`
-- [ ] `create/4 (float, float, list, map)`
-- [ ] `create/4 (float, float, map, int)`
-- [ ] `create/4 (float, float, map, float)`
-- [ ] `create/4 (float, float, map, obj)`
-- [ ] `create/4 (float, float, map, str)`
-- [ ] `create/4 (float, float, map, err)`
-- [ ] `create/4 (float, float, map, list)`
-- [ ] `create/4 (float, float, map, map)`
-- [ ] `create/4 (float, obj, int, int)`
-- [ ] `create/4 (float, obj, int, float)`
-- [ ] `create/4 (float, obj, int, obj)`
-- [ ] `create/4 (float, obj, int, str)`
-- [ ] `create/4 (float, obj, int, err)`
-- [ ] `create/4 (float, obj, int, list)`
-- [ ] `create/4 (float, obj, int, map)`
-- [ ] `create/4 (float, obj, float, int)`
-- [ ] `create/4 (float, obj, float, float)`
-- [ ] `create/4 (float, obj, float, obj)`
-- [ ] `create/4 (float, obj, float, str)`
-- [ ] `create/4 (float, obj, float, err)`
-- [ ] `create/4 (float, obj, float, list)`
-- [ ] `create/4 (float, obj, float, map)`
-- [ ] `create/4 (float, obj, obj, int)`
-- [ ] `create/4 (float, obj, obj, float)`
-- [ ] `create/4 (float, obj, obj, obj)`
-- [ ] `create/4 (float, obj, obj, str)`
-- [ ] `create/4 (float, obj, obj, err)`
-- [ ] `create/4 (float, obj, obj, list)`
-- [ ] `create/4 (float, obj, obj, map)`
-- [ ] `create/4 (float, obj, str, int)`
-- [ ] `create/4 (float, obj, str, float)`
-- [ ] `create/4 (float, obj, str, obj)`
-- [ ] `create/4 (float, obj, str, str)`
-- [ ] `create/4 (float, obj, str, err)`
-- [ ] `create/4 (float, obj, str, list)`
-- [ ] `create/4 (float, obj, str, map)`
-- [ ] `create/4 (float, obj, err, int)`
-- [ ] `create/4 (float, obj, err, float)`
-- [ ] `create/4 (float, obj, err, obj)`
-- [ ] `create/4 (float, obj, err, str)`
-- [ ] `create/4 (float, obj, err, err)`
-- [ ] `create/4 (float, obj, err, list)`
-- [ ] `create/4 (float, obj, err, map)`
-- [ ] `create/4 (float, obj, list, int)`
-- [ ] `create/4 (float, obj, list, float)`
-- [ ] `create/4 (float, obj, list, obj)`
-- [ ] `create/4 (float, obj, list, str)`
-- [ ] `create/4 (float, obj, list, err)`
-- [ ] `create/4 (float, obj, list, list)`
-- [ ] `create/4 (float, obj, list, map)`
-- [ ] `create/4 (float, obj, map, int)`
-- [ ] `create/4 (float, obj, map, float)`
-- [ ] `create/4 (float, obj, map, obj)`
-- [ ] `create/4 (float, obj, map, str)`
-- [ ] `create/4 (float, obj, map, err)`
-- [ ] `create/4 (float, obj, map, list)`
-- [ ] `create/4 (float, obj, map, map)`
-- [ ] `create/4 (float, str, int, int)`
-- [ ] `create/4 (float, str, int, float)`
-- [ ] `create/4 (float, str, int, obj)`
-- [ ] `create/4 (float, str, int, str)`
-- [ ] `create/4 (float, str, int, err)`
-- [ ] `create/4 (float, str, int, list)`
-- [ ] `create/4 (float, str, int, map)`
-- [ ] `create/4 (float, str, float, int)`
-- [ ] `create/4 (float, str, float, float)`
-- [ ] `create/4 (float, str, float, obj)`
-- [ ] `create/4 (float, str, float, str)`
-- [ ] `create/4 (float, str, float, err)`
-- [ ] `create/4 (float, str, float, list)`
-- [ ] `create/4 (float, str, float, map)`
-- [ ] `create/4 (float, str, obj, int)`
-- [ ] `create/4 (float, str, obj, float)`
-- [ ] `create/4 (float, str, obj, obj)`
-- [ ] `create/4 (float, str, obj, str)`
-- [ ] `create/4 (float, str, obj, err)`
-- [ ] `create/4 (float, str, obj, list)`
-- [ ] `create/4 (float, str, obj, map)`
-- [ ] `create/4 (float, str, str, int)`
-- [ ] `create/4 (float, str, str, float)`
-- [ ] `create/4 (float, str, str, obj)`
-- [ ] `create/4 (float, str, str, str)`
-- [ ] `create/4 (float, str, str, err)`
-- [ ] `create/4 (float, str, str, list)`
-- [ ] `create/4 (float, str, str, map)`
-- [ ] `create/4 (float, str, err, int)`
-- [ ] `create/4 (float, str, err, float)`
-- [ ] `create/4 (float, str, err, obj)`
-- [ ] `create/4 (float, str, err, str)`
-- [ ] `create/4 (float, str, err, err)`
-- [ ] `create/4 (float, str, err, list)`
-- [ ] `create/4 (float, str, err, map)`
-- [ ] `create/4 (float, str, list, int)`
-- [ ] `create/4 (float, str, list, float)`
-- [ ] `create/4 (float, str, list, obj)`
-- [ ] `create/4 (float, str, list, str)`
-- [ ] `create/4 (float, str, list, err)`
-- [ ] `create/4 (float, str, list, list)`
-- [ ] `create/4 (float, str, list, map)`
-- [ ] `create/4 (float, str, map, int)`
-- [ ] `create/4 (float, str, map, float)`
-- [ ] `create/4 (float, str, map, obj)`
-- [ ] `create/4 (float, str, map, str)`
-- [ ] `create/4 (float, str, map, err)`
-- [ ] `create/4 (float, str, map, list)`
-- [ ] `create/4 (float, str, map, map)`
-- [ ] `create/4 (float, err, int, int)`
-- [ ] `create/4 (float, err, int, float)`
-- [ ] `create/4 (float, err, int, obj)`
-- [ ] `create/4 (float, err, int, str)`
-- [ ] `create/4 (float, err, int, err)`
-- [ ] `create/4 (float, err, int, list)`
-- [ ] `create/4 (float, err, int, map)`
-- [ ] `create/4 (float, err, float, int)`
-- [ ] `create/4 (float, err, float, float)`
-- [ ] `create/4 (float, err, float, obj)`
-- [ ] `create/4 (float, err, float, str)`
-- [ ] `create/4 (float, err, float, err)`
-- [ ] `create/4 (float, err, float, list)`
-- [ ] `create/4 (float, err, float, map)`
-- [ ] `create/4 (float, err, obj, int)`
-- [ ] `create/4 (float, err, obj, float)`
-- [ ] `create/4 (float, err, obj, obj)`
-- [ ] `create/4 (float, err, obj, str)`
-- [ ] `create/4 (float, err, obj, err)`
-- [ ] `create/4 (float, err, obj, list)`
-- [ ] `create/4 (float, err, obj, map)`
-- [ ] `create/4 (float, err, str, int)`
-- [ ] `create/4 (float, err, str, float)`
-- [ ] `create/4 (float, err, str, obj)`
-- [ ] `create/4 (float, err, str, str)`
-- [ ] `create/4 (float, err, str, err)`
-- [ ] `create/4 (float, err, str, list)`
-- [ ] `create/4 (float, err, str, map)`
-- [ ] `create/4 (float, err, err, int)`
-- [ ] `create/4 (float, err, err, float)`
-- [ ] `create/4 (float, err, err, obj)`
-- [ ] `create/4 (float, err, err, str)`
-- [ ] `create/4 (float, err, err, err)`
-- [ ] `create/4 (float, err, err, list)`
-- [ ] `create/4 (float, err, err, map)`
-- [ ] `create/4 (float, err, list, int)`
-- [ ] `create/4 (float, err, list, float)`
-- [ ] `create/4 (float, err, list, obj)`
-- [ ] `create/4 (float, err, list, str)`
-- [ ] `create/4 (float, err, list, err)`
-- [ ] `create/4 (float, err, list, list)`
-- [ ] `create/4 (float, err, list, map)`
-- [ ] `create/4 (float, err, map, int)`
-- [ ] `create/4 (float, err, map, float)`
-- [ ] `create/4 (float, err, map, obj)`
-- [ ] `create/4 (float, err, map, str)`
-- [ ] `create/4 (float, err, map, err)`
-- [ ] `create/4 (float, err, map, list)`
-- [ ] `create/4 (float, err, map, map)`
-- [ ] `create/4 (float, list, int, int)`
-- [ ] `create/4 (float, list, int, float)`
-- [ ] `create/4 (float, list, int, obj)`
-- [ ] `create/4 (float, list, int, str)`
-- [ ] `create/4 (float, list, int, err)`
-- [ ] `create/4 (float, list, int, list)`
-- [ ] `create/4 (float, list, int, map)`
-- [ ] `create/4 (float, list, float, int)`
-- [ ] `create/4 (float, list, float, float)`
-- [ ] `create/4 (float, list, float, obj)`
-- [ ] `create/4 (float, list, float, str)`
-- [ ] `create/4 (float, list, float, err)`
-- [ ] `create/4 (float, list, float, list)`
-- [ ] `create/4 (float, list, float, map)`
-- [ ] `create/4 (float, list, obj, int)`
-- [ ] `create/4 (float, list, obj, float)`
-- [ ] `create/4 (float, list, obj, obj)`
-- [ ] `create/4 (float, list, obj, str)`
-- [ ] `create/4 (float, list, obj, err)`
-- [ ] `create/4 (float, list, obj, list)`
-- [ ] `create/4 (float, list, obj, map)`
-- [ ] `create/4 (float, list, str, int)`
-- [ ] `create/4 (float, list, str, float)`
-- [ ] `create/4 (float, list, str, obj)`
-- [ ] `create/4 (float, list, str, str)`
-- [ ] `create/4 (float, list, str, err)`
-- [ ] `create/4 (float, list, str, list)`
-- [ ] `create/4 (float, list, str, map)`
-- [ ] `create/4 (float, list, err, int)`
-- [ ] `create/4 (float, list, err, float)`
-- [ ] `create/4 (float, list, err, obj)`
-- [ ] `create/4 (float, list, err, str)`
-- [ ] `create/4 (float, list, err, err)`
-- [ ] `create/4 (float, list, err, list)`
-- [ ] `create/4 (float, list, err, map)`
-- [ ] `create/4 (float, list, list, int)`
-- [ ] `create/4 (float, list, list, float)`
-- [ ] `create/4 (float, list, list, obj)`
-- [ ] `create/4 (float, list, list, str)`
-- [ ] `create/4 (float, list, list, err)`
-- [ ] `create/4 (float, list, list, list)`
-- [ ] `create/4 (float, list, list, map)`
-- [ ] `create/4 (float, list, map, int)`
-- [ ] `create/4 (float, list, map, float)`
-- [ ] `create/4 (float, list, map, obj)`
-- [ ] `create/4 (float, list, map, str)`
-- [ ] `create/4 (float, list, map, err)`
-- [ ] `create/4 (float, list, map, list)`
-- [ ] `create/4 (float, list, map, map)`
-- [ ] `create/4 (float, map, int, int)`
-- [ ] `create/4 (float, map, int, float)`
-- [ ] `create/4 (float, map, int, obj)`
-- [ ] `create/4 (float, map, int, str)`
-- [ ] `create/4 (float, map, int, err)`
-- [ ] `create/4 (float, map, int, list)`
-- [ ] `create/4 (float, map, int, map)`
-- [ ] `create/4 (float, map, float, int)`
-- [ ] `create/4 (float, map, float, float)`
-- [ ] `create/4 (float, map, float, obj)`
-- [ ] `create/4 (float, map, float, str)`
-- [ ] `create/4 (float, map, float, err)`
-- [ ] `create/4 (float, map, float, list)`
-- [ ] `create/4 (float, map, float, map)`
-- [ ] `create/4 (float, map, obj, int)`
-- [ ] `create/4 (float, map, obj, float)`
-- [ ] `create/4 (float, map, obj, obj)`
-- [ ] `create/4 (float, map, obj, str)`
-- [ ] `create/4 (float, map, obj, err)`
-- [ ] `create/4 (float, map, obj, list)`
-- [ ] `create/4 (float, map, obj, map)`
-- [ ] `create/4 (float, map, str, int)`
-- [ ] `create/4 (float, map, str, float)`
-- [ ] `create/4 (float, map, str, obj)`
-- [ ] `create/4 (float, map, str, str)`
-- [ ] `create/4 (float, map, str, err)`
-- [ ] `create/4 (float, map, str, list)`
-- [ ] `create/4 (float, map, str, map)`
-- [ ] `create/4 (float, map, err, int)`
-- [ ] `create/4 (float, map, err, float)`
-- [ ] `create/4 (float, map, err, obj)`
-- [ ] `create/4 (float, map, err, str)`
-- [ ] `create/4 (float, map, err, err)`
-- [ ] `create/4 (float, map, err, list)`
-- [ ] `create/4 (float, map, err, map)`
-- [ ] `create/4 (float, map, list, int)`
-- [ ] `create/4 (float, map, list, float)`
-- [ ] `create/4 (float, map, list, obj)`
-- [ ] `create/4 (float, map, list, str)`
-- [ ] `create/4 (float, map, list, err)`
-- [ ] `create/4 (float, map, list, list)`
-- [ ] `create/4 (float, map, list, map)`
-- [ ] `create/4 (float, map, map, int)`
-- [ ] `create/4 (float, map, map, float)`
-- [ ] `create/4 (float, map, map, obj)`
-- [ ] `create/4 (float, map, map, str)`
-- [ ] `create/4 (float, map, map, err)`
-- [ ] `create/4 (float, map, map, list)`
-- [ ] `create/4 (float, map, map, map)`
-- [ ] `create/4 (obj, int, int, int)`
-- [ ] `create/4 (obj, int, int, float)`
-- [ ] `create/4 (obj, int, int, obj)`
-- [ ] `create/4 (obj, int, int, str)`
-- [ ] `create/4 (obj, int, int, err)`
-- [ ] `create/4 (obj, int, int, list)`
-- [ ] `create/4 (obj, int, int, map)`
-- [ ] `create/4 (obj, int, float, int)`
-- [ ] `create/4 (obj, int, float, float)`
-- [ ] `create/4 (obj, int, float, obj)`
-- [ ] `create/4 (obj, int, float, str)`
-- [ ] `create/4 (obj, int, float, err)`
-- [ ] `create/4 (obj, int, float, list)`
-- [ ] `create/4 (obj, int, float, map)`
-- [ ] `create/4 (obj, int, obj, int)`
-- [ ] `create/4 (obj, int, obj, float)`
-- [ ] `create/4 (obj, int, obj, obj)`
-- [ ] `create/4 (obj, int, obj, str)`
-- [ ] `create/4 (obj, int, obj, err)`
-- [ ] `create/4 (obj, int, obj, list)`
-- [ ] `create/4 (obj, int, obj, map)`
-- [ ] `create/4 (obj, int, str, int)`
-- [ ] `create/4 (obj, int, str, float)`
-- [ ] `create/4 (obj, int, str, obj)`
-- [ ] `create/4 (obj, int, str, str)`
-- [ ] `create/4 (obj, int, str, err)`
-- [ ] `create/4 (obj, int, str, list)`
-- [ ] `create/4 (obj, int, str, map)`
-- [ ] `create/4 (obj, int, err, int)`
-- [ ] `create/4 (obj, int, err, float)`
-- [ ] `create/4 (obj, int, err, obj)`
-- [ ] `create/4 (obj, int, err, str)`
-- [ ] `create/4 (obj, int, err, err)`
-- [ ] `create/4 (obj, int, err, list)`
-- [ ] `create/4 (obj, int, err, map)`
-- [ ] `create/4 (obj, int, list, int)`
-- [ ] `create/4 (obj, int, list, float)`
-- [ ] `create/4 (obj, int, list, obj)`
-- [ ] `create/4 (obj, int, list, str)`
-- [ ] `create/4 (obj, int, list, err)`
-- [ ] `create/4 (obj, int, list, list)`
-- [ ] `create/4 (obj, int, list, map)`
-- [ ] `create/4 (obj, int, map, int)`
-- [ ] `create/4 (obj, int, map, float)`
-- [ ] `create/4 (obj, int, map, obj)`
-- [ ] `create/4 (obj, int, map, str)`
-- [ ] `create/4 (obj, int, map, err)`
-- [ ] `create/4 (obj, int, map, list)`
-- [ ] `create/4 (obj, int, map, map)`
-- [ ] `create/4 (obj, float, int, int)`
-- [ ] `create/4 (obj, float, int, float)`
-- [ ] `create/4 (obj, float, int, obj)`
-- [ ] `create/4 (obj, float, int, str)`
-- [ ] `create/4 (obj, float, int, err)`
-- [ ] `create/4 (obj, float, int, list)`
-- [ ] `create/4 (obj, float, int, map)`
-- [ ] `create/4 (obj, float, float, int)`
-- [ ] `create/4 (obj, float, float, float)`
-- [ ] `create/4 (obj, float, float, obj)`
-- [ ] `create/4 (obj, float, float, str)`
-- [ ] `create/4 (obj, float, float, err)`
-- [ ] `create/4 (obj, float, float, list)`
-- [ ] `create/4 (obj, float, float, map)`
-- [ ] `create/4 (obj, float, obj, int)`
-- [ ] `create/4 (obj, float, obj, float)`
-- [ ] `create/4 (obj, float, obj, obj)`
-- [ ] `create/4 (obj, float, obj, str)`
-- [ ] `create/4 (obj, float, obj, err)`
-- [ ] `create/4 (obj, float, obj, list)`
-- [ ] `create/4 (obj, float, obj, map)`
-- [ ] `create/4 (obj, float, str, int)`
-- [ ] `create/4 (obj, float, str, float)`
-- [ ] `create/4 (obj, float, str, obj)`
-- [ ] `create/4 (obj, float, str, str)`
-- [ ] `create/4 (obj, float, str, err)`
-- [ ] `create/4 (obj, float, str, list)`
-- [ ] `create/4 (obj, float, str, map)`
-- [ ] `create/4 (obj, float, err, int)`
-- [ ] `create/4 (obj, float, err, float)`
-- [ ] `create/4 (obj, float, err, obj)`
-- [ ] `create/4 (obj, float, err, str)`
-- [ ] `create/4 (obj, float, err, err)`
-- [ ] `create/4 (obj, float, err, list)`
-- [ ] `create/4 (obj, float, err, map)`
-- [ ] `create/4 (obj, float, list, int)`
-- [ ] `create/4 (obj, float, list, float)`
-- [ ] `create/4 (obj, float, list, obj)`
-- [ ] `create/4 (obj, float, list, str)`
-- [ ] `create/4 (obj, float, list, err)`
-- [ ] `create/4 (obj, float, list, list)`
-- [ ] `create/4 (obj, float, list, map)`
-- [ ] `create/4 (obj, float, map, int)`
-- [ ] `create/4 (obj, float, map, float)`
-- [ ] `create/4 (obj, float, map, obj)`
-- [ ] `create/4 (obj, float, map, str)`
-- [ ] `create/4 (obj, float, map, err)`
-- [ ] `create/4 (obj, float, map, list)`
-- [ ] `create/4 (obj, float, map, map)`
-- [ ] `create/4 (obj, obj, int, int)`
-- [ ] `create/4 (obj, obj, int, float)`
-- [ ] `create/4 (obj, obj, int, obj)`
-- [ ] `create/4 (obj, obj, int, str)`
-- [ ] `create/4 (obj, obj, int, err)`
-- [ ] `create/4 (obj, obj, int, list)`
-- [ ] `create/4 (obj, obj, int, map)`
-- [ ] `create/4 (obj, obj, float, int)`
-- [ ] `create/4 (obj, obj, float, float)`
-- [ ] `create/4 (obj, obj, float, obj)`
-- [ ] `create/4 (obj, obj, float, str)`
-- [ ] `create/4 (obj, obj, float, err)`
-- [ ] `create/4 (obj, obj, float, list)`
-- [ ] `create/4 (obj, obj, float, map)`
-- [ ] `create/4 (obj, obj, obj, int)`
-- [ ] `create/4 (obj, obj, obj, float)`
-- [ ] `create/4 (obj, obj, obj, obj)`
-- [ ] `create/4 (obj, obj, obj, str)`
-- [ ] `create/4 (obj, obj, obj, err)`
-- [ ] `create/4 (obj, obj, obj, list)`
-- [ ] `create/4 (obj, obj, obj, map)`
-- [ ] `create/4 (obj, obj, str, int)`
-- [ ] `create/4 (obj, obj, str, float)`
-- [ ] `create/4 (obj, obj, str, obj)`
-- [ ] `create/4 (obj, obj, str, str)`
-- [ ] `create/4 (obj, obj, str, err)`
-- [ ] `create/4 (obj, obj, str, list)`
-- [ ] `create/4 (obj, obj, str, map)`
-- [ ] `create/4 (obj, obj, err, int)`
-- [ ] `create/4 (obj, obj, err, float)`
-- [ ] `create/4 (obj, obj, err, obj)`
-- [ ] `create/4 (obj, obj, err, str)`
-- [ ] `create/4 (obj, obj, err, err)`
-- [ ] `create/4 (obj, obj, err, list)`
-- [ ] `create/4 (obj, obj, err, map)`
-- [ ] `create/4 (obj, obj, list, int)`
-- [ ] `create/4 (obj, obj, list, float)`
-- [ ] `create/4 (obj, obj, list, obj)`
-- [ ] `create/4 (obj, obj, list, str)`
-- [ ] `create/4 (obj, obj, list, err)`
-- [ ] `create/4 (obj, obj, list, list)`
-- [ ] `create/4 (obj, obj, list, map)`
-- [ ] `create/4 (obj, obj, map, int)`
-- [ ] `create/4 (obj, obj, map, float)`
-- [ ] `create/4 (obj, obj, map, obj)`
-- [ ] `create/4 (obj, obj, map, str)`
-- [ ] `create/4 (obj, obj, map, err)`
-- [ ] `create/4 (obj, obj, map, list)`
-- [ ] `create/4 (obj, obj, map, map)`
-- [ ] `create/4 (obj, str, int, int)`
-- [ ] `create/4 (obj, str, int, float)`
-- [ ] `create/4 (obj, str, int, obj)`
-- [ ] `create/4 (obj, str, int, str)`
-- [ ] `create/4 (obj, str, int, err)`
-- [ ] `create/4 (obj, str, int, list)`
-- [ ] `create/4 (obj, str, int, map)`
-- [ ] `create/4 (obj, str, float, int)`
-- [ ] `create/4 (obj, str, float, float)`
-- [ ] `create/4 (obj, str, float, obj)`
-- [ ] `create/4 (obj, str, float, str)`
-- [ ] `create/4 (obj, str, float, err)`
-- [ ] `create/4 (obj, str, float, list)`
-- [ ] `create/4 (obj, str, float, map)`
-- [ ] `create/4 (obj, str, obj, int)`
-- [ ] `create/4 (obj, str, obj, float)`
-- [ ] `create/4 (obj, str, obj, obj)`
-- [ ] `create/4 (obj, str, obj, str)`
-- [ ] `create/4 (obj, str, obj, err)`
-- [ ] `create/4 (obj, str, obj, list)`
-- [ ] `create/4 (obj, str, obj, map)`
-- [ ] `create/4 (obj, str, str, int)`
-- [ ] `create/4 (obj, str, str, float)`
-- [ ] `create/4 (obj, str, str, obj)`
-- [ ] `create/4 (obj, str, str, str)`
-- [ ] `create/4 (obj, str, str, err)`
-- [ ] `create/4 (obj, str, str, list)`
-- [ ] `create/4 (obj, str, str, map)`
-- [ ] `create/4 (obj, str, err, int)`
-- [ ] `create/4 (obj, str, err, float)`
-- [ ] `create/4 (obj, str, err, obj)`
-- [ ] `create/4 (obj, str, err, str)`
-- [ ] `create/4 (obj, str, err, err)`
-- [ ] `create/4 (obj, str, err, list)`
-- [ ] `create/4 (obj, str, err, map)`
-- [ ] `create/4 (obj, str, list, int)`
-- [ ] `create/4 (obj, str, list, float)`
-- [ ] `create/4 (obj, str, list, obj)`
-- [ ] `create/4 (obj, str, list, str)`
-- [ ] `create/4 (obj, str, list, err)`
-- [ ] `create/4 (obj, str, list, list)`
-- [ ] `create/4 (obj, str, list, map)`
-- [ ] `create/4 (obj, str, map, int)`
-- [ ] `create/4 (obj, str, map, float)`
-- [ ] `create/4 (obj, str, map, obj)`
-- [ ] `create/4 (obj, str, map, str)`
-- [ ] `create/4 (obj, str, map, err)`
-- [ ] `create/4 (obj, str, map, list)`
-- [ ] `create/4 (obj, str, map, map)`
-- [ ] `create/4 (obj, err, int, int)`
-- [ ] `create/4 (obj, err, int, float)`
-- [ ] `create/4 (obj, err, int, obj)`
-- [ ] `create/4 (obj, err, int, str)`
-- [ ] `create/4 (obj, err, int, err)`
-- [ ] `create/4 (obj, err, int, list)`
-- [ ] `create/4 (obj, err, int, map)`
-- [ ] `create/4 (obj, err, float, int)`
-- [ ] `create/4 (obj, err, float, float)`
-- [ ] `create/4 (obj, err, float, obj)`
-- [ ] `create/4 (obj, err, float, str)`
-- [ ] `create/4 (obj, err, float, err)`
-- [ ] `create/4 (obj, err, float, list)`
-- [ ] `create/4 (obj, err, float, map)`
-- [ ] `create/4 (obj, err, obj, int)`
-- [ ] `create/4 (obj, err, obj, float)`
-- [ ] `create/4 (obj, err, obj, obj)`
-- [ ] `create/4 (obj, err, obj, str)`
-- [ ] `create/4 (obj, err, obj, err)`
-- [ ] `create/4 (obj, err, obj, list)`
-- [ ] `create/4 (obj, err, obj, map)`
-- [ ] `create/4 (obj, err, str, int)`
-- [ ] `create/4 (obj, err, str, float)`
-- [ ] `create/4 (obj, err, str, obj)`
-- [ ] `create/4 (obj, err, str, str)`
-- [ ] `create/4 (obj, err, str, err)`
-- [ ] `create/4 (obj, err, str, list)`
-- [ ] `create/4 (obj, err, str, map)`
-- [ ] `create/4 (obj, err, err, int)`
-- [ ] `create/4 (obj, err, err, float)`
-- [ ] `create/4 (obj, err, err, obj)`
-- [ ] `create/4 (obj, err, err, str)`
-- [ ] `create/4 (obj, err, err, err)`
-- [ ] `create/4 (obj, err, err, list)`
-- [ ] `create/4 (obj, err, err, map)`
-- [ ] `create/4 (obj, err, list, int)`
-- [ ] `create/4 (obj, err, list, float)`
-- [ ] `create/4 (obj, err, list, obj)`
-- [ ] `create/4 (obj, err, list, str)`
-- [ ] `create/4 (obj, err, list, err)`
-- [ ] `create/4 (obj, err, list, list)`
-- [ ] `create/4 (obj, err, list, map)`
-- [ ] `create/4 (obj, err, map, int)`
-- [ ] `create/4 (obj, err, map, float)`
-- [ ] `create/4 (obj, err, map, obj)`
-- [ ] `create/4 (obj, err, map, str)`
-- [ ] `create/4 (obj, err, map, err)`
-- [ ] `create/4 (obj, err, map, list)`
-- [ ] `create/4 (obj, err, map, map)`
-- [ ] `create/4 (obj, list, int, int)`
-- [ ] `create/4 (obj, list, int, float)`
-- [ ] `create/4 (obj, list, int, obj)`
-- [ ] `create/4 (obj, list, int, str)`
-- [ ] `create/4 (obj, list, int, err)`
-- [ ] `create/4 (obj, list, int, list)`
-- [ ] `create/4 (obj, list, int, map)`
-- [ ] `create/4 (obj, list, float, int)`
-- [ ] `create/4 (obj, list, float, float)`
-- [ ] `create/4 (obj, list, float, obj)`
-- [ ] `create/4 (obj, list, float, str)`
-- [ ] `create/4 (obj, list, float, err)`
-- [ ] `create/4 (obj, list, float, list)`
-- [ ] `create/4 (obj, list, float, map)`
-- [ ] `create/4 (obj, list, obj, int)`
-- [ ] `create/4 (obj, list, obj, float)`
-- [ ] `create/4 (obj, list, obj, obj)`
-- [ ] `create/4 (obj, list, obj, str)`
-- [ ] `create/4 (obj, list, obj, err)`
-- [ ] `create/4 (obj, list, obj, list)`
-- [ ] `create/4 (obj, list, obj, map)`
-- [ ] `create/4 (obj, list, str, int)`
-- [ ] `create/4 (obj, list, str, float)`
-- [ ] `create/4 (obj, list, str, obj)`
-- [ ] `create/4 (obj, list, str, str)`
-- [ ] `create/4 (obj, list, str, err)`
-- [ ] `create/4 (obj, list, str, list)`
-- [ ] `create/4 (obj, list, str, map)`
-- [ ] `create/4 (obj, list, err, int)`
-- [ ] `create/4 (obj, list, err, float)`
-- [ ] `create/4 (obj, list, err, obj)`
-- [ ] `create/4 (obj, list, err, str)`
-- [ ] `create/4 (obj, list, err, err)`
-- [ ] `create/4 (obj, list, err, list)`
-- [ ] `create/4 (obj, list, err, map)`
-- [ ] `create/4 (obj, list, list, int)`
-- [ ] `create/4 (obj, list, list, float)`
-- [ ] `create/4 (obj, list, list, obj)`
-- [ ] `create/4 (obj, list, list, str)`
-- [ ] `create/4 (obj, list, list, err)`
-- [ ] `create/4 (obj, list, list, list)`
-- [ ] `create/4 (obj, list, list, map)`
-- [ ] `create/4 (obj, list, map, int)`
-- [ ] `create/4 (obj, list, map, float)`
-- [ ] `create/4 (obj, list, map, obj)`
-- [ ] `create/4 (obj, list, map, str)`
-- [ ] `create/4 (obj, list, map, err)`
-- [ ] `create/4 (obj, list, map, list)`
-- [ ] `create/4 (obj, list, map, map)`
-- [ ] `create/4 (obj, map, int, int)`
-- [ ] `create/4 (obj, map, int, float)`
-- [ ] `create/4 (obj, map, int, obj)`
-- [ ] `create/4 (obj, map, int, str)`
-- [ ] `create/4 (obj, map, int, err)`
-- [ ] `create/4 (obj, map, int, list)`
-- [ ] `create/4 (obj, map, int, map)`
-- [ ] `create/4 (obj, map, float, int)`
-- [ ] `create/4 (obj, map, float, float)`
-- [ ] `create/4 (obj, map, float, obj)`
-- [ ] `create/4 (obj, map, float, str)`
-- [ ] `create/4 (obj, map, float, err)`
-- [ ] `create/4 (obj, map, float, list)`
-- [ ] `create/4 (obj, map, float, map)`
-- [ ] `create/4 (obj, map, obj, int)`
-- [ ] `create/4 (obj, map, obj, float)`
-- [ ] `create/4 (obj, map, obj, obj)`
-- [ ] `create/4 (obj, map, obj, str)`
-- [ ] `create/4 (obj, map, obj, err)`
-- [ ] `create/4 (obj, map, obj, list)`
-- [ ] `create/4 (obj, map, obj, map)`
-- [ ] `create/4 (obj, map, str, int)`
-- [ ] `create/4 (obj, map, str, float)`
-- [ ] `create/4 (obj, map, str, obj)`
-- [ ] `create/4 (obj, map, str, str)`
-- [ ] `create/4 (obj, map, str, err)`
-- [ ] `create/4 (obj, map, str, list)`
-- [ ] `create/4 (obj, map, str, map)`
-- [ ] `create/4 (obj, map, err, int)`
-- [ ] `create/4 (obj, map, err, float)`
-- [ ] `create/4 (obj, map, err, obj)`
-- [ ] `create/4 (obj, map, err, str)`
-- [ ] `create/4 (obj, map, err, err)`
-- [ ] `create/4 (obj, map, err, list)`
-- [ ] `create/4 (obj, map, err, map)`
-- [ ] `create/4 (obj, map, list, int)`
-- [ ] `create/4 (obj, map, list, float)`
-- [ ] `create/4 (obj, map, list, obj)`
-- [ ] `create/4 (obj, map, list, str)`
-- [ ] `create/4 (obj, map, list, err)`
-- [ ] `create/4 (obj, map, list, list)`
-- [ ] `create/4 (obj, map, list, map)`
-- [ ] `create/4 (obj, map, map, int)`
-- [ ] `create/4 (obj, map, map, float)`
-- [ ] `create/4 (obj, map, map, obj)`
-- [ ] `create/4 (obj, map, map, str)`
-- [ ] `create/4 (obj, map, map, err)`
-- [ ] `create/4 (obj, map, map, list)`
-- [ ] `create/4 (obj, map, map, map)`
-- [ ] `create/4 (str, int, int, int)`
-- [ ] `create/4 (str, int, int, float)`
-- [ ] `create/4 (str, int, int, obj)`
-- [ ] `create/4 (str, int, int, str)`
-- [ ] `create/4 (str, int, int, err)`
-- [ ] `create/4 (str, int, int, list)`
-- [ ] `create/4 (str, int, int, map)`
-- [ ] `create/4 (str, int, float, int)`
-- [ ] `create/4 (str, int, float, float)`
-- [ ] `create/4 (str, int, float, obj)`
-- [ ] `create/4 (str, int, float, str)`
-- [ ] `create/4 (str, int, float, err)`
-- [ ] `create/4 (str, int, float, list)`
-- [ ] `create/4 (str, int, float, map)`
-- [ ] `create/4 (str, int, obj, int)`
-- [ ] `create/4 (str, int, obj, float)`
-- [ ] `create/4 (str, int, obj, obj)`
-- [ ] `create/4 (str, int, obj, str)`
-- [ ] `create/4 (str, int, obj, err)`
-- [ ] `create/4 (str, int, obj, list)`
-- [ ] `create/4 (str, int, obj, map)`
-- [ ] `create/4 (str, int, str, int)`
-- [ ] `create/4 (str, int, str, float)`
-- [ ] `create/4 (str, int, str, obj)`
-- [ ] `create/4 (str, int, str, str)`
-- [ ] `create/4 (str, int, str, err)`
-- [ ] `create/4 (str, int, str, list)`
-- [ ] `create/4 (str, int, str, map)`
-- [ ] `create/4 (str, int, err, int)`
-- [ ] `create/4 (str, int, err, float)`
-- [ ] `create/4 (str, int, err, obj)`
-- [ ] `create/4 (str, int, err, str)`
-- [ ] `create/4 (str, int, err, err)`
-- [ ] `create/4 (str, int, err, list)`
-- [ ] `create/4 (str, int, err, map)`
-- [ ] `create/4 (str, int, list, int)`
-- [ ] `create/4 (str, int, list, float)`
-- [ ] `create/4 (str, int, list, obj)`
-- [ ] `create/4 (str, int, list, str)`
-- [ ] `create/4 (str, int, list, err)`
-- [ ] `create/4 (str, int, list, list)`
-- [ ] `create/4 (str, int, list, map)`
-- [ ] `create/4 (str, int, map, int)`
-- [ ] `create/4 (str, int, map, float)`
-- [ ] `create/4 (str, int, map, obj)`
-- [ ] `create/4 (str, int, map, str)`
-- [ ] `create/4 (str, int, map, err)`
-- [ ] `create/4 (str, int, map, list)`
-- [ ] `create/4 (str, int, map, map)`
-- [ ] `create/4 (str, float, int, int)`
-- [ ] `create/4 (str, float, int, float)`
-- [ ] `create/4 (str, float, int, obj)`
-- [ ] `create/4 (str, float, int, str)`
-- [ ] `create/4 (str, float, int, err)`
-- [ ] `create/4 (str, float, int, list)`
-- [ ] `create/4 (str, float, int, map)`
-- [ ] `create/4 (str, float, float, int)`
-- [ ] `create/4 (str, float, float, float)`
-- [ ] `create/4 (str, float, float, obj)`
-- [ ] `create/4 (str, float, float, str)`
-- [ ] `create/4 (str, float, float, err)`
-- [ ] `create/4 (str, float, float, list)`
-- [ ] `create/4 (str, float, float, map)`
-- [ ] `create/4 (str, float, obj, int)`
-- [ ] `create/4 (str, float, obj, float)`
-- [ ] `create/4 (str, float, obj, obj)`
-- [ ] `create/4 (str, float, obj, str)`
-- [ ] `create/4 (str, float, obj, err)`
-- [ ] `create/4 (str, float, obj, list)`
-- [ ] `create/4 (str, float, obj, map)`
-- [ ] `create/4 (str, float, str, int)`
-- [ ] `create/4 (str, float, str, float)`
-- [ ] `create/4 (str, float, str, obj)`
-- [ ] `create/4 (str, float, str, str)`
-- [ ] `create/4 (str, float, str, err)`
-- [ ] `create/4 (str, float, str, list)`
-- [ ] `create/4 (str, float, str, map)`
-- [ ] `create/4 (str, float, err, int)`
-- [ ] `create/4 (str, float, err, float)`
-- [ ] `create/4 (str, float, err, obj)`
-- [ ] `create/4 (str, float, err, str)`
-- [ ] `create/4 (str, float, err, err)`
-- [ ] `create/4 (str, float, err, list)`
-- [ ] `create/4 (str, float, err, map)`
-- [ ] `create/4 (str, float, list, int)`
-- [ ] `create/4 (str, float, list, float)`
-- [ ] `create/4 (str, float, list, obj)`
-- [ ] `create/4 (str, float, list, str)`
-- [ ] `create/4 (str, float, list, err)`
-- [ ] `create/4 (str, float, list, list)`
-- [ ] `create/4 (str, float, list, map)`
-- [ ] `create/4 (str, float, map, int)`
-- [ ] `create/4 (str, float, map, float)`
-- [ ] `create/4 (str, float, map, obj)`
-- [ ] `create/4 (str, float, map, str)`
-- [ ] `create/4 (str, float, map, err)`
-- [ ] `create/4 (str, float, map, list)`
-- [ ] `create/4 (str, float, map, map)`
-- [ ] `create/4 (str, obj, int, int)`
-- [ ] `create/4 (str, obj, int, float)`
-- [ ] `create/4 (str, obj, int, obj)`
-- [ ] `create/4 (str, obj, int, str)`
-- [ ] `create/4 (str, obj, int, err)`
-- [ ] `create/4 (str, obj, int, list)`
-- [ ] `create/4 (str, obj, int, map)`
-- [ ] `create/4 (str, obj, float, int)`
-- [ ] `create/4 (str, obj, float, float)`
-- [ ] `create/4 (str, obj, float, obj)`
-- [ ] `create/4 (str, obj, float, str)`
-- [ ] `create/4 (str, obj, float, err)`
-- [ ] `create/4 (str, obj, float, list)`
-- [ ] `create/4 (str, obj, float, map)`
-- [ ] `create/4 (str, obj, obj, int)`
-- [ ] `create/4 (str, obj, obj, float)`
-- [ ] `create/4 (str, obj, obj, obj)`
-- [ ] `create/4 (str, obj, obj, str)`
-- [ ] `create/4 (str, obj, obj, err)`
-- [ ] `create/4 (str, obj, obj, list)`
-- [ ] `create/4 (str, obj, obj, map)`
-- [ ] `create/4 (str, obj, str, int)`
-- [ ] `create/4 (str, obj, str, float)`
-- [ ] `create/4 (str, obj, str, obj)`
-- [ ] `create/4 (str, obj, str, str)`
-- [ ] `create/4 (str, obj, str, err)`
-- [ ] `create/4 (str, obj, str, list)`
-- [ ] `create/4 (str, obj, str, map)`
-- [ ] `create/4 (str, obj, err, int)`
-- [ ] `create/4 (str, obj, err, float)`
-- [ ] `create/4 (str, obj, err, obj)`
-- [ ] `create/4 (str, obj, err, str)`
-- [ ] `create/4 (str, obj, err, err)`
-- [ ] `create/4 (str, obj, err, list)`
-- [ ] `create/4 (str, obj, err, map)`
-- [ ] `create/4 (str, obj, list, int)`
-- [ ] `create/4 (str, obj, list, float)`
-- [ ] `create/4 (str, obj, list, obj)`
-- [ ] `create/4 (str, obj, list, str)`
-- [ ] `create/4 (str, obj, list, err)`
-- [ ] `create/4 (str, obj, list, list)`
-- [ ] `create/4 (str, obj, list, map)`
-- [ ] `create/4 (str, obj, map, int)`
-- [ ] `create/4 (str, obj, map, float)`
-- [ ] `create/4 (str, obj, map, obj)`
-- [ ] `create/4 (str, obj, map, str)`
-- [ ] `create/4 (str, obj, map, err)`
-- [ ] `create/4 (str, obj, map, list)`
-- [ ] `create/4 (str, obj, map, map)`
-- [ ] `create/4 (str, str, int, int)`
-- [ ] `create/4 (str, str, int, float)`
-- [ ] `create/4 (str, str, int, obj)`
-- [ ] `create/4 (str, str, int, str)`
-- [ ] `create/4 (str, str, int, err)`
-- [ ] `create/4 (str, str, int, list)`
-- [ ] `create/4 (str, str, int, map)`
-- [ ] `create/4 (str, str, float, int)`
-- [ ] `create/4 (str, str, float, float)`
-- [ ] `create/4 (str, str, float, obj)`
-- [ ] `create/4 (str, str, float, str)`
-- [ ] `create/4 (str, str, float, err)`
-- [ ] `create/4 (str, str, float, list)`
-- [ ] `create/4 (str, str, float, map)`
-- [ ] `create/4 (str, str, obj, int)`
-- [ ] `create/4 (str, str, obj, float)`
-- [ ] `create/4 (str, str, obj, obj)`
-- [ ] `create/4 (str, str, obj, str)`
-- [ ] `create/4 (str, str, obj, err)`
-- [ ] `create/4 (str, str, obj, list)`
-- [ ] `create/4 (str, str, obj, map)`
-- [ ] `create/4 (str, str, str, int)`
-- [ ] `create/4 (str, str, str, float)`
-- [ ] `create/4 (str, str, str, obj)`
-- [ ] `create/4 (str, str, str, str)`
-- [ ] `create/4 (str, str, str, err)`
-- [ ] `create/4 (str, str, str, list)`
-- [ ] `create/4 (str, str, str, map)`
-- [ ] `create/4 (str, str, err, int)`
-- [ ] `create/4 (str, str, err, float)`
-- [ ] `create/4 (str, str, err, obj)`
-- [ ] `create/4 (str, str, err, str)`
-- [ ] `create/4 (str, str, err, err)`
-- [ ] `create/4 (str, str, err, list)`
-- [ ] `create/4 (str, str, err, map)`
-- [ ] `create/4 (str, str, list, int)`
-- [ ] `create/4 (str, str, list, float)`
-- [ ] `create/4 (str, str, list, obj)`
-- [ ] `create/4 (str, str, list, str)`
-- [ ] `create/4 (str, str, list, err)`
-- [ ] `create/4 (str, str, list, list)`
-- [ ] `create/4 (str, str, list, map)`
-- [ ] `create/4 (str, str, map, int)`
-- [ ] `create/4 (str, str, map, float)`
-- [ ] `create/4 (str, str, map, obj)`
-- [ ] `create/4 (str, str, map, str)`
-- [ ] `create/4 (str, str, map, err)`
-- [ ] `create/4 (str, str, map, list)`
-- [ ] `create/4 (str, str, map, map)`
-- [ ] `create/4 (str, err, int, int)`
-- [ ] `create/4 (str, err, int, float)`
-- [ ] `create/4 (str, err, int, obj)`
-- [ ] `create/4 (str, err, int, str)`
-- [ ] `create/4 (str, err, int, err)`
-- [ ] `create/4 (str, err, int, list)`
-- [ ] `create/4 (str, err, int, map)`
-- [ ] `create/4 (str, err, float, int)`
-- [ ] `create/4 (str, err, float, float)`
-- [ ] `create/4 (str, err, float, obj)`
-- [ ] `create/4 (str, err, float, str)`
-- [ ] `create/4 (str, err, float, err)`
-- [ ] `create/4 (str, err, float, list)`
-- [ ] `create/4 (str, err, float, map)`
-- [ ] `create/4 (str, err, obj, int)`
-- [ ] `create/4 (str, err, obj, float)`
-- [ ] `create/4 (str, err, obj, obj)`
-- [ ] `create/4 (str, err, obj, str)`
-- [ ] `create/4 (str, err, obj, err)`
-- [ ] `create/4 (str, err, obj, list)`
-- [ ] `create/4 (str, err, obj, map)`
-- [ ] `create/4 (str, err, str, int)`
-- [ ] `create/4 (str, err, str, float)`
-- [ ] `create/4 (str, err, str, obj)`
-- [ ] `create/4 (str, err, str, str)`
-- [ ] `create/4 (str, err, str, err)`
-- [ ] `create/4 (str, err, str, list)`
-- [ ] `create/4 (str, err, str, map)`
-- [ ] `create/4 (str, err, err, int)`
-- [ ] `create/4 (str, err, err, float)`
-- [ ] `create/4 (str, err, err, obj)`
-- [ ] `create/4 (str, err, err, str)`
-- [ ] `create/4 (str, err, err, err)`
-- [ ] `create/4 (str, err, err, list)`
-- [ ] `create/4 (str, err, err, map)`
-- [ ] `create/4 (str, err, list, int)`
-- [ ] `create/4 (str, err, list, float)`
-- [ ] `create/4 (str, err, list, obj)`
-- [ ] `create/4 (str, err, list, str)`
-- [ ] `create/4 (str, err, list, err)`
-- [ ] `create/4 (str, err, list, list)`
-- [ ] `create/4 (str, err, list, map)`
-- [ ] `create/4 (str, err, map, int)`
-- [ ] `create/4 (str, err, map, float)`
-- [ ] `create/4 (str, err, map, obj)`
-- [ ] `create/4 (str, err, map, str)`
-- [ ] `create/4 (str, err, map, err)`
-- [ ] `create/4 (str, err, map, list)`
-- [ ] `create/4 (str, err, map, map)`
-- [ ] `create/4 (str, list, int, int)`
-- [ ] `create/4 (str, list, int, float)`
-- [ ] `create/4 (str, list, int, obj)`
-- [ ] `create/4 (str, list, int, str)`
-- [ ] `create/4 (str, list, int, err)`
-- [ ] `create/4 (str, list, int, list)`
-- [ ] `create/4 (str, list, int, map)`
-- [ ] `create/4 (str, list, float, int)`
-- [ ] `create/4 (str, list, float, float)`
-- [ ] `create/4 (str, list, float, obj)`
-- [ ] `create/4 (str, list, float, str)`
-- [ ] `create/4 (str, list, float, err)`
-- [ ] `create/4 (str, list, float, list)`
-- [ ] `create/4 (str, list, float, map)`
-- [ ] `create/4 (str, list, obj, int)`
-- [ ] `create/4 (str, list, obj, float)`
-- [ ] `create/4 (str, list, obj, obj)`
-- [ ] `create/4 (str, list, obj, str)`
-- [ ] `create/4 (str, list, obj, err)`
-- [ ] `create/4 (str, list, obj, list)`
-- [ ] `create/4 (str, list, obj, map)`
-- [ ] `create/4 (str, list, str, int)`
-- [ ] `create/4 (str, list, str, float)`
-- [ ] `create/4 (str, list, str, obj)`
-- [ ] `create/4 (str, list, str, str)`
-- [ ] `create/4 (str, list, str, err)`
-- [ ] `create/4 (str, list, str, list)`
-- [ ] `create/4 (str, list, str, map)`
-- [ ] `create/4 (str, list, err, int)`
-- [ ] `create/4 (str, list, err, float)`
-- [ ] `create/4 (str, list, err, obj)`
-- [ ] `create/4 (str, list, err, str)`
-- [ ] `create/4 (str, list, err, err)`
-- [ ] `create/4 (str, list, err, list)`
-- [ ] `create/4 (str, list, err, map)`
-- [ ] `create/4 (str, list, list, int)`
-- [ ] `create/4 (str, list, list, float)`
-- [ ] `create/4 (str, list, list, obj)`
-- [ ] `create/4 (str, list, list, str)`
-- [ ] `create/4 (str, list, list, err)`
-- [ ] `create/4 (str, list, list, list)`
-- [ ] `create/4 (str, list, list, map)`
-- [ ] `create/4 (str, list, map, int)`
-- [ ] `create/4 (str, list, map, float)`
-- [ ] `create/4 (str, list, map, obj)`
-- [ ] `create/4 (str, list, map, str)`
-- [ ] `create/4 (str, list, map, err)`
-- [ ] `create/4 (str, list, map, list)`
-- [ ] `create/4 (str, list, map, map)`
-- [ ] `create/4 (str, map, int, int)`
-- [ ] `create/4 (str, map, int, float)`
-- [ ] `create/4 (str, map, int, obj)`
-- [ ] `create/4 (str, map, int, str)`
-- [ ] `create/4 (str, map, int, err)`
-- [ ] `create/4 (str, map, int, list)`
-- [ ] `create/4 (str, map, int, map)`
-- [ ] `create/4 (str, map, float, int)`
-- [ ] `create/4 (str, map, float, float)`
-- [ ] `create/4 (str, map, float, obj)`
-- [ ] `create/4 (str, map, float, str)`
-- [ ] `create/4 (str, map, float, err)`
-- [ ] `create/4 (str, map, float, list)`
-- [ ] `create/4 (str, map, float, map)`
-- [ ] `create/4 (str, map, obj, int)`
-- [ ] `create/4 (str, map, obj, float)`
-- [ ] `create/4 (str, map, obj, obj)`
-- [ ] `create/4 (str, map, obj, str)`
-- [ ] `create/4 (str, map, obj, err)`
-- [ ] `create/4 (str, map, obj, list)`
-- [ ] `create/4 (str, map, obj, map)`
-- [ ] `create/4 (str, map, str, int)`
-- [ ] `create/4 (str, map, str, float)`
-- [ ] `create/4 (str, map, str, obj)`
-- [ ] `create/4 (str, map, str, str)`
-- [ ] `create/4 (str, map, str, err)`
-- [ ] `create/4 (str, map, str, list)`
-- [ ] `create/4 (str, map, str, map)`
-- [ ] `create/4 (str, map, err, int)`
-- [ ] `create/4 (str, map, err, float)`
-- [ ] `create/4 (str, map, err, obj)`
-- [ ] `create/4 (str, map, err, str)`
-- [ ] `create/4 (str, map, err, err)`
-- [ ] `create/4 (str, map, err, list)`
-- [ ] `create/4 (str, map, err, map)`
-- [ ] `create/4 (str, map, list, int)`
-- [ ] `create/4 (str, map, list, float)`
-- [ ] `create/4 (str, map, list, obj)`
-- [ ] `create/4 (str, map, list, str)`
-- [ ] `create/4 (str, map, list, err)`
-- [ ] `create/4 (str, map, list, list)`
-- [ ] `create/4 (str, map, list, map)`
-- [ ] `create/4 (str, map, map, int)`
-- [ ] `create/4 (str, map, map, float)`
-- [ ] `create/4 (str, map, map, obj)`
-- [ ] `create/4 (str, map, map, str)`
-- [ ] `create/4 (str, map, map, err)`
-- [ ] `create/4 (str, map, map, list)`
-- [ ] `create/4 (str, map, map, map)`
-- [ ] `create/4 (err, int, int, int)`
-- [ ] `create/4 (err, int, int, float)`
-- [ ] `create/4 (err, int, int, obj)`
-- [ ] `create/4 (err, int, int, str)`
-- [ ] `create/4 (err, int, int, err)`
-- [ ] `create/4 (err, int, int, list)`
-- [ ] `create/4 (err, int, int, map)`
-- [ ] `create/4 (err, int, float, int)`
-- [ ] `create/4 (err, int, float, float)`
-- [ ] `create/4 (err, int, float, obj)`
-- [ ] `create/4 (err, int, float, str)`
-- [ ] `create/4 (err, int, float, err)`
-- [ ] `create/4 (err, int, float, list)`
-- [ ] `create/4 (err, int, float, map)`
-- [ ] `create/4 (err, int, obj, int)`
-- [ ] `create/4 (err, int, obj, float)`
-- [ ] `create/4 (err, int, obj, obj)`
-- [ ] `create/4 (err, int, obj, str)`
-- [ ] `create/4 (err, int, obj, err)`
-- [ ] `create/4 (err, int, obj, list)`
-- [ ] `create/4 (err, int, obj, map)`
-- [ ] `create/4 (err, int, str, int)`
-- [ ] `create/4 (err, int, str, float)`
-- [ ] `create/4 (err, int, str, obj)`
-- [ ] `create/4 (err, int, str, str)`
-- [ ] `create/4 (err, int, str, err)`
-- [ ] `create/4 (err, int, str, list)`
-- [ ] `create/4 (err, int, str, map)`
-- [ ] `create/4 (err, int, err, int)`
-- [ ] `create/4 (err, int, err, float)`
-- [ ] `create/4 (err, int, err, obj)`
-- [ ] `create/4 (err, int, err, str)`
-- [ ] `create/4 (err, int, err, err)`
-- [ ] `create/4 (err, int, err, list)`
-- [ ] `create/4 (err, int, err, map)`
-- [ ] `create/4 (err, int, list, int)`
-- [ ] `create/4 (err, int, list, float)`
-- [ ] `create/4 (err, int, list, obj)`
-- [ ] `create/4 (err, int, list, str)`
-- [ ] `create/4 (err, int, list, err)`
-- [ ] `create/4 (err, int, list, list)`
-- [ ] `create/4 (err, int, list, map)`
-- [ ] `create/4 (err, int, map, int)`
-- [ ] `create/4 (err, int, map, float)`
-- [ ] `create/4 (err, int, map, obj)`
-- [ ] `create/4 (err, int, map, str)`
-- [ ] `create/4 (err, int, map, err)`
-- [ ] `create/4 (err, int, map, list)`
-- [ ] `create/4 (err, int, map, map)`
-- [ ] `create/4 (err, float, int, int)`
-- [ ] `create/4 (err, float, int, float)`
-- [ ] `create/4 (err, float, int, obj)`
-- [ ] `create/4 (err, float, int, str)`
-- [ ] `create/4 (err, float, int, err)`
-- [ ] `create/4 (err, float, int, list)`
-- [ ] `create/4 (err, float, int, map)`
-- [ ] `create/4 (err, float, float, int)`
-- [ ] `create/4 (err, float, float, float)`
-- [ ] `create/4 (err, float, float, obj)`
-- [ ] `create/4 (err, float, float, str)`
-- [ ] `create/4 (err, float, float, err)`
-- [ ] `create/4 (err, float, float, list)`
-- [ ] `create/4 (err, float, float, map)`
-- [ ] `create/4 (err, float, obj, int)`
-- [ ] `create/4 (err, float, obj, float)`
-- [ ] `create/4 (err, float, obj, obj)`
-- [ ] `create/4 (err, float, obj, str)`
-- [ ] `create/4 (err, float, obj, err)`
-- [ ] `create/4 (err, float, obj, list)`
-- [ ] `create/4 (err, float, obj, map)`
-- [ ] `create/4 (err, float, str, int)`
-- [ ] `create/4 (err, float, str, float)`
-- [ ] `create/4 (err, float, str, obj)`
-- [ ] `create/4 (err, float, str, str)`
-- [ ] `create/4 (err, float, str, err)`
-- [ ] `create/4 (err, float, str, list)`
-- [ ] `create/4 (err, float, str, map)`
-- [ ] `create/4 (err, float, err, int)`
-- [ ] `create/4 (err, float, err, float)`
-- [ ] `create/4 (err, float, err, obj)`
-- [ ] `create/4 (err, float, err, str)`
-- [ ] `create/4 (err, float, err, err)`
-- [ ] `create/4 (err, float, err, list)`
-- [ ] `create/4 (err, float, err, map)`
-- [ ] `create/4 (err, float, list, int)`
-- [ ] `create/4 (err, float, list, float)`
-- [ ] `create/4 (err, float, list, obj)`
-- [ ] `create/4 (err, float, list, str)`
-- [ ] `create/4 (err, float, list, err)`
-- [ ] `create/4 (err, float, list, list)`
-- [ ] `create/4 (err, float, list, map)`
-- [ ] `create/4 (err, float, map, int)`
-- [ ] `create/4 (err, float, map, float)`
-- [ ] `create/4 (err, float, map, obj)`
-- [ ] `create/4 (err, float, map, str)`
-- [ ] `create/4 (err, float, map, err)`
-- [ ] `create/4 (err, float, map, list)`
-- [ ] `create/4 (err, float, map, map)`
-- [ ] `create/4 (err, obj, int, int)`
-- [ ] `create/4 (err, obj, int, float)`
-- [ ] `create/4 (err, obj, int, obj)`
-- [ ] `create/4 (err, obj, int, str)`
-- [ ] `create/4 (err, obj, int, err)`
-- [ ] `create/4 (err, obj, int, list)`
-- [ ] `create/4 (err, obj, int, map)`
-- [ ] `create/4 (err, obj, float, int)`
-- [ ] `create/4 (err, obj, float, float)`
-- [ ] `create/4 (err, obj, float, obj)`
-- [ ] `create/4 (err, obj, float, str)`
-- [ ] `create/4 (err, obj, float, err)`
-- [ ] `create/4 (err, obj, float, list)`
-- [ ] `create/4 (err, obj, float, map)`
-- [ ] `create/4 (err, obj, obj, int)`
-- [ ] `create/4 (err, obj, obj, float)`
-- [ ] `create/4 (err, obj, obj, obj)`
-- [ ] `create/4 (err, obj, obj, str)`
-- [ ] `create/4 (err, obj, obj, err)`
-- [ ] `create/4 (err, obj, obj, list)`
-- [ ] `create/4 (err, obj, obj, map)`
-- [ ] `create/4 (err, obj, str, int)`
-- [ ] `create/4 (err, obj, str, float)`
-- [ ] `create/4 (err, obj, str, obj)`
-- [ ] `create/4 (err, obj, str, str)`
-- [ ] `create/4 (err, obj, str, err)`
-- [ ] `create/4 (err, obj, str, list)`
-- [ ] `create/4 (err, obj, str, map)`
-- [ ] `create/4 (err, obj, err, int)`
-- [ ] `create/4 (err, obj, err, float)`
-- [ ] `create/4 (err, obj, err, obj)`
-- [ ] `create/4 (err, obj, err, str)`
-- [ ] `create/4 (err, obj, err, err)`
-- [ ] `create/4 (err, obj, err, list)`
-- [ ] `create/4 (err, obj, err, map)`
-- [ ] `create/4 (err, obj, list, int)`
-- [ ] `create/4 (err, obj, list, float)`
-- [ ] `create/4 (err, obj, list, obj)`
-- [ ] `create/4 (err, obj, list, str)`
-- [ ] `create/4 (err, obj, list, err)`
-- [ ] `create/4 (err, obj, list, list)`
-- [ ] `create/4 (err, obj, list, map)`
-- [ ] `create/4 (err, obj, map, int)`
-- [ ] `create/4 (err, obj, map, float)`
-- [ ] `create/4 (err, obj, map, obj)`
-- [ ] `create/4 (err, obj, map, str)`
-- [ ] `create/4 (err, obj, map, err)`
-- [ ] `create/4 (err, obj, map, list)`
-- [ ] `create/4 (err, obj, map, map)`
-- [ ] `create/4 (err, str, int, int)`
-- [ ] `create/4 (err, str, int, float)`
-- [ ] `create/4 (err, str, int, obj)`
-- [ ] `create/4 (err, str, int, str)`
-- [ ] `create/4 (err, str, int, err)`
-- [ ] `create/4 (err, str, int, list)`
-- [ ] `create/4 (err, str, int, map)`
-- [ ] `create/4 (err, str, float, int)`
-- [ ] `create/4 (err, str, float, float)`
-- [ ] `create/4 (err, str, float, obj)`
-- [ ] `create/4 (err, str, float, str)`
-- [ ] `create/4 (err, str, float, err)`
-- [ ] `create/4 (err, str, float, list)`
-- [ ] `create/4 (err, str, float, map)`
-- [ ] `create/4 (err, str, obj, int)`
-- [ ] `create/4 (err, str, obj, float)`
-- [ ] `create/4 (err, str, obj, obj)`
-- [ ] `create/4 (err, str, obj, str)`
-- [ ] `create/4 (err, str, obj, err)`
-- [ ] `create/4 (err, str, obj, list)`
-- [ ] `create/4 (err, str, obj, map)`
-- [ ] `create/4 (err, str, str, int)`
-- [ ] `create/4 (err, str, str, float)`
-- [ ] `create/4 (err, str, str, obj)`
-- [ ] `create/4 (err, str, str, str)`
-- [ ] `create/4 (err, str, str, err)`
-- [ ] `create/4 (err, str, str, list)`
-- [ ] `create/4 (err, str, str, map)`
-- [ ] `create/4 (err, str, err, int)`
-- [ ] `create/4 (err, str, err, float)`
-- [ ] `create/4 (err, str, err, obj)`
-- [ ] `create/4 (err, str, err, str)`
-- [ ] `create/4 (err, str, err, err)`
-- [ ] `create/4 (err, str, err, list)`
-- [ ] `create/4 (err, str, err, map)`
-- [ ] `create/4 (err, str, list, int)`
-- [ ] `create/4 (err, str, list, float)`
-- [ ] `create/4 (err, str, list, obj)`
-- [ ] `create/4 (err, str, list, str)`
-- [ ] `create/4 (err, str, list, err)`
-- [ ] `create/4 (err, str, list, list)`
-- [ ] `create/4 (err, str, list, map)`
-- [ ] `create/4 (err, str, map, int)`
-- [ ] `create/4 (err, str, map, float)`
-- [ ] `create/4 (err, str, map, obj)`
-- [ ] `create/4 (err, str, map, str)`
-- [ ] `create/4 (err, str, map, err)`
-- [ ] `create/4 (err, str, map, list)`
-- [ ] `create/4 (err, str, map, map)`
-- [ ] `create/4 (err, err, int, int)`
-- [ ] `create/4 (err, err, int, float)`
-- [ ] `create/4 (err, err, int, obj)`
-- [ ] `create/4 (err, err, int, str)`
-- [ ] `create/4 (err, err, int, err)`
-- [ ] `create/4 (err, err, int, list)`
-- [ ] `create/4 (err, err, int, map)`
-- [ ] `create/4 (err, err, float, int)`
-- [ ] `create/4 (err, err, float, float)`
-- [ ] `create/4 (err, err, float, obj)`
-- [ ] `create/4 (err, err, float, str)`
-- [ ] `create/4 (err, err, float, err)`
-- [ ] `create/4 (err, err, float, list)`
-- [ ] `create/4 (err, err, float, map)`
-- [ ] `create/4 (err, err, obj, int)`
-- [ ] `create/4 (err, err, obj, float)`
-- [ ] `create/4 (err, err, obj, obj)`
-- [ ] `create/4 (err, err, obj, str)`
-- [ ] `create/4 (err, err, obj, err)`
-- [ ] `create/4 (err, err, obj, list)`
-- [ ] `create/4 (err, err, obj, map)`
-- [ ] `create/4 (err, err, str, int)`
-- [ ] `create/4 (err, err, str, float)`
-- [ ] `create/4 (err, err, str, obj)`
-- [ ] `create/4 (err, err, str, str)`
-- [ ] `create/4 (err, err, str, err)`
-- [ ] `create/4 (err, err, str, list)`
-- [ ] `create/4 (err, err, str, map)`
-- [ ] `create/4 (err, err, err, int)`
-- [ ] `create/4 (err, err, err, float)`
-- [ ] `create/4 (err, err, err, obj)`
-- [ ] `create/4 (err, err, err, str)`
-- [ ] `create/4 (err, err, err, err)`
-- [ ] `create/4 (err, err, err, list)`
-- [ ] `create/4 (err, err, err, map)`
-- [ ] `create/4 (err, err, list, int)`
-- [ ] `create/4 (err, err, list, float)`
-- [ ] `create/4 (err, err, list, obj)`
-- [ ] `create/4 (err, err, list, str)`
-- [ ] `create/4 (err, err, list, err)`
-- [ ] `create/4 (err, err, list, list)`
-- [ ] `create/4 (err, err, list, map)`
-- [ ] `create/4 (err, err, map, int)`
-- [ ] `create/4 (err, err, map, float)`
-- [ ] `create/4 (err, err, map, obj)`
-- [ ] `create/4 (err, err, map, str)`
-- [ ] `create/4 (err, err, map, err)`
-- [ ] `create/4 (err, err, map, list)`
-- [ ] `create/4 (err, err, map, map)`
-- [ ] `create/4 (err, list, int, int)`
-- [ ] `create/4 (err, list, int, float)`
-- [ ] `create/4 (err, list, int, obj)`
-- [ ] `create/4 (err, list, int, str)`
-- [ ] `create/4 (err, list, int, err)`
-- [ ] `create/4 (err, list, int, list)`
-- [ ] `create/4 (err, list, int, map)`
-- [ ] `create/4 (err, list, float, int)`
-- [ ] `create/4 (err, list, float, float)`
-- [ ] `create/4 (err, list, float, obj)`
-- [ ] `create/4 (err, list, float, str)`
-- [ ] `create/4 (err, list, float, err)`
-- [ ] `create/4 (err, list, float, list)`
-- [ ] `create/4 (err, list, float, map)`
-- [ ] `create/4 (err, list, obj, int)`
-- [ ] `create/4 (err, list, obj, float)`
-- [ ] `create/4 (err, list, obj, obj)`
-- [ ] `create/4 (err, list, obj, str)`
-- [ ] `create/4 (err, list, obj, err)`
-- [ ] `create/4 (err, list, obj, list)`
-- [ ] `create/4 (err, list, obj, map)`
-- [ ] `create/4 (err, list, str, int)`
-- [ ] `create/4 (err, list, str, float)`
-- [ ] `create/4 (err, list, str, obj)`
-- [ ] `create/4 (err, list, str, str)`
-- [ ] `create/4 (err, list, str, err)`
-- [ ] `create/4 (err, list, str, list)`
-- [ ] `create/4 (err, list, str, map)`
-- [ ] `create/4 (err, list, err, int)`
-- [ ] `create/4 (err, list, err, float)`
-- [ ] `create/4 (err, list, err, obj)`
-- [ ] `create/4 (err, list, err, str)`
-- [ ] `create/4 (err, list, err, err)`
-- [ ] `create/4 (err, list, err, list)`
-- [ ] `create/4 (err, list, err, map)`
-- [ ] `create/4 (err, list, list, int)`
-- [ ] `create/4 (err, list, list, float)`
-- [ ] `create/4 (err, list, list, obj)`
-- [ ] `create/4 (err, list, list, str)`
-- [ ] `create/4 (err, list, list, err)`
-- [ ] `create/4 (err, list, list, list)`
-- [ ] `create/4 (err, list, list, map)`
-- [ ] `create/4 (err, list, map, int)`
-- [ ] `create/4 (err, list, map, float)`
-- [ ] `create/4 (err, list, map, obj)`
-- [ ] `create/4 (err, list, map, str)`
-- [ ] `create/4 (err, list, map, err)`
-- [ ] `create/4 (err, list, map, list)`
-- [ ] `create/4 (err, list, map, map)`
-- [ ] `create/4 (err, map, int, int)`
-- [ ] `create/4 (err, map, int, float)`
-- [ ] `create/4 (err, map, int, obj)`
-- [ ] `create/4 (err, map, int, str)`
-- [ ] `create/4 (err, map, int, err)`
-- [ ] `create/4 (err, map, int, list)`
-- [ ] `create/4 (err, map, int, map)`
-- [ ] `create/4 (err, map, float, int)`
-- [ ] `create/4 (err, map, float, float)`
-- [ ] `create/4 (err, map, float, obj)`
-- [ ] `create/4 (err, map, float, str)`
-- [ ] `create/4 (err, map, float, err)`
-- [ ] `create/4 (err, map, float, list)`
-- [ ] `create/4 (err, map, float, map)`
-- [ ] `create/4 (err, map, obj, int)`
-- [ ] `create/4 (err, map, obj, float)`
-- [ ] `create/4 (err, map, obj, obj)`
-- [ ] `create/4 (err, map, obj, str)`
-- [ ] `create/4 (err, map, obj, err)`
-- [ ] `create/4 (err, map, obj, list)`
-- [ ] `create/4 (err, map, obj, map)`
-- [ ] `create/4 (err, map, str, int)`
-- [ ] `create/4 (err, map, str, float)`
-- [ ] `create/4 (err, map, str, obj)`
-- [ ] `create/4 (err, map, str, str)`
-- [ ] `create/4 (err, map, str, err)`
-- [ ] `create/4 (err, map, str, list)`
-- [ ] `create/4 (err, map, str, map)`
-- [ ] `create/4 (err, map, err, int)`
-- [ ] `create/4 (err, map, err, float)`
-- [ ] `create/4 (err, map, err, obj)`
-- [ ] `create/4 (err, map, err, str)`
-- [ ] `create/4 (err, map, err, err)`
-- [ ] `create/4 (err, map, err, list)`
-- [ ] `create/4 (err, map, err, map)`
-- [ ] `create/4 (err, map, list, int)`
-- [ ] `create/4 (err, map, list, float)`
-- [ ] `create/4 (err, map, list, obj)`
-- [ ] `create/4 (err, map, list, str)`
-- [ ] `create/4 (err, map, list, err)`
-- [ ] `create/4 (err, map, list, list)`
-- [ ] `create/4 (err, map, list, map)`
-- [ ] `create/4 (err, map, map, int)`
-- [ ] `create/4 (err, map, map, float)`
-- [ ] `create/4 (err, map, map, obj)`
-- [ ] `create/4 (err, map, map, str)`
-- [ ] `create/4 (err, map, map, err)`
-- [ ] `create/4 (err, map, map, list)`
-- [ ] `create/4 (err, map, map, map)`
-- [ ] `create/4 (list, int, int, int)`
-- [ ] `create/4 (list, int, int, float)`
-- [ ] `create/4 (list, int, int, obj)`
-- [ ] `create/4 (list, int, int, str)`
-- [ ] `create/4 (list, int, int, err)`
-- [ ] `create/4 (list, int, int, list)`
-- [ ] `create/4 (list, int, int, map)`
-- [ ] `create/4 (list, int, float, int)`
-- [ ] `create/4 (list, int, float, float)`
-- [ ] `create/4 (list, int, float, obj)`
-- [ ] `create/4 (list, int, float, str)`
-- [ ] `create/4 (list, int, float, err)`
-- [ ] `create/4 (list, int, float, list)`
-- [ ] `create/4 (list, int, float, map)`
-- [ ] `create/4 (list, int, obj, int)`
-- [ ] `create/4 (list, int, obj, float)`
-- [ ] `create/4 (list, int, obj, obj)`
-- [ ] `create/4 (list, int, obj, str)`
-- [ ] `create/4 (list, int, obj, err)`
-- [ ] `create/4 (list, int, obj, list)`
-- [ ] `create/4 (list, int, obj, map)`
-- [ ] `create/4 (list, int, str, int)`
-- [ ] `create/4 (list, int, str, float)`
-- [ ] `create/4 (list, int, str, obj)`
-- [ ] `create/4 (list, int, str, str)`
-- [ ] `create/4 (list, int, str, err)`
-- [ ] `create/4 (list, int, str, list)`
-- [ ] `create/4 (list, int, str, map)`
-- [ ] `create/4 (list, int, err, int)`
-- [ ] `create/4 (list, int, err, float)`
-- [ ] `create/4 (list, int, err, obj)`
-- [ ] `create/4 (list, int, err, str)`
-- [ ] `create/4 (list, int, err, err)`
-- [ ] `create/4 (list, int, err, list)`
-- [ ] `create/4 (list, int, err, map)`
-- [ ] `create/4 (list, int, list, int)`
-- [ ] `create/4 (list, int, list, float)`
-- [ ] `create/4 (list, int, list, obj)`
-- [ ] `create/4 (list, int, list, str)`
-- [ ] `create/4 (list, int, list, err)`
-- [ ] `create/4 (list, int, list, list)`
-- [ ] `create/4 (list, int, list, map)`
-- [ ] `create/4 (list, int, map, int)`
-- [ ] `create/4 (list, int, map, float)`
-- [ ] `create/4 (list, int, map, obj)`
-- [ ] `create/4 (list, int, map, str)`
-- [ ] `create/4 (list, int, map, err)`
-- [ ] `create/4 (list, int, map, list)`
-- [ ] `create/4 (list, int, map, map)`
-- [ ] `create/4 (list, float, int, int)`
-- [ ] `create/4 (list, float, int, float)`
-- [ ] `create/4 (list, float, int, obj)`
-- [ ] `create/4 (list, float, int, str)`
-- [ ] `create/4 (list, float, int, err)`
-- [ ] `create/4 (list, float, int, list)`
-- [ ] `create/4 (list, float, int, map)`
-- [ ] `create/4 (list, float, float, int)`
-- [ ] `create/4 (list, float, float, float)`
-- [ ] `create/4 (list, float, float, obj)`
-- [ ] `create/4 (list, float, float, str)`
-- [ ] `create/4 (list, float, float, err)`
-- [ ] `create/4 (list, float, float, list)`
-- [ ] `create/4 (list, float, float, map)`
-- [ ] `create/4 (list, float, obj, int)`
-- [ ] `create/4 (list, float, obj, float)`
-- [ ] `create/4 (list, float, obj, obj)`
-- [ ] `create/4 (list, float, obj, str)`
-- [ ] `create/4 (list, float, obj, err)`
-- [ ] `create/4 (list, float, obj, list)`
-- [ ] `create/4 (list, float, obj, map)`
-- [ ] `create/4 (list, float, str, int)`
-- [ ] `create/4 (list, float, str, float)`
-- [ ] `create/4 (list, float, str, obj)`
-- [ ] `create/4 (list, float, str, str)`
-- [ ] `create/4 (list, float, str, err)`
-- [ ] `create/4 (list, float, str, list)`
-- [ ] `create/4 (list, float, str, map)`
-- [ ] `create/4 (list, float, err, int)`
-- [ ] `create/4 (list, float, err, float)`
-- [ ] `create/4 (list, float, err, obj)`
-- [ ] `create/4 (list, float, err, str)`
-- [ ] `create/4 (list, float, err, err)`
-- [ ] `create/4 (list, float, err, list)`
-- [ ] `create/4 (list, float, err, map)`
-- [ ] `create/4 (list, float, list, int)`
-- [ ] `create/4 (list, float, list, float)`
-- [ ] `create/4 (list, float, list, obj)`
-- [ ] `create/4 (list, float, list, str)`
-- [ ] `create/4 (list, float, list, err)`
-- [ ] `create/4 (list, float, list, list)`
-- [ ] `create/4 (list, float, list, map)`
-- [ ] `create/4 (list, float, map, int)`
-- [ ] `create/4 (list, float, map, float)`
-- [ ] `create/4 (list, float, map, obj)`
-- [ ] `create/4 (list, float, map, str)`
-- [ ] `create/4 (list, float, map, err)`
-- [ ] `create/4 (list, float, map, list)`
-- [ ] `create/4 (list, float, map, map)`
-- [ ] `create/4 (list, obj, int, int)`
-- [ ] `create/4 (list, obj, int, float)`
-- [ ] `create/4 (list, obj, int, obj)`
-- [ ] `create/4 (list, obj, int, str)`
-- [ ] `create/4 (list, obj, int, err)`
-- [ ] `create/4 (list, obj, int, list)`
-- [ ] `create/4 (list, obj, int, map)`
-- [ ] `create/4 (list, obj, float, int)`
-- [ ] `create/4 (list, obj, float, float)`
-- [ ] `create/4 (list, obj, float, obj)`
-- [ ] `create/4 (list, obj, float, str)`
-- [ ] `create/4 (list, obj, float, err)`
-- [ ] `create/4 (list, obj, float, list)`
-- [ ] `create/4 (list, obj, float, map)`
-- [ ] `create/4 (list, obj, obj, int)`
-- [ ] `create/4 (list, obj, obj, float)`
-- [ ] `create/4 (list, obj, obj, obj)`
-- [ ] `create/4 (list, obj, obj, str)`
-- [ ] `create/4 (list, obj, obj, err)`
-- [ ] `create/4 (list, obj, obj, list)`
-- [ ] `create/4 (list, obj, obj, map)`
-- [ ] `create/4 (list, obj, str, int)`
-- [ ] `create/4 (list, obj, str, float)`
-- [ ] `create/4 (list, obj, str, obj)`
-- [ ] `create/4 (list, obj, str, str)`
-- [ ] `create/4 (list, obj, str, err)`
-- [ ] `create/4 (list, obj, str, list)`
-- [ ] `create/4 (list, obj, str, map)`
-- [ ] `create/4 (list, obj, err, int)`
-- [ ] `create/4 (list, obj, err, float)`
-- [ ] `create/4 (list, obj, err, obj)`
-- [ ] `create/4 (list, obj, err, str)`
-- [ ] `create/4 (list, obj, err, err)`
-- [ ] `create/4 (list, obj, err, list)`
-- [ ] `create/4 (list, obj, err, map)`
-- [ ] `create/4 (list, obj, list, int)`
-- [ ] `create/4 (list, obj, list, float)`
-- [ ] `create/4 (list, obj, list, obj)`
-- [ ] `create/4 (list, obj, list, str)`
-- [ ] `create/4 (list, obj, list, err)`
-- [ ] `create/4 (list, obj, list, list)`
-- [ ] `create/4 (list, obj, list, map)`
-- [ ] `create/4 (list, obj, map, int)`
-- [ ] `create/4 (list, obj, map, float)`
-- [ ] `create/4 (list, obj, map, obj)`
-- [ ] `create/4 (list, obj, map, str)`
-- [ ] `create/4 (list, obj, map, err)`
-- [ ] `create/4 (list, obj, map, list)`
-- [ ] `create/4 (list, obj, map, map)`
-- [ ] `create/4 (list, str, int, int)`
-- [ ] `create/4 (list, str, int, float)`
-- [ ] `create/4 (list, str, int, obj)`
-- [ ] `create/4 (list, str, int, str)`
-- [ ] `create/4 (list, str, int, err)`
-- [ ] `create/4 (list, str, int, list)`
-- [ ] `create/4 (list, str, int, map)`
-- [ ] `create/4 (list, str, float, int)`
-- [ ] `create/4 (list, str, float, float)`
-- [ ] `create/4 (list, str, float, obj)`
-- [ ] `create/4 (list, str, float, str)`
-- [ ] `create/4 (list, str, float, err)`
-- [ ] `create/4 (list, str, float, list)`
-- [ ] `create/4 (list, str, float, map)`
-- [ ] `create/4 (list, str, obj, int)`
-- [ ] `create/4 (list, str, obj, float)`
-- [ ] `create/4 (list, str, obj, obj)`
-- [ ] `create/4 (list, str, obj, str)`
-- [ ] `create/4 (list, str, obj, err)`
-- [ ] `create/4 (list, str, obj, list)`
-- [ ] `create/4 (list, str, obj, map)`
-- [ ] `create/4 (list, str, str, int)`
-- [ ] `create/4 (list, str, str, float)`
-- [ ] `create/4 (list, str, str, obj)`
-- [ ] `create/4 (list, str, str, str)`
-- [ ] `create/4 (list, str, str, err)`
-- [ ] `create/4 (list, str, str, list)`
-- [ ] `create/4 (list, str, str, map)`
-- [ ] `create/4 (list, str, err, int)`
-- [ ] `create/4 (list, str, err, float)`
-- [ ] `create/4 (list, str, err, obj)`
-- [ ] `create/4 (list, str, err, str)`
-- [ ] `create/4 (list, str, err, err)`
-- [ ] `create/4 (list, str, err, list)`
-- [ ] `create/4 (list, str, err, map)`
-- [ ] `create/4 (list, str, list, int)`
-- [ ] `create/4 (list, str, list, float)`
-- [ ] `create/4 (list, str, list, obj)`
-- [ ] `create/4 (list, str, list, str)`
-- [ ] `create/4 (list, str, list, err)`
-- [ ] `create/4 (list, str, list, list)`
-- [ ] `create/4 (list, str, list, map)`
-- [ ] `create/4 (list, str, map, int)`
-- [ ] `create/4 (list, str, map, float)`
-- [ ] `create/4 (list, str, map, obj)`
-- [ ] `create/4 (list, str, map, str)`
-- [ ] `create/4 (list, str, map, err)`
-- [ ] `create/4 (list, str, map, list)`
-- [ ] `create/4 (list, str, map, map)`
-- [ ] `create/4 (list, err, int, int)`
-- [ ] `create/4 (list, err, int, float)`
-- [ ] `create/4 (list, err, int, obj)`
-- [ ] `create/4 (list, err, int, str)`
-- [ ] `create/4 (list, err, int, err)`
-- [ ] `create/4 (list, err, int, list)`
-- [ ] `create/4 (list, err, int, map)`
-- [ ] `create/4 (list, err, float, int)`
-- [ ] `create/4 (list, err, float, float)`
-- [ ] `create/4 (list, err, float, obj)`
-- [ ] `create/4 (list, err, float, str)`
-- [ ] `create/4 (list, err, float, err)`
-- [ ] `create/4 (list, err, float, list)`
-- [ ] `create/4 (list, err, float, map)`
-- [ ] `create/4 (list, err, obj, int)`
-- [ ] `create/4 (list, err, obj, float)`
-- [ ] `create/4 (list, err, obj, obj)`
-- [ ] `create/4 (list, err, obj, str)`
-- [ ] `create/4 (list, err, obj, err)`
-- [ ] `create/4 (list, err, obj, list)`
-- [ ] `create/4 (list, err, obj, map)`
-- [ ] `create/4 (list, err, str, int)`
-- [ ] `create/4 (list, err, str, float)`
-- [ ] `create/4 (list, err, str, obj)`
-- [ ] `create/4 (list, err, str, str)`
-- [ ] `create/4 (list, err, str, err)`
-- [ ] `create/4 (list, err, str, list)`
-- [ ] `create/4 (list, err, str, map)`
-- [ ] `create/4 (list, err, err, int)`
-- [ ] `create/4 (list, err, err, float)`
-- [ ] `create/4 (list, err, err, obj)`
-- [ ] `create/4 (list, err, err, str)`
-- [ ] `create/4 (list, err, err, err)`
-- [ ] `create/4 (list, err, err, list)`
-- [ ] `create/4 (list, err, err, map)`
-- [ ] `create/4 (list, err, list, int)`
-- [ ] `create/4 (list, err, list, float)`
-- [ ] `create/4 (list, err, list, obj)`
-- [ ] `create/4 (list, err, list, str)`
-- [ ] `create/4 (list, err, list, err)`
-- [ ] `create/4 (list, err, list, list)`
-- [ ] `create/4 (list, err, list, map)`
-- [ ] `create/4 (list, err, map, int)`
-- [ ] `create/4 (list, err, map, float)`
-- [ ] `create/4 (list, err, map, obj)`
-- [ ] `create/4 (list, err, map, str)`
-- [ ] `create/4 (list, err, map, err)`
-- [ ] `create/4 (list, err, map, list)`
-- [ ] `create/4 (list, err, map, map)`
-- [ ] `create/4 (list, list, int, int)`
-- [ ] `create/4 (list, list, int, float)`
-- [ ] `create/4 (list, list, int, obj)`
-- [ ] `create/4 (list, list, int, str)`
-- [ ] `create/4 (list, list, int, err)`
-- [ ] `create/4 (list, list, int, list)`
-- [ ] `create/4 (list, list, int, map)`
-- [ ] `create/4 (list, list, float, int)`
-- [ ] `create/4 (list, list, float, float)`
-- [ ] `create/4 (list, list, float, obj)`
-- [ ] `create/4 (list, list, float, str)`
-- [ ] `create/4 (list, list, float, err)`
-- [ ] `create/4 (list, list, float, list)`
-- [ ] `create/4 (list, list, float, map)`
-- [ ] `create/4 (list, list, obj, int)`
-- [ ] `create/4 (list, list, obj, float)`
-- [ ] `create/4 (list, list, obj, obj)`
-- [ ] `create/4 (list, list, obj, str)`
-- [ ] `create/4 (list, list, obj, err)`
-- [ ] `create/4 (list, list, obj, list)`
-- [ ] `create/4 (list, list, obj, map)`
-- [ ] `create/4 (list, list, str, int)`
-- [ ] `create/4 (list, list, str, float)`
-- [ ] `create/4 (list, list, str, obj)`
-- [ ] `create/4 (list, list, str, str)`
-- [ ] `create/4 (list, list, str, err)`
-- [ ] `create/4 (list, list, str, list)`
-- [ ] `create/4 (list, list, str, map)`
-- [ ] `create/4 (list, list, err, int)`
-- [ ] `create/4 (list, list, err, float)`
-- [ ] `create/4 (list, list, err, obj)`
-- [ ] `create/4 (list, list, err, str)`
-- [ ] `create/4 (list, list, err, err)`
-- [ ] `create/4 (list, list, err, list)`
-- [ ] `create/4 (list, list, err, map)`
-- [ ] `create/4 (list, list, list, int)`
-- [ ] `create/4 (list, list, list, float)`
-- [ ] `create/4 (list, list, list, obj)`
-- [ ] `create/4 (list, list, list, str)`
-- [ ] `create/4 (list, list, list, err)`
-- [ ] `create/4 (list, list, list, list)`
-- [ ] `create/4 (list, list, list, map)`
-- [ ] `create/4 (list, list, map, int)`
-- [ ] `create/4 (list, list, map, float)`
-- [ ] `create/4 (list, list, map, obj)`
-- [ ] `create/4 (list, list, map, str)`
-- [ ] `create/4 (list, list, map, err)`
-- [ ] `create/4 (list, list, map, list)`
-- [ ] `create/4 (list, list, map, map)`
-- [ ] `create/4 (list, map, int, int)`
-- [ ] `create/4 (list, map, int, float)`
-- [ ] `create/4 (list, map, int, obj)`
-- [ ] `create/4 (list, map, int, str)`
-- [ ] `create/4 (list, map, int, err)`
-- [ ] `create/4 (list, map, int, list)`
-- [ ] `create/4 (list, map, int, map)`
-- [ ] `create/4 (list, map, float, int)`
-- [ ] `create/4 (list, map, float, float)`
-- [ ] `create/4 (list, map, float, obj)`
-- [ ] `create/4 (list, map, float, str)`
-- [ ] `create/4 (list, map, float, err)`
-- [ ] `create/4 (list, map, float, list)`
-- [ ] `create/4 (list, map, float, map)`
-- [ ] `create/4 (list, map, obj, int)`
-- [ ] `create/4 (list, map, obj, float)`
-- [ ] `create/4 (list, map, obj, obj)`
-- [ ] `create/4 (list, map, obj, str)`
-- [ ] `create/4 (list, map, obj, err)`
-- [ ] `create/4 (list, map, obj, list)`
-- [ ] `create/4 (list, map, obj, map)`
-- [ ] `create/4 (list, map, str, int)`
-- [ ] `create/4 (list, map, str, float)`
-- [ ] `create/4 (list, map, str, obj)`
-- [ ] `create/4 (list, map, str, str)`
-- [ ] `create/4 (list, map, str, err)`
-- [ ] `create/4 (list, map, str, list)`
-- [ ] `create/4 (list, map, str, map)`
-- [ ] `create/4 (list, map, err, int)`
-- [ ] `create/4 (list, map, err, float)`
-- [ ] `create/4 (list, map, err, obj)`
-- [ ] `create/4 (list, map, err, str)`
-- [ ] `create/4 (list, map, err, err)`
-- [ ] `create/4 (list, map, err, list)`
-- [ ] `create/4 (list, map, err, map)`
-- [ ] `create/4 (list, map, list, int)`
-- [ ] `create/4 (list, map, list, float)`
-- [ ] `create/4 (list, map, list, obj)`
-- [ ] `create/4 (list, map, list, str)`
-- [ ] `create/4 (list, map, list, err)`
-- [ ] `create/4 (list, map, list, list)`
-- [ ] `create/4 (list, map, list, map)`
-- [ ] `create/4 (list, map, map, int)`
-- [ ] `create/4 (list, map, map, float)`
-- [ ] `create/4 (list, map, map, obj)`
-- [ ] `create/4 (list, map, map, str)`
-- [ ] `create/4 (list, map, map, err)`
-- [ ] `create/4 (list, map, map, list)`
-- [ ] `create/4 (list, map, map, map)`
-- [ ] `create/4 (map, int, int, int)`
-- [ ] `create/4 (map, int, int, float)`
-- [ ] `create/4 (map, int, int, obj)`
-- [ ] `create/4 (map, int, int, str)`
-- [ ] `create/4 (map, int, int, err)`
-- [ ] `create/4 (map, int, int, list)`
-- [ ] `create/4 (map, int, int, map)`
-- [ ] `create/4 (map, int, float, int)`
-- [ ] `create/4 (map, int, float, float)`
-- [ ] `create/4 (map, int, float, obj)`
-- [ ] `create/4 (map, int, float, str)`
-- [ ] `create/4 (map, int, float, err)`
-- [ ] `create/4 (map, int, float, list)`
-- [ ] `create/4 (map, int, float, map)`
-- [ ] `create/4 (map, int, obj, int)`
-- [ ] `create/4 (map, int, obj, float)`
-- [ ] `create/4 (map, int, obj, obj)`
-- [ ] `create/4 (map, int, obj, str)`
-- [ ] `create/4 (map, int, obj, err)`
-- [ ] `create/4 (map, int, obj, list)`
-- [ ] `create/4 (map, int, obj, map)`
-- [ ] `create/4 (map, int, str, int)`
-- [ ] `create/4 (map, int, str, float)`
-- [ ] `create/4 (map, int, str, obj)`
-- [ ] `create/4 (map, int, str, str)`
-- [ ] `create/4 (map, int, str, err)`
-- [ ] `create/4 (map, int, str, list)`
-- [ ] `create/4 (map, int, str, map)`
-- [ ] `create/4 (map, int, err, int)`
-- [ ] `create/4 (map, int, err, float)`
-- [ ] `create/4 (map, int, err, obj)`
-- [ ] `create/4 (map, int, err, str)`
-- [ ] `create/4 (map, int, err, err)`
-- [ ] `create/4 (map, int, err, list)`
-- [ ] `create/4 (map, int, err, map)`
-- [ ] `create/4 (map, int, list, int)`
-- [ ] `create/4 (map, int, list, float)`
-- [ ] `create/4 (map, int, list, obj)`
-- [ ] `create/4 (map, int, list, str)`
-- [ ] `create/4 (map, int, list, err)`
-- [ ] `create/4 (map, int, list, list)`
-- [ ] `create/4 (map, int, list, map)`
-- [ ] `create/4 (map, int, map, int)`
-- [ ] `create/4 (map, int, map, float)`
-- [ ] `create/4 (map, int, map, obj)`
-- [ ] `create/4 (map, int, map, str)`
-- [ ] `create/4 (map, int, map, err)`
-- [ ] `create/4 (map, int, map, list)`
-- [ ] `create/4 (map, int, map, map)`
-- [ ] `create/4 (map, float, int, int)`
-- [ ] `create/4 (map, float, int, float)`
-- [ ] `create/4 (map, float, int, obj)`
-- [ ] `create/4 (map, float, int, str)`
-- [ ] `create/4 (map, float, int, err)`
-- [ ] `create/4 (map, float, int, list)`
-- [ ] `create/4 (map, float, int, map)`
-- [ ] `create/4 (map, float, float, int)`
-- [ ] `create/4 (map, float, float, float)`
-- [ ] `create/4 (map, float, float, obj)`
-- [ ] `create/4 (map, float, float, str)`
-- [ ] `create/4 (map, float, float, err)`
-- [ ] `create/4 (map, float, float, list)`
-- [ ] `create/4 (map, float, float, map)`
-- [ ] `create/4 (map, float, obj, int)`
-- [ ] `create/4 (map, float, obj, float)`
-- [ ] `create/4 (map, float, obj, obj)`
-- [ ] `create/4 (map, float, obj, str)`
-- [ ] `create/4 (map, float, obj, err)`
-- [ ] `create/4 (map, float, obj, list)`
-- [ ] `create/4 (map, float, obj, map)`
-- [ ] `create/4 (map, float, str, int)`
-- [ ] `create/4 (map, float, str, float)`
-- [ ] `create/4 (map, float, str, obj)`
-- [ ] `create/4 (map, float, str, str)`
-- [ ] `create/4 (map, float, str, err)`
-- [ ] `create/4 (map, float, str, list)`
-- [ ] `create/4 (map, float, str, map)`
-- [ ] `create/4 (map, float, err, int)`
-- [ ] `create/4 (map, float, err, float)`
-- [ ] `create/4 (map, float, err, obj)`
-- [ ] `create/4 (map, float, err, str)`
-- [ ] `create/4 (map, float, err, err)`
-- [ ] `create/4 (map, float, err, list)`
-- [ ] `create/4 (map, float, err, map)`
-- [ ] `create/4 (map, float, list, int)`
-- [ ] `create/4 (map, float, list, float)`
-- [ ] `create/4 (map, float, list, obj)`
-- [ ] `create/4 (map, float, list, str)`
-- [ ] `create/4 (map, float, list, err)`
-- [ ] `create/4 (map, float, list, list)`
-- [ ] `create/4 (map, float, list, map)`
-- [ ] `create/4 (map, float, map, int)`
-- [ ] `create/4 (map, float, map, float)`
-- [ ] `create/4 (map, float, map, obj)`
-- [ ] `create/4 (map, float, map, str)`
-- [ ] `create/4 (map, float, map, err)`
-- [ ] `create/4 (map, float, map, list)`
-- [ ] `create/4 (map, float, map, map)`
-- [ ] `create/4 (map, obj, int, int)`
-- [ ] `create/4 (map, obj, int, float)`
-- [ ] `create/4 (map, obj, int, obj)`
-- [ ] `create/4 (map, obj, int, str)`
-- [ ] `create/4 (map, obj, int, err)`
-- [ ] `create/4 (map, obj, int, list)`
-- [ ] `create/4 (map, obj, int, map)`
-- [ ] `create/4 (map, obj, float, int)`
-- [ ] `create/4 (map, obj, float, float)`
-- [ ] `create/4 (map, obj, float, obj)`
-- [ ] `create/4 (map, obj, float, str)`
-- [ ] `create/4 (map, obj, float, err)`
-- [ ] `create/4 (map, obj, float, list)`
-- [ ] `create/4 (map, obj, float, map)`
-- [ ] `create/4 (map, obj, obj, int)`
-- [ ] `create/4 (map, obj, obj, float)`
-- [ ] `create/4 (map, obj, obj, obj)`
-- [ ] `create/4 (map, obj, obj, str)`
-- [ ] `create/4 (map, obj, obj, err)`
-- [ ] `create/4 (map, obj, obj, list)`
-- [ ] `create/4 (map, obj, obj, map)`
-- [ ] `create/4 (map, obj, str, int)`
-- [ ] `create/4 (map, obj, str, float)`
-- [ ] `create/4 (map, obj, str, obj)`
-- [ ] `create/4 (map, obj, str, str)`
-- [ ] `create/4 (map, obj, str, err)`
-- [ ] `create/4 (map, obj, str, list)`
-- [ ] `create/4 (map, obj, str, map)`
-- [ ] `create/4 (map, obj, err, int)`
-- [ ] `create/4 (map, obj, err, float)`
-- [ ] `create/4 (map, obj, err, obj)`
-- [ ] `create/4 (map, obj, err, str)`
-- [ ] `create/4 (map, obj, err, err)`
-- [ ] `create/4 (map, obj, err, list)`
-- [ ] `create/4 (map, obj, err, map)`
-- [ ] `create/4 (map, obj, list, int)`
-- [ ] `create/4 (map, obj, list, float)`
-- [ ] `create/4 (map, obj, list, obj)`
-- [ ] `create/4 (map, obj, list, str)`
-- [ ] `create/4 (map, obj, list, err)`
-- [ ] `create/4 (map, obj, list, list)`
-- [ ] `create/4 (map, obj, list, map)`
-- [ ] `create/4 (map, obj, map, int)`
-- [ ] `create/4 (map, obj, map, float)`
-- [ ] `create/4 (map, obj, map, obj)`
-- [ ] `create/4 (map, obj, map, str)`
-- [ ] `create/4 (map, obj, map, err)`
-- [ ] `create/4 (map, obj, map, list)`
-- [ ] `create/4 (map, obj, map, map)`
-- [ ] `create/4 (map, str, int, int)`
-- [ ] `create/4 (map, str, int, float)`
-- [ ] `create/4 (map, str, int, obj)`
-- [ ] `create/4 (map, str, int, str)`
-- [ ] `create/4 (map, str, int, err)`
-- [ ] `create/4 (map, str, int, list)`
-- [ ] `create/4 (map, str, int, map)`
-- [ ] `create/4 (map, str, float, int)`
-- [ ] `create/4 (map, str, float, float)`
-- [ ] `create/4 (map, str, float, obj)`
-- [ ] `create/4 (map, str, float, str)`
-- [ ] `create/4 (map, str, float, err)`
-- [ ] `create/4 (map, str, float, list)`
-- [ ] `create/4 (map, str, float, map)`
-- [ ] `create/4 (map, str, obj, int)`
-- [ ] `create/4 (map, str, obj, float)`
-- [ ] `create/4 (map, str, obj, obj)`
-- [ ] `create/4 (map, str, obj, str)`
-- [ ] `create/4 (map, str, obj, err)`
-- [ ] `create/4 (map, str, obj, list)`
-- [ ] `create/4 (map, str, obj, map)`
-- [ ] `create/4 (map, str, str, int)`
-- [ ] `create/4 (map, str, str, float)`
-- [ ] `create/4 (map, str, str, obj)`
-- [ ] `create/4 (map, str, str, str)`
-- [ ] `create/4 (map, str, str, err)`
-- [ ] `create/4 (map, str, str, list)`
-- [ ] `create/4 (map, str, str, map)`
-- [ ] `create/4 (map, str, err, int)`
-- [ ] `create/4 (map, str, err, float)`
-- [ ] `create/4 (map, str, err, obj)`
-- [ ] `create/4 (map, str, err, str)`
-- [ ] `create/4 (map, str, err, err)`
-- [ ] `create/4 (map, str, err, list)`
-- [ ] `create/4 (map, str, err, map)`
-- [ ] `create/4 (map, str, list, int)`
-- [ ] `create/4 (map, str, list, float)`
-- [ ] `create/4 (map, str, list, obj)`
-- [ ] `create/4 (map, str, list, str)`
-- [ ] `create/4 (map, str, list, err)`
-- [ ] `create/4 (map, str, list, list)`
-- [ ] `create/4 (map, str, list, map)`
-- [ ] `create/4 (map, str, map, int)`
-- [ ] `create/4 (map, str, map, float)`
-- [ ] `create/4 (map, str, map, obj)`
-- [ ] `create/4 (map, str, map, str)`
-- [ ] `create/4 (map, str, map, err)`
-- [ ] `create/4 (map, str, map, list)`
-- [ ] `create/4 (map, str, map, map)`
-- [ ] `create/4 (map, err, int, int)`
-- [ ] `create/4 (map, err, int, float)`
-- [ ] `create/4 (map, err, int, obj)`
-- [ ] `create/4 (map, err, int, str)`
-- [ ] `create/4 (map, err, int, err)`
-- [ ] `create/4 (map, err, int, list)`
-- [ ] `create/4 (map, err, int, map)`
-- [ ] `create/4 (map, err, float, int)`
-- [ ] `create/4 (map, err, float, float)`
-- [ ] `create/4 (map, err, float, obj)`
-- [ ] `create/4 (map, err, float, str)`
-- [ ] `create/4 (map, err, float, err)`
-- [ ] `create/4 (map, err, float, list)`
-- [ ] `create/4 (map, err, float, map)`
-- [ ] `create/4 (map, err, obj, int)`
-- [ ] `create/4 (map, err, obj, float)`
-- [ ] `create/4 (map, err, obj, obj)`
-- [ ] `create/4 (map, err, obj, str)`
-- [ ] `create/4 (map, err, obj, err)`
-- [ ] `create/4 (map, err, obj, list)`
-- [ ] `create/4 (map, err, obj, map)`
-- [ ] `create/4 (map, err, str, int)`
-- [ ] `create/4 (map, err, str, float)`
-- [ ] `create/4 (map, err, str, obj)`
-- [ ] `create/4 (map, err, str, str)`
-- [ ] `create/4 (map, err, str, err)`
-- [ ] `create/4 (map, err, str, list)`
-- [ ] `create/4 (map, err, str, map)`
-- [ ] `create/4 (map, err, err, int)`
-- [ ] `create/4 (map, err, err, float)`
-- [ ] `create/4 (map, err, err, obj)`
-- [ ] `create/4 (map, err, err, str)`
-- [ ] `create/4 (map, err, err, err)`
-- [ ] `create/4 (map, err, err, list)`
-- [ ] `create/4 (map, err, err, map)`
-- [ ] `create/4 (map, err, list, int)`
-- [ ] `create/4 (map, err, list, float)`
-- [ ] `create/4 (map, err, list, obj)`
-- [ ] `create/4 (map, err, list, str)`
-- [ ] `create/4 (map, err, list, err)`
-- [ ] `create/4 (map, err, list, list)`
-- [ ] `create/4 (map, err, list, map)`
-- [ ] `create/4 (map, err, map, int)`
-- [ ] `create/4 (map, err, map, float)`
-- [ ] `create/4 (map, err, map, obj)`
-- [ ] `create/4 (map, err, map, str)`
-- [ ] `create/4 (map, err, map, err)`
-- [ ] `create/4 (map, err, map, list)`
-- [ ] `create/4 (map, err, map, map)`
-- [ ] `create/4 (map, list, int, int)`
-- [ ] `create/4 (map, list, int, float)`
-- [ ] `create/4 (map, list, int, obj)`
-- [ ] `create/4 (map, list, int, str)`
-- [ ] `create/4 (map, list, int, err)`
-- [ ] `create/4 (map, list, int, list)`
-- [ ] `create/4 (map, list, int, map)`
-- [ ] `create/4 (map, list, float, int)`
-- [ ] `create/4 (map, list, float, float)`
-- [ ] `create/4 (map, list, float, obj)`
-- [ ] `create/4 (map, list, float, str)`
-- [ ] `create/4 (map, list, float, err)`
-- [ ] `create/4 (map, list, float, list)`
-- [ ] `create/4 (map, list, float, map)`
-- [ ] `create/4 (map, list, obj, int)`
-- [ ] `create/4 (map, list, obj, float)`
-- [ ] `create/4 (map, list, obj, obj)`
-- [ ] `create/4 (map, list, obj, str)`
-- [ ] `create/4 (map, list, obj, err)`
-- [ ] `create/4 (map, list, obj, list)`
-- [ ] `create/4 (map, list, obj, map)`
-- [ ] `create/4 (map, list, str, int)`
-- [ ] `create/4 (map, list, str, float)`
-- [ ] `create/4 (map, list, str, obj)`
-- [ ] `create/4 (map, list, str, str)`
-- [ ] `create/4 (map, list, str, err)`
-- [ ] `create/4 (map, list, str, list)`
-- [ ] `create/4 (map, list, str, map)`
-- [ ] `create/4 (map, list, err, int)`
-- [ ] `create/4 (map, list, err, float)`
-- [ ] `create/4 (map, list, err, obj)`
-- [ ] `create/4 (map, list, err, str)`
-- [ ] `create/4 (map, list, err, err)`
-- [ ] `create/4 (map, list, err, list)`
-- [ ] `create/4 (map, list, err, map)`
-- [ ] `create/4 (map, list, list, int)`
-- [ ] `create/4 (map, list, list, float)`
-- [ ] `create/4 (map, list, list, obj)`
-- [ ] `create/4 (map, list, list, str)`
-- [ ] `create/4 (map, list, list, err)`
-- [ ] `create/4 (map, list, list, list)`
-- [ ] `create/4 (map, list, list, map)`
-- [ ] `create/4 (map, list, map, int)`
-- [ ] `create/4 (map, list, map, float)`
-- [ ] `create/4 (map, list, map, obj)`
-- [ ] `create/4 (map, list, map, str)`
-- [ ] `create/4 (map, list, map, err)`
-- [ ] `create/4 (map, list, map, list)`
-- [ ] `create/4 (map, list, map, map)`
-- [ ] `create/4 (map, map, int, int)`
-- [ ] `create/4 (map, map, int, float)`
-- [ ] `create/4 (map, map, int, obj)`
-- [ ] `create/4 (map, map, int, str)`
-- [ ] `create/4 (map, map, int, err)`
-- [ ] `create/4 (map, map, int, list)`
-- [ ] `create/4 (map, map, int, map)`
-- [ ] `create/4 (map, map, float, int)`
-- [ ] `create/4 (map, map, float, float)`
-- [ ] `create/4 (map, map, float, obj)`
-- [ ] `create/4 (map, map, float, str)`
-- [ ] `create/4 (map, map, float, err)`
-- [ ] `create/4 (map, map, float, list)`
-- [ ] `create/4 (map, map, float, map)`
-- [ ] `create/4 (map, map, obj, int)`
-- [ ] `create/4 (map, map, obj, float)`
-- [ ] `create/4 (map, map, obj, obj)`
-- [ ] `create/4 (map, map, obj, str)`
-- [ ] `create/4 (map, map, obj, err)`
-- [ ] `create/4 (map, map, obj, list)`
-- [ ] `create/4 (map, map, obj, map)`
-- [ ] `create/4 (map, map, str, int)`
-- [ ] `create/4 (map, map, str, float)`
-- [ ] `create/4 (map, map, str, obj)`
-- [ ] `create/4 (map, map, str, str)`
-- [ ] `create/4 (map, map, str, err)`
-- [ ] `create/4 (map, map, str, list)`
-- [ ] `create/4 (map, map, str, map)`
-- [ ] `create/4 (map, map, err, int)`
-- [ ] `create/4 (map, map, err, float)`
-- [ ] `create/4 (map, map, err, obj)`
-- [ ] `create/4 (map, map, err, str)`
-- [ ] `create/4 (map, map, err, err)`
-- [ ] `create/4 (map, map, err, list)`
-- [ ] `create/4 (map, map, err, map)`
-- [ ] `create/4 (map, map, list, int)`
-- [ ] `create/4 (map, map, list, float)`
-- [ ] `create/4 (map, map, list, obj)`
-- [ ] `create/4 (map, map, list, str)`
-- [ ] `create/4 (map, map, list, err)`
-- [ ] `create/4 (map, map, list, list)`
-- [ ] `create/4 (map, map, list, map)`
-- [ ] `create/4 (map, map, map, int)`
-- [ ] `create/4 (map, map, map, float)`
-- [ ] `create/4 (map, map, map, obj)`
-- [ ] `create/4 (map, map, map, str)`
-- [ ] `create/4 (map, map, map, err)`
-- [ ] `create/4 (map, map, map, list)`
-- [ ] `create/4 (map, map, map, map)`
+- [x] `create/4 (int, int, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, int, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, float, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, obj, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, str, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, err, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, list, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (int, map, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, int, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, float, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, obj, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, str, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, err, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, list, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (float, map, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, int, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, float, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, obj, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, str, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, err, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, list, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (obj, map, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, int, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, float, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, obj, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, str, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, err, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, list, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (str, map, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, int, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, float, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, obj, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, str, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, err, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, list, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (err, map, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, int, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, float, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, obj, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, str, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, err, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, list, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (list, map, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, int, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, float, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, obj, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, str, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, err, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, list, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/4 (map, map, map, map)` covered by `builtins/create_call_shapes.yaml`
 - [?] `create/1` unknown argument types covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml` and 894 more
 - [?] `create/2` unknown argument types covered by `builtins/objects.yaml`, `builtins/objects.yaml`, `builtins/create.yaml` and 140 more
 - [?] `create/3` unknown argument types covered by `builtins/create.yaml`, `builtins/create.yaml`, `builtins/create.yaml` and 10 more

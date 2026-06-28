@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T06:28:32Z`
+- generated_at: `2026-06-28T06:32:27Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `576`
-- missing_call_shapes: `7025`
+- covered_call_shapes: `580`
+- missing_call_shapes: `7021`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3616,11 +3616,6 @@ still needs explicit human review.
   - [ ] `notify/4 (obj, str, map, err)`
   - [ ] `notify/4 (obj, str, map, list)`
   - [ ] `notify/4 (obj, str, map, map)`
-- `object_bytes` signature `1..1 (any)`
-  - [ ] `object_bytes/1 (obj)`
-  - [ ] `object_bytes/1 (err)`
-  - [ ] `object_bytes/1 (list)`
-  - [ ] `object_bytes/1 (map)`
 - `occupants` signature `1..4 (list, any, int, int)`
   - [ ] `occupants/2 (list, int)`
   - [ ] `occupants/2 (list, float)`
@@ -11667,11 +11662,11 @@ still needs explicit human review.
 - source: `objects.cc`
 - [x] `object_bytes/1 (int)` covered by `server/stress_objects.yaml`
 - [x] `object_bytes/1 (float)` covered by `server/stress_objects.yaml`
-- [ ] `object_bytes/1 (obj)`
+- [x] `object_bytes/1 (obj)` covered by `builtins/object_bytes_call_shapes.yaml`
 - [x] `object_bytes/1 (str)` covered by `server/stress_objects.yaml`
-- [ ] `object_bytes/1 (err)`
-- [ ] `object_bytes/1 (list)`
-- [ ] `object_bytes/1 (map)`
+- [x] `object_bytes/1 (err)` covered by `builtins/object_bytes_call_shapes.yaml`
+- [x] `object_bytes/1 (list)` covered by `builtins/object_bytes_call_shapes.yaml`
+- [x] `object_bytes/1 (map)` covered by `builtins/object_bytes_call_shapes.yaml`
 - [?] `object_bytes/1` unknown argument types covered by `builtins/object_hierarchy.yaml`, `builtins/object_hierarchy.yaml`, `builtins/object_hierarchy.yaml` and 6 more
 
 ### `occupants`

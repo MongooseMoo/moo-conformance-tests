@@ -1,0 +1,25 @@
+name: object_bytes_call_shapes
+description: Table-driven TYPE_ANY coverage for object_bytes().
+
+requires:
+  builtins:
+    - object_bytes
+
+tests:
+  - name: object_bytes_arg_obj
+    permission: wizard
+    code: "object_bytes(#0) > 0"
+    expect:
+      value: 1
+
+  - name: object_bytes_arg_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [err, "object_bytes(E_ARGS)"]
+        - [list, "object_bytes({})"]
+        - [map, "object_bytes([1 -> 2])"]
+    code: "{expr}"
+    expect:
+      error: E_TYPE

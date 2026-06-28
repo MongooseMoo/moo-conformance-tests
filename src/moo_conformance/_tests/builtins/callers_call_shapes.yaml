@@ -1,0 +1,22 @@
+name: callers_call_shapes
+description: Table-driven TYPE_ANY optional-argument coverage for callers().
+
+requires:
+  builtins:
+    - callers
+
+tests:
+  - name: callers_arg_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [float, "callers(1.5)"]
+        - [obj, "callers(#0)"]
+        - [str, 'callers("x")']
+        - [err, "callers(E_ARGS)"]
+        - [list, "callers({1})"]
+        - [map, "callers([1 -> 2])"]
+    code: "{expr}"
+    expect:
+      type: list

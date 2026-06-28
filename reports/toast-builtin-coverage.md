@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T05:29:22Z`
+- generated_at: `2026-06-28T05:31:24Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `243`
 - required_call_shapes: `7721`
-- covered_call_shapes: `488`
-- missing_call_shapes: `7233`
+- covered_call_shapes: `494`
+- missing_call_shapes: `7227`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -161,13 +161,6 @@ still needs explicit human review.
   - [ ] `call_function/2 (str, obj)`
   - [ ] `call_function/2 (str, err)`
   - [ ] `call_function/2 (str, map)`
-- `callers` signature `0..1 (any)`
-  - [ ] `callers/1 (float)`
-  - [ ] `callers/1 (obj)`
-  - [ ] `callers/1 (str)`
-  - [ ] `callers/1 (err)`
-  - [ ] `callers/1 (list)`
-  - [ ] `callers/1 (map)`
 - `children` signature `1..1 (any)`
   - [ ] `children/1 (int)`
   - [ ] `children/1 (float)`
@@ -7684,12 +7677,12 @@ still needs explicit human review.
 - source: `execute.cc`
 - [x] `callers/0 ()` covered by `builtins/task_management.yaml`
 - [x] `callers/1 (int)` covered by `builtins/task_management.yaml`, `builtins/task_management.yaml`
-- [ ] `callers/1 (float)`
-- [ ] `callers/1 (obj)`
-- [ ] `callers/1 (str)`
-- [ ] `callers/1 (err)`
-- [ ] `callers/1 (list)`
-- [ ] `callers/1 (map)`
+- [x] `callers/1 (float)` covered by `builtins/callers_call_shapes.yaml`
+- [x] `callers/1 (obj)` covered by `builtins/callers_call_shapes.yaml`
+- [x] `callers/1 (str)` covered by `builtins/callers_call_shapes.yaml`
+- [x] `callers/1 (err)` covered by `builtins/callers_call_shapes.yaml`
+- [x] `callers/1 (list)` covered by `builtins/callers_call_shapes.yaml`
+- [x] `callers/1 (map)` covered by `builtins/callers_call_shapes.yaml`
 
 ### `cbrt`
 

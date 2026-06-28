@@ -76,9 +76,28 @@ tests:
       value: "{expected}"
 ```
 
-Table rows may also be mappings. A scalar that is exactly `{name}` is replaced
-with the row value without changing its type; embedded placeholders are replaced
-as strings.
+Table rows may also be mappings. For larger matrices, use `product` instead of
+`rows`; each product entry is a row axis, and the test expands over the
+cartesian product of those axes.
+
+```yaml
+tests:
+  - name: pair_{left_kind}_{right_kind}
+    table:
+      product:
+        - columns: [left_kind, left_expr]
+          rows:
+            - [int, "1"]
+            - [str, '"x"']
+        - columns: [right_kind, right_expr]
+          rows:
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+    code: "some_builtin({left_expr}, {right_expr})"
+```
+
+A scalar that is exactly `{name}` is replaced with the row value without changing
+its type; embedded placeholders are replaced as strings.
 
 STEP FIELDS
 ===========
@@ -128,6 +147,7 @@ skip_if: str
 
 from copy import deepcopy
 from dataclasses import dataclass, field
+from itertools import product
 from typing import Any
 
 
@@ -561,20 +581,68 @@ def _expand_table_test(data: dict) -> list[dict]:
     if not isinstance(table, dict):
         raise ValueError("Test table must be a mapping with rows")
 
-    rows = table.get('rows')
-    if not isinstance(rows, list):
-        raise ValueError("Test table must include a rows list")
-
-    columns = table.get('columns')
+    rows, columns = _table_rows(table)
     expanded: list[dict] = []
     for index, row in enumerate(rows):
         variables = _table_row_variables(row, columns, index)
+        variables.setdefault("index", index)
         template = deepcopy({key: value for key, value in data.items() if key != 'table'})
         expanded.append(_substitute_table_values(template, variables))
     return expanded
 
 
-def _table_row_variables(row: Any, columns: Any, index: int) -> dict[str, Any]:
+def _table_rows(table: dict) -> tuple[list[Any], Any]:
+    has_rows = 'rows' in table
+    has_product = 'product' in table
+    if has_rows == has_product:
+        raise ValueError("Test table must include exactly one of rows or product")
+
+    if has_rows:
+        rows = table.get('rows')
+        if not isinstance(rows, list):
+            raise ValueError("Test table rows must be a list")
+        return rows, table.get('columns')
+
+    return _table_product_rows(table.get('product')), None
+
+
+def _table_product_rows(table_product: Any) -> list[dict[str, Any]]:
+    if not isinstance(table_product, list) or not table_product:
+        raise ValueError("Test table product must be a non-empty list")
+
+    axes: list[list[dict[str, Any]]] = []
+    for axis in table_product:
+        if not isinstance(axis, dict):
+            raise ValueError("Test table product axes must be mappings")
+        rows = axis.get('rows')
+        if not isinstance(rows, list) or not rows:
+            raise ValueError("Test table product axes must include a non-empty rows list")
+        columns = axis.get('columns')
+        axes.append([
+            _table_row_variables(row, columns, index, include_index=False)
+            for index, row in enumerate(rows)
+        ])
+
+    expanded: list[dict[str, Any]] = []
+    for combination in product(*axes):
+        variables: dict[str, Any] = {}
+        for axis_variables in combination:
+            overlap = set(variables).intersection(axis_variables)
+            if overlap:
+                names = ", ".join(sorted(overlap))
+                raise ValueError(f"Product table variables must be unique: {names}")
+            variables.update(axis_variables)
+        expanded.append(variables)
+    return expanded
+
+
+def _table_row_variables(
+    row: Any,
+    columns: Any,
+    index: int,
+    *,
+    include_index: bool = True,
+) -> dict[str, Any]:
     if isinstance(row, dict):
         variables = dict(row)
     else:
@@ -585,7 +653,8 @@ def _table_row_variables(row: Any, columns: Any, index: int) -> dict[str, Any]:
         if len(row) != len(columns):
             raise ValueError("Table row length must match columns length")
         variables = dict(zip(columns, row))
-    variables.setdefault("index", index)
+    if include_index:
+        variables.setdefault("index", index)
     return variables
 
 

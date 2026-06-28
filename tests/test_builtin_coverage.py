@@ -60,6 +60,48 @@ def test_collect_builtin_calls_sees_expanded_table_rows(tmp_path: Path) -> None:
     ]
 
 
+def test_collect_builtin_calls_sees_product_table_rows(tmp_path: Path) -> None:
+    suite = {
+        "name": "product_table_builtin_suite",
+        "tests": [
+            {
+                "name": "haskey_{map_kind}_{key_kind}",
+                "table": {
+                    "product": [
+                        {
+                            "columns": ["map_kind", "map_expr"],
+                            "rows": [
+                                ["empty", "[]"],
+                                ["value", "[1 -> 2]"],
+                            ],
+                        },
+                        {
+                            "columns": ["key_kind", "key_expr"],
+                            "rows": [
+                                ["int", "1"],
+                                ["str", '"x"'],
+                            ],
+                        },
+                    ],
+                },
+                "code": "maphaskey({map_expr}, {key_expr})",
+                "expect": {"type": "int"},
+            }
+        ],
+    }
+    path = tmp_path / "suite.yaml"
+    path.write_text(yaml.safe_dump(suite, sort_keys=False), encoding="utf-8")
+
+    calls = collect_builtin_calls(tmp_path, {"maphaskey"})
+
+    assert [(call.name, call.arity, call.arg_types, call.context) for call in calls] == [
+        ("maphaskey", 2, ("map", "int"), "haskey_empty_int"),
+        ("maphaskey", 2, ("map", "str"), "haskey_empty_str"),
+        ("maphaskey", 2, ("map", "int"), "haskey_value_int"),
+        ("maphaskey", 2, ("map", "str"), "haskey_value_str"),
+    ]
+
+
 def test_generate_report_uses_non_excluded_builtin_inventory(
     tmp_path: Path,
     monkeypatch: MonkeyPatch,

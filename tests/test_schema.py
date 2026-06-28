@@ -98,6 +98,51 @@ def test_table_expands_column_rows_into_concrete_tests() -> None:
     assert [test.expect.value for test in suite.tests] == [0, 2]
 
 
+def test_table_expands_product_rows_into_concrete_tests() -> None:
+    suite = validate_test_suite(
+        {
+            "name": "table_suite",
+            "tests": [
+                {
+                    "name": "pair_{left_kind}_{right_kind}_{index}",
+                    "table": {
+                        "product": [
+                            {
+                                "columns": ["left_kind", "left_expr"],
+                                "rows": [
+                                    ["int", "1"],
+                                    ["str", '"x"'],
+                                ],
+                            },
+                            {
+                                "rows": [
+                                    {"right_kind": "err", "right_expr": "E_ARGS"},
+                                    {"right_kind": "list", "right_expr": "{}"},
+                                ],
+                            },
+                        ],
+                    },
+                    "code": "pair({left_expr}, {right_expr})",
+                    "expect": {"error": "E_TYPE"},
+                }
+            ],
+        }
+    )
+
+    assert [test.name for test in suite.tests] == [
+        "pair_int_err_0",
+        "pair_int_list_1",
+        "pair_str_err_2",
+        "pair_str_list_3",
+    ]
+    assert [test.code for test in suite.tests] == [
+        "pair(1, E_ARGS)",
+        "pair(1, {})",
+        'pair("x", E_ARGS)',
+        'pair("x", {})',
+    ]
+
+
 def test_table_expands_steps_and_cleanup() -> None:
     suite = validate_test_suite(
         {
@@ -125,6 +170,28 @@ def test_table_expands_steps_and_cleanup() -> None:
     assert test.steps[0].run == "1"
     assert test.steps[1].expect.value == 1
     assert test.cleanup[0].run == "typeof(1)"
+
+
+def test_table_product_rejects_duplicate_variables() -> None:
+    with pytest.raises(ValueError, match="Product table variables must be unique: kind"):
+        validate_test_suite(
+            {
+                "name": "table_suite",
+                "tests": [
+                    {
+                        "name": "bad",
+                        "table": {
+                            "product": [
+                                {"rows": [{"kind": "int", "expr": "1"}]},
+                                {"rows": [{"kind": "str", "other": '"x"'}]},
+                            ],
+                        },
+                        "code": "1",
+                        "expect": {"value": 1},
+                    }
+                ],
+            }
+        )
 
 
 def test_table_rejects_list_rows_without_columns() -> None:

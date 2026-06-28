@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T10:02:34Z`
+- generated_at: `2026-06-28T10:04:50Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `4531`
-- missing_call_shapes: `3070`
+- covered_call_shapes: `4578`
+- missing_call_shapes: `3023`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,54 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `set_verb_info` signature `3..3 (any, any, list)`
-  - [ ] `set_verb_info/3 (int, int, list)`
-  - [ ] `set_verb_info/3 (int, float, list)`
-  - [ ] `set_verb_info/3 (int, obj, list)`
-  - [ ] `set_verb_info/3 (int, str, list)`
-  - [ ] `set_verb_info/3 (int, err, list)`
-  - [ ] `set_verb_info/3 (int, list, list)`
-  - [ ] `set_verb_info/3 (int, map, list)`
-  - [ ] `set_verb_info/3 (float, int, list)`
-  - [ ] `set_verb_info/3 (float, float, list)`
-  - [ ] `set_verb_info/3 (float, obj, list)`
-  - [ ] `set_verb_info/3 (float, str, list)`
-  - [ ] `set_verb_info/3 (float, err, list)`
-  - [ ] `set_verb_info/3 (float, list, list)`
-  - [ ] `set_verb_info/3 (float, map, list)`
-  - [ ] `set_verb_info/3 (obj, int, list)`
-  - [ ] `set_verb_info/3 (obj, float, list)`
-  - [ ] `set_verb_info/3 (obj, obj, list)`
-  - [ ] `set_verb_info/3 (obj, err, list)`
-  - [ ] `set_verb_info/3 (obj, list, list)`
-  - [ ] `set_verb_info/3 (obj, map, list)`
-  - [ ] `set_verb_info/3 (str, int, list)`
-  - [ ] `set_verb_info/3 (str, float, list)`
-  - [ ] `set_verb_info/3 (str, obj, list)`
-  - [ ] `set_verb_info/3 (str, str, list)`
-  - [ ] `set_verb_info/3 (str, err, list)`
-  - [ ] `set_verb_info/3 (str, list, list)`
-  - [ ] `set_verb_info/3 (str, map, list)`
-  - [ ] `set_verb_info/3 (err, int, list)`
-  - [ ] `set_verb_info/3 (err, float, list)`
-  - [ ] `set_verb_info/3 (err, obj, list)`
-  - [ ] `set_verb_info/3 (err, str, list)`
-  - [ ] `set_verb_info/3 (err, err, list)`
-  - [ ] `set_verb_info/3 (err, list, list)`
-  - [ ] `set_verb_info/3 (err, map, list)`
-  - [ ] `set_verb_info/3 (list, int, list)`
-  - [ ] `set_verb_info/3 (list, float, list)`
-  - [ ] `set_verb_info/3 (list, obj, list)`
-  - [ ] `set_verb_info/3 (list, err, list)`
-  - [ ] `set_verb_info/3 (list, list, list)`
-  - [ ] `set_verb_info/3 (list, map, list)`
-  - [ ] `set_verb_info/3 (map, int, list)`
-  - [ ] `set_verb_info/3 (map, float, list)`
-  - [ ] `set_verb_info/3 (map, obj, list)`
-  - [ ] `set_verb_info/3 (map, str, list)`
-  - [ ] `set_verb_info/3 (map, err, list)`
-  - [ ] `set_verb_info/3 (map, list, list)`
-  - [ ] `set_verb_info/3 (map, map, list)`
 - `sqlite_last_insert_row_id` signature `1..1 (int)`
   - [ ] `sqlite_last_insert_row_id/1 (int)`
 - `sqlite_limit` signature `3..3 (int, any, int)`
@@ -8279,55 +8231,55 @@ still needs explicit human review.
 
 - signature: `3..3 (any, any, list)`
 - source: `verbs.cc`
-- [ ] `set_verb_info/3 (int, int, list)`
-- [ ] `set_verb_info/3 (int, float, list)`
-- [ ] `set_verb_info/3 (int, obj, list)`
-- [ ] `set_verb_info/3 (int, str, list)`
-- [ ] `set_verb_info/3 (int, err, list)`
-- [ ] `set_verb_info/3 (int, list, list)`
-- [ ] `set_verb_info/3 (int, map, list)`
-- [ ] `set_verb_info/3 (float, int, list)`
-- [ ] `set_verb_info/3 (float, float, list)`
-- [ ] `set_verb_info/3 (float, obj, list)`
-- [ ] `set_verb_info/3 (float, str, list)`
-- [ ] `set_verb_info/3 (float, err, list)`
-- [ ] `set_verb_info/3 (float, list, list)`
-- [ ] `set_verb_info/3 (float, map, list)`
-- [ ] `set_verb_info/3 (obj, int, list)`
-- [ ] `set_verb_info/3 (obj, float, list)`
-- [ ] `set_verb_info/3 (obj, obj, list)`
-- [x] `set_verb_info/3 (obj, str, list)` covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 18 more
-- [ ] `set_verb_info/3 (obj, err, list)`
-- [ ] `set_verb_info/3 (obj, list, list)`
-- [ ] `set_verb_info/3 (obj, map, list)`
-- [ ] `set_verb_info/3 (str, int, list)`
-- [ ] `set_verb_info/3 (str, float, list)`
-- [ ] `set_verb_info/3 (str, obj, list)`
-- [ ] `set_verb_info/3 (str, str, list)`
-- [ ] `set_verb_info/3 (str, err, list)`
-- [ ] `set_verb_info/3 (str, list, list)`
-- [ ] `set_verb_info/3 (str, map, list)`
-- [ ] `set_verb_info/3 (err, int, list)`
-- [ ] `set_verb_info/3 (err, float, list)`
-- [ ] `set_verb_info/3 (err, obj, list)`
-- [ ] `set_verb_info/3 (err, str, list)`
-- [ ] `set_verb_info/3 (err, err, list)`
-- [ ] `set_verb_info/3 (err, list, list)`
-- [ ] `set_verb_info/3 (err, map, list)`
-- [ ] `set_verb_info/3 (list, int, list)`
-- [ ] `set_verb_info/3 (list, float, list)`
-- [ ] `set_verb_info/3 (list, obj, list)`
-- [x] `set_verb_info/3 (list, str, list)` covered by `audit/verb_dispatch_toast_oracle.yaml`, `builtins/verbs.yaml`, `builtins/verbs.yaml` and 1 more
-- [ ] `set_verb_info/3 (list, err, list)`
-- [ ] `set_verb_info/3 (list, list, list)`
-- [ ] `set_verb_info/3 (list, map, list)`
-- [ ] `set_verb_info/3 (map, int, list)`
-- [ ] `set_verb_info/3 (map, float, list)`
-- [ ] `set_verb_info/3 (map, obj, list)`
-- [ ] `set_verb_info/3 (map, str, list)`
-- [ ] `set_verb_info/3 (map, err, list)`
-- [ ] `set_verb_info/3 (map, list, list)`
-- [ ] `set_verb_info/3 (map, map, list)`
+- [x] `set_verb_info/3 (int, int, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (int, float, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (int, obj, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (int, str, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (int, err, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (int, list, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (int, map, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (float, int, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (float, float, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (float, obj, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (float, str, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (float, err, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (float, list, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (float, map, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (obj, int, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (obj, float, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (obj, obj, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (obj, str, list)` covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 19 more
+- [x] `set_verb_info/3 (obj, err, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (obj, list, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (obj, map, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (str, int, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (str, float, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (str, obj, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (str, str, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (str, err, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (str, list, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (str, map, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (err, int, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (err, float, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (err, obj, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (err, str, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (err, err, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (err, list, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (err, map, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (list, int, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (list, float, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (list, obj, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (list, str, list)` covered by `audit/verb_dispatch_toast_oracle.yaml`, `builtins/set_verb_info_call_shapes.yaml`, `builtins/verbs.yaml` and 2 more
+- [x] `set_verb_info/3 (list, err, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (list, list, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (list, map, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (map, int, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (map, float, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (map, obj, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (map, str, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (map, err, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (map, list, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
+- [x] `set_verb_info/3 (map, map, list)` covered by `builtins/set_verb_info_call_shapes.yaml`
 - [?] `set_verb_info/3` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 18 more
 
 ### `setadd`

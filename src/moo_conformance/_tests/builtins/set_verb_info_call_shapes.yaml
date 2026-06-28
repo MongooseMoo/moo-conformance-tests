@@ -1,0 +1,33 @@
+name: set_verb_info_call_shapes
+description: Product-table receiver and descriptor call-shape coverage for set_verb_info().
+
+requires:
+  builtins:
+    - set_verb_info
+
+tests:
+  - name: set_verb_info_rejects_non_mutating_shape_{object_kind}_{desc_kind}
+    permission: wizard
+    table:
+      product:
+        - columns: [object_kind, object_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+        - columns: [desc_kind, desc_expr]
+          rows:
+            - [int, "999999"]
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"no_such_verb"']
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+    code: '`set_verb_info({object_expr}, {desc_expr}, {#0, "rxd", "renamed"}) ! ANY => 1'''
+    expect:
+      value: 1

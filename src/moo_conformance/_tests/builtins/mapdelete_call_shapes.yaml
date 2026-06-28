@@ -1,0 +1,20 @@
+name: mapdelete_call_shapes
+description: Table-driven TYPE_ANY coverage for mapdelete().
+
+requires:
+  builtins:
+    - mapdelete
+
+tests:
+  - name: mapdelete_key_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [int, "mapdelete([], 1)"]
+        - [float, "mapdelete([], 1.5)"]
+        - [obj, "mapdelete([], #0)"]
+        - [err, "mapdelete([], E_ARGS)"]
+    code: "{expr}"
+    expect:
+      error: E_RANGE

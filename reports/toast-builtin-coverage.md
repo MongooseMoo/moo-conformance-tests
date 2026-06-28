@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T06:51:46Z`
+- generated_at: `2026-06-28T06:55:33Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `623`
-- missing_call_shapes: `6978`
+- covered_call_shapes: `627`
+- missing_call_shapes: `6974`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3519,11 +3519,6 @@ still needs explicit human review.
   - [ ] `locations/1 (obj)`
   - [ ] `locations/2 (obj, obj)`
   - [ ] `locations/3 (obj, obj, int)`
-- `mapdelete` signature `2..2 (map, any)`
-  - [ ] `mapdelete/2 (map, int)`
-  - [ ] `mapdelete/2 (map, float)`
-  - [ ] `mapdelete/2 (map, obj)`
-  - [ ] `mapdelete/2 (map, err)`
 - `maphaskey` signature `2..3 (map, any, int)`
   - [ ] `maphaskey/3 (map, int, int)`
   - [ ] `maphaskey/3 (map, float, int)`
@@ -11401,11 +11396,11 @@ still needs explicit human review.
 
 - signature: `2..2 (map, any)`
 - source: `map.cc`
-- [ ] `mapdelete/2 (map, int)`
-- [ ] `mapdelete/2 (map, float)`
-- [ ] `mapdelete/2 (map, obj)`
+- [x] `mapdelete/2 (map, int)` covered by `builtins/mapdelete_call_shapes.yaml`
+- [x] `mapdelete/2 (map, float)` covered by `builtins/mapdelete_call_shapes.yaml`
+- [x] `mapdelete/2 (map, obj)` covered by `builtins/mapdelete_call_shapes.yaml`
 - [x] `mapdelete/2 (map, str)` covered by `builtins/map.yaml`
-- [ ] `mapdelete/2 (map, err)`
+- [x] `mapdelete/2 (map, err)` covered by `builtins/mapdelete_call_shapes.yaml`
 - [x] `mapdelete/2 (map, list)` covered by `builtins/map.yaml`, `builtins/map.yaml`, `builtins/map.yaml`
 - [x] `mapdelete/2 (map, map)` covered by `builtins/map.yaml`, `builtins/map.yaml`
 - [?] `mapdelete/2` unknown argument types covered by `builtins/map.yaml`, `builtins/map.yaml`, `builtins/map.yaml` and 9 more

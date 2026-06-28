@@ -1,0 +1,23 @@
+name: read_call_shapes
+description: TYPE_ANY nonblocking flag call-shape coverage for read().
+
+requires:
+  builtins:
+    - read
+
+tests:
+  - name: read_two_args_accepts_nonblocking_flag_{flag_kind}
+    permission: wizard
+    table:
+      columns: [flag_kind, flag_expr]
+      rows:
+        - [int, "1"]
+        - [float, "1.5"]
+        - [obj, "#0"]
+        - [str, '"x"']
+        - [err, "E_ARGS"]
+        - [list, "{1}"]
+        - [map, "[1 -> 2]"]
+    code: "read(#0, {flag_expr})"
+    expect:
+      error: E_INVARG

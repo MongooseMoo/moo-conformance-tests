@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T09:48:06Z`
+- generated_at: `2026-06-28T09:50:05Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `4419`
-- missing_call_shapes: `3182`
+- covered_call_shapes: `4426`
+- missing_call_shapes: `3175`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,14 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `read` signature `0..2 (obj, any)`
-  - [ ] `read/2 (obj, int)`
-  - [ ] `read/2 (obj, float)`
-  - [ ] `read/2 (obj, obj)`
-  - [ ] `read/2 (obj, str)`
-  - [ ] `read/2 (obj, err)`
-  - [ ] `read/2 (obj, list)`
-  - [ ] `read/2 (obj, map)`
 - `read_http` signature `1..2 (str, obj)`
   - [ ] `read_http/2 (str, obj)`
 - `recreate` signature `2..3 (obj, obj, obj)`
@@ -8019,13 +8011,13 @@ still needs explicit human review.
 - source: `execute.cc`
 - [x] `read/0 ()` covered by `audit/task_scheduling_toast_oracle.yaml`, `builtins/read.yaml`
 - [x] `read/1 (obj)` covered by `builtins/read.yaml`
-- [ ] `read/2 (obj, int)`
-- [ ] `read/2 (obj, float)`
-- [ ] `read/2 (obj, obj)`
-- [ ] `read/2 (obj, str)`
-- [ ] `read/2 (obj, err)`
-- [ ] `read/2 (obj, list)`
-- [ ] `read/2 (obj, map)`
+- [x] `read/2 (obj, int)` covered by `builtins/read_call_shapes.yaml`
+- [x] `read/2 (obj, float)` covered by `builtins/read_call_shapes.yaml`
+- [x] `read/2 (obj, obj)` covered by `builtins/read_call_shapes.yaml`
+- [x] `read/2 (obj, str)` covered by `builtins/read_call_shapes.yaml`
+- [x] `read/2 (obj, err)` covered by `builtins/read_call_shapes.yaml`
+- [x] `read/2 (obj, list)` covered by `builtins/read_call_shapes.yaml`
+- [x] `read/2 (obj, map)` covered by `builtins/read_call_shapes.yaml`
 - [?] `read/1` unknown argument types covered by `builtins/http.yaml`, `builtins/read.yaml`
 - [?] `read/2` unknown argument types covered by `audit/task_scheduling_toast_oracle.yaml`, `builtins/read.yaml`
 

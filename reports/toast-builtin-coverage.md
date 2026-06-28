@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T07:35:35Z`
+- generated_at: `2026-06-28T07:39:50Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `829`
-- missing_call_shapes: `6772`
+- covered_call_shapes: `830`
+- missing_call_shapes: `6771`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3685,8 +3685,6 @@ still needs explicit human review.
   - [ ] `set_task_local/1 (obj)`
   - [ ] `set_task_local/1 (err)`
   - [ ] `set_task_local/1 (map)`
-- `set_thread_mode` signature `0..1 (int)`
-  - [ ] `set_thread_mode/1 (int)`
 - `set_verb_args` signature `3..3 (any, any, list)`
   - [ ] `set_verb_args/3 (int, int, list)`
   - [ ] `set_verb_args/3 (int, float, list)`
@@ -11924,8 +11922,8 @@ still needs explicit human review.
 
 - signature: `0..1 (int)`
 - source: `tasks.cc`
-- [x] `set_thread_mode/0 ()` covered by `generated_builtins/set_thread_mode.yaml`
-- [ ] `set_thread_mode/1 (int)`
+- [x] `set_thread_mode/0 ()` covered by `builtins/set_thread_mode_call_shapes.yaml`, `generated_builtins/set_thread_mode.yaml`
+- [x] `set_thread_mode/1 (int)` covered by `builtins/set_thread_mode_call_shapes.yaml`, `builtins/set_thread_mode_call_shapes.yaml`, `builtins/set_thread_mode_call_shapes.yaml`
 
 ### `set_verb_args`
 

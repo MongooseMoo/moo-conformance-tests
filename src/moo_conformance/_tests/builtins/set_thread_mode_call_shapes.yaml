@@ -1,0 +1,21 @@
+name: set_thread_mode_call_shapes
+description: Arity coverage for set_thread_mode().
+
+requires:
+  builtins:
+    - set_thread_mode
+
+tests:
+  - name: set_thread_mode_one_arg
+    permission: wizard
+    statement: |
+      old = set_thread_mode();
+      result = set_thread_mode(1);
+      if (old)
+        set_thread_mode(1);
+      else
+        set_thread_mode(0);
+      endif
+      return result == 0;
+    expect:
+      value: 1

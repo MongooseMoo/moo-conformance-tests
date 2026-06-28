@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T07:16:06Z`
+- generated_at: `2026-06-28T07:19:22Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `673`
-- missing_call_shapes: `6928`
+- covered_call_shapes: `730`
+- missing_call_shapes: `6871`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3851,64 +3851,6 @@ still needs explicit human review.
   - [ ] `set_verb_info/3 (map, err, list)`
   - [ ] `set_verb_info/3 (map, list, list)`
   - [ ] `set_verb_info/3 (map, map, list)`
-- `slice` signature `1..3 (list, any, any)`
-  - [ ] `slice/1 (list)`
-  - [ ] `slice/2 (list, int)`
-  - [ ] `slice/2 (list, float)`
-  - [ ] `slice/2 (list, obj)`
-  - [ ] `slice/2 (list, str)`
-  - [ ] `slice/2 (list, err)`
-  - [ ] `slice/2 (list, list)`
-  - [ ] `slice/2 (list, map)`
-  - [ ] `slice/3 (list, int, int)`
-  - [ ] `slice/3 (list, int, float)`
-  - [ ] `slice/3 (list, int, obj)`
-  - [ ] `slice/3 (list, int, str)`
-  - [ ] `slice/3 (list, int, err)`
-  - [ ] `slice/3 (list, int, list)`
-  - [ ] `slice/3 (list, int, map)`
-  - [ ] `slice/3 (list, float, int)`
-  - [ ] `slice/3 (list, float, float)`
-  - [ ] `slice/3 (list, float, obj)`
-  - [ ] `slice/3 (list, float, str)`
-  - [ ] `slice/3 (list, float, err)`
-  - [ ] `slice/3 (list, float, list)`
-  - [ ] `slice/3 (list, float, map)`
-  - [ ] `slice/3 (list, obj, int)`
-  - [ ] `slice/3 (list, obj, float)`
-  - [ ] `slice/3 (list, obj, obj)`
-  - [ ] `slice/3 (list, obj, str)`
-  - [ ] `slice/3 (list, obj, err)`
-  - [ ] `slice/3 (list, obj, list)`
-  - [ ] `slice/3 (list, obj, map)`
-  - [ ] `slice/3 (list, str, int)`
-  - [ ] `slice/3 (list, str, float)`
-  - [ ] `slice/3 (list, str, obj)`
-  - [ ] `slice/3 (list, str, str)`
-  - [ ] `slice/3 (list, str, err)`
-  - [ ] `slice/3 (list, str, list)`
-  - [ ] `slice/3 (list, str, map)`
-  - [ ] `slice/3 (list, err, int)`
-  - [ ] `slice/3 (list, err, float)`
-  - [ ] `slice/3 (list, err, obj)`
-  - [ ] `slice/3 (list, err, str)`
-  - [ ] `slice/3 (list, err, err)`
-  - [ ] `slice/3 (list, err, list)`
-  - [ ] `slice/3 (list, err, map)`
-  - [ ] `slice/3 (list, list, int)`
-  - [ ] `slice/3 (list, list, float)`
-  - [ ] `slice/3 (list, list, obj)`
-  - [ ] `slice/3 (list, list, str)`
-  - [ ] `slice/3 (list, list, err)`
-  - [ ] `slice/3 (list, list, list)`
-  - [ ] `slice/3 (list, list, map)`
-  - [ ] `slice/3 (list, map, int)`
-  - [ ] `slice/3 (list, map, float)`
-  - [ ] `slice/3 (list, map, obj)`
-  - [ ] `slice/3 (list, map, str)`
-  - [ ] `slice/3 (list, map, err)`
-  - [ ] `slice/3 (list, map, list)`
-  - [ ] `slice/3 (list, map, map)`
 - `sort` signature `1..4 (list, list, int, int)`
   - [ ] `sort/1 (list)`
   - [ ] `sort/2 (list, list)`
@@ -12300,63 +12242,63 @@ still needs explicit human review.
 
 - signature: `1..3 (list, any, any)`
 - source: `list.cc`
-- [ ] `slice/1 (list)`
-- [ ] `slice/2 (list, int)`
-- [ ] `slice/2 (list, float)`
-- [ ] `slice/2 (list, obj)`
-- [ ] `slice/2 (list, str)`
-- [ ] `slice/2 (list, err)`
-- [ ] `slice/2 (list, list)`
-- [ ] `slice/2 (list, map)`
-- [ ] `slice/3 (list, int, int)`
-- [ ] `slice/3 (list, int, float)`
-- [ ] `slice/3 (list, int, obj)`
-- [ ] `slice/3 (list, int, str)`
-- [ ] `slice/3 (list, int, err)`
-- [ ] `slice/3 (list, int, list)`
-- [ ] `slice/3 (list, int, map)`
-- [ ] `slice/3 (list, float, int)`
-- [ ] `slice/3 (list, float, float)`
-- [ ] `slice/3 (list, float, obj)`
-- [ ] `slice/3 (list, float, str)`
-- [ ] `slice/3 (list, float, err)`
-- [ ] `slice/3 (list, float, list)`
-- [ ] `slice/3 (list, float, map)`
-- [ ] `slice/3 (list, obj, int)`
-- [ ] `slice/3 (list, obj, float)`
-- [ ] `slice/3 (list, obj, obj)`
-- [ ] `slice/3 (list, obj, str)`
-- [ ] `slice/3 (list, obj, err)`
-- [ ] `slice/3 (list, obj, list)`
-- [ ] `slice/3 (list, obj, map)`
-- [ ] `slice/3 (list, str, int)`
-- [ ] `slice/3 (list, str, float)`
-- [ ] `slice/3 (list, str, obj)`
-- [ ] `slice/3 (list, str, str)`
-- [ ] `slice/3 (list, str, err)`
-- [ ] `slice/3 (list, str, list)`
-- [ ] `slice/3 (list, str, map)`
-- [ ] `slice/3 (list, err, int)`
-- [ ] `slice/3 (list, err, float)`
-- [ ] `slice/3 (list, err, obj)`
-- [ ] `slice/3 (list, err, str)`
-- [ ] `slice/3 (list, err, err)`
-- [ ] `slice/3 (list, err, list)`
-- [ ] `slice/3 (list, err, map)`
-- [ ] `slice/3 (list, list, int)`
-- [ ] `slice/3 (list, list, float)`
-- [ ] `slice/3 (list, list, obj)`
-- [ ] `slice/3 (list, list, str)`
-- [ ] `slice/3 (list, list, err)`
-- [ ] `slice/3 (list, list, list)`
-- [ ] `slice/3 (list, list, map)`
-- [ ] `slice/3 (list, map, int)`
-- [ ] `slice/3 (list, map, float)`
-- [ ] `slice/3 (list, map, obj)`
-- [ ] `slice/3 (list, map, str)`
-- [ ] `slice/3 (list, map, err)`
-- [ ] `slice/3 (list, map, list)`
-- [ ] `slice/3 (list, map, map)`
+- [x] `slice/1 (list)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/2 (list, int)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/2 (list, float)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/2 (list, obj)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/2 (list, str)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/2 (list, err)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/2 (list, list)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/2 (list, map)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, int, int)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, int, float)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, int, obj)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, int, str)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, int, err)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, int, list)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, int, map)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, float, int)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, float, float)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, float, obj)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, float, str)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, float, err)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, float, list)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, float, map)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, obj, int)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, obj, float)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, obj, obj)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, obj, str)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, obj, err)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, obj, list)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, obj, map)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, str, int)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, str, float)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, str, obj)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, str, str)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, str, err)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, str, list)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, str, map)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, err, int)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, err, float)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, err, obj)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, err, str)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, err, err)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, err, list)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, err, map)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, list, int)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, list, float)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, list, obj)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, list, str)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, list, err)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, list, list)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, list, map)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, map, int)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, map, float)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, map, obj)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, map, str)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, map, err)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, map, list)` covered by `builtins/slice_call_shapes.yaml`
+- [x] `slice/3 (list, map, map)` covered by `builtins/slice_call_shapes.yaml`
 
 ### `sort`
 

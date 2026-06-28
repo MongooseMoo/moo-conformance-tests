@@ -1,0 +1,105 @@
+name: slice_call_shapes
+description: Table-driven TYPE_ANY coverage for slice().
+
+requires:
+  builtins:
+    - slice
+
+tests:
+  - name: slice_one_arg_list
+    permission: wizard
+    code: "slice({})"
+    expect:
+      type: list
+
+  - name: slice_valid_start_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [int, "1"]
+        - [str, '"x"']
+        - [list, "{1}"]
+    code: "slice({}, {expr})"
+    expect:
+      type: list
+
+  - name: slice_invalid_start_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [float, "1.5"]
+        - [obj, "#0"]
+        - [err, "E_ARGS"]
+        - [map, "[1 -> 2]"]
+    code: "slice({}, {expr})"
+    expect:
+      error: E_INVARG
+
+  - name: slice_valid_start_{start_kind}_default_{default_kind}
+    permission: wizard
+    table:
+      columns: [start_kind, start_expr, default_kind, default_expr]
+      rows:
+        - [int, "1", int, "1"]
+        - [int, "1", float, "1.5"]
+        - [int, "1", obj, "#0"]
+        - [int, "1", str, '"x"']
+        - [int, "1", err, "E_ARGS"]
+        - [int, "1", list, "{}"]
+        - [int, "1", map, "[1 -> 2]"]
+        - [str, '"x"', int, "1"]
+        - [str, '"x"', float, "1.5"]
+        - [str, '"x"', obj, "#0"]
+        - [str, '"x"', str, '"x"']
+        - [str, '"x"', err, "E_ARGS"]
+        - [str, '"x"', list, "{}"]
+        - [str, '"x"', map, "[1 -> 2]"]
+        - [list, "{1}", int, "1"]
+        - [list, "{1}", float, "1.5"]
+        - [list, "{1}", obj, "#0"]
+        - [list, "{1}", str, '"x"']
+        - [list, "{1}", err, "E_ARGS"]
+        - [list, "{1}", list, "{}"]
+        - [list, "{1}", map, "[1 -> 2]"]
+    code: "slice({}, {start_expr}, {default_expr})"
+    expect:
+      type: list
+
+  - name: slice_invalid_start_{start_kind}_default_{default_kind}
+    permission: wizard
+    table:
+      columns: [start_kind, start_expr, default_kind, default_expr]
+      rows:
+        - [float, "1.5", int, "1"]
+        - [float, "1.5", float, "1.5"]
+        - [float, "1.5", obj, "#0"]
+        - [float, "1.5", str, '"x"']
+        - [float, "1.5", err, "E_ARGS"]
+        - [float, "1.5", list, "{}"]
+        - [float, "1.5", map, "[1 -> 2]"]
+        - [obj, "#0", int, "1"]
+        - [obj, "#0", float, "1.5"]
+        - [obj, "#0", obj, "#0"]
+        - [obj, "#0", str, '"x"']
+        - [obj, "#0", err, "E_ARGS"]
+        - [obj, "#0", list, "{}"]
+        - [obj, "#0", map, "[1 -> 2]"]
+        - [err, "E_ARGS", int, "1"]
+        - [err, "E_ARGS", float, "1.5"]
+        - [err, "E_ARGS", obj, "#0"]
+        - [err, "E_ARGS", str, '"x"']
+        - [err, "E_ARGS", err, "E_ARGS"]
+        - [err, "E_ARGS", list, "{}"]
+        - [err, "E_ARGS", map, "[1 -> 2]"]
+        - [map, "[1 -> 2]", int, "1"]
+        - [map, "[1 -> 2]", float, "1.5"]
+        - [map, "[1 -> 2]", obj, "#0"]
+        - [map, "[1 -> 2]", str, '"x"']
+        - [map, "[1 -> 2]", err, "E_ARGS"]
+        - [map, "[1 -> 2]", list, "{}"]
+        - [map, "[1 -> 2]", map, "[1 -> 2]"]
+    code: "slice({}, {start_expr}, {default_expr})"
+    expect:
+      error: E_INVARG

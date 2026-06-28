@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T05:53:07Z`
+- generated_at: `2026-06-28T05:54:32Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `243`
 - required_call_shapes: `7721`
-- covered_call_shapes: `536`
-- missing_call_shapes: `7185`
+- covered_call_shapes: `541`
+- missing_call_shapes: `7180`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3808,12 +3808,6 @@ still needs explicit human review.
   - [ ] `pass/1 (err)`
   - [ ] `pass/1 (list)`
   - [ ] `pass/1 (map)`
-- `property_info` signature `2..2 (any, str)`
-  - [ ] `property_info/2 (int, str)`
-  - [ ] `property_info/2 (float, str)`
-  - [ ] `property_info/2 (str, str)`
-  - [ ] `property_info/2 (err, str)`
-  - [ ] `property_info/2 (map, str)`
 - `queued_tasks` signature `0..2 (int, int)`
   - [ ] `queued_tasks/1 (int)`
 - `raise` signature `1..3 (any, str, any)`
@@ -12157,13 +12151,13 @@ still needs explicit human review.
 
 - signature: `2..2 (any, str)`
 - source: `property.cc`
-- [ ] `property_info/2 (int, str)`
-- [ ] `property_info/2 (float, str)`
+- [x] `property_info/2 (int, str)` covered by `builtins/property_info_call_shapes.yaml`
+- [x] `property_info/2 (float, str)` covered by `builtins/property_info_call_shapes.yaml`
 - [x] `property_info/2 (obj, str)` covered by `builtins/properties.yaml`
-- [ ] `property_info/2 (str, str)`
-- [ ] `property_info/2 (err, str)`
+- [x] `property_info/2 (str, str)` covered by `builtins/property_info_call_shapes.yaml`
+- [x] `property_info/2 (err, str)` covered by `builtins/property_info_call_shapes.yaml`
 - [x] `property_info/2 (list, str)` covered by `builtins/properties.yaml`, `builtins/properties.yaml`, `builtins/properties.yaml` and 12 more
-- [ ] `property_info/2 (map, str)`
+- [x] `property_info/2 (map, str)` covered by `builtins/property_info_call_shapes.yaml`
 - [?] `property_info/2` unknown argument types covered by `builtins/objects.yaml`, `builtins/objects.yaml`, `builtins/objects.yaml` and 8 more
 
 ### `queue_info`

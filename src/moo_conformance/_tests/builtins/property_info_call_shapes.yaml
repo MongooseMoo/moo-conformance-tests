@@ -1,0 +1,21 @@
+name: property_info_call_shapes
+description: Table-driven TYPE_ANY coverage for property_info().
+
+requires:
+  builtins:
+    - property_info
+
+tests:
+  - name: property_info_arg_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [int, 'property_info(1, "name")']
+        - [float, 'property_info(1.5, "name")']
+        - [str, 'property_info("x", "name")']
+        - [err, 'property_info(E_ARGS, "name")']
+        - [map, 'property_info([1 -> 2], "name")']
+    code: "{expr}"
+    expect:
+      error: E_TYPE

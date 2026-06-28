@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T07:14:43Z`
+- generated_at: `2026-06-28T07:16:06Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `668`
-- missing_call_shapes: `6933`
+- covered_call_shapes: `673`
+- missing_call_shapes: `6928`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3851,12 +3851,6 @@ still needs explicit human review.
   - [ ] `set_verb_info/3 (map, err, list)`
   - [ ] `set_verb_info/3 (map, list, list)`
   - [ ] `set_verb_info/3 (map, map, list)`
-- `setadd` signature `2..2 (list, any)`
-  - [ ] `setadd/2 (list, float)`
-  - [ ] `setadd/2 (list, obj)`
-  - [ ] `setadd/2 (list, str)`
-  - [ ] `setadd/2 (list, err)`
-  - [ ] `setadd/2 (list, map)`
 - `slice` signature `1..3 (list, any, any)`
   - [ ] `slice/1 (list)`
   - [ ] `slice/2 (list, int)`
@@ -12267,13 +12261,13 @@ still needs explicit human review.
 
 - signature: `2..2 (list, any)`
 - source: `list.cc`
-- [x] `setadd/2 (list, int)` covered by `basic/list.yaml`, `basic/list.yaml`
-- [ ] `setadd/2 (list, float)`
-- [ ] `setadd/2 (list, obj)`
-- [ ] `setadd/2 (list, str)`
-- [ ] `setadd/2 (list, err)`
-- [x] `setadd/2 (list, list)` covered by `server/limits.yaml`, `server/limits.yaml`
-- [ ] `setadd/2 (list, map)`
+- [x] `setadd/2 (list, int)` covered by `basic/list.yaml`, `basic/list.yaml`, `builtins/setadd_call_shapes.yaml`
+- [x] `setadd/2 (list, float)` covered by `builtins/setadd_call_shapes.yaml`
+- [x] `setadd/2 (list, obj)` covered by `builtins/setadd_call_shapes.yaml`
+- [x] `setadd/2 (list, str)` covered by `builtins/setadd_call_shapes.yaml`
+- [x] `setadd/2 (list, err)` covered by `builtins/setadd_call_shapes.yaml`
+- [x] `setadd/2 (list, list)` covered by `builtins/setadd_call_shapes.yaml`, `server/limits.yaml`, `server/limits.yaml`
+- [x] `setadd/2 (list, map)` covered by `builtins/setadd_call_shapes.yaml`
 - [?] `setadd/2` unknown argument types covered by `features/limits_dynamic.yaml`, `features/limits_dynamic.yaml`, `features/limits_dynamic.yaml` and 4 more
 
 ### `setremove`

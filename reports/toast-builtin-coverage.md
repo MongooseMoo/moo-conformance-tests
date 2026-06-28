@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T07:46:00Z`
+- generated_at: `2026-06-28T07:48:51Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `840`
-- missing_call_shapes: `6761`
+- covered_call_shapes: `846`
+- missing_call_shapes: `6755`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3666,13 +3666,6 @@ still needs explicit human review.
   - [ ] `resume/2 (int, err)`
   - [ ] `resume/2 (int, list)`
   - [ ] `resume/2 (int, map)`
-- `set_player_flag` signature `2..2 (obj, any)`
-  - [ ] `set_player_flag/2 (obj, float)`
-  - [ ] `set_player_flag/2 (obj, obj)`
-  - [ ] `set_player_flag/2 (obj, str)`
-  - [ ] `set_player_flag/2 (obj, err)`
-  - [ ] `set_player_flag/2 (obj, list)`
-  - [ ] `set_player_flag/2 (obj, map)`
 - `set_verb_args` signature `3..3 (any, any, list)`
   - [ ] `set_verb_args/3 (int, int, list)`
   - [ ] `set_verb_args/3 (int, float, list)`
@@ -11864,13 +11857,13 @@ still needs explicit human review.
 
 - signature: `2..2 (obj, any)`
 - source: `objects.cc`
-- [x] `set_player_flag/2 (obj, int)` covered by `generated_builtins/set_player_flag.yaml`
-- [ ] `set_player_flag/2 (obj, float)`
-- [ ] `set_player_flag/2 (obj, obj)`
-- [ ] `set_player_flag/2 (obj, str)`
-- [ ] `set_player_flag/2 (obj, err)`
-- [ ] `set_player_flag/2 (obj, list)`
-- [ ] `set_player_flag/2 (obj, map)`
+- [x] `set_player_flag/2 (obj, int)` covered by `builtins/set_player_flag_call_shapes.yaml`, `generated_builtins/set_player_flag.yaml`
+- [x] `set_player_flag/2 (obj, float)` covered by `builtins/set_player_flag_call_shapes.yaml`
+- [x] `set_player_flag/2 (obj, obj)` covered by `builtins/set_player_flag_call_shapes.yaml`
+- [x] `set_player_flag/2 (obj, str)` covered by `builtins/set_player_flag_call_shapes.yaml`
+- [x] `set_player_flag/2 (obj, err)` covered by `builtins/set_player_flag_call_shapes.yaml`
+- [x] `set_player_flag/2 (obj, list)` covered by `builtins/set_player_flag_call_shapes.yaml`
+- [x] `set_player_flag/2 (obj, map)` covered by `builtins/set_player_flag_call_shapes.yaml`
 - [?] `set_player_flag/2` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 20 more
 
 ### `set_property_info`

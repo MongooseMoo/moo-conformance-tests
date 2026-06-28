@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T08:53:47Z`
+- generated_at: `2026-06-28T08:57:31Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `3990`
-- missing_call_shapes: `3611`
+- covered_call_shapes: `3997`
+- missing_call_shapes: `3604`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,14 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `eval` signature `1..* (str)`
-  - [ ] `eval/2 (str, int)`
-  - [ ] `eval/2 (str, float)`
-  - [ ] `eval/2 (str, obj)`
-  - [ ] `eval/2 (str, str)`
-  - [ ] `eval/2 (str, err)`
-  - [ ] `eval/2 (str, list)`
-  - [ ] `eval/2 (str, map)`
 - `exec` signature `1..3 (list, str, list)`
   - [ ] `exec/3 (list, str, list)`
 - `file_count_lines` signature `1..1 (int)`
@@ -7229,13 +7221,13 @@ still needs explicit human review.
 - signature: `1..* (str)`
 - source: `verbs.cc`
 - [x] `eval/1 (str)` covered by `basic/property.yaml`, `basic/property.yaml`, `basic/property.yaml` and 9 more
-- [ ] `eval/2 (str, int)`
-- [ ] `eval/2 (str, float)`
-- [ ] `eval/2 (str, obj)`
-- [ ] `eval/2 (str, str)`
-- [ ] `eval/2 (str, err)`
-- [ ] `eval/2 (str, list)`
-- [ ] `eval/2 (str, map)`
+- [x] `eval/2 (str, int)` covered by `builtins/eval_call_shapes.yaml`
+- [x] `eval/2 (str, float)` covered by `builtins/eval_call_shapes.yaml`
+- [x] `eval/2 (str, obj)` covered by `builtins/eval_call_shapes.yaml`
+- [x] `eval/2 (str, str)` covered by `builtins/eval_call_shapes.yaml`
+- [x] `eval/2 (str, err)` covered by `builtins/eval_call_shapes.yaml`
+- [x] `eval/2 (str, list)` covered by `builtins/eval_call_shapes.yaml`
+- [x] `eval/2 (str, map)` covered by `builtins/eval_call_shapes.yaml`
 - [?] `eval/1` unknown argument types covered by `server/limits.yaml`, `server/limits.yaml`
 
 ### `exec`

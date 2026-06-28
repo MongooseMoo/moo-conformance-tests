@@ -1,0 +1,28 @@
+name: eval_call_shapes
+description: Call-shape coverage for eval() varargs.
+
+requires:
+  builtins:
+    - eval
+
+tests:
+  - name: eval_two_string_arguments
+    permission: wizard
+    code: 'eval("x = 1;", "return x + 1;")'
+    expect:
+      value: [1, 2]
+
+  - name: eval_second_argument_rejects_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [int, "1"]
+        - [float, "1.5"]
+        - [obj, "#0"]
+        - [err, "E_ARGS"]
+        - [list, "{}"]
+        - [map, "[1 -> 2]"]
+    code: 'eval("return 1;", {expr})'
+    expect:
+      error: E_TYPE

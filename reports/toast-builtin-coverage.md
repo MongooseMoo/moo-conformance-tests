@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T07:00:16Z`
+- generated_at: `2026-06-28T07:04:27Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `633`
-- missing_call_shapes: `6968`
+- covered_call_shapes: `638`
+- missing_call_shapes: `6963`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3509,12 +3509,6 @@ still needs explicit human review.
   - [ ] `listinsert/3 (list, err, int)`
   - [ ] `listinsert/3 (list, list, int)`
   - [ ] `listinsert/3 (list, map, int)`
-- `listset` signature `3..3 (list, any, int)`
-  - [ ] `listset/3 (list, float, int)`
-  - [ ] `listset/3 (list, obj, int)`
-  - [ ] `listset/3 (list, str, int)`
-  - [ ] `listset/3 (list, err, int)`
-  - [ ] `listset/3 (list, map, int)`
 - `locations` signature `1..3 (obj, obj, int)`
   - [ ] `locations/1 (obj)`
   - [ ] `locations/2 (obj, obj)`
@@ -11336,12 +11330,12 @@ still needs explicit human review.
 - signature: `3..3 (list, any, int)`
 - source: `list.cc`
 - [x] `listset/3 (list, int, int)` covered by `basic/list.yaml`
-- [ ] `listset/3 (list, float, int)`
-- [ ] `listset/3 (list, obj, int)`
-- [ ] `listset/3 (list, str, int)`
-- [ ] `listset/3 (list, err, int)`
+- [x] `listset/3 (list, float, int)` covered by `builtins/listset_call_shapes.yaml`
+- [x] `listset/3 (list, obj, int)` covered by `builtins/listset_call_shapes.yaml`
+- [x] `listset/3 (list, str, int)` covered by `builtins/listset_call_shapes.yaml`
+- [x] `listset/3 (list, err, int)` covered by `builtins/listset_call_shapes.yaml`
 - [x] `listset/3 (list, list, int)` covered by `server/limits.yaml`, `server/limits.yaml`
-- [ ] `listset/3 (list, map, int)`
+- [x] `listset/3 (list, map, int)` covered by `builtins/listset_call_shapes.yaml`
 
 ### `load_server_options`
 

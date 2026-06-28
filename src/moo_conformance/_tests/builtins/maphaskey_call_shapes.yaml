@@ -1,0 +1,31 @@
+name: maphaskey_call_shapes
+description: Table-driven TYPE_ANY coverage for maphaskey().
+
+requires:
+  builtins:
+    - maphaskey
+
+tests:
+  - name: maphaskey_third_arg_key_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [int, "maphaskey([], 1, 1)"]
+        - [float, "maphaskey([], 1.5, 1)"]
+        - [obj, "maphaskey([], #0, 1)"]
+        - [err, "maphaskey([], E_ARGS, 1)"]
+    code: "{expr}"
+    expect:
+      value: 0
+
+  - name: maphaskey_third_arg_invalid_key_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [list, "maphaskey([], {}, 1)"]
+        - [map, "maphaskey([], [1 -> 2], 1)"]
+    code: "{expr}"
+    expect:
+      error: E_TYPE

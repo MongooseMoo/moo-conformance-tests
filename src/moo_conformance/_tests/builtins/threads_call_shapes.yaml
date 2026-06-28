@@ -1,0 +1,13 @@
+name: threads_call_shapes
+description: Call-shape coverage for threads().
+
+requires:
+  builtins:
+    - threads
+
+tests:
+  - name: threads_no_args
+    permission: wizard
+    code: "threads()"
+    expect:
+      type: list

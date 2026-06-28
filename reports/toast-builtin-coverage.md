@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T06:15:20Z`
+- generated_at: `2026-06-28T06:18:49Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `544`
-- missing_call_shapes: `7057`
+- covered_call_shapes: `545`
+- missing_call_shapes: `7056`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -4158,8 +4158,6 @@ still needs explicit human review.
   - [ ] `task_stack/3 (int, map, map)`
 - `thread_pool` signature `2..3 (str, str, int)`
   - [ ] `thread_pool/3 (str, str, int)`
-- `threads` signature `0..0 ()`
-  - [ ] `threads/0 ()`
 - `unlisten` signature `1..2 (any, any)`
   - [ ] `unlisten/1 (float)`
   - [ ] `unlisten/1 (obj)`
@@ -12779,7 +12777,7 @@ still needs explicit human review.
 
 - signature: `0..0 ()`
 - source: `background.cc`
-- [ ] `threads/0 ()`
+- [x] `threads/0 ()` covered by `builtins/threads_call_shapes.yaml`
 
 ### `ticks_left`
 

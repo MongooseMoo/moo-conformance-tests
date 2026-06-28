@@ -1,0 +1,62 @@
+name: delete_verb_call_shapes
+description: Product-table TYPE_ANY coverage for delete_verb().
+
+requires:
+  builtins:
+    - delete_verb
+
+tests:
+  - name: delete_verb_bad_descriptor_{object_kind}_{desc_kind}
+    permission: wizard
+    table:
+      product:
+        - columns: [object_kind, object_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [obj, "#999999"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+        - columns: [desc_kind, desc_expr]
+          rows:
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+    code: "delete_verb({object_expr}, {desc_expr})"
+    expect:
+      error: E_TYPE
+
+  - name: delete_verb_non_object_valid_descriptor_{object_kind}_{desc_kind}
+    permission: wizard
+    table:
+      product:
+        - columns: [object_kind, object_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+        - columns: [desc_kind, desc_expr]
+          rows:
+            - [int, "1"]
+            - [str, '"x"']
+    code: "delete_verb({object_expr}, {desc_expr})"
+    expect:
+      error: E_TYPE
+
+  - name: delete_verb_invalid_object_valid_descriptor_{desc_kind}
+    permission: wizard
+    table:
+      columns: [desc_kind, desc_expr]
+      rows:
+        - [int, "1"]
+        - [str, '"x"']
+    code: "delete_verb(#999999, {desc_expr})"
+    expect:
+      error: E_INVARG

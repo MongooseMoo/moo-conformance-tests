@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T08:46:02Z`
+- generated_at: `2026-06-28T08:48:39Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `3849`
-- missing_call_shapes: `3752`
+- covered_call_shapes: `3896`
+- missing_call_shapes: `3705`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,54 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `delete_verb` signature `2..2 (any, any)`
-  - [ ] `delete_verb/2 (int, int)`
-  - [ ] `delete_verb/2 (int, float)`
-  - [ ] `delete_verb/2 (int, obj)`
-  - [ ] `delete_verb/2 (int, str)`
-  - [ ] `delete_verb/2 (int, err)`
-  - [ ] `delete_verb/2 (int, list)`
-  - [ ] `delete_verb/2 (int, map)`
-  - [ ] `delete_verb/2 (float, int)`
-  - [ ] `delete_verb/2 (float, float)`
-  - [ ] `delete_verb/2 (float, obj)`
-  - [ ] `delete_verb/2 (float, str)`
-  - [ ] `delete_verb/2 (float, err)`
-  - [ ] `delete_verb/2 (float, list)`
-  - [ ] `delete_verb/2 (float, map)`
-  - [ ] `delete_verb/2 (obj, int)`
-  - [ ] `delete_verb/2 (obj, float)`
-  - [ ] `delete_verb/2 (obj, obj)`
-  - [ ] `delete_verb/2 (obj, err)`
-  - [ ] `delete_verb/2 (obj, list)`
-  - [ ] `delete_verb/2 (obj, map)`
-  - [ ] `delete_verb/2 (str, int)`
-  - [ ] `delete_verb/2 (str, float)`
-  - [ ] `delete_verb/2 (str, obj)`
-  - [ ] `delete_verb/2 (str, str)`
-  - [ ] `delete_verb/2 (str, err)`
-  - [ ] `delete_verb/2 (str, list)`
-  - [ ] `delete_verb/2 (str, map)`
-  - [ ] `delete_verb/2 (err, int)`
-  - [ ] `delete_verb/2 (err, float)`
-  - [ ] `delete_verb/2 (err, obj)`
-  - [ ] `delete_verb/2 (err, str)`
-  - [ ] `delete_verb/2 (err, err)`
-  - [ ] `delete_verb/2 (err, list)`
-  - [ ] `delete_verb/2 (err, map)`
-  - [ ] `delete_verb/2 (list, int)`
-  - [ ] `delete_verb/2 (list, float)`
-  - [ ] `delete_verb/2 (list, obj)`
-  - [ ] `delete_verb/2 (list, err)`
-  - [ ] `delete_verb/2 (list, list)`
-  - [ ] `delete_verb/2 (list, map)`
-  - [ ] `delete_verb/2 (map, int)`
-  - [ ] `delete_verb/2 (map, float)`
-  - [ ] `delete_verb/2 (map, obj)`
-  - [ ] `delete_verb/2 (map, str)`
-  - [ ] `delete_verb/2 (map, err)`
-  - [ ] `delete_verb/2 (map, list)`
-  - [ ] `delete_verb/2 (map, map)`
 - `disassemble` signature `2..2 (any, any)`
   - [ ] `disassemble/2 (int, int)`
   - [ ] `disassemble/2 (int, float)`
@@ -7104,55 +7056,55 @@ still needs explicit human review.
 
 - signature: `2..2 (any, any)`
 - source: `verbs.cc`
-- [ ] `delete_verb/2 (int, int)`
-- [ ] `delete_verb/2 (int, float)`
-- [ ] `delete_verb/2 (int, obj)`
-- [ ] `delete_verb/2 (int, str)`
-- [ ] `delete_verb/2 (int, err)`
-- [ ] `delete_verb/2 (int, list)`
-- [ ] `delete_verb/2 (int, map)`
-- [ ] `delete_verb/2 (float, int)`
-- [ ] `delete_verb/2 (float, float)`
-- [ ] `delete_verb/2 (float, obj)`
-- [ ] `delete_verb/2 (float, str)`
-- [ ] `delete_verb/2 (float, err)`
-- [ ] `delete_verb/2 (float, list)`
-- [ ] `delete_verb/2 (float, map)`
-- [ ] `delete_verb/2 (obj, int)`
-- [ ] `delete_verb/2 (obj, float)`
-- [ ] `delete_verb/2 (obj, obj)`
-- [x] `delete_verb/2 (obj, str)` covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 24 more
-- [ ] `delete_verb/2 (obj, err)`
-- [ ] `delete_verb/2 (obj, list)`
-- [ ] `delete_verb/2 (obj, map)`
-- [ ] `delete_verb/2 (str, int)`
-- [ ] `delete_verb/2 (str, float)`
-- [ ] `delete_verb/2 (str, obj)`
-- [ ] `delete_verb/2 (str, str)`
-- [ ] `delete_verb/2 (str, err)`
-- [ ] `delete_verb/2 (str, list)`
-- [ ] `delete_verb/2 (str, map)`
-- [ ] `delete_verb/2 (err, int)`
-- [ ] `delete_verb/2 (err, float)`
-- [ ] `delete_verb/2 (err, obj)`
-- [ ] `delete_verb/2 (err, str)`
-- [ ] `delete_verb/2 (err, err)`
-- [ ] `delete_verb/2 (err, list)`
-- [ ] `delete_verb/2 (err, map)`
-- [ ] `delete_verb/2 (list, int)`
-- [ ] `delete_verb/2 (list, float)`
-- [ ] `delete_verb/2 (list, obj)`
-- [x] `delete_verb/2 (list, str)` covered by `audit/command_parser_toast_oracle.yaml`, `builtins/verbs.yaml`, `builtins/verbs.yaml` and 7 more
-- [ ] `delete_verb/2 (list, err)`
-- [ ] `delete_verb/2 (list, list)`
-- [ ] `delete_verb/2 (list, map)`
-- [ ] `delete_verb/2 (map, int)`
-- [ ] `delete_verb/2 (map, float)`
-- [ ] `delete_verb/2 (map, obj)`
-- [ ] `delete_verb/2 (map, str)`
-- [ ] `delete_verb/2 (map, err)`
-- [ ] `delete_verb/2 (map, list)`
-- [ ] `delete_verb/2 (map, map)`
+- [x] `delete_verb/2 (int, int)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (int, float)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (int, obj)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (int, str)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (int, err)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (int, list)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (int, map)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (float, int)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (float, float)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (float, obj)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (float, str)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (float, err)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (float, list)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (float, map)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (obj, int)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (obj, float)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (obj, obj)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (obj, str)` covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 25 more
+- [x] `delete_verb/2 (obj, err)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (obj, list)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (obj, map)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (str, int)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (str, float)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (str, obj)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (str, str)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (str, err)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (str, list)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (str, map)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (err, int)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (err, float)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (err, obj)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (err, str)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (err, err)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (err, list)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (err, map)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (list, int)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (list, float)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (list, obj)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (list, str)` covered by `audit/command_parser_toast_oracle.yaml`, `builtins/delete_verb_call_shapes.yaml`, `builtins/verbs.yaml` and 8 more
+- [x] `delete_verb/2 (list, err)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (list, list)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (list, map)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (map, int)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (map, float)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (map, obj)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (map, str)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (map, err)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (map, list)` covered by `builtins/delete_verb_call_shapes.yaml`
+- [x] `delete_verb/2 (map, map)` covered by `builtins/delete_verb_call_shapes.yaml`
 - [?] `delete_verb/2` unknown argument types covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml` and 53 more
 
 ### `descendants`

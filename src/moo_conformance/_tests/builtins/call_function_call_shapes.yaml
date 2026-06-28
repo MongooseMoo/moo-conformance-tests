@@ -1,0 +1,21 @@
+name: call_function_call_shapes
+description: Variadic argument type coverage for call_function().
+
+requires:
+  builtins:
+    - call_function
+    - typeof
+
+tests:
+  - name: call_function_typeof_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [float, "1.5"]
+        - [obj, "#0"]
+        - [err, "E_ARGS"]
+        - [map, "[1 -> 2]"]
+    code: 'call_function("typeof", {expr})'
+    expect:
+      type: int

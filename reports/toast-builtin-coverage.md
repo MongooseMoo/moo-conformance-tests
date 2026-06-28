@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T08:04:50Z`
+- generated_at: `2026-06-28T08:07:01Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `866`
-- missing_call_shapes: `6735`
+- covered_call_shapes: `870`
+- missing_call_shapes: `6731`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -135,11 +135,6 @@ still needs explicit human review.
 - `argon2` signature `2..5 (str, str, int, int, int)`
   - [ ] `argon2/3 (str, str, int)`
   - [ ] `argon2/4 (str, str, int, int)`
-- `call_function` signature `1..* (str)`
-  - [ ] `call_function/2 (str, float)`
-  - [ ] `call_function/2 (str, obj)`
-  - [ ] `call_function/2 (str, err)`
-  - [ ] `call_function/2 (str, map)`
 - `create` signature `1..4 (any, any, any, any)`
   - [ ] `create/1 (float)`
   - [ ] `create/1 (err)`
@@ -7079,12 +7074,12 @@ still needs explicit human review.
 - source: `execute.cc`
 - [x] `call_function/1 (str)` covered by `builtins/task_management.yaml`, `builtins/task_management.yaml`, `builtins/task_management.yaml`
 - [x] `call_function/2 (str, int)` covered by `builtins/task_management.yaml`, `builtins/task_management.yaml`
-- [ ] `call_function/2 (str, float)`
-- [ ] `call_function/2 (str, obj)`
+- [x] `call_function/2 (str, float)` covered by `builtins/call_function_call_shapes.yaml`
+- [x] `call_function/2 (str, obj)` covered by `builtins/call_function_call_shapes.yaml`
 - [x] `call_function/2 (str, str)` covered by `builtins/task_management.yaml`, `builtins/task_management.yaml`
-- [ ] `call_function/2 (str, err)`
+- [x] `call_function/2 (str, err)` covered by `builtins/call_function_call_shapes.yaml`
 - [x] `call_function/2 (str, list)` covered by `builtins/task_management.yaml`, `builtins/task_management.yaml`
-- [ ] `call_function/2 (str, map)`
+- [x] `call_function/2 (str, map)` covered by `builtins/call_function_call_shapes.yaml`
 
 ### `caller_perms`
 

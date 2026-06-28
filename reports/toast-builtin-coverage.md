@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T05:22:46Z`
-- toast_source: `C:\Users\Q\src\toaststunt`
-- conformance_tests: `src\moo_conformance\_tests`
+- generated_at: `2026-06-28T05:26:08Z`
+- toast_source: `/root/src/toaststunt`
+- conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `243`
 - required_call_shapes: `7721`
-- covered_call_shapes: `417`
-- missing_call_shapes: `7304`
+- covered_call_shapes: `476`
+- missing_call_shapes: `7245`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -4433,66 +4433,6 @@ still needs explicit human review.
   - [ ] `value_bytes/1 (obj)`
   - [ ] `value_bytes/1 (err)`
   - [ ] `value_bytes/1 (map)`
-- `value_hash` signature `1..3 (any, str, any)`
-  - [ ] `value_hash/1 (int)`
-  - [ ] `value_hash/1 (float)`
-  - [ ] `value_hash/1 (obj)`
-  - [ ] `value_hash/1 (str)`
-  - [ ] `value_hash/1 (err)`
-  - [ ] `value_hash/1 (list)`
-  - [ ] `value_hash/1 (map)`
-  - [ ] `value_hash/2 (int, str)`
-  - [ ] `value_hash/2 (float, str)`
-  - [ ] `value_hash/2 (obj, str)`
-  - [ ] `value_hash/2 (err, str)`
-  - [ ] `value_hash/3 (int, str, int)`
-  - [ ] `value_hash/3 (int, str, float)`
-  - [ ] `value_hash/3 (int, str, obj)`
-  - [ ] `value_hash/3 (int, str, str)`
-  - [ ] `value_hash/3 (int, str, err)`
-  - [ ] `value_hash/3 (int, str, list)`
-  - [ ] `value_hash/3 (int, str, map)`
-  - [ ] `value_hash/3 (float, str, int)`
-  - [ ] `value_hash/3 (float, str, float)`
-  - [ ] `value_hash/3 (float, str, obj)`
-  - [ ] `value_hash/3 (float, str, str)`
-  - [ ] `value_hash/3 (float, str, err)`
-  - [ ] `value_hash/3 (float, str, list)`
-  - [ ] `value_hash/3 (float, str, map)`
-  - [ ] `value_hash/3 (obj, str, int)`
-  - [ ] `value_hash/3 (obj, str, float)`
-  - [ ] `value_hash/3 (obj, str, obj)`
-  - [ ] `value_hash/3 (obj, str, str)`
-  - [ ] `value_hash/3 (obj, str, err)`
-  - [ ] `value_hash/3 (obj, str, list)`
-  - [ ] `value_hash/3 (obj, str, map)`
-  - [ ] `value_hash/3 (str, str, int)`
-  - [ ] `value_hash/3 (str, str, float)`
-  - [ ] `value_hash/3 (str, str, obj)`
-  - [ ] `value_hash/3 (str, str, str)`
-  - [ ] `value_hash/3 (str, str, err)`
-  - [ ] `value_hash/3 (str, str, list)`
-  - [ ] `value_hash/3 (str, str, map)`
-  - [ ] `value_hash/3 (err, str, int)`
-  - [ ] `value_hash/3 (err, str, float)`
-  - [ ] `value_hash/3 (err, str, obj)`
-  - [ ] `value_hash/3 (err, str, str)`
-  - [ ] `value_hash/3 (err, str, err)`
-  - [ ] `value_hash/3 (err, str, list)`
-  - [ ] `value_hash/3 (err, str, map)`
-  - [ ] `value_hash/3 (list, str, int)`
-  - [ ] `value_hash/3 (list, str, float)`
-  - [ ] `value_hash/3 (list, str, obj)`
-  - [ ] `value_hash/3 (list, str, str)`
-  - [ ] `value_hash/3 (list, str, err)`
-  - [ ] `value_hash/3 (list, str, list)`
-  - [ ] `value_hash/3 (list, str, map)`
-  - [ ] `value_hash/3 (map, str, float)`
-  - [ ] `value_hash/3 (map, str, obj)`
-  - [ ] `value_hash/3 (map, str, str)`
-  - [ ] `value_hash/3 (map, str, err)`
-  - [ ] `value_hash/3 (map, str, list)`
-  - [ ] `value_hash/3 (map, str, map)`
 - `value_hmac` signature `2..4 (any, str, str, any)`
   - [ ] `value_hmac/2 (int, str)`
   - [ ] `value_hmac/2 (float, str)`
@@ -13451,69 +13391,69 @@ still needs explicit human review.
 
 - signature: `1..3 (any, str, any)`
 - source: `crypto.cc`
-- [ ] `value_hash/1 (int)`
-- [ ] `value_hash/1 (float)`
-- [ ] `value_hash/1 (obj)`
-- [ ] `value_hash/1 (str)`
-- [ ] `value_hash/1 (err)`
-- [ ] `value_hash/1 (list)`
-- [ ] `value_hash/1 (map)`
-- [ ] `value_hash/2 (int, str)`
-- [ ] `value_hash/2 (float, str)`
-- [ ] `value_hash/2 (obj, str)`
-- [x] `value_hash/2 (str, str)` covered by `builtins/algorithms.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml`
-- [ ] `value_hash/2 (err, str)`
-- [x] `value_hash/2 (list, str)` covered by `builtins/algorithms.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml` and 4 more
-- [x] `value_hash/2 (map, str)` covered by `builtins/algorithms.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml` and 4 more
-- [ ] `value_hash/3 (int, str, int)`
-- [ ] `value_hash/3 (int, str, float)`
-- [ ] `value_hash/3 (int, str, obj)`
-- [ ] `value_hash/3 (int, str, str)`
-- [ ] `value_hash/3 (int, str, err)`
-- [ ] `value_hash/3 (int, str, list)`
-- [ ] `value_hash/3 (int, str, map)`
-- [ ] `value_hash/3 (float, str, int)`
-- [ ] `value_hash/3 (float, str, float)`
-- [ ] `value_hash/3 (float, str, obj)`
-- [ ] `value_hash/3 (float, str, str)`
-- [ ] `value_hash/3 (float, str, err)`
-- [ ] `value_hash/3 (float, str, list)`
-- [ ] `value_hash/3 (float, str, map)`
-- [ ] `value_hash/3 (obj, str, int)`
-- [ ] `value_hash/3 (obj, str, float)`
-- [ ] `value_hash/3 (obj, str, obj)`
-- [ ] `value_hash/3 (obj, str, str)`
-- [ ] `value_hash/3 (obj, str, err)`
-- [ ] `value_hash/3 (obj, str, list)`
-- [ ] `value_hash/3 (obj, str, map)`
-- [ ] `value_hash/3 (str, str, int)`
-- [ ] `value_hash/3 (str, str, float)`
-- [ ] `value_hash/3 (str, str, obj)`
-- [ ] `value_hash/3 (str, str, str)`
-- [ ] `value_hash/3 (str, str, err)`
-- [ ] `value_hash/3 (str, str, list)`
-- [ ] `value_hash/3 (str, str, map)`
-- [ ] `value_hash/3 (err, str, int)`
-- [ ] `value_hash/3 (err, str, float)`
-- [ ] `value_hash/3 (err, str, obj)`
-- [ ] `value_hash/3 (err, str, str)`
-- [ ] `value_hash/3 (err, str, err)`
-- [ ] `value_hash/3 (err, str, list)`
-- [ ] `value_hash/3 (err, str, map)`
-- [ ] `value_hash/3 (list, str, int)`
-- [ ] `value_hash/3 (list, str, float)`
-- [ ] `value_hash/3 (list, str, obj)`
-- [ ] `value_hash/3 (list, str, str)`
-- [ ] `value_hash/3 (list, str, err)`
-- [ ] `value_hash/3 (list, str, list)`
-- [ ] `value_hash/3 (list, str, map)`
-- [x] `value_hash/3 (map, str, int)` covered by `builtins/algorithms.yaml`
-- [ ] `value_hash/3 (map, str, float)`
-- [ ] `value_hash/3 (map, str, obj)`
-- [ ] `value_hash/3 (map, str, str)`
-- [ ] `value_hash/3 (map, str, err)`
-- [ ] `value_hash/3 (map, str, list)`
-- [ ] `value_hash/3 (map, str, map)`
+- [x] `value_hash/1 (int)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/1 (float)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/1 (obj)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/1 (str)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/1 (err)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/1 (list)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/1 (map)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/2 (int, str)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/2 (float, str)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/2 (obj, str)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/2 (str, str)` covered by `builtins/algorithms.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml` and 1 more
+- [x] `value_hash/2 (err, str)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/2 (list, str)` covered by `builtins/algorithms.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml` and 5 more
+- [x] `value_hash/2 (map, str)` covered by `builtins/algorithms.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml` and 5 more
+- [x] `value_hash/3 (int, str, int)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (int, str, float)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (int, str, obj)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (int, str, str)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (int, str, err)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (int, str, list)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (int, str, map)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (float, str, int)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (float, str, float)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (float, str, obj)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (float, str, str)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (float, str, err)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (float, str, list)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (float, str, map)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (obj, str, int)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (obj, str, float)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (obj, str, obj)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (obj, str, str)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (obj, str, err)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (obj, str, list)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (obj, str, map)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (str, str, int)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (str, str, float)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (str, str, obj)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (str, str, str)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (str, str, err)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (str, str, list)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (str, str, map)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (err, str, int)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (err, str, float)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (err, str, obj)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (err, str, str)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (err, str, err)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (err, str, list)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (err, str, map)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (list, str, int)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (list, str, float)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (list, str, obj)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (list, str, str)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (list, str, err)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (list, str, list)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (list, str, map)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (map, str, int)` covered by `builtins/algorithms.yaml`, `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (map, str, float)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (map, str, obj)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (map, str, str)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (map, str, err)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (map, str, list)` covered by `builtins/value_hash_call_shapes.yaml`
+- [x] `value_hash/3 (map, str, map)` covered by `builtins/value_hash_call_shapes.yaml`
 
 ### `value_hmac`
 

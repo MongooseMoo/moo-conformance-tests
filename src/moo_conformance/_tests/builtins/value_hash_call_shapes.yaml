@@ -1,0 +1,81 @@
+name: value_hash_call_shapes
+description: Table-driven call-shape coverage for value_hash() arities and TYPE_ANY permutations.
+
+requires:
+  builtins:
+    - value_hash
+
+tests:
+  - name: value_hash_{case}
+    permission: wizard
+    table:
+      columns: [case, expr]
+      rows:
+        - [arity1_int, "value_hash(1)"]
+        - [arity1_float, "value_hash(1.5)"]
+        - [arity1_obj, "value_hash(#0)"]
+        - [arity1_str, 'value_hash("x")']
+        - [arity1_err, "value_hash(E_ARGS)"]
+        - [arity1_list, 'value_hash({1, "x"})']
+        - [arity1_map, 'value_hash([1 -> "x"])']
+
+        - [arity2_int, 'value_hash(1, "sha256")']
+        - [arity2_float, 'value_hash(1.5, "sha256")']
+        - [arity2_obj, 'value_hash(#0, "sha256")']
+        - [arity2_str, 'value_hash("x", "sha256")']
+        - [arity2_err, 'value_hash(E_ARGS, "sha256")']
+        - [arity2_list, 'value_hash({1, "x"}, "sha256")']
+        - [arity2_map, 'value_hash([1 -> "x"], "sha256")']
+
+        - [arity3_int_int, 'value_hash(1, "sha256", 1)']
+        - [arity3_int_float, 'value_hash(1, "sha256", 1.5)']
+        - [arity3_int_obj, 'value_hash(1, "sha256", #0)']
+        - [arity3_int_str, 'value_hash(1, "sha256", "x")']
+        - [arity3_int_err, 'value_hash(1, "sha256", E_ARGS)']
+        - [arity3_int_list, 'value_hash(1, "sha256", {1})']
+        - [arity3_int_map, 'value_hash(1, "sha256", [1 -> 2])']
+        - [arity3_float_int, 'value_hash(1.5, "sha256", 1)']
+        - [arity3_float_float, 'value_hash(1.5, "sha256", 1.5)']
+        - [arity3_float_obj, 'value_hash(1.5, "sha256", #0)']
+        - [arity3_float_str, 'value_hash(1.5, "sha256", "x")']
+        - [arity3_float_err, 'value_hash(1.5, "sha256", E_ARGS)']
+        - [arity3_float_list, 'value_hash(1.5, "sha256", {1})']
+        - [arity3_float_map, 'value_hash(1.5, "sha256", [1 -> 2])']
+        - [arity3_obj_int, 'value_hash(#0, "sha256", 1)']
+        - [arity3_obj_float, 'value_hash(#0, "sha256", 1.5)']
+        - [arity3_obj_obj, 'value_hash(#0, "sha256", #0)']
+        - [arity3_obj_str, 'value_hash(#0, "sha256", "x")']
+        - [arity3_obj_err, 'value_hash(#0, "sha256", E_ARGS)']
+        - [arity3_obj_list, 'value_hash(#0, "sha256", {1})']
+        - [arity3_obj_map, 'value_hash(#0, "sha256", [1 -> 2])']
+        - [arity3_str_int, 'value_hash("x", "sha256", 1)']
+        - [arity3_str_float, 'value_hash("x", "sha256", 1.5)']
+        - [arity3_str_obj, 'value_hash("x", "sha256", #0)']
+        - [arity3_str_str, 'value_hash("x", "sha256", "x")']
+        - [arity3_str_err, 'value_hash("x", "sha256", E_ARGS)']
+        - [arity3_str_list, 'value_hash("x", "sha256", {1})']
+        - [arity3_str_map, 'value_hash("x", "sha256", [1 -> 2])']
+        - [arity3_err_int, 'value_hash(E_ARGS, "sha256", 1)']
+        - [arity3_err_float, 'value_hash(E_ARGS, "sha256", 1.5)']
+        - [arity3_err_obj, 'value_hash(E_ARGS, "sha256", #0)']
+        - [arity3_err_str, 'value_hash(E_ARGS, "sha256", "x")']
+        - [arity3_err_err, 'value_hash(E_ARGS, "sha256", E_ARGS)']
+        - [arity3_err_list, 'value_hash(E_ARGS, "sha256", {1})']
+        - [arity3_err_map, 'value_hash(E_ARGS, "sha256", [1 -> 2])']
+        - [arity3_list_int, 'value_hash({1, "x"}, "sha256", 1)']
+        - [arity3_list_float, 'value_hash({1, "x"}, "sha256", 1.5)']
+        - [arity3_list_obj, 'value_hash({1, "x"}, "sha256", #0)']
+        - [arity3_list_str, 'value_hash({1, "x"}, "sha256", "x")']
+        - [arity3_list_err, 'value_hash({1, "x"}, "sha256", E_ARGS)']
+        - [arity3_list_list, 'value_hash({1, "x"}, "sha256", {1})']
+        - [arity3_list_map, 'value_hash({1, "x"}, "sha256", [1 -> 2])']
+        - [arity3_map_int, 'value_hash([1 -> "x"], "sha256", 1)']
+        - [arity3_map_float, 'value_hash([1 -> "x"], "sha256", 1.5)']
+        - [arity3_map_obj, 'value_hash([1 -> "x"], "sha256", #0)']
+        - [arity3_map_str, 'value_hash([1 -> "x"], "sha256", "x")']
+        - [arity3_map_err, 'value_hash([1 -> "x"], "sha256", E_ARGS)']
+        - [arity3_map_list, 'value_hash([1 -> "x"], "sha256", {1})']
+        - [arity3_map_map, 'value_hash([1 -> "x"], "sha256", [1 -> 2])']
+    code: "{expr}"
+    expect:
+      type: str

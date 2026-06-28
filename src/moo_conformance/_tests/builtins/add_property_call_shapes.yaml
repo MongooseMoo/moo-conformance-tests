@@ -1,0 +1,65 @@
+name: add_property_call_shapes
+description: Table-driven TYPE_ANY coverage for add_property().
+
+requires:
+  builtins:
+    - add_property
+
+tests:
+  - name: add_property_object_and_value_types_{case}
+    permission: wizard
+    table:
+      columns: [case, object_expr, value_expr, error]
+      rows:
+        - [int_int, "1", "1", E_TYPE]
+        - [int_float, "1", "1.5", E_TYPE]
+        - [int_obj, "1", "#0", E_TYPE]
+        - [int_str, "1", '"x"', E_TYPE]
+        - [int_err, "1", "E_ARGS", E_TYPE]
+        - [int_list, "1", "{}", E_TYPE]
+        - [int_map, "1", "[1 -> 2]", E_TYPE]
+        - [float_int, "1.5", "1", E_TYPE]
+        - [float_float, "1.5", "1.5", E_TYPE]
+        - [float_obj, "1.5", "#0", E_TYPE]
+        - [float_str, "1.5", '"x"', E_TYPE]
+        - [float_err, "1.5", "E_ARGS", E_TYPE]
+        - [float_list, "1.5", "{}", E_TYPE]
+        - [float_map, "1.5", "[1 -> 2]", E_TYPE]
+        - [obj_int, "#999999", "1", E_INVARG]
+        - [obj_float, "#999999", "1.5", E_INVARG]
+        - [obj_obj, "#999999", "#0", E_INVARG]
+        - [obj_str, "#999999", '"x"', E_INVARG]
+        - [obj_err, "#999999", "E_ARGS", E_INVARG]
+        - [obj_list, "#999999", "{}", E_INVARG]
+        - [obj_map, "#999999", "[1 -> 2]", E_INVARG]
+        - [str_int, '"x"', "1", E_TYPE]
+        - [str_float, '"x"', "1.5", E_TYPE]
+        - [str_obj, '"x"', "#0", E_TYPE]
+        - [str_str, '"x"', '"x"', E_TYPE]
+        - [str_err, '"x"', "E_ARGS", E_TYPE]
+        - [str_list, '"x"', "{}", E_TYPE]
+        - [str_map, '"x"', "[1 -> 2]", E_TYPE]
+        - [err_int, "E_ARGS", "1", E_TYPE]
+        - [err_float, "E_ARGS", "1.5", E_TYPE]
+        - [err_obj, "E_ARGS", "#0", E_TYPE]
+        - [err_str, "E_ARGS", '"x"', E_TYPE]
+        - [err_err, "E_ARGS", "E_ARGS", E_TYPE]
+        - [err_list, "E_ARGS", "{}", E_TYPE]
+        - [err_map, "E_ARGS", "[1 -> 2]", E_TYPE]
+        - [list_int, "{}", "1", E_TYPE]
+        - [list_float, "{}", "1.5", E_TYPE]
+        - [list_obj, "{}", "#0", E_TYPE]
+        - [list_str, "{}", '"x"', E_TYPE]
+        - [list_err, "{}", "E_ARGS", E_TYPE]
+        - [list_list, "{}", "{}", E_TYPE]
+        - [list_map, "{}", "[1 -> 2]", E_TYPE]
+        - [map_int, "[1 -> 2]", "1", E_TYPE]
+        - [map_float, "[1 -> 2]", "1.5", E_TYPE]
+        - [map_obj, "[1 -> 2]", "#0", E_TYPE]
+        - [map_str, "[1 -> 2]", '"x"', E_TYPE]
+        - [map_err, "[1 -> 2]", "E_ARGS", E_TYPE]
+        - [map_list, "[1 -> 2]", "{}", E_TYPE]
+        - [map_map, "[1 -> 2]", "[1 -> 2]", E_TYPE]
+    code: 'add_property({object_expr}, "shape_{case}", {value_expr}, {player, ""})'
+    expect:
+      error: "{error}"

@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T08:23:04Z`
+- generated_at: `2026-06-28T08:26:07Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `990`
-- missing_call_shapes: `6611`
+- covered_call_shapes: `1033`
+- missing_call_shapes: `6568`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,50 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `add_property` signature `4..4 (any, str, any, list)`
-  - [ ] `add_property/4 (int, str, int, list)`
-  - [ ] `add_property/4 (int, str, float, list)`
-  - [ ] `add_property/4 (int, str, obj, list)`
-  - [ ] `add_property/4 (int, str, str, list)`
-  - [ ] `add_property/4 (int, str, err, list)`
-  - [ ] `add_property/4 (int, str, list, list)`
-  - [ ] `add_property/4 (int, str, map, list)`
-  - [ ] `add_property/4 (float, str, int, list)`
-  - [ ] `add_property/4 (float, str, float, list)`
-  - [ ] `add_property/4 (float, str, obj, list)`
-  - [ ] `add_property/4 (float, str, str, list)`
-  - [ ] `add_property/4 (float, str, err, list)`
-  - [ ] `add_property/4 (float, str, list, list)`
-  - [ ] `add_property/4 (float, str, map, list)`
-  - [ ] `add_property/4 (obj, str, float, list)`
-  - [ ] `add_property/4 (obj, str, err, list)`
-  - [ ] `add_property/4 (obj, str, map, list)`
-  - [ ] `add_property/4 (str, str, int, list)`
-  - [ ] `add_property/4 (str, str, float, list)`
-  - [ ] `add_property/4 (str, str, obj, list)`
-  - [ ] `add_property/4 (str, str, str, list)`
-  - [ ] `add_property/4 (str, str, err, list)`
-  - [ ] `add_property/4 (str, str, list, list)`
-  - [ ] `add_property/4 (str, str, map, list)`
-  - [ ] `add_property/4 (err, str, int, list)`
-  - [ ] `add_property/4 (err, str, float, list)`
-  - [ ] `add_property/4 (err, str, obj, list)`
-  - [ ] `add_property/4 (err, str, str, list)`
-  - [ ] `add_property/4 (err, str, err, list)`
-  - [ ] `add_property/4 (err, str, list, list)`
-  - [ ] `add_property/4 (err, str, map, list)`
-  - [ ] `add_property/4 (list, str, float, list)`
-  - [ ] `add_property/4 (list, str, obj, list)`
-  - [ ] `add_property/4 (list, str, err, list)`
-  - [ ] `add_property/4 (list, str, list, list)`
-  - [ ] `add_property/4 (list, str, map, list)`
-  - [ ] `add_property/4 (map, str, int, list)`
-  - [ ] `add_property/4 (map, str, float, list)`
-  - [ ] `add_property/4 (map, str, obj, list)`
-  - [ ] `add_property/4 (map, str, str, list)`
-  - [ ] `add_property/4 (map, str, err, list)`
-  - [ ] `add_property/4 (map, str, list, list)`
-  - [ ] `add_property/4 (map, str, map, list)`
 - `create` signature `1..4 (any, any, any, any)`
   - [ ] `create/1 (float)`
   - [ ] `create/1 (err)`
@@ -6715,55 +6671,55 @@ still needs explicit human review.
 
 - signature: `4..4 (any, str, any, list)`
 - source: `property.cc`
-- [ ] `add_property/4 (int, str, int, list)`
-- [ ] `add_property/4 (int, str, float, list)`
-- [ ] `add_property/4 (int, str, obj, list)`
-- [ ] `add_property/4 (int, str, str, list)`
-- [ ] `add_property/4 (int, str, err, list)`
-- [ ] `add_property/4 (int, str, list, list)`
-- [ ] `add_property/4 (int, str, map, list)`
-- [ ] `add_property/4 (float, str, int, list)`
-- [ ] `add_property/4 (float, str, float, list)`
-- [ ] `add_property/4 (float, str, obj, list)`
-- [ ] `add_property/4 (float, str, str, list)`
-- [ ] `add_property/4 (float, str, err, list)`
-- [ ] `add_property/4 (float, str, list, list)`
-- [ ] `add_property/4 (float, str, map, list)`
-- [x] `add_property/4 (obj, str, int, list)` covered by `audit/task_scheduling_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml` and 3 more
-- [ ] `add_property/4 (obj, str, float, list)`
-- [x] `add_property/4 (obj, str, obj, list)` covered by `builtins/http.yaml`, `builtins/http.yaml`, `builtins/http.yaml` and 2 more
-- [x] `add_property/4 (obj, str, str, list)` covered by `audit/command_parser_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml` and 2 more
-- [ ] `add_property/4 (obj, str, err, list)`
-- [x] `add_property/4 (obj, str, list, list)` covered by `audit/command_parser_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 14 more
-- [ ] `add_property/4 (obj, str, map, list)`
-- [ ] `add_property/4 (str, str, int, list)`
-- [ ] `add_property/4 (str, str, float, list)`
-- [ ] `add_property/4 (str, str, obj, list)`
-- [ ] `add_property/4 (str, str, str, list)`
-- [ ] `add_property/4 (str, str, err, list)`
-- [ ] `add_property/4 (str, str, list, list)`
-- [ ] `add_property/4 (str, str, map, list)`
-- [ ] `add_property/4 (err, str, int, list)`
-- [ ] `add_property/4 (err, str, float, list)`
-- [ ] `add_property/4 (err, str, obj, list)`
-- [ ] `add_property/4 (err, str, str, list)`
-- [ ] `add_property/4 (err, str, err, list)`
-- [ ] `add_property/4 (err, str, list, list)`
-- [ ] `add_property/4 (err, str, map, list)`
-- [x] `add_property/4 (list, str, int, list)` covered by `builtins/properties.yaml`, `builtins/properties.yaml`, `builtins/properties.yaml` and 55 more
-- [ ] `add_property/4 (list, str, float, list)`
-- [ ] `add_property/4 (list, str, obj, list)`
-- [x] `add_property/4 (list, str, str, list)` covered by `builtins/properties.yaml`, `builtins/properties.yaml`, `builtins/properties.yaml` and 18 more
-- [ ] `add_property/4 (list, str, err, list)`
-- [ ] `add_property/4 (list, str, list, list)`
-- [ ] `add_property/4 (list, str, map, list)`
-- [ ] `add_property/4 (map, str, int, list)`
-- [ ] `add_property/4 (map, str, float, list)`
-- [ ] `add_property/4 (map, str, obj, list)`
-- [ ] `add_property/4 (map, str, str, list)`
-- [ ] `add_property/4 (map, str, err, list)`
-- [ ] `add_property/4 (map, str, list, list)`
-- [ ] `add_property/4 (map, str, map, list)`
+- [x] `add_property/4 (int, str, int, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (int, str, float, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (int, str, obj, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (int, str, str, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (int, str, err, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (int, str, list, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (int, str, map, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (float, str, int, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (float, str, float, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (float, str, obj, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (float, str, str, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (float, str, err, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (float, str, list, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (float, str, map, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (obj, str, int, list)` covered by `audit/task_scheduling_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml` and 4 more
+- [x] `add_property/4 (obj, str, float, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (obj, str, obj, list)` covered by `builtins/add_property_call_shapes.yaml`, `builtins/http.yaml`, `builtins/http.yaml` and 3 more
+- [x] `add_property/4 (obj, str, str, list)` covered by `audit/command_parser_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml` and 3 more
+- [x] `add_property/4 (obj, str, err, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (obj, str, list, list)` covered by `audit/command_parser_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 15 more
+- [x] `add_property/4 (obj, str, map, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (str, str, int, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (str, str, float, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (str, str, obj, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (str, str, str, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (str, str, err, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (str, str, list, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (str, str, map, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (err, str, int, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (err, str, float, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (err, str, obj, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (err, str, str, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (err, str, err, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (err, str, list, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (err, str, map, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (list, str, int, list)` covered by `builtins/add_property_call_shapes.yaml`, `builtins/properties.yaml`, `builtins/properties.yaml` and 56 more
+- [x] `add_property/4 (list, str, float, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (list, str, obj, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (list, str, str, list)` covered by `builtins/add_property_call_shapes.yaml`, `builtins/properties.yaml`, `builtins/properties.yaml` and 19 more
+- [x] `add_property/4 (list, str, err, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (list, str, list, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (list, str, map, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (map, str, int, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (map, str, float, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (map, str, obj, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (map, str, str, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (map, str, err, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (map, str, list, list)` covered by `builtins/add_property_call_shapes.yaml`
+- [x] `add_property/4 (map, str, map, list)` covered by `builtins/add_property_call_shapes.yaml`
 - [?] `add_property/4` unknown argument types covered by `audit/gap_followups_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml` and 252 more
 
 ### `add_verb`

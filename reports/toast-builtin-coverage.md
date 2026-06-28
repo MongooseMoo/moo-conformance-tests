@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T09:53:25Z`
+- generated_at: `2026-06-28T09:54:57Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `4429`
-- missing_call_shapes: `3172`
+- covered_call_shapes: `4430`
+- missing_call_shapes: `3171`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,8 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `renumber` signature `1..1 (obj)`
-  - [ ] `renumber/1 (obj)`
 - `resume` signature `1..2 (int, any)`
   - [ ] `resume/2 (int, int)`
   - [ ] `resume/2 (int, float)`
@@ -8068,7 +8066,7 @@ still needs explicit human review.
 
 - signature: `1..1 (obj)`
 - source: `server.cc`
-- [ ] `renumber/1 (obj)`
+- [x] `renumber/1 (obj)` covered by `builtins/renumber_call_shapes.yaml`
 - [?] `renumber/1` unknown argument types covered by `builtins/objects.yaml`, `builtins/objects.yaml`, `builtins/objects.yaml` and 5 more
 
 ### `reseed_random`

@@ -1,0 +1,13 @@
+name: renumber_call_shapes
+description: Object-argument call-shape coverage for renumber().
+
+requires:
+  builtins:
+    - renumber
+
+tests:
+  - name: renumber_rejects_invalid_object
+    permission: wizard
+    code: "renumber(#-999)"
+    expect:
+      error: E_INVARG

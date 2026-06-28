@@ -1,0 +1,43 @@
+name: connection_input_call_shapes
+description: Call-shape coverage for force_input() and flush_input().
+
+requires:
+  builtins:
+    - flush_input
+    - force_input
+
+tests:
+  - name: flush_input_show_messages_type_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [int, "1"]
+        - [float, "1.5"]
+        - [obj, "#0"]
+        - [str, '"x"']
+        - [err, "E_ARGS"]
+        - [list, "{}"]
+        - [map, "[1 -> 2]"]
+    code: "flush_input(#999999, {expr})"
+    expect:
+      value: 0
+
+  - name: force_input_at_front_type_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [int, "1"]
+        - [float, "1.5"]
+        - [obj, "#0"]
+        - [str, '"x"']
+        - [err, "E_ARGS"]
+        - [list, "{}"]
+        - [map, "[1 -> 2]"]
+    code: 'force_input(#999999, "shape-input", {expr})'
+    expect:
+      value: 0
+    cleanup:
+      - run: "flush_input(#999999)"
+        as: wizard

@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T09:07:09Z`
+- generated_at: `2026-06-28T09:10:53Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `4044`
-- missing_call_shapes: `3557`
+- covered_call_shapes: `4058`
+- missing_call_shapes: `3543`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,22 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `flush_input` signature `1..2 (obj, any)`
-  - [ ] `flush_input/2 (obj, int)`
-  - [ ] `flush_input/2 (obj, float)`
-  - [ ] `flush_input/2 (obj, obj)`
-  - [ ] `flush_input/2 (obj, str)`
-  - [ ] `flush_input/2 (obj, err)`
-  - [ ] `flush_input/2 (obj, list)`
-  - [ ] `flush_input/2 (obj, map)`
-- `force_input` signature `2..3 (obj, str, any)`
-  - [ ] `force_input/3 (obj, str, int)`
-  - [ ] `force_input/3 (obj, str, float)`
-  - [ ] `force_input/3 (obj, str, obj)`
-  - [ ] `force_input/3 (obj, str, str)`
-  - [ ] `force_input/3 (obj, str, err)`
-  - [ ] `force_input/3 (obj, str, list)`
-  - [ ] `force_input/3 (obj, str, map)`
 - `is_member` signature `2..3 (any, any, int)`
   - [ ] `is_member/2 (int, int)`
   - [ ] `is_member/2 (int, float)`
@@ -7450,14 +7434,14 @@ still needs explicit human review.
 
 - signature: `1..2 (obj, any)`
 - source: `tasks.cc`
-- [x] `flush_input/1 (obj)` covered by `builtins/task_management.yaml`, `generated_builtins/flush_input.yaml`
-- [ ] `flush_input/2 (obj, int)`
-- [ ] `flush_input/2 (obj, float)`
-- [ ] `flush_input/2 (obj, obj)`
-- [ ] `flush_input/2 (obj, str)`
-- [ ] `flush_input/2 (obj, err)`
-- [ ] `flush_input/2 (obj, list)`
-- [ ] `flush_input/2 (obj, map)`
+- [x] `flush_input/1 (obj)` covered by `builtins/connection_input_call_shapes.yaml`, `builtins/connection_input_call_shapes.yaml`, `builtins/connection_input_call_shapes.yaml` and 6 more
+- [x] `flush_input/2 (obj, int)` covered by `builtins/connection_input_call_shapes.yaml`
+- [x] `flush_input/2 (obj, float)` covered by `builtins/connection_input_call_shapes.yaml`
+- [x] `flush_input/2 (obj, obj)` covered by `builtins/connection_input_call_shapes.yaml`
+- [x] `flush_input/2 (obj, str)` covered by `builtins/connection_input_call_shapes.yaml`
+- [x] `flush_input/2 (obj, err)` covered by `builtins/connection_input_call_shapes.yaml`
+- [x] `flush_input/2 (obj, list)` covered by `builtins/connection_input_call_shapes.yaml`
+- [x] `flush_input/2 (obj, map)` covered by `builtins/connection_input_call_shapes.yaml`
 - [?] `flush_input/3` unknown argument types covered by `builtins/task_management.yaml`
 
 ### `force_input`
@@ -7465,13 +7449,13 @@ still needs explicit human review.
 - signature: `2..3 (obj, str, any)`
 - source: `tasks.cc`
 - [x] `force_input/2 (obj, str)` covered by `builtins/task_management.yaml`, `generated_builtins/force_input.yaml`
-- [ ] `force_input/3 (obj, str, int)`
-- [ ] `force_input/3 (obj, str, float)`
-- [ ] `force_input/3 (obj, str, obj)`
-- [ ] `force_input/3 (obj, str, str)`
-- [ ] `force_input/3 (obj, str, err)`
-- [ ] `force_input/3 (obj, str, list)`
-- [ ] `force_input/3 (obj, str, map)`
+- [x] `force_input/3 (obj, str, int)` covered by `builtins/connection_input_call_shapes.yaml`
+- [x] `force_input/3 (obj, str, float)` covered by `builtins/connection_input_call_shapes.yaml`
+- [x] `force_input/3 (obj, str, obj)` covered by `builtins/connection_input_call_shapes.yaml`
+- [x] `force_input/3 (obj, str, str)` covered by `builtins/connection_input_call_shapes.yaml`
+- [x] `force_input/3 (obj, str, err)` covered by `builtins/connection_input_call_shapes.yaml`
+- [x] `force_input/3 (obj, str, list)` covered by `builtins/connection_input_call_shapes.yaml`
+- [x] `force_input/3 (obj, str, map)` covered by `builtins/connection_input_call_shapes.yaml`
 - [?] `force_input/1` unknown argument types covered by `builtins/task_management.yaml`
 - [?] `force_input/2` unknown argument types covered by `builtins/task_management.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 59 more
 - [?] `force_input/4` unknown argument types covered by `builtins/task_management.yaml`

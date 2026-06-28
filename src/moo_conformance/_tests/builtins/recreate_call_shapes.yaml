@@ -1,0 +1,19 @@
+name: recreate_call_shapes
+description: Object-argument call-shape coverage for recreate().
+
+requires:
+  builtins:
+    - recreate
+
+tests:
+  - name: recreate_two_args_rejects_valid_old_object
+    permission: wizard
+    code: "recreate(#0, #0)"
+    expect:
+      error: E_INVARG
+
+  - name: recreate_three_args_rejects_valid_old_object
+    permission: wizard
+    code: "recreate(#0, #0, #0)"
+    expect:
+      error: E_INVARG

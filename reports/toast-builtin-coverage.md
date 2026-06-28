@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T09:51:37Z`
+- generated_at: `2026-06-28T09:53:25Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `4427`
-- missing_call_shapes: `3174`
+- covered_call_shapes: `4429`
+- missing_call_shapes: `3172`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,9 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `recreate` signature `2..3 (obj, obj, obj)`
-  - [ ] `recreate/2 (obj, obj)`
-  - [ ] `recreate/3 (obj, obj, obj)`
 - `renumber` signature `1..1 (obj)`
   - [ ] `renumber/1 (obj)`
 - `resume` signature `1..2 (int, any)`
@@ -8031,8 +8028,8 @@ still needs explicit human review.
 
 - signature: `2..3 (obj, obj, obj)`
 - source: `objects.cc`
-- [ ] `recreate/2 (obj, obj)`
-- [ ] `recreate/3 (obj, obj, obj)`
+- [x] `recreate/2 (obj, obj)` covered by `builtins/recreate_call_shapes.yaml`
+- [x] `recreate/3 (obj, obj, obj)` covered by `builtins/recreate_call_shapes.yaml`
 - [?] `recreate/2` unknown argument types covered by `builtins/recreate.yaml`, `builtins/recreate.yaml`, `builtins/recreate.yaml` and 2 more
 - [?] `recreate/3` unknown argument types covered by `builtins/recreate.yaml`
 

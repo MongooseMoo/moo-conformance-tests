@@ -1,0 +1,13 @@
+name: waif_stats_call_shapes
+description: Zero-argument call-shape coverage for waif_stats().
+
+requires:
+  builtins:
+    - waif_stats
+
+tests:
+  - name: waif_stats_zero_args_returns_map
+    permission: wizard
+    code: "waif_stats()"
+    expect:
+      type: map

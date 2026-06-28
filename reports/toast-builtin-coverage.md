@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T10:23:41Z`
+- generated_at: `2026-06-28T10:25:45Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `7595`
-- missing_call_shapes: `6`
+- covered_call_shapes: `7596`
+- missing_call_shapes: `5`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,8 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `waif_stats` signature `0..0 ()`
-  - [ ] `waif_stats/0 ()`
 - `yin` signature `0..3 (numeric, int, int)`
   - [ ] `yin/1 (int)`
   - [ ] `yin/1 (float)`
@@ -8890,7 +8888,7 @@ still needs explicit human review.
 
 - signature: `0..0 ()`
 - source: `waif.cc`
-- [ ] `waif_stats/0 ()`
+- [x] `waif_stats/0 ()` covered by `builtins/waif_stats_call_shapes.yaml`
 
 ### `yin`
 

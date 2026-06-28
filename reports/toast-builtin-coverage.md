@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T07:22:54Z`
+- generated_at: `2026-06-28T07:24:20Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `740`
-- missing_call_shapes: `6861`
+- covered_call_shapes: `746`
+- missing_call_shapes: `6855`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3878,13 +3878,6 @@ still needs explicit human review.
   - [ ] `string_hmac/4 (str, str, str, err)`
   - [ ] `string_hmac/4 (str, str, str, list)`
   - [ ] `string_hmac/4 (str, str, str, map)`
-- `strtr` signature `3..4 (str, str, str, any)`
-  - [ ] `strtr/4 (str, str, str, float)`
-  - [ ] `strtr/4 (str, str, str, obj)`
-  - [ ] `strtr/4 (str, str, str, str)`
-  - [ ] `strtr/4 (str, str, str, err)`
-  - [ ] `strtr/4 (str, str, str, list)`
-  - [ ] `strtr/4 (str, str, str, map)`
 - `task_stack` signature `1..3 (int, any, any)`
   - [ ] `task_stack/2 (int, int)`
   - [ ] `task_stack/2 (int, float)`
@@ -12425,13 +12418,13 @@ still needs explicit human review.
 - signature: `3..4 (str, str, str, any)`
 - source: `list.cc`
 - [x] `strtr/3 (str, str, str)` covered by `builtins/string_operations.yaml`, `builtins/string_operations.yaml`, `builtins/string_operations.yaml` and 6 more
-- [x] `strtr/4 (str, str, str, int)` covered by `builtins/string_operations.yaml`, `builtins/string_operations.yaml`, `builtins/string_operations.yaml` and 11 more
-- [ ] `strtr/4 (str, str, str, float)`
-- [ ] `strtr/4 (str, str, str, obj)`
-- [ ] `strtr/4 (str, str, str, str)`
-- [ ] `strtr/4 (str, str, str, err)`
-- [ ] `strtr/4 (str, str, str, list)`
-- [ ] `strtr/4 (str, str, str, map)`
+- [x] `strtr/4 (str, str, str, int)` covered by `builtins/string_operations.yaml`, `builtins/string_operations.yaml`, `builtins/string_operations.yaml` and 12 more
+- [x] `strtr/4 (str, str, str, float)` covered by `builtins/strtr_call_shapes.yaml`
+- [x] `strtr/4 (str, str, str, obj)` covered by `builtins/strtr_call_shapes.yaml`
+- [x] `strtr/4 (str, str, str, str)` covered by `builtins/strtr_call_shapes.yaml`
+- [x] `strtr/4 (str, str, str, err)` covered by `builtins/strtr_call_shapes.yaml`
+- [x] `strtr/4 (str, str, str, list)` covered by `builtins/strtr_call_shapes.yaml`
+- [x] `strtr/4 (str, str, str, map)` covered by `builtins/strtr_call_shapes.yaml`
 
 ### `substitute`
 

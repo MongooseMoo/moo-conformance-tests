@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T07:41:43Z`
+- generated_at: `2026-06-28T07:46:00Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `834`
-- missing_call_shapes: `6767`
+- covered_call_shapes: `840`
+- missing_call_shapes: `6761`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3666,13 +3666,6 @@ still needs explicit human review.
   - [ ] `resume/2 (int, err)`
   - [ ] `resume/2 (int, list)`
   - [ ] `resume/2 (int, map)`
-- `set_connection_option` signature `3..3 (obj, str, any)`
-  - [ ] `set_connection_option/3 (obj, str, float)`
-  - [ ] `set_connection_option/3 (obj, str, obj)`
-  - [ ] `set_connection_option/3 (obj, str, str)`
-  - [ ] `set_connection_option/3 (obj, str, err)`
-  - [ ] `set_connection_option/3 (obj, str, list)`
-  - [ ] `set_connection_option/3 (obj, str, map)`
 - `set_player_flag` signature `2..2 (obj, any)`
   - [ ] `set_player_flag/2 (obj, float)`
   - [ ] `set_player_flag/2 (obj, obj)`
@@ -11858,13 +11851,13 @@ still needs explicit human review.
 
 - signature: `3..3 (obj, str, any)`
 - source: `server.cc`
-- [x] `set_connection_option/3 (obj, str, int)` covered by `builtins/server_admin.yaml`
-- [ ] `set_connection_option/3 (obj, str, float)`
-- [ ] `set_connection_option/3 (obj, str, obj)`
-- [ ] `set_connection_option/3 (obj, str, str)`
-- [ ] `set_connection_option/3 (obj, str, err)`
-- [ ] `set_connection_option/3 (obj, str, list)`
-- [ ] `set_connection_option/3 (obj, str, map)`
+- [x] `set_connection_option/3 (obj, str, int)` covered by `builtins/server_admin.yaml`, `builtins/set_connection_option_call_shapes.yaml`
+- [x] `set_connection_option/3 (obj, str, float)` covered by `builtins/set_connection_option_call_shapes.yaml`
+- [x] `set_connection_option/3 (obj, str, obj)` covered by `builtins/set_connection_option_call_shapes.yaml`
+- [x] `set_connection_option/3 (obj, str, str)` covered by `builtins/set_connection_option_call_shapes.yaml`
+- [x] `set_connection_option/3 (obj, str, err)` covered by `builtins/set_connection_option_call_shapes.yaml`
+- [x] `set_connection_option/3 (obj, str, list)` covered by `builtins/set_connection_option_call_shapes.yaml`
+- [x] `set_connection_option/3 (obj, str, map)` covered by `builtins/set_connection_option_call_shapes.yaml`
 - [?] `set_connection_option/3` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 113 more
 
 ### `set_player_flag`

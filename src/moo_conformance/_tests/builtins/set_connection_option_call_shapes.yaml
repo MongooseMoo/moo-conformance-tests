@@ -1,0 +1,23 @@
+name: set_connection_option_call_shapes
+description: Table-driven TYPE_ANY coverage for set_connection_option().
+
+requires:
+  builtins:
+    - set_connection_option
+
+tests:
+  - name: set_connection_option_value_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [int, "1"]
+        - [float, "1.5"]
+        - [obj, "#0"]
+        - [str, '"x"']
+        - [err, "E_ARGS"]
+        - [list, "{}"]
+        - [map, "[1 -> 2]"]
+    code: 'set_connection_option(#999999, "call-shape-invalid-option", {expr})'
+    expect:
+      error: E_INVARG

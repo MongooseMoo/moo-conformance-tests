@@ -1,0 +1,13 @@
+name: owned_objects_call_shapes
+description: Call-shape coverage for owned_objects().
+
+requires:
+  builtins:
+    - owned_objects
+
+tests:
+  - name: owned_objects_arg_obj
+    permission: wizard
+    code: "owned_objects(#0)"
+    expect:
+      type: list

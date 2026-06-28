@@ -1,0 +1,22 @@
+name: connected_players_call_shapes
+description: Table-driven TYPE_ANY optional-argument coverage for connected_players().
+
+requires:
+  builtins:
+    - connected_players
+
+tests:
+  - name: connected_players_arg_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [float, "connected_players(1.5)"]
+        - [obj, "connected_players(#0)"]
+        - [str, 'connected_players("x")']
+        - [err, "connected_players(E_ARGS)"]
+        - [list, "connected_players({1})"]
+        - [map, "connected_players([1 -> 2])"]
+    code: "{expr}"
+    expect:
+      type: list

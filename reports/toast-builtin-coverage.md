@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T05:31:24Z`
+- generated_at: `2026-06-28T05:36:24Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `243`
 - required_call_shapes: `7721`
-- covered_call_shapes: `494`
-- missing_call_shapes: `7227`
+- covered_call_shapes: `500`
+- missing_call_shapes: `7221`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -195,13 +195,6 @@ still needs explicit human review.
   - [ ] `clear_property/2 (str, str)`
   - [ ] `clear_property/2 (err, str)`
   - [ ] `clear_property/2 (map, str)`
-- `connected_players` signature `0..1 (any)`
-  - [ ] `connected_players/1 (float)`
-  - [ ] `connected_players/1 (obj)`
-  - [ ] `connected_players/1 (str)`
-  - [ ] `connected_players/1 (err)`
-  - [ ] `connected_players/1 (list)`
-  - [ ] `connected_players/1 (map)`
 - `connection_name` signature `1..2 (obj, int)`
   - [ ] `connection_name/2 (obj, int)`
 - `connection_name_lookup` signature `1..2 (obj, any)`
@@ -7419,7 +7412,7 @@ still needs explicit human review.
 - [x] `add_property/4 (obj, str, int, list)` covered by `audit/task_scheduling_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml` and 3 more
 - [ ] `add_property/4 (obj, str, float, list)`
 - [x] `add_property/4 (obj, str, obj, list)` covered by `builtins/http.yaml`, `builtins/http.yaml`, `builtins/http.yaml` and 2 more
-- [x] `add_property/4 (obj, str, str, list)` covered by `audit/command_parser_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml` and 1 more
+- [x] `add_property/4 (obj, str, str, list)` covered by `audit/command_parser_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml` and 2 more
 - [ ] `add_property/4 (obj, str, err, list)`
 - [x] `add_property/4 (obj, str, list, list)` covered by `audit/command_parser_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 14 more
 - [ ] `add_property/4 (obj, str, map, list)`
@@ -7451,7 +7444,7 @@ still needs explicit human review.
 - [ ] `add_property/4 (map, str, err, list)`
 - [ ] `add_property/4 (map, str, list, list)`
 - [ ] `add_property/4 (map, str, map, list)`
-- [?] `add_property/4` unknown argument types covered by `audit/gap_followups_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml` and 251 more
+- [?] `add_property/4` unknown argument types covered by `audit/gap_followups_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml` and 252 more
 
 ### `add_verb`
 
@@ -7462,9 +7455,9 @@ still needs explicit human review.
 - [x] `add_verb/3 (obj, list, list)` covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 24 more
 - [ ] `add_verb/3 (str, list, list)`
 - [ ] `add_verb/3 (err, list, list)`
-- [x] `add_verb/3 (list, list, list)` covered by `builtins/eval.yaml`, `builtins/recycle.yaml`, `builtins/recycle.yaml` and 50 more
+- [x] `add_verb/3 (list, list, list)` covered by `builtins/eval.yaml`, `builtins/recycle.yaml`, `builtins/recycle.yaml` and 51 more
 - [ ] `add_verb/3 (map, list, list)`
-- [?] `add_verb/3` unknown argument types covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml` and 306 more
+- [?] `add_verb/3` unknown argument types covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml` and 313 more
 
 ### `all_members`
 
@@ -7769,12 +7762,12 @@ still needs explicit human review.
 - source: `server.cc`
 - [x] `connected_players/0 ()` covered by `builtins/server_admin.yaml`, `builtins/server_admin.yaml`, `builtins/server_admin.yaml`
 - [x] `connected_players/1 (int)` covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 8 more
-- [ ] `connected_players/1 (float)`
-- [ ] `connected_players/1 (obj)`
-- [ ] `connected_players/1 (str)`
-- [ ] `connected_players/1 (err)`
-- [ ] `connected_players/1 (list)`
-- [ ] `connected_players/1 (map)`
+- [x] `connected_players/1 (float)` covered by `builtins/connected_players_call_shapes.yaml`
+- [x] `connected_players/1 (obj)` covered by `builtins/connected_players_call_shapes.yaml`
+- [x] `connected_players/1 (str)` covered by `builtins/connected_players_call_shapes.yaml`
+- [x] `connected_players/1 (err)` covered by `builtins/connected_players_call_shapes.yaml`
+- [x] `connected_players/1 (list)` covered by `builtins/connected_players_call_shapes.yaml`
+- [x] `connected_players/1 (map)` covered by `builtins/connected_players_call_shapes.yaml`
 
 ### `connected_seconds`
 
@@ -10636,7 +10629,7 @@ still needs explicit human review.
 - [ ] `create/4 (map, map, map, err)`
 - [ ] `create/4 (map, map, map, list)`
 - [ ] `create/4 (map, map, map, map)`
-- [?] `create/1` unknown argument types covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml` and 886 more
+- [?] `create/1` unknown argument types covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml` and 894 more
 - [?] `create/2` unknown argument types covered by `builtins/objects.yaml`, `builtins/objects.yaml`, `builtins/create.yaml` and 128 more
 - [?] `create/3` unknown argument types covered by `builtins/create.yaml`, `builtins/create.yaml`, `builtins/create.yaml` and 10 more
 - [?] `create/4` unknown argument types covered by `builtins/create.yaml`, `builtins/create.yaml`, `builtins/create.yaml` and 3 more
@@ -10716,12 +10709,12 @@ still needs explicit human review.
 - source: `property.cc`
 - [ ] `delete_property/2 (int, str)`
 - [ ] `delete_property/2 (float, str)`
-- [x] `delete_property/2 (obj, str)` covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 74 more
+- [x] `delete_property/2 (obj, str)` covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 75 more
 - [ ] `delete_property/2 (str, str)`
 - [ ] `delete_property/2 (err, str)`
 - [x] `delete_property/2 (list, str)` covered by `builtins/properties.yaml`, `builtins/properties.yaml`, `builtins/properties.yaml` and 6 more
 - [ ] `delete_property/2 (map, str)`
-- [?] `delete_property/2` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 50 more
+- [?] `delete_property/2` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 51 more
 
 ### `delete_verb`
 
@@ -10906,7 +10899,7 @@ still needs explicit human review.
 
 - signature: `0..0 ()`
 - source: `server.cc`
-- [x] `dump_database/0 ()` covered by `audit/task_scheduling_toast_oracle.yaml`, `builtins/server_admin.yaml`, `builtins/server_admin.yaml` and 5 more
+- [x] `dump_database/0 ()` covered by `audit/task_scheduling_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml`, `builtins/server_admin.yaml` and 6 more
 
 ### `encode_base64`
 
@@ -11125,7 +11118,7 @@ still needs explicit human review.
 
 - signature: `1..1 (str)`
 - source: `fileio.cc`
-- [x] `file_mkdir/1 (str)` covered by `builtins/fileio.yaml`, `builtins/fileio_security.yaml`, `builtins/fileio_verified.yaml`
+- [x] `file_mkdir/1 (str)` covered by `builtins/fileio.yaml`, `builtins/fileio_security.yaml`, `builtins/fileio_verified.yaml` and 2 more
 
 ### `file_mode`
 
@@ -11183,7 +11176,7 @@ still needs explicit human review.
 
 - signature: `1..1 (str)`
 - source: `fileio.cc`
-- [x] `file_remove/1 (str)` covered by `builtins/fileio.yaml`, `builtins/fileio.yaml`, `builtins/fileio.yaml` and 47 more
+- [x] `file_remove/1 (str)` covered by `builtins/fileio.yaml`, `builtins/fileio.yaml`, `builtins/fileio.yaml` and 48 more
 
 ### `file_rename`
 
@@ -11195,7 +11188,7 @@ still needs explicit human review.
 
 - signature: `1..1 (str)`
 - source: `fileio.cc`
-- [x] `file_rmdir/1 (str)` covered by `builtins/fileio.yaml`, `builtins/fileio_security.yaml`, `builtins/fileio_verified.yaml`
+- [x] `file_rmdir/1 (str)` covered by `builtins/fileio.yaml`, `builtins/fileio_security.yaml`, `builtins/fileio_verified.yaml` and 2 more
 
 ### `file_seek`
 
@@ -11793,7 +11786,7 @@ still needs explicit human review.
 
 - signature: `0..0 ()`
 - source: `functions.cc`
-- [x] `load_server_options/0 ()` covered by `audit/task_scheduling_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml` and 87 more
+- [x] `load_server_options/0 ()` covered by `audit/task_scheduling_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml` and 89 more
 
 ### `locate_by_name`
 
@@ -12366,9 +12359,9 @@ still needs explicit human review.
 - [x] `recycle/1 (obj)` covered by `builtins/recycle.yaml`, `builtins/task_local.yaml`
 - [x] `recycle/1 (str)` covered by `builtins/recycle.yaml`
 - [ ] `recycle/1 (err)`
-- [x] `recycle/1 (list)` covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml` and 240 more
+- [x] `recycle/1 (list)` covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml` and 241 more
 - [x] `recycle/1 (map)` covered by `builtins/recycle.yaml`
-- [?] `recycle/1` unknown argument types covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml` and 362 more
+- [?] `recycle/1` unknown argument types covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml` and 369 more
 
 ### `recycled_objects`
 
@@ -12703,7 +12696,7 @@ still needs explicit human review.
 - [ ] `set_verb_code/3 (map, err, list)`
 - [ ] `set_verb_code/3 (map, list, list)`
 - [ ] `set_verb_code/3 (map, map, list)`
-- [?] `set_verb_code/3` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 307 more
+- [?] `set_verb_code/3` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 312 more
 
 ### `set_verb_info`
 
@@ -12949,7 +12942,7 @@ still needs explicit human review.
 
 - signature: `1..2 (str, int)`
 - source: `sqlite.cc`
-- [x] `sqlite_open/1 (str)` covered by `builtins/sqlite.yaml`, `builtins/sqlite.yaml`, `builtins/sqlite.yaml` and 4 more
+- [x] `sqlite_open/1 (str)` covered by `builtins/sqlite.yaml`, `builtins/sqlite.yaml`, `builtins/sqlite.yaml` and 15 more
 - [ ] `sqlite_open/2 (str, int)`
 
 ### `sqlite_query`
@@ -13258,7 +13251,7 @@ still needs explicit human review.
 - [x] `typeof/1 (err)` covered by `basic/types.yaml`, `basic/types.yaml`
 - [x] `typeof/1 (list)` covered by `basic/types.yaml`, `basic/value.yaml`, `builtins/pcre.yaml` and 1 more
 - [x] `typeof/1 (map)` covered by `basic/types.yaml`, `basic/types.yaml`
-- [?] `typeof/1` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 160 more
+- [?] `typeof/1` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 161 more
 
 ### `unlisten`
 

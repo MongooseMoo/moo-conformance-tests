@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T07:54:07Z`
+- generated_at: `2026-06-28T07:56:38Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `853`
-- missing_call_shapes: `6748`
+- covered_call_shapes: `857`
+- missing_call_shapes: `6744`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -140,11 +140,6 @@ still needs explicit human review.
   - [ ] `call_function/2 (str, obj)`
   - [ ] `call_function/2 (str, err)`
   - [ ] `call_function/2 (str, map)`
-- `chr` signature `0..* ()`
-  - [ ] `chr/1 (float)`
-  - [ ] `chr/1 (obj)`
-  - [ ] `chr/1 (err)`
-  - [ ] `chr/1 (map)`
 - `connection_name` signature `1..2 (obj, int)`
   - [ ] `connection_name/2 (obj, int)`
 - `connection_name_lookup` signature `1..2 (obj, any)`
@@ -7153,12 +7148,12 @@ still needs explicit human review.
 - source: `list.cc`
 - [x] `chr/0 ()` covered by `builtins/chr.yaml`
 - [x] `chr/1 (int)` covered by `builtins/chr.yaml`, `builtins/chr.yaml`, `builtins/chr.yaml` and 5 more
-- [ ] `chr/1 (float)`
-- [ ] `chr/1 (obj)`
+- [x] `chr/1 (float)` covered by `builtins/chr_call_shapes.yaml`
+- [x] `chr/1 (obj)` covered by `builtins/chr_call_shapes.yaml`
 - [x] `chr/1 (str)` covered by `builtins/chr.yaml`
-- [ ] `chr/1 (err)`
+- [x] `chr/1 (err)` covered by `builtins/chr_call_shapes.yaml`
 - [x] `chr/1 (list)` covered by `builtins/chr.yaml`
-- [ ] `chr/1 (map)`
+- [x] `chr/1 (map)` covered by `builtins/chr_call_shapes.yaml`
 
 ### `clear_property`
 

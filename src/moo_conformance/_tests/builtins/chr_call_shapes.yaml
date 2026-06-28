@@ -1,0 +1,20 @@
+name: chr_call_shapes
+description: Variadic argument type coverage for chr().
+
+requires:
+  builtins:
+    - chr
+
+tests:
+  - name: chr_rejects_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [float, "1.5"]
+        - [obj, "#0"]
+        - [err, "E_ARGS"]
+        - [map, "[1 -> 2]"]
+    code: "chr({expr})"
+    expect:
+      error: E_INVARG

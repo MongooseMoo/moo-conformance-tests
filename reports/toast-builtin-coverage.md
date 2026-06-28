@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T10:06:49Z`
+- generated_at: `2026-06-28T10:08:32Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `4579`
-- missing_call_shapes: `3022`
+- covered_call_shapes: `4586`
+- missing_call_shapes: `3015`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,14 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `sqlite_limit` signature `3..3 (int, any, int)`
-  - [ ] `sqlite_limit/3 (int, int, int)`
-  - [ ] `sqlite_limit/3 (int, float, int)`
-  - [ ] `sqlite_limit/3 (int, obj, int)`
-  - [ ] `sqlite_limit/3 (int, str, int)`
-  - [ ] `sqlite_limit/3 (int, err, int)`
-  - [ ] `sqlite_limit/3 (int, list, int)`
-  - [ ] `sqlite_limit/3 (int, map, int)`
 - `sqlite_open` signature `1..2 (str, int)`
   - [ ] `sqlite_open/2 (str, int)`
 - `sqlite_query` signature `2..3 (int, str, any)`
@@ -8430,13 +8422,13 @@ still needs explicit human review.
 
 - signature: `3..3 (int, any, int)`
 - source: `sqlite.cc`
-- [ ] `sqlite_limit/3 (int, int, int)`
-- [ ] `sqlite_limit/3 (int, float, int)`
-- [ ] `sqlite_limit/3 (int, obj, int)`
-- [ ] `sqlite_limit/3 (int, str, int)`
-- [ ] `sqlite_limit/3 (int, err, int)`
-- [ ] `sqlite_limit/3 (int, list, int)`
-- [ ] `sqlite_limit/3 (int, map, int)`
+- [x] `sqlite_limit/3 (int, int, int)` covered by `builtins/sqlite_limit_call_shapes.yaml`
+- [x] `sqlite_limit/3 (int, float, int)` covered by `builtins/sqlite_limit_call_shapes.yaml`
+- [x] `sqlite_limit/3 (int, obj, int)` covered by `builtins/sqlite_limit_call_shapes.yaml`
+- [x] `sqlite_limit/3 (int, str, int)` covered by `builtins/sqlite_limit_call_shapes.yaml`
+- [x] `sqlite_limit/3 (int, err, int)` covered by `builtins/sqlite_limit_call_shapes.yaml`
+- [x] `sqlite_limit/3 (int, list, int)` covered by `builtins/sqlite_limit_call_shapes.yaml`
+- [x] `sqlite_limit/3 (int, map, int)` covered by `builtins/sqlite_limit_call_shapes.yaml`
 - [?] `sqlite_limit/3` unknown argument types covered by `builtins/sqlite.yaml`, `builtins/sqlite.yaml`
 
 ### `sqlite_open`

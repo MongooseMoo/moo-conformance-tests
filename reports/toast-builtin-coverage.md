@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T07:24:20Z`
+- generated_at: `2026-06-28T07:26:19Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `746`
-- missing_call_shapes: `6855`
+- covered_call_shapes: `752`
+- missing_call_shapes: `6849`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3871,13 +3871,6 @@ still needs explicit human review.
   - [ ] `sqlite_query/3 (int, str, err)`
   - [ ] `sqlite_query/3 (int, str, list)`
   - [ ] `sqlite_query/3 (int, str, map)`
-- `string_hmac` signature `2..4 (str, str, str, any)`
-  - [ ] `string_hmac/4 (str, str, str, float)`
-  - [ ] `string_hmac/4 (str, str, str, obj)`
-  - [ ] `string_hmac/4 (str, str, str, str)`
-  - [ ] `string_hmac/4 (str, str, str, err)`
-  - [ ] `string_hmac/4 (str, str, str, list)`
-  - [ ] `string_hmac/4 (str, str, str, map)`
 - `task_stack` signature `1..3 (int, any, any)`
   - [ ] `task_stack/2 (int, int)`
   - [ ] `task_stack/2 (int, float)`
@@ -12391,13 +12384,13 @@ still needs explicit human review.
 - source: `crypto.cc`
 - [x] `string_hmac/2 (str, str)` covered by `builtins/algorithms.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml`
 - [x] `string_hmac/3 (str, str, str)` covered by `builtins/algorithms.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml` and 11 more
-- [x] `string_hmac/4 (str, str, str, int)` covered by `builtins/algorithms.yaml`
-- [ ] `string_hmac/4 (str, str, str, float)`
-- [ ] `string_hmac/4 (str, str, str, obj)`
-- [ ] `string_hmac/4 (str, str, str, str)`
-- [ ] `string_hmac/4 (str, str, str, err)`
-- [ ] `string_hmac/4 (str, str, str, list)`
-- [ ] `string_hmac/4 (str, str, str, map)`
+- [x] `string_hmac/4 (str, str, str, int)` covered by `builtins/algorithms.yaml`, `builtins/string_hmac_call_shapes.yaml`
+- [x] `string_hmac/4 (str, str, str, float)` covered by `builtins/string_hmac_call_shapes.yaml`
+- [x] `string_hmac/4 (str, str, str, obj)` covered by `builtins/string_hmac_call_shapes.yaml`
+- [x] `string_hmac/4 (str, str, str, str)` covered by `builtins/string_hmac_call_shapes.yaml`
+- [x] `string_hmac/4 (str, str, str, err)` covered by `builtins/string_hmac_call_shapes.yaml`
+- [x] `string_hmac/4 (str, str, str, list)` covered by `builtins/string_hmac_call_shapes.yaml`
+- [x] `string_hmac/4 (str, str, str, map)` covered by `builtins/string_hmac_call_shapes.yaml`
 
 ### `strsub`
 

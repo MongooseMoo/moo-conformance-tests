@@ -1,0 +1,49 @@
+name: task_stack_call_shapes
+description: TYPE_ANY optional flag call-shape coverage for task_stack().
+
+requires:
+  builtins:
+    - task_stack
+
+tests:
+  - name: task_stack_two_args_rejects_missing_task_with_line_flag_{line_kind}
+    permission: wizard
+    table:
+      columns: [line_kind, line_expr]
+      rows:
+        - [int, "1"]
+        - [float, "1.5"]
+        - [obj, "#0"]
+        - [str, '"x"']
+        - [err, "E_ARGS"]
+        - [list, "{}"]
+        - [map, "[1 -> 2]"]
+    code: "task_stack(999999999, {line_expr})"
+    expect:
+      error: E_INVARG
+
+  - name: task_stack_three_args_rejects_missing_task_with_flags_{line_kind}_{vars_kind}
+    permission: wizard
+    table:
+      product:
+        - columns: [line_kind, line_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+        - columns: [vars_kind, vars_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+    code: "task_stack(999999999, {line_expr}, {vars_expr})"
+    expect:
+      error: E_INVARG

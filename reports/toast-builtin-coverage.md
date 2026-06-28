@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T10:11:56Z`
+- generated_at: `2026-06-28T10:13:55Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `4594`
-- missing_call_shapes: `3007`
+- covered_call_shapes: `4650`
+- missing_call_shapes: `2951`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,63 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `task_stack` signature `1..3 (int, any, any)`
-  - [ ] `task_stack/2 (int, int)`
-  - [ ] `task_stack/2 (int, float)`
-  - [ ] `task_stack/2 (int, obj)`
-  - [ ] `task_stack/2 (int, str)`
-  - [ ] `task_stack/2 (int, err)`
-  - [ ] `task_stack/2 (int, list)`
-  - [ ] `task_stack/2 (int, map)`
-  - [ ] `task_stack/3 (int, int, int)`
-  - [ ] `task_stack/3 (int, int, float)`
-  - [ ] `task_stack/3 (int, int, obj)`
-  - [ ] `task_stack/3 (int, int, str)`
-  - [ ] `task_stack/3 (int, int, err)`
-  - [ ] `task_stack/3 (int, int, list)`
-  - [ ] `task_stack/3 (int, int, map)`
-  - [ ] `task_stack/3 (int, float, int)`
-  - [ ] `task_stack/3 (int, float, float)`
-  - [ ] `task_stack/3 (int, float, obj)`
-  - [ ] `task_stack/3 (int, float, str)`
-  - [ ] `task_stack/3 (int, float, err)`
-  - [ ] `task_stack/3 (int, float, list)`
-  - [ ] `task_stack/3 (int, float, map)`
-  - [ ] `task_stack/3 (int, obj, int)`
-  - [ ] `task_stack/3 (int, obj, float)`
-  - [ ] `task_stack/3 (int, obj, obj)`
-  - [ ] `task_stack/3 (int, obj, str)`
-  - [ ] `task_stack/3 (int, obj, err)`
-  - [ ] `task_stack/3 (int, obj, list)`
-  - [ ] `task_stack/3 (int, obj, map)`
-  - [ ] `task_stack/3 (int, str, int)`
-  - [ ] `task_stack/3 (int, str, float)`
-  - [ ] `task_stack/3 (int, str, obj)`
-  - [ ] `task_stack/3 (int, str, str)`
-  - [ ] `task_stack/3 (int, str, err)`
-  - [ ] `task_stack/3 (int, str, list)`
-  - [ ] `task_stack/3 (int, str, map)`
-  - [ ] `task_stack/3 (int, err, int)`
-  - [ ] `task_stack/3 (int, err, float)`
-  - [ ] `task_stack/3 (int, err, obj)`
-  - [ ] `task_stack/3 (int, err, str)`
-  - [ ] `task_stack/3 (int, err, err)`
-  - [ ] `task_stack/3 (int, err, list)`
-  - [ ] `task_stack/3 (int, err, map)`
-  - [ ] `task_stack/3 (int, list, int)`
-  - [ ] `task_stack/3 (int, list, float)`
-  - [ ] `task_stack/3 (int, list, obj)`
-  - [ ] `task_stack/3 (int, list, str)`
-  - [ ] `task_stack/3 (int, list, err)`
-  - [ ] `task_stack/3 (int, list, list)`
-  - [ ] `task_stack/3 (int, list, map)`
-  - [ ] `task_stack/3 (int, map, int)`
-  - [ ] `task_stack/3 (int, map, float)`
-  - [ ] `task_stack/3 (int, map, obj)`
-  - [ ] `task_stack/3 (int, map, str)`
-  - [ ] `task_stack/3 (int, map, err)`
-  - [ ] `task_stack/3 (int, map, list)`
-  - [ ] `task_stack/3 (int, map, map)`
 - `unlisten` signature `1..2 (any, any)`
   - [ ] `unlisten/1 (float)`
   - [ ] `unlisten/1 (obj)`
@@ -8566,62 +8509,62 @@ still needs explicit human review.
 - signature: `1..3 (int, any, any)`
 - source: `execute.cc`
 - [x] `task_stack/1 (int)` covered by `builtins/task_management.yaml`
-- [ ] `task_stack/2 (int, int)`
-- [ ] `task_stack/2 (int, float)`
-- [ ] `task_stack/2 (int, obj)`
-- [ ] `task_stack/2 (int, str)`
-- [ ] `task_stack/2 (int, err)`
-- [ ] `task_stack/2 (int, list)`
-- [ ] `task_stack/2 (int, map)`
-- [ ] `task_stack/3 (int, int, int)`
-- [ ] `task_stack/3 (int, int, float)`
-- [ ] `task_stack/3 (int, int, obj)`
-- [ ] `task_stack/3 (int, int, str)`
-- [ ] `task_stack/3 (int, int, err)`
-- [ ] `task_stack/3 (int, int, list)`
-- [ ] `task_stack/3 (int, int, map)`
-- [ ] `task_stack/3 (int, float, int)`
-- [ ] `task_stack/3 (int, float, float)`
-- [ ] `task_stack/3 (int, float, obj)`
-- [ ] `task_stack/3 (int, float, str)`
-- [ ] `task_stack/3 (int, float, err)`
-- [ ] `task_stack/3 (int, float, list)`
-- [ ] `task_stack/3 (int, float, map)`
-- [ ] `task_stack/3 (int, obj, int)`
-- [ ] `task_stack/3 (int, obj, float)`
-- [ ] `task_stack/3 (int, obj, obj)`
-- [ ] `task_stack/3 (int, obj, str)`
-- [ ] `task_stack/3 (int, obj, err)`
-- [ ] `task_stack/3 (int, obj, list)`
-- [ ] `task_stack/3 (int, obj, map)`
-- [ ] `task_stack/3 (int, str, int)`
-- [ ] `task_stack/3 (int, str, float)`
-- [ ] `task_stack/3 (int, str, obj)`
-- [ ] `task_stack/3 (int, str, str)`
-- [ ] `task_stack/3 (int, str, err)`
-- [ ] `task_stack/3 (int, str, list)`
-- [ ] `task_stack/3 (int, str, map)`
-- [ ] `task_stack/3 (int, err, int)`
-- [ ] `task_stack/3 (int, err, float)`
-- [ ] `task_stack/3 (int, err, obj)`
-- [ ] `task_stack/3 (int, err, str)`
-- [ ] `task_stack/3 (int, err, err)`
-- [ ] `task_stack/3 (int, err, list)`
-- [ ] `task_stack/3 (int, err, map)`
-- [ ] `task_stack/3 (int, list, int)`
-- [ ] `task_stack/3 (int, list, float)`
-- [ ] `task_stack/3 (int, list, obj)`
-- [ ] `task_stack/3 (int, list, str)`
-- [ ] `task_stack/3 (int, list, err)`
-- [ ] `task_stack/3 (int, list, list)`
-- [ ] `task_stack/3 (int, list, map)`
-- [ ] `task_stack/3 (int, map, int)`
-- [ ] `task_stack/3 (int, map, float)`
-- [ ] `task_stack/3 (int, map, obj)`
-- [ ] `task_stack/3 (int, map, str)`
-- [ ] `task_stack/3 (int, map, err)`
-- [ ] `task_stack/3 (int, map, list)`
-- [ ] `task_stack/3 (int, map, map)`
+- [x] `task_stack/2 (int, int)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/2 (int, float)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/2 (int, obj)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/2 (int, str)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/2 (int, err)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/2 (int, list)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/2 (int, map)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, int, int)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, int, float)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, int, obj)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, int, str)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, int, err)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, int, list)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, int, map)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, float, int)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, float, float)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, float, obj)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, float, str)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, float, err)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, float, list)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, float, map)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, obj, int)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, obj, float)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, obj, obj)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, obj, str)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, obj, err)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, obj, list)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, obj, map)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, str, int)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, str, float)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, str, obj)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, str, str)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, str, err)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, str, list)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, str, map)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, err, int)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, err, float)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, err, obj)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, err, str)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, err, err)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, err, list)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, err, map)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, list, int)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, list, float)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, list, obj)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, list, str)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, list, err)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, list, list)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, list, map)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, map, int)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, map, float)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, map, obj)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, map, str)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, map, err)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, map, list)` covered by `builtins/task_stack_call_shapes.yaml`
+- [x] `task_stack/3 (int, map, map)` covered by `builtins/task_stack_call_shapes.yaml`
 - [?] `task_stack/1` unknown argument types covered by `builtins/task_management.yaml`, `builtins/task_management.yaml`, `builtins/task_management.yaml` and 4 more
 - [?] `task_stack/2` unknown argument types covered by `builtins/task_management.yaml`, `builtins/task_management.yaml`
 

@@ -1,0 +1,19 @@
+name: argon2_call_shapes
+description: Optional arity coverage for argon2().
+
+requires:
+  builtins:
+    - argon2
+
+tests:
+  - name: argon2_three_args
+    permission: wizard
+    code: 'argon2("password", "saltsalt", 2)'
+    expect:
+      type: str
+
+  - name: argon2_four_args
+    permission: wizard
+    code: 'argon2("password", "saltsalt", 2, 1024)'
+    expect:
+      type: str

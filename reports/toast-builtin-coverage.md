@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T08:07:01Z`
+- generated_at: `2026-06-28T08:09:19Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `870`
-- missing_call_shapes: `6731`
+- covered_call_shapes: `872`
+- missing_call_shapes: `6729`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -132,9 +132,6 @@ still needs explicit human review.
   - [ ] `ancestors/2 (map, err)`
   - [ ] `ancestors/2 (map, list)`
   - [ ] `ancestors/2 (map, map)`
-- `argon2` signature `2..5 (str, str, int, int, int)`
-  - [ ] `argon2/3 (str, str, int)`
-  - [ ] `argon2/4 (str, str, int, int)`
 - `create` signature `1..4 (any, any, any, any)`
   - [ ] `create/1 (float)`
   - [ ] `create/1 (err)`
@@ -6984,8 +6981,8 @@ still needs explicit human review.
 - signature: `2..5 (str, str, int, int, int)`
 - source: `argon2.cc`
 - [x] `argon2/2 (str, str)` covered by `builtins/argon2.yaml`
-- [ ] `argon2/3 (str, str, int)`
-- [ ] `argon2/4 (str, str, int, int)`
+- [x] `argon2/3 (str, str, int)` covered by `builtins/argon2_call_shapes.yaml`
+- [x] `argon2/4 (str, str, int, int)` covered by `builtins/argon2_call_shapes.yaml`
 - [x] `argon2/5 (str, str, int, int, int)` covered by `builtins/argon2.yaml`
 
 ### `argon2_verify`

@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T05:50:22Z`
+- generated_at: `2026-06-28T05:51:46Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `243`
 - required_call_shapes: `7721`
-- covered_call_shapes: `525`
-- missing_call_shapes: `7196`
+- covered_call_shapes: `531`
+- missing_call_shapes: `7190`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3799,13 +3799,6 @@ still needs explicit human review.
   - [ ] `open_network_connection/3 (str, int, map)`
 - `owned_objects` signature `1..1 (obj)`
   - [ ] `owned_objects/1 (obj)`
-- `parents` signature `1..1 (any)`
-  - [ ] `parents/1 (float)`
-  - [ ] `parents/1 (obj)`
-  - [ ] `parents/1 (str)`
-  - [ ] `parents/1 (err)`
-  - [ ] `parents/1 (list)`
-  - [ ] `parents/1 (map)`
 - `pass` signature `0..* ()`
   - [ ] `pass/0 ()`
   - [ ] `pass/1 (int)`
@@ -12092,12 +12085,12 @@ still needs explicit human review.
 - signature: `1..1 (any)`
 - source: `objects.cc`
 - [x] `parents/1 (int)` covered by `generated_builtins/parents.yaml`
-- [ ] `parents/1 (float)`
-- [ ] `parents/1 (obj)`
-- [ ] `parents/1 (str)`
-- [ ] `parents/1 (err)`
-- [ ] `parents/1 (list)`
-- [ ] `parents/1 (map)`
+- [x] `parents/1 (float)` covered by `builtins/parents_call_shapes.yaml`
+- [x] `parents/1 (obj)` covered by `builtins/parents_call_shapes.yaml`
+- [x] `parents/1 (str)` covered by `builtins/parents_call_shapes.yaml`
+- [x] `parents/1 (err)` covered by `builtins/parents_call_shapes.yaml`
+- [x] `parents/1 (list)` covered by `builtins/parents_call_shapes.yaml`
+- [x] `parents/1 (map)` covered by `builtins/parents_call_shapes.yaml`
 - [?] `parents/1` unknown argument types covered by `builtins/objects.yaml`, `builtins/objects.yaml`, `builtins/objects.yaml` and 27 more
 
 ### `parse_ansi`

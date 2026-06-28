@@ -1,0 +1,27 @@
+name: parents_call_shapes
+description: Table-driven TYPE_ANY coverage for parents().
+
+requires:
+  builtins:
+    - parents
+
+tests:
+  - name: parents_arg_obj
+    permission: wizard
+    code: "parents(#0)"
+    expect:
+      type: list
+
+  - name: parents_arg_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [float, "parents(1.5)"]
+        - [str, 'parents("x")']
+        - [err, "parents(E_ARGS)"]
+        - [list, "parents({})"]
+        - [map, "parents([1 -> 2])"]
+    code: "{expr}"
+    expect:
+      error: E_TYPE

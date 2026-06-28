@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T07:04:27Z`
+- generated_at: `2026-06-28T07:07:12Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `638`
-- missing_call_shapes: `6963`
+- covered_call_shapes: `649`
+- missing_call_shapes: `6952`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3464,18 +3464,6 @@ still needs explicit human review.
   - [ ] `isa/3 (map, err, int)`
   - [ ] `isa/3 (map, list, int)`
   - [ ] `isa/3 (map, map, int)`
-- `listappend` signature `2..3 (list, any, int)`
-  - [ ] `listappend/2 (list, float)`
-  - [ ] `listappend/2 (list, obj)`
-  - [ ] `listappend/2 (list, str)`
-  - [ ] `listappend/2 (list, err)`
-  - [ ] `listappend/2 (list, map)`
-  - [ ] `listappend/3 (list, float, int)`
-  - [ ] `listappend/3 (list, obj, int)`
-  - [ ] `listappend/3 (list, str, int)`
-  - [ ] `listappend/3 (list, err, int)`
-  - [ ] `listappend/3 (list, list, int)`
-  - [ ] `listappend/3 (list, map, int)`
 - `listen` signature `2..3 (obj, any, map)`
   - [ ] `listen/2 (obj, int)`
   - [ ] `listen/2 (obj, float)`
@@ -11248,19 +11236,19 @@ still needs explicit human review.
 - signature: `2..3 (list, any, int)`
 - source: `list.cc`
 - [x] `listappend/2 (list, int)` covered by `basic/list.yaml`
-- [ ] `listappend/2 (list, float)`
-- [ ] `listappend/2 (list, obj)`
-- [ ] `listappend/2 (list, str)`
-- [ ] `listappend/2 (list, err)`
+- [x] `listappend/2 (list, float)` covered by `builtins/listappend_call_shapes.yaml`
+- [x] `listappend/2 (list, obj)` covered by `builtins/listappend_call_shapes.yaml`
+- [x] `listappend/2 (list, str)` covered by `builtins/listappend_call_shapes.yaml`
+- [x] `listappend/2 (list, err)` covered by `builtins/listappend_call_shapes.yaml`
 - [x] `listappend/2 (list, list)` covered by `server/limits.yaml`, `server/limits.yaml`
-- [ ] `listappend/2 (list, map)`
+- [x] `listappend/2 (list, map)` covered by `builtins/listappend_call_shapes.yaml`
 - [x] `listappend/3 (list, int, int)` covered by `basic/list.yaml`
-- [ ] `listappend/3 (list, float, int)`
-- [ ] `listappend/3 (list, obj, int)`
-- [ ] `listappend/3 (list, str, int)`
-- [ ] `listappend/3 (list, err, int)`
-- [ ] `listappend/3 (list, list, int)`
-- [ ] `listappend/3 (list, map, int)`
+- [x] `listappend/3 (list, float, int)` covered by `builtins/listappend_call_shapes.yaml`
+- [x] `listappend/3 (list, obj, int)` covered by `builtins/listappend_call_shapes.yaml`
+- [x] `listappend/3 (list, str, int)` covered by `builtins/listappend_call_shapes.yaml`
+- [x] `listappend/3 (list, err, int)` covered by `builtins/listappend_call_shapes.yaml`
+- [x] `listappend/3 (list, list, int)` covered by `builtins/listappend_call_shapes.yaml`
+- [x] `listappend/3 (list, map, int)` covered by `builtins/listappend_call_shapes.yaml`
 - [?] `listappend/2` unknown argument types covered by `audit/task_scheduling_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml` and 3 more
 
 ### `listdelete`

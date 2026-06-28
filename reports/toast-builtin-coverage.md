@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T09:36:21Z`
+- generated_at: `2026-06-28T09:39:07Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `4349`
-- missing_call_shapes: `3252`
+- covered_call_shapes: `4350`
+- missing_call_shapes: `3251`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,8 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `open_network_connection` signature `2..3 (str, int, map)`
-  - [ ] `open_network_connection/3 (str, int, map)`
 - `pass` signature `0..* ()`
   - [ ] `pass/0 ()`
   - [ ] `pass/1 (int)`
@@ -7521,7 +7519,7 @@ still needs explicit human review.
 
 - signature: `0..1 (any)`
 - source: `server.cc`
-- [x] `listeners/0 ()` covered by `builtins/server_admin.yaml`, `builtins/server_admin.yaml`, `builtins/server_admin.yaml` and 8 more
+- [x] `listeners/0 ()` covered by `builtins/open_network_connection_call_shapes.yaml`, `builtins/server_admin.yaml`, `builtins/server_admin.yaml` and 9 more
 - [x] `listeners/1 (int)` covered by `builtins/listeners_call_shapes.yaml`
 - [x] `listeners/1 (float)` covered by `builtins/listeners_call_shapes.yaml`
 - [x] `listeners/1 (obj)` covered by `builtins/server_admin.yaml`, `builtins/server_admin.yaml`
@@ -7864,8 +7862,9 @@ still needs explicit human review.
 - signature: `2..3 (str, int, map)`
 - source: `server.cc`
 - [x] `open_network_connection/2 (str, int)` covered by `builtins/open_network_connection_options.yaml`, `builtins/server_admin.yaml`
-- [ ] `open_network_connection/3 (str, int, map)`
+- [x] `open_network_connection/3 (str, int, map)` covered by `builtins/open_network_connection_call_shapes.yaml`
 - [?] `open_network_connection/2` unknown argument types covered by `builtins/server_admin.yaml`, `builtins/server_admin.yaml`, `builtins/server_admin.yaml` and 1 more
+- [?] `open_network_connection/3` unknown argument types covered by `builtins/open_network_connection_call_shapes.yaml`
 
 ### `output_delimiters`
 
@@ -8994,7 +8993,7 @@ still needs explicit human review.
 - [x] `typeof/1 (err)` covered by `basic/types.yaml`, `basic/types.yaml`
 - [x] `typeof/1 (list)` covered by `basic/types.yaml`, `basic/value.yaml`, `builtins/pcre.yaml` and 1 more
 - [x] `typeof/1 (map)` covered by `basic/types.yaml`, `basic/types.yaml`
-- [?] `typeof/1` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 162 more
+- [?] `typeof/1` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 163 more
 
 ### `unlisten`
 

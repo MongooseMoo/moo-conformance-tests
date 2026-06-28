@@ -1,0 +1,25 @@
+name: open_network_connection_call_shapes
+description: Map-options call-shape coverage for open_network_connection().
+
+requires:
+  builtins:
+    - listeners
+    - open_network_connection
+
+tests:
+  - name: open_network_connection_disabled_three_args_accepts_options_map
+    permission: wizard
+    skip_if: option.OUTBOUND_NETWORK
+    code: 'open_network_connection("127.0.0.1", 1, ["ipv6" -> 0])'
+    expect:
+      error: E_PERM
+
+  - name: open_network_connection_enabled_three_args_accepts_options_map
+    permission: wizard
+    skip_if: not option.OUTBOUND_NETWORK
+    statement: |
+      port = listeners()[1]["port"];
+      conn = open_network_connection("localhost", port, ["ipv6" -> 0]);
+      return typeof(conn);
+    expect:
+      value: 1

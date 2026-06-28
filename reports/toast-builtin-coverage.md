@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T09:45:02Z`
+- generated_at: `2026-06-28T09:48:06Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `4359`
-- missing_call_shapes: `3242`
+- covered_call_shapes: `4419`
+- missing_call_shapes: `3182`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,67 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `raise` signature `1..3 (any, str, any)`
-  - [ ] `raise/1 (int)`
-  - [ ] `raise/1 (float)`
-  - [ ] `raise/1 (obj)`
-  - [ ] `raise/1 (str)`
-  - [ ] `raise/1 (list)`
-  - [ ] `raise/1 (map)`
-  - [ ] `raise/2 (int, str)`
-  - [ ] `raise/2 (float, str)`
-  - [ ] `raise/2 (obj, str)`
-  - [ ] `raise/2 (str, str)`
-  - [ ] `raise/2 (list, str)`
-  - [ ] `raise/2 (map, str)`
-  - [ ] `raise/3 (int, str, int)`
-  - [ ] `raise/3 (int, str, float)`
-  - [ ] `raise/3 (int, str, obj)`
-  - [ ] `raise/3 (int, str, str)`
-  - [ ] `raise/3 (int, str, err)`
-  - [ ] `raise/3 (int, str, list)`
-  - [ ] `raise/3 (int, str, map)`
-  - [ ] `raise/3 (float, str, int)`
-  - [ ] `raise/3 (float, str, float)`
-  - [ ] `raise/3 (float, str, obj)`
-  - [ ] `raise/3 (float, str, str)`
-  - [ ] `raise/3 (float, str, err)`
-  - [ ] `raise/3 (float, str, list)`
-  - [ ] `raise/3 (float, str, map)`
-  - [ ] `raise/3 (obj, str, int)`
-  - [ ] `raise/3 (obj, str, float)`
-  - [ ] `raise/3 (obj, str, obj)`
-  - [ ] `raise/3 (obj, str, str)`
-  - [ ] `raise/3 (obj, str, err)`
-  - [ ] `raise/3 (obj, str, list)`
-  - [ ] `raise/3 (obj, str, map)`
-  - [ ] `raise/3 (str, str, int)`
-  - [ ] `raise/3 (str, str, float)`
-  - [ ] `raise/3 (str, str, obj)`
-  - [ ] `raise/3 (str, str, str)`
-  - [ ] `raise/3 (str, str, err)`
-  - [ ] `raise/3 (str, str, list)`
-  - [ ] `raise/3 (str, str, map)`
-  - [ ] `raise/3 (err, str, int)`
-  - [ ] `raise/3 (err, str, float)`
-  - [ ] `raise/3 (err, str, obj)`
-  - [ ] `raise/3 (err, str, str)`
-  - [ ] `raise/3 (err, str, err)`
-  - [ ] `raise/3 (err, str, map)`
-  - [ ] `raise/3 (list, str, int)`
-  - [ ] `raise/3 (list, str, float)`
-  - [ ] `raise/3 (list, str, obj)`
-  - [ ] `raise/3 (list, str, str)`
-  - [ ] `raise/3 (list, str, err)`
-  - [ ] `raise/3 (list, str, list)`
-  - [ ] `raise/3 (list, str, map)`
-  - [ ] `raise/3 (map, str, int)`
-  - [ ] `raise/3 (map, str, float)`
-  - [ ] `raise/3 (map, str, obj)`
-  - [ ] `raise/3 (map, str, str)`
-  - [ ] `raise/3 (map, str, err)`
-  - [ ] `raise/3 (map, str, list)`
-  - [ ] `raise/3 (map, str, map)`
 - `read` signature `0..2 (obj, any)`
   - [ ] `read/2 (obj, int)`
   - [ ] `read/2 (obj, float)`
@@ -7994,69 +7933,69 @@ still needs explicit human review.
 
 - signature: `1..3 (any, str, any)`
 - source: `execute.cc`
-- [ ] `raise/1 (int)`
-- [ ] `raise/1 (float)`
-- [ ] `raise/1 (obj)`
-- [ ] `raise/1 (str)`
-- [x] `raise/1 (err)` covered by `language/try_except.yaml`, `language/try_except.yaml`, `language/try_except.yaml` and 1 more
-- [ ] `raise/1 (list)`
-- [ ] `raise/1 (map)`
-- [ ] `raise/2 (int, str)`
-- [ ] `raise/2 (float, str)`
-- [ ] `raise/2 (obj, str)`
-- [ ] `raise/2 (str, str)`
-- [x] `raise/2 (err, str)` covered by `language/try_except.yaml`
-- [ ] `raise/2 (list, str)`
-- [ ] `raise/2 (map, str)`
-- [ ] `raise/3 (int, str, int)`
-- [ ] `raise/3 (int, str, float)`
-- [ ] `raise/3 (int, str, obj)`
-- [ ] `raise/3 (int, str, str)`
-- [ ] `raise/3 (int, str, err)`
-- [ ] `raise/3 (int, str, list)`
-- [ ] `raise/3 (int, str, map)`
-- [ ] `raise/3 (float, str, int)`
-- [ ] `raise/3 (float, str, float)`
-- [ ] `raise/3 (float, str, obj)`
-- [ ] `raise/3 (float, str, str)`
-- [ ] `raise/3 (float, str, err)`
-- [ ] `raise/3 (float, str, list)`
-- [ ] `raise/3 (float, str, map)`
-- [ ] `raise/3 (obj, str, int)`
-- [ ] `raise/3 (obj, str, float)`
-- [ ] `raise/3 (obj, str, obj)`
-- [ ] `raise/3 (obj, str, str)`
-- [ ] `raise/3 (obj, str, err)`
-- [ ] `raise/3 (obj, str, list)`
-- [ ] `raise/3 (obj, str, map)`
-- [ ] `raise/3 (str, str, int)`
-- [ ] `raise/3 (str, str, float)`
-- [ ] `raise/3 (str, str, obj)`
-- [ ] `raise/3 (str, str, str)`
-- [ ] `raise/3 (str, str, err)`
-- [ ] `raise/3 (str, str, list)`
-- [ ] `raise/3 (str, str, map)`
-- [ ] `raise/3 (err, str, int)`
-- [ ] `raise/3 (err, str, float)`
-- [ ] `raise/3 (err, str, obj)`
-- [ ] `raise/3 (err, str, str)`
-- [ ] `raise/3 (err, str, err)`
-- [x] `raise/3 (err, str, list)` covered by `language/try_except.yaml`
-- [ ] `raise/3 (err, str, map)`
-- [ ] `raise/3 (list, str, int)`
-- [ ] `raise/3 (list, str, float)`
-- [ ] `raise/3 (list, str, obj)`
-- [ ] `raise/3 (list, str, str)`
-- [ ] `raise/3 (list, str, err)`
-- [ ] `raise/3 (list, str, list)`
-- [ ] `raise/3 (list, str, map)`
-- [ ] `raise/3 (map, str, int)`
-- [ ] `raise/3 (map, str, float)`
-- [ ] `raise/3 (map, str, obj)`
-- [ ] `raise/3 (map, str, str)`
-- [ ] `raise/3 (map, str, err)`
-- [ ] `raise/3 (map, str, list)`
-- [ ] `raise/3 (map, str, map)`
+- [x] `raise/1 (int)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/1 (float)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/1 (obj)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/1 (str)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/1 (err)` covered by `builtins/raise_call_shapes.yaml`, `language/try_except.yaml`, `language/try_except.yaml` and 2 more
+- [x] `raise/1 (list)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/1 (map)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/2 (int, str)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/2 (float, str)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/2 (obj, str)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/2 (str, str)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/2 (err, str)` covered by `builtins/raise_call_shapes.yaml`, `language/try_except.yaml`
+- [x] `raise/2 (list, str)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/2 (map, str)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (int, str, int)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (int, str, float)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (int, str, obj)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (int, str, str)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (int, str, err)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (int, str, list)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (int, str, map)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (float, str, int)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (float, str, float)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (float, str, obj)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (float, str, str)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (float, str, err)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (float, str, list)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (float, str, map)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (obj, str, int)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (obj, str, float)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (obj, str, obj)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (obj, str, str)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (obj, str, err)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (obj, str, list)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (obj, str, map)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (str, str, int)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (str, str, float)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (str, str, obj)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (str, str, str)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (str, str, err)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (str, str, list)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (str, str, map)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (err, str, int)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (err, str, float)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (err, str, obj)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (err, str, str)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (err, str, err)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (err, str, list)` covered by `builtins/raise_call_shapes.yaml`, `language/try_except.yaml`
+- [x] `raise/3 (err, str, map)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (list, str, int)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (list, str, float)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (list, str, obj)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (list, str, str)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (list, str, err)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (list, str, list)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (list, str, map)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (map, str, int)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (map, str, float)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (map, str, obj)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (map, str, str)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (map, str, err)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (map, str, list)` covered by `builtins/raise_call_shapes.yaml`
+- [x] `raise/3 (map, str, map)` covered by `builtins/raise_call_shapes.yaml`
 - [?] `raise/1` unknown argument types covered by `builtins/fileio.yaml`, `builtins/fileio.yaml`, `builtins/fileio.yaml` and 9 more
 
 ### `random`

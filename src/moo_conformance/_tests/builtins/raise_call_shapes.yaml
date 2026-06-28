@@ -1,0 +1,65 @@
+name: raise_call_shapes
+description: TYPE_ANY code and value call-shape coverage for raise().
+
+requires:
+  builtins:
+    - raise
+
+tests:
+  - name: raise_one_arg_accepts_code_{code_kind}
+    permission: wizard
+    table:
+      columns: [code_kind, code_expr]
+      rows:
+        - [int, "1"]
+        - [float, "1.5"]
+        - [obj, "#0"]
+        - [str, '"x"']
+        - [err, "E_ARGS"]
+        - [list, "{}"]
+        - [map, "[1 -> 2]"]
+    code: "`raise({code_expr}) ! ANY => 1'"
+    expect:
+      value: 1
+
+  - name: raise_two_args_accepts_code_{code_kind}
+    permission: wizard
+    table:
+      columns: [code_kind, code_expr]
+      rows:
+        - [int, "1"]
+        - [float, "1.5"]
+        - [obj, "#0"]
+        - [str, '"x"']
+        - [err, "E_ARGS"]
+        - [list, "{}"]
+        - [map, "[1 -> 2]"]
+    code: '`raise({code_expr}, "shape") ! ANY => 1'''
+    expect:
+      value: 1
+
+  - name: raise_three_args_accepts_code_and_value_{code_kind}_{value_kind}
+    permission: wizard
+    table:
+      product:
+        - columns: [code_kind, code_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+        - columns: [value_kind, value_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+    code: '`raise({code_expr}, "shape", {value_expr}) ! ANY => 1'''
+    expect:
+      value: 1

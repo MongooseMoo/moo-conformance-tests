@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T07:20:45Z`
+- generated_at: `2026-06-28T07:22:54Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `734`
-- missing_call_shapes: `6867`
+- covered_call_shapes: `740`
+- missing_call_shapes: `6861`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3878,13 +3878,6 @@ still needs explicit human review.
   - [ ] `string_hmac/4 (str, str, str, err)`
   - [ ] `string_hmac/4 (str, str, str, list)`
   - [ ] `string_hmac/4 (str, str, str, map)`
-- `strsub` signature `3..4 (str, str, str, any)`
-  - [ ] `strsub/4 (str, str, str, float)`
-  - [ ] `strsub/4 (str, str, str, obj)`
-  - [ ] `strsub/4 (str, str, str, str)`
-  - [ ] `strsub/4 (str, str, str, err)`
-  - [ ] `strsub/4 (str, str, str, list)`
-  - [ ] `strsub/4 (str, str, str, map)`
 - `strtr` signature `3..4 (str, str, str, any)`
   - [ ] `strtr/4 (str, str, str, float)`
   - [ ] `strtr/4 (str, str, str, obj)`
@@ -12418,13 +12411,13 @@ still needs explicit human review.
 - signature: `3..4 (str, str, str, any)`
 - source: `list.cc`
 - [x] `strsub/3 (str, str, str)` covered by `basic/string.yaml`, `basic/string.yaml`, `basic/string.yaml` and 3 more
-- [x] `strsub/4 (str, str, str, int)` covered by `basic/string.yaml`, `basic/string.yaml`
-- [ ] `strsub/4 (str, str, str, float)`
-- [ ] `strsub/4 (str, str, str, obj)`
-- [ ] `strsub/4 (str, str, str, str)`
-- [ ] `strsub/4 (str, str, str, err)`
-- [ ] `strsub/4 (str, str, str, list)`
-- [ ] `strsub/4 (str, str, str, map)`
+- [x] `strsub/4 (str, str, str, int)` covered by `basic/string.yaml`, `basic/string.yaml`, `builtins/strsub_call_shapes.yaml`
+- [x] `strsub/4 (str, str, str, float)` covered by `builtins/strsub_call_shapes.yaml`
+- [x] `strsub/4 (str, str, str, obj)` covered by `builtins/strsub_call_shapes.yaml`
+- [x] `strsub/4 (str, str, str, str)` covered by `builtins/strsub_call_shapes.yaml`
+- [x] `strsub/4 (str, str, str, err)` covered by `builtins/strsub_call_shapes.yaml`
+- [x] `strsub/4 (str, str, str, list)` covered by `builtins/strsub_call_shapes.yaml`
+- [x] `strsub/4 (str, str, str, map)` covered by `builtins/strsub_call_shapes.yaml`
 - [?] `strsub/3` unknown argument types covered by `server/limits.yaml`, `server/limits.yaml`
 
 ### `strtr`

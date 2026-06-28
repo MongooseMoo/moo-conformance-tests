@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T08:33:13Z`
+- generated_at: `2026-06-28T08:35:38Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `1083`
-- missing_call_shapes: `6518`
+- covered_call_shapes: `1426`
+- missing_call_shapes: `6175`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -21,349 +21,6 @@ still needs explicit human review.
 ## Missing Call-Shape Checklist
 
 - `create` signature `1..4 (any, any, any, any)`
-  - [ ] `create/3 (int, int, int)`
-  - [ ] `create/3 (int, int, float)`
-  - [ ] `create/3 (int, int, obj)`
-  - [ ] `create/3 (int, int, str)`
-  - [ ] `create/3 (int, int, err)`
-  - [ ] `create/3 (int, int, list)`
-  - [ ] `create/3 (int, int, map)`
-  - [ ] `create/3 (int, float, int)`
-  - [ ] `create/3 (int, float, float)`
-  - [ ] `create/3 (int, float, obj)`
-  - [ ] `create/3 (int, float, str)`
-  - [ ] `create/3 (int, float, err)`
-  - [ ] `create/3 (int, float, list)`
-  - [ ] `create/3 (int, float, map)`
-  - [ ] `create/3 (int, obj, int)`
-  - [ ] `create/3 (int, obj, float)`
-  - [ ] `create/3 (int, obj, obj)`
-  - [ ] `create/3 (int, obj, str)`
-  - [ ] `create/3 (int, obj, err)`
-  - [ ] `create/3 (int, obj, list)`
-  - [ ] `create/3 (int, obj, map)`
-  - [ ] `create/3 (int, str, int)`
-  - [ ] `create/3 (int, str, float)`
-  - [ ] `create/3 (int, str, obj)`
-  - [ ] `create/3 (int, str, str)`
-  - [ ] `create/3 (int, str, err)`
-  - [ ] `create/3 (int, str, list)`
-  - [ ] `create/3 (int, str, map)`
-  - [ ] `create/3 (int, err, int)`
-  - [ ] `create/3 (int, err, float)`
-  - [ ] `create/3 (int, err, obj)`
-  - [ ] `create/3 (int, err, str)`
-  - [ ] `create/3 (int, err, err)`
-  - [ ] `create/3 (int, err, list)`
-  - [ ] `create/3 (int, err, map)`
-  - [ ] `create/3 (int, list, int)`
-  - [ ] `create/3 (int, list, float)`
-  - [ ] `create/3 (int, list, obj)`
-  - [ ] `create/3 (int, list, str)`
-  - [ ] `create/3 (int, list, err)`
-  - [ ] `create/3 (int, list, list)`
-  - [ ] `create/3 (int, list, map)`
-  - [ ] `create/3 (int, map, int)`
-  - [ ] `create/3 (int, map, float)`
-  - [ ] `create/3 (int, map, obj)`
-  - [ ] `create/3 (int, map, str)`
-  - [ ] `create/3 (int, map, err)`
-  - [ ] `create/3 (int, map, list)`
-  - [ ] `create/3 (int, map, map)`
-  - [ ] `create/3 (float, int, int)`
-  - [ ] `create/3 (float, int, float)`
-  - [ ] `create/3 (float, int, obj)`
-  - [ ] `create/3 (float, int, str)`
-  - [ ] `create/3 (float, int, err)`
-  - [ ] `create/3 (float, int, list)`
-  - [ ] `create/3 (float, int, map)`
-  - [ ] `create/3 (float, float, int)`
-  - [ ] `create/3 (float, float, float)`
-  - [ ] `create/3 (float, float, obj)`
-  - [ ] `create/3 (float, float, str)`
-  - [ ] `create/3 (float, float, err)`
-  - [ ] `create/3 (float, float, list)`
-  - [ ] `create/3 (float, float, map)`
-  - [ ] `create/3 (float, obj, int)`
-  - [ ] `create/3 (float, obj, float)`
-  - [ ] `create/3 (float, obj, obj)`
-  - [ ] `create/3 (float, obj, str)`
-  - [ ] `create/3 (float, obj, err)`
-  - [ ] `create/3 (float, obj, list)`
-  - [ ] `create/3 (float, obj, map)`
-  - [ ] `create/3 (float, str, int)`
-  - [ ] `create/3 (float, str, float)`
-  - [ ] `create/3 (float, str, obj)`
-  - [ ] `create/3 (float, str, str)`
-  - [ ] `create/3 (float, str, err)`
-  - [ ] `create/3 (float, str, list)`
-  - [ ] `create/3 (float, str, map)`
-  - [ ] `create/3 (float, err, int)`
-  - [ ] `create/3 (float, err, float)`
-  - [ ] `create/3 (float, err, obj)`
-  - [ ] `create/3 (float, err, str)`
-  - [ ] `create/3 (float, err, err)`
-  - [ ] `create/3 (float, err, list)`
-  - [ ] `create/3 (float, err, map)`
-  - [ ] `create/3 (float, list, int)`
-  - [ ] `create/3 (float, list, float)`
-  - [ ] `create/3 (float, list, obj)`
-  - [ ] `create/3 (float, list, str)`
-  - [ ] `create/3 (float, list, err)`
-  - [ ] `create/3 (float, list, list)`
-  - [ ] `create/3 (float, list, map)`
-  - [ ] `create/3 (float, map, int)`
-  - [ ] `create/3 (float, map, float)`
-  - [ ] `create/3 (float, map, obj)`
-  - [ ] `create/3 (float, map, str)`
-  - [ ] `create/3 (float, map, err)`
-  - [ ] `create/3 (float, map, list)`
-  - [ ] `create/3 (float, map, map)`
-  - [ ] `create/3 (obj, int, int)`
-  - [ ] `create/3 (obj, int, float)`
-  - [ ] `create/3 (obj, int, obj)`
-  - [ ] `create/3 (obj, int, str)`
-  - [ ] `create/3 (obj, int, err)`
-  - [ ] `create/3 (obj, int, list)`
-  - [ ] `create/3 (obj, int, map)`
-  - [ ] `create/3 (obj, float, int)`
-  - [ ] `create/3 (obj, float, float)`
-  - [ ] `create/3 (obj, float, obj)`
-  - [ ] `create/3 (obj, float, str)`
-  - [ ] `create/3 (obj, float, err)`
-  - [ ] `create/3 (obj, float, list)`
-  - [ ] `create/3 (obj, float, map)`
-  - [ ] `create/3 (obj, obj, int)`
-  - [ ] `create/3 (obj, obj, float)`
-  - [ ] `create/3 (obj, obj, obj)`
-  - [ ] `create/3 (obj, obj, str)`
-  - [ ] `create/3 (obj, obj, err)`
-  - [ ] `create/3 (obj, obj, list)`
-  - [ ] `create/3 (obj, obj, map)`
-  - [ ] `create/3 (obj, str, int)`
-  - [ ] `create/3 (obj, str, float)`
-  - [ ] `create/3 (obj, str, obj)`
-  - [ ] `create/3 (obj, str, str)`
-  - [ ] `create/3 (obj, str, err)`
-  - [ ] `create/3 (obj, str, list)`
-  - [ ] `create/3 (obj, str, map)`
-  - [ ] `create/3 (obj, err, int)`
-  - [ ] `create/3 (obj, err, float)`
-  - [ ] `create/3 (obj, err, obj)`
-  - [ ] `create/3 (obj, err, str)`
-  - [ ] `create/3 (obj, err, err)`
-  - [ ] `create/3 (obj, err, list)`
-  - [ ] `create/3 (obj, err, map)`
-  - [ ] `create/3 (obj, list, int)`
-  - [ ] `create/3 (obj, list, float)`
-  - [ ] `create/3 (obj, list, obj)`
-  - [ ] `create/3 (obj, list, str)`
-  - [ ] `create/3 (obj, list, err)`
-  - [ ] `create/3 (obj, list, list)`
-  - [ ] `create/3 (obj, list, map)`
-  - [ ] `create/3 (obj, map, int)`
-  - [ ] `create/3 (obj, map, float)`
-  - [ ] `create/3 (obj, map, obj)`
-  - [ ] `create/3 (obj, map, str)`
-  - [ ] `create/3 (obj, map, err)`
-  - [ ] `create/3 (obj, map, list)`
-  - [ ] `create/3 (obj, map, map)`
-  - [ ] `create/3 (str, int, int)`
-  - [ ] `create/3 (str, int, float)`
-  - [ ] `create/3 (str, int, obj)`
-  - [ ] `create/3 (str, int, str)`
-  - [ ] `create/3 (str, int, err)`
-  - [ ] `create/3 (str, int, list)`
-  - [ ] `create/3 (str, int, map)`
-  - [ ] `create/3 (str, float, int)`
-  - [ ] `create/3 (str, float, float)`
-  - [ ] `create/3 (str, float, obj)`
-  - [ ] `create/3 (str, float, str)`
-  - [ ] `create/3 (str, float, err)`
-  - [ ] `create/3 (str, float, list)`
-  - [ ] `create/3 (str, float, map)`
-  - [ ] `create/3 (str, obj, int)`
-  - [ ] `create/3 (str, obj, float)`
-  - [ ] `create/3 (str, obj, obj)`
-  - [ ] `create/3 (str, obj, str)`
-  - [ ] `create/3 (str, obj, err)`
-  - [ ] `create/3 (str, obj, list)`
-  - [ ] `create/3 (str, obj, map)`
-  - [ ] `create/3 (str, str, int)`
-  - [ ] `create/3 (str, str, float)`
-  - [ ] `create/3 (str, str, obj)`
-  - [ ] `create/3 (str, str, str)`
-  - [ ] `create/3 (str, str, err)`
-  - [ ] `create/3 (str, str, list)`
-  - [ ] `create/3 (str, str, map)`
-  - [ ] `create/3 (str, err, int)`
-  - [ ] `create/3 (str, err, float)`
-  - [ ] `create/3 (str, err, obj)`
-  - [ ] `create/3 (str, err, str)`
-  - [ ] `create/3 (str, err, err)`
-  - [ ] `create/3 (str, err, list)`
-  - [ ] `create/3 (str, err, map)`
-  - [ ] `create/3 (str, list, int)`
-  - [ ] `create/3 (str, list, float)`
-  - [ ] `create/3 (str, list, obj)`
-  - [ ] `create/3 (str, list, str)`
-  - [ ] `create/3 (str, list, err)`
-  - [ ] `create/3 (str, list, list)`
-  - [ ] `create/3 (str, list, map)`
-  - [ ] `create/3 (str, map, int)`
-  - [ ] `create/3 (str, map, float)`
-  - [ ] `create/3 (str, map, obj)`
-  - [ ] `create/3 (str, map, str)`
-  - [ ] `create/3 (str, map, err)`
-  - [ ] `create/3 (str, map, list)`
-  - [ ] `create/3 (str, map, map)`
-  - [ ] `create/3 (err, int, int)`
-  - [ ] `create/3 (err, int, float)`
-  - [ ] `create/3 (err, int, obj)`
-  - [ ] `create/3 (err, int, str)`
-  - [ ] `create/3 (err, int, err)`
-  - [ ] `create/3 (err, int, list)`
-  - [ ] `create/3 (err, int, map)`
-  - [ ] `create/3 (err, float, int)`
-  - [ ] `create/3 (err, float, float)`
-  - [ ] `create/3 (err, float, obj)`
-  - [ ] `create/3 (err, float, str)`
-  - [ ] `create/3 (err, float, err)`
-  - [ ] `create/3 (err, float, list)`
-  - [ ] `create/3 (err, float, map)`
-  - [ ] `create/3 (err, obj, int)`
-  - [ ] `create/3 (err, obj, float)`
-  - [ ] `create/3 (err, obj, obj)`
-  - [ ] `create/3 (err, obj, str)`
-  - [ ] `create/3 (err, obj, err)`
-  - [ ] `create/3 (err, obj, list)`
-  - [ ] `create/3 (err, obj, map)`
-  - [ ] `create/3 (err, str, int)`
-  - [ ] `create/3 (err, str, float)`
-  - [ ] `create/3 (err, str, obj)`
-  - [ ] `create/3 (err, str, str)`
-  - [ ] `create/3 (err, str, err)`
-  - [ ] `create/3 (err, str, list)`
-  - [ ] `create/3 (err, str, map)`
-  - [ ] `create/3 (err, err, int)`
-  - [ ] `create/3 (err, err, float)`
-  - [ ] `create/3 (err, err, obj)`
-  - [ ] `create/3 (err, err, str)`
-  - [ ] `create/3 (err, err, err)`
-  - [ ] `create/3 (err, err, list)`
-  - [ ] `create/3 (err, err, map)`
-  - [ ] `create/3 (err, list, int)`
-  - [ ] `create/3 (err, list, float)`
-  - [ ] `create/3 (err, list, obj)`
-  - [ ] `create/3 (err, list, str)`
-  - [ ] `create/3 (err, list, err)`
-  - [ ] `create/3 (err, list, list)`
-  - [ ] `create/3 (err, list, map)`
-  - [ ] `create/3 (err, map, int)`
-  - [ ] `create/3 (err, map, float)`
-  - [ ] `create/3 (err, map, obj)`
-  - [ ] `create/3 (err, map, str)`
-  - [ ] `create/3 (err, map, err)`
-  - [ ] `create/3 (err, map, list)`
-  - [ ] `create/3 (err, map, map)`
-  - [ ] `create/3 (list, int, int)`
-  - [ ] `create/3 (list, int, float)`
-  - [ ] `create/3 (list, int, obj)`
-  - [ ] `create/3 (list, int, str)`
-  - [ ] `create/3 (list, int, err)`
-  - [ ] `create/3 (list, int, list)`
-  - [ ] `create/3 (list, int, map)`
-  - [ ] `create/3 (list, float, int)`
-  - [ ] `create/3 (list, float, float)`
-  - [ ] `create/3 (list, float, obj)`
-  - [ ] `create/3 (list, float, str)`
-  - [ ] `create/3 (list, float, err)`
-  - [ ] `create/3 (list, float, list)`
-  - [ ] `create/3 (list, float, map)`
-  - [ ] `create/3 (list, obj, int)`
-  - [ ] `create/3 (list, obj, float)`
-  - [ ] `create/3 (list, obj, obj)`
-  - [ ] `create/3 (list, obj, str)`
-  - [ ] `create/3 (list, obj, err)`
-  - [ ] `create/3 (list, obj, list)`
-  - [ ] `create/3 (list, obj, map)`
-  - [ ] `create/3 (list, str, int)`
-  - [ ] `create/3 (list, str, float)`
-  - [ ] `create/3 (list, str, obj)`
-  - [ ] `create/3 (list, str, str)`
-  - [ ] `create/3 (list, str, err)`
-  - [ ] `create/3 (list, str, list)`
-  - [ ] `create/3 (list, str, map)`
-  - [ ] `create/3 (list, err, int)`
-  - [ ] `create/3 (list, err, float)`
-  - [ ] `create/3 (list, err, obj)`
-  - [ ] `create/3 (list, err, str)`
-  - [ ] `create/3 (list, err, err)`
-  - [ ] `create/3 (list, err, list)`
-  - [ ] `create/3 (list, err, map)`
-  - [ ] `create/3 (list, list, int)`
-  - [ ] `create/3 (list, list, float)`
-  - [ ] `create/3 (list, list, obj)`
-  - [ ] `create/3 (list, list, str)`
-  - [ ] `create/3 (list, list, err)`
-  - [ ] `create/3 (list, list, list)`
-  - [ ] `create/3 (list, list, map)`
-  - [ ] `create/3 (list, map, int)`
-  - [ ] `create/3 (list, map, float)`
-  - [ ] `create/3 (list, map, obj)`
-  - [ ] `create/3 (list, map, str)`
-  - [ ] `create/3 (list, map, err)`
-  - [ ] `create/3 (list, map, list)`
-  - [ ] `create/3 (list, map, map)`
-  - [ ] `create/3 (map, int, int)`
-  - [ ] `create/3 (map, int, float)`
-  - [ ] `create/3 (map, int, obj)`
-  - [ ] `create/3 (map, int, str)`
-  - [ ] `create/3 (map, int, err)`
-  - [ ] `create/3 (map, int, list)`
-  - [ ] `create/3 (map, int, map)`
-  - [ ] `create/3 (map, float, int)`
-  - [ ] `create/3 (map, float, float)`
-  - [ ] `create/3 (map, float, obj)`
-  - [ ] `create/3 (map, float, str)`
-  - [ ] `create/3 (map, float, err)`
-  - [ ] `create/3 (map, float, list)`
-  - [ ] `create/3 (map, float, map)`
-  - [ ] `create/3 (map, obj, int)`
-  - [ ] `create/3 (map, obj, float)`
-  - [ ] `create/3 (map, obj, obj)`
-  - [ ] `create/3 (map, obj, str)`
-  - [ ] `create/3 (map, obj, err)`
-  - [ ] `create/3 (map, obj, list)`
-  - [ ] `create/3 (map, obj, map)`
-  - [ ] `create/3 (map, str, int)`
-  - [ ] `create/3 (map, str, float)`
-  - [ ] `create/3 (map, str, obj)`
-  - [ ] `create/3 (map, str, str)`
-  - [ ] `create/3 (map, str, err)`
-  - [ ] `create/3 (map, str, list)`
-  - [ ] `create/3 (map, str, map)`
-  - [ ] `create/3 (map, err, int)`
-  - [ ] `create/3 (map, err, float)`
-  - [ ] `create/3 (map, err, obj)`
-  - [ ] `create/3 (map, err, str)`
-  - [ ] `create/3 (map, err, err)`
-  - [ ] `create/3 (map, err, list)`
-  - [ ] `create/3 (map, err, map)`
-  - [ ] `create/3 (map, list, int)`
-  - [ ] `create/3 (map, list, float)`
-  - [ ] `create/3 (map, list, obj)`
-  - [ ] `create/3 (map, list, str)`
-  - [ ] `create/3 (map, list, err)`
-  - [ ] `create/3 (map, list, list)`
-  - [ ] `create/3 (map, list, map)`
-  - [ ] `create/3 (map, map, int)`
-  - [ ] `create/3 (map, map, float)`
-  - [ ] `create/3 (map, map, obj)`
-  - [ ] `create/3 (map, map, str)`
-  - [ ] `create/3 (map, map, err)`
-  - [ ] `create/3 (map, map, list)`
-  - [ ] `create/3 (map, map, map)`
   - [ ] `create/4 (int, int, int, int)`
   - [ ] `create/4 (int, int, int, float)`
   - [ ] `create/4 (int, int, int, obj)`
@@ -7061,349 +6718,349 @@ still needs explicit human review.
 - [x] `create/2 (map, err)` covered by `builtins/create_call_shapes.yaml`
 - [x] `create/2 (map, list)` covered by `builtins/create_call_shapes.yaml`
 - [x] `create/2 (map, map)` covered by `builtins/create_call_shapes.yaml`
-- [ ] `create/3 (int, int, int)`
-- [ ] `create/3 (int, int, float)`
-- [ ] `create/3 (int, int, obj)`
-- [ ] `create/3 (int, int, str)`
-- [ ] `create/3 (int, int, err)`
-- [ ] `create/3 (int, int, list)`
-- [ ] `create/3 (int, int, map)`
-- [ ] `create/3 (int, float, int)`
-- [ ] `create/3 (int, float, float)`
-- [ ] `create/3 (int, float, obj)`
-- [ ] `create/3 (int, float, str)`
-- [ ] `create/3 (int, float, err)`
-- [ ] `create/3 (int, float, list)`
-- [ ] `create/3 (int, float, map)`
-- [ ] `create/3 (int, obj, int)`
-- [ ] `create/3 (int, obj, float)`
-- [ ] `create/3 (int, obj, obj)`
-- [ ] `create/3 (int, obj, str)`
-- [ ] `create/3 (int, obj, err)`
-- [ ] `create/3 (int, obj, list)`
-- [ ] `create/3 (int, obj, map)`
-- [ ] `create/3 (int, str, int)`
-- [ ] `create/3 (int, str, float)`
-- [ ] `create/3 (int, str, obj)`
-- [ ] `create/3 (int, str, str)`
-- [ ] `create/3 (int, str, err)`
-- [ ] `create/3 (int, str, list)`
-- [ ] `create/3 (int, str, map)`
-- [ ] `create/3 (int, err, int)`
-- [ ] `create/3 (int, err, float)`
-- [ ] `create/3 (int, err, obj)`
-- [ ] `create/3 (int, err, str)`
-- [ ] `create/3 (int, err, err)`
-- [ ] `create/3 (int, err, list)`
-- [ ] `create/3 (int, err, map)`
-- [ ] `create/3 (int, list, int)`
-- [ ] `create/3 (int, list, float)`
-- [ ] `create/3 (int, list, obj)`
-- [ ] `create/3 (int, list, str)`
-- [ ] `create/3 (int, list, err)`
-- [ ] `create/3 (int, list, list)`
-- [ ] `create/3 (int, list, map)`
-- [ ] `create/3 (int, map, int)`
-- [ ] `create/3 (int, map, float)`
-- [ ] `create/3 (int, map, obj)`
-- [ ] `create/3 (int, map, str)`
-- [ ] `create/3 (int, map, err)`
-- [ ] `create/3 (int, map, list)`
-- [ ] `create/3 (int, map, map)`
-- [ ] `create/3 (float, int, int)`
-- [ ] `create/3 (float, int, float)`
-- [ ] `create/3 (float, int, obj)`
-- [ ] `create/3 (float, int, str)`
-- [ ] `create/3 (float, int, err)`
-- [ ] `create/3 (float, int, list)`
-- [ ] `create/3 (float, int, map)`
-- [ ] `create/3 (float, float, int)`
-- [ ] `create/3 (float, float, float)`
-- [ ] `create/3 (float, float, obj)`
-- [ ] `create/3 (float, float, str)`
-- [ ] `create/3 (float, float, err)`
-- [ ] `create/3 (float, float, list)`
-- [ ] `create/3 (float, float, map)`
-- [ ] `create/3 (float, obj, int)`
-- [ ] `create/3 (float, obj, float)`
-- [ ] `create/3 (float, obj, obj)`
-- [ ] `create/3 (float, obj, str)`
-- [ ] `create/3 (float, obj, err)`
-- [ ] `create/3 (float, obj, list)`
-- [ ] `create/3 (float, obj, map)`
-- [ ] `create/3 (float, str, int)`
-- [ ] `create/3 (float, str, float)`
-- [ ] `create/3 (float, str, obj)`
-- [ ] `create/3 (float, str, str)`
-- [ ] `create/3 (float, str, err)`
-- [ ] `create/3 (float, str, list)`
-- [ ] `create/3 (float, str, map)`
-- [ ] `create/3 (float, err, int)`
-- [ ] `create/3 (float, err, float)`
-- [ ] `create/3 (float, err, obj)`
-- [ ] `create/3 (float, err, str)`
-- [ ] `create/3 (float, err, err)`
-- [ ] `create/3 (float, err, list)`
-- [ ] `create/3 (float, err, map)`
-- [ ] `create/3 (float, list, int)`
-- [ ] `create/3 (float, list, float)`
-- [ ] `create/3 (float, list, obj)`
-- [ ] `create/3 (float, list, str)`
-- [ ] `create/3 (float, list, err)`
-- [ ] `create/3 (float, list, list)`
-- [ ] `create/3 (float, list, map)`
-- [ ] `create/3 (float, map, int)`
-- [ ] `create/3 (float, map, float)`
-- [ ] `create/3 (float, map, obj)`
-- [ ] `create/3 (float, map, str)`
-- [ ] `create/3 (float, map, err)`
-- [ ] `create/3 (float, map, list)`
-- [ ] `create/3 (float, map, map)`
-- [ ] `create/3 (obj, int, int)`
-- [ ] `create/3 (obj, int, float)`
-- [ ] `create/3 (obj, int, obj)`
-- [ ] `create/3 (obj, int, str)`
-- [ ] `create/3 (obj, int, err)`
-- [ ] `create/3 (obj, int, list)`
-- [ ] `create/3 (obj, int, map)`
-- [ ] `create/3 (obj, float, int)`
-- [ ] `create/3 (obj, float, float)`
-- [ ] `create/3 (obj, float, obj)`
-- [ ] `create/3 (obj, float, str)`
-- [ ] `create/3 (obj, float, err)`
-- [ ] `create/3 (obj, float, list)`
-- [ ] `create/3 (obj, float, map)`
-- [ ] `create/3 (obj, obj, int)`
-- [ ] `create/3 (obj, obj, float)`
-- [ ] `create/3 (obj, obj, obj)`
-- [ ] `create/3 (obj, obj, str)`
-- [ ] `create/3 (obj, obj, err)`
-- [ ] `create/3 (obj, obj, list)`
-- [ ] `create/3 (obj, obj, map)`
-- [ ] `create/3 (obj, str, int)`
-- [ ] `create/3 (obj, str, float)`
-- [ ] `create/3 (obj, str, obj)`
-- [ ] `create/3 (obj, str, str)`
-- [ ] `create/3 (obj, str, err)`
-- [ ] `create/3 (obj, str, list)`
-- [ ] `create/3 (obj, str, map)`
-- [ ] `create/3 (obj, err, int)`
-- [ ] `create/3 (obj, err, float)`
-- [ ] `create/3 (obj, err, obj)`
-- [ ] `create/3 (obj, err, str)`
-- [ ] `create/3 (obj, err, err)`
-- [ ] `create/3 (obj, err, list)`
-- [ ] `create/3 (obj, err, map)`
-- [ ] `create/3 (obj, list, int)`
-- [ ] `create/3 (obj, list, float)`
-- [ ] `create/3 (obj, list, obj)`
-- [ ] `create/3 (obj, list, str)`
-- [ ] `create/3 (obj, list, err)`
-- [ ] `create/3 (obj, list, list)`
-- [ ] `create/3 (obj, list, map)`
-- [ ] `create/3 (obj, map, int)`
-- [ ] `create/3 (obj, map, float)`
-- [ ] `create/3 (obj, map, obj)`
-- [ ] `create/3 (obj, map, str)`
-- [ ] `create/3 (obj, map, err)`
-- [ ] `create/3 (obj, map, list)`
-- [ ] `create/3 (obj, map, map)`
-- [ ] `create/3 (str, int, int)`
-- [ ] `create/3 (str, int, float)`
-- [ ] `create/3 (str, int, obj)`
-- [ ] `create/3 (str, int, str)`
-- [ ] `create/3 (str, int, err)`
-- [ ] `create/3 (str, int, list)`
-- [ ] `create/3 (str, int, map)`
-- [ ] `create/3 (str, float, int)`
-- [ ] `create/3 (str, float, float)`
-- [ ] `create/3 (str, float, obj)`
-- [ ] `create/3 (str, float, str)`
-- [ ] `create/3 (str, float, err)`
-- [ ] `create/3 (str, float, list)`
-- [ ] `create/3 (str, float, map)`
-- [ ] `create/3 (str, obj, int)`
-- [ ] `create/3 (str, obj, float)`
-- [ ] `create/3 (str, obj, obj)`
-- [ ] `create/3 (str, obj, str)`
-- [ ] `create/3 (str, obj, err)`
-- [ ] `create/3 (str, obj, list)`
-- [ ] `create/3 (str, obj, map)`
-- [ ] `create/3 (str, str, int)`
-- [ ] `create/3 (str, str, float)`
-- [ ] `create/3 (str, str, obj)`
-- [ ] `create/3 (str, str, str)`
-- [ ] `create/3 (str, str, err)`
-- [ ] `create/3 (str, str, list)`
-- [ ] `create/3 (str, str, map)`
-- [ ] `create/3 (str, err, int)`
-- [ ] `create/3 (str, err, float)`
-- [ ] `create/3 (str, err, obj)`
-- [ ] `create/3 (str, err, str)`
-- [ ] `create/3 (str, err, err)`
-- [ ] `create/3 (str, err, list)`
-- [ ] `create/3 (str, err, map)`
-- [ ] `create/3 (str, list, int)`
-- [ ] `create/3 (str, list, float)`
-- [ ] `create/3 (str, list, obj)`
-- [ ] `create/3 (str, list, str)`
-- [ ] `create/3 (str, list, err)`
-- [ ] `create/3 (str, list, list)`
-- [ ] `create/3 (str, list, map)`
-- [ ] `create/3 (str, map, int)`
-- [ ] `create/3 (str, map, float)`
-- [ ] `create/3 (str, map, obj)`
-- [ ] `create/3 (str, map, str)`
-- [ ] `create/3 (str, map, err)`
-- [ ] `create/3 (str, map, list)`
-- [ ] `create/3 (str, map, map)`
-- [ ] `create/3 (err, int, int)`
-- [ ] `create/3 (err, int, float)`
-- [ ] `create/3 (err, int, obj)`
-- [ ] `create/3 (err, int, str)`
-- [ ] `create/3 (err, int, err)`
-- [ ] `create/3 (err, int, list)`
-- [ ] `create/3 (err, int, map)`
-- [ ] `create/3 (err, float, int)`
-- [ ] `create/3 (err, float, float)`
-- [ ] `create/3 (err, float, obj)`
-- [ ] `create/3 (err, float, str)`
-- [ ] `create/3 (err, float, err)`
-- [ ] `create/3 (err, float, list)`
-- [ ] `create/3 (err, float, map)`
-- [ ] `create/3 (err, obj, int)`
-- [ ] `create/3 (err, obj, float)`
-- [ ] `create/3 (err, obj, obj)`
-- [ ] `create/3 (err, obj, str)`
-- [ ] `create/3 (err, obj, err)`
-- [ ] `create/3 (err, obj, list)`
-- [ ] `create/3 (err, obj, map)`
-- [ ] `create/3 (err, str, int)`
-- [ ] `create/3 (err, str, float)`
-- [ ] `create/3 (err, str, obj)`
-- [ ] `create/3 (err, str, str)`
-- [ ] `create/3 (err, str, err)`
-- [ ] `create/3 (err, str, list)`
-- [ ] `create/3 (err, str, map)`
-- [ ] `create/3 (err, err, int)`
-- [ ] `create/3 (err, err, float)`
-- [ ] `create/3 (err, err, obj)`
-- [ ] `create/3 (err, err, str)`
-- [ ] `create/3 (err, err, err)`
-- [ ] `create/3 (err, err, list)`
-- [ ] `create/3 (err, err, map)`
-- [ ] `create/3 (err, list, int)`
-- [ ] `create/3 (err, list, float)`
-- [ ] `create/3 (err, list, obj)`
-- [ ] `create/3 (err, list, str)`
-- [ ] `create/3 (err, list, err)`
-- [ ] `create/3 (err, list, list)`
-- [ ] `create/3 (err, list, map)`
-- [ ] `create/3 (err, map, int)`
-- [ ] `create/3 (err, map, float)`
-- [ ] `create/3 (err, map, obj)`
-- [ ] `create/3 (err, map, str)`
-- [ ] `create/3 (err, map, err)`
-- [ ] `create/3 (err, map, list)`
-- [ ] `create/3 (err, map, map)`
-- [ ] `create/3 (list, int, int)`
-- [ ] `create/3 (list, int, float)`
-- [ ] `create/3 (list, int, obj)`
-- [ ] `create/3 (list, int, str)`
-- [ ] `create/3 (list, int, err)`
-- [ ] `create/3 (list, int, list)`
-- [ ] `create/3 (list, int, map)`
-- [ ] `create/3 (list, float, int)`
-- [ ] `create/3 (list, float, float)`
-- [ ] `create/3 (list, float, obj)`
-- [ ] `create/3 (list, float, str)`
-- [ ] `create/3 (list, float, err)`
-- [ ] `create/3 (list, float, list)`
-- [ ] `create/3 (list, float, map)`
-- [ ] `create/3 (list, obj, int)`
-- [ ] `create/3 (list, obj, float)`
-- [ ] `create/3 (list, obj, obj)`
-- [ ] `create/3 (list, obj, str)`
-- [ ] `create/3 (list, obj, err)`
-- [ ] `create/3 (list, obj, list)`
-- [ ] `create/3 (list, obj, map)`
-- [ ] `create/3 (list, str, int)`
-- [ ] `create/3 (list, str, float)`
-- [ ] `create/3 (list, str, obj)`
-- [ ] `create/3 (list, str, str)`
-- [ ] `create/3 (list, str, err)`
-- [ ] `create/3 (list, str, list)`
-- [ ] `create/3 (list, str, map)`
-- [ ] `create/3 (list, err, int)`
-- [ ] `create/3 (list, err, float)`
-- [ ] `create/3 (list, err, obj)`
-- [ ] `create/3 (list, err, str)`
-- [ ] `create/3 (list, err, err)`
-- [ ] `create/3 (list, err, list)`
-- [ ] `create/3 (list, err, map)`
-- [ ] `create/3 (list, list, int)`
-- [ ] `create/3 (list, list, float)`
-- [ ] `create/3 (list, list, obj)`
-- [ ] `create/3 (list, list, str)`
-- [ ] `create/3 (list, list, err)`
-- [ ] `create/3 (list, list, list)`
-- [ ] `create/3 (list, list, map)`
-- [ ] `create/3 (list, map, int)`
-- [ ] `create/3 (list, map, float)`
-- [ ] `create/3 (list, map, obj)`
-- [ ] `create/3 (list, map, str)`
-- [ ] `create/3 (list, map, err)`
-- [ ] `create/3 (list, map, list)`
-- [ ] `create/3 (list, map, map)`
-- [ ] `create/3 (map, int, int)`
-- [ ] `create/3 (map, int, float)`
-- [ ] `create/3 (map, int, obj)`
-- [ ] `create/3 (map, int, str)`
-- [ ] `create/3 (map, int, err)`
-- [ ] `create/3 (map, int, list)`
-- [ ] `create/3 (map, int, map)`
-- [ ] `create/3 (map, float, int)`
-- [ ] `create/3 (map, float, float)`
-- [ ] `create/3 (map, float, obj)`
-- [ ] `create/3 (map, float, str)`
-- [ ] `create/3 (map, float, err)`
-- [ ] `create/3 (map, float, list)`
-- [ ] `create/3 (map, float, map)`
-- [ ] `create/3 (map, obj, int)`
-- [ ] `create/3 (map, obj, float)`
-- [ ] `create/3 (map, obj, obj)`
-- [ ] `create/3 (map, obj, str)`
-- [ ] `create/3 (map, obj, err)`
-- [ ] `create/3 (map, obj, list)`
-- [ ] `create/3 (map, obj, map)`
-- [ ] `create/3 (map, str, int)`
-- [ ] `create/3 (map, str, float)`
-- [ ] `create/3 (map, str, obj)`
-- [ ] `create/3 (map, str, str)`
-- [ ] `create/3 (map, str, err)`
-- [ ] `create/3 (map, str, list)`
-- [ ] `create/3 (map, str, map)`
-- [ ] `create/3 (map, err, int)`
-- [ ] `create/3 (map, err, float)`
-- [ ] `create/3 (map, err, obj)`
-- [ ] `create/3 (map, err, str)`
-- [ ] `create/3 (map, err, err)`
-- [ ] `create/3 (map, err, list)`
-- [ ] `create/3 (map, err, map)`
-- [ ] `create/3 (map, list, int)`
-- [ ] `create/3 (map, list, float)`
-- [ ] `create/3 (map, list, obj)`
-- [ ] `create/3 (map, list, str)`
-- [ ] `create/3 (map, list, err)`
-- [ ] `create/3 (map, list, list)`
-- [ ] `create/3 (map, list, map)`
-- [ ] `create/3 (map, map, int)`
-- [ ] `create/3 (map, map, float)`
-- [ ] `create/3 (map, map, obj)`
-- [ ] `create/3 (map, map, str)`
-- [ ] `create/3 (map, map, err)`
-- [ ] `create/3 (map, map, list)`
-- [ ] `create/3 (map, map, map)`
+- [x] `create/3 (int, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (int, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (float, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (obj, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (str, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (err, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (list, map, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, int, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, int, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, int, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, int, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, int, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, int, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, int, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, float, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, float, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, float, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, float, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, float, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, float, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, float, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, obj, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, obj, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, obj, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, obj, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, obj, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, obj, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, obj, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, str, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, str, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, str, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, str, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, str, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, str, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, str, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, err, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, err, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, err, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, err, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, err, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, err, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, err, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, list, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, list, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, list, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, list, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, list, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, list, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, list, map)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, map, int)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, map, float)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, map, obj)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, map, str)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, map, err)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, map, list)` covered by `builtins/create_call_shapes.yaml`
+- [x] `create/3 (map, map, map)` covered by `builtins/create_call_shapes.yaml`
 - [ ] `create/4 (int, int, int, int)`
 - [ ] `create/4 (int, int, int, float)`
 - [ ] `create/4 (int, int, int, obj)`

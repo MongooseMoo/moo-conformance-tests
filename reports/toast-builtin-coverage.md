@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T09:42:10Z`
+- generated_at: `2026-06-28T09:45:02Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `4358`
-- missing_call_shapes: `3243`
+- covered_call_shapes: `4359`
+- missing_call_shapes: `3242`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,8 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `queued_tasks` signature `0..2 (int, int)`
-  - [ ] `queued_tasks/1 (int)`
 - `raise` signature `1..3 (any, str, any)`
   - [ ] `raise/1 (int)`
   - [ ] `raise/1 (float)`
@@ -7989,7 +7987,7 @@ still needs explicit human review.
 - signature: `0..2 (int, int)`
 - source: `tasks.cc`
 - [x] `queued_tasks/0 ()` covered by `audit/task_scheduling_toast_oracle.yaml`, `builtins/primitives.yaml`, `builtins/primitives.yaml` and 6 more
-- [ ] `queued_tasks/1 (int)`
+- [x] `queued_tasks/1 (int)` covered by `builtins/queued_tasks_call_shapes.yaml`
 - [x] `queued_tasks/2 (int, int)` covered by `builtins/task_management.yaml`, `builtins/task_management.yaml`
 
 ### `raise`

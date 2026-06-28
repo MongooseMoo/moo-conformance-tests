@@ -1,0 +1,14 @@
+name: queued_tasks_call_shapes
+description: Integer argument call-shape coverage for queued_tasks().
+
+requires:
+  builtins:
+    - queued_tasks
+    - typeof
+
+tests:
+  - name: queued_tasks_one_arg_accepts_integer
+    permission: wizard
+    code: "queued_tasks(1)"
+    expect:
+      type: list

@@ -1,0 +1,28 @@
+name: verbs_call_shapes
+description: TYPE_ANY object argument call-shape coverage for verbs().
+
+requires:
+  builtins:
+    - verbs
+
+tests:
+  - name: verbs_accepts_object
+    permission: wizard
+    code: "verbs(#0)"
+    expect:
+      type: list
+
+  - name: verbs_rejects_non_object_{object_kind}
+    permission: wizard
+    table:
+      columns: [object_kind, object_expr]
+      rows:
+        - [int, "1"]
+        - [float, "1.5"]
+        - [str, '"x"']
+        - [err, "E_ARGS"]
+        - [list, "{}"]
+        - [map, "[1 -> 2]"]
+    code: "verbs({object_expr})"
+    expect:
+      error: E_TYPE

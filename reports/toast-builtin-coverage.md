@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T10:21:44Z`
+- generated_at: `2026-06-28T10:23:41Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `7589`
-- missing_call_shapes: `12`
+- covered_call_shapes: `7595`
+- missing_call_shapes: `6`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,13 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `verbs` signature `1..1 (any)`
-  - [ ] `verbs/1 (int)`
-  - [ ] `verbs/1 (float)`
-  - [ ] `verbs/1 (obj)`
-  - [ ] `verbs/1 (str)`
-  - [ ] `verbs/1 (err)`
-  - [ ] `verbs/1 (map)`
 - `waif_stats` signature `0..0 ()`
   - [ ] `waif_stats/0 ()`
 - `yin` signature `0..3 (numeric, int, int)`
@@ -8885,13 +8878,13 @@ still needs explicit human review.
 
 - signature: `1..1 (any)`
 - source: `verbs.cc`
-- [ ] `verbs/1 (int)`
-- [ ] `verbs/1 (float)`
-- [ ] `verbs/1 (obj)`
-- [ ] `verbs/1 (str)`
-- [ ] `verbs/1 (err)`
-- [x] `verbs/1 (list)` covered by `builtins/verbs.yaml`, `builtins/verbs.yaml`, `builtins/verbs.yaml` and 2 more
-- [ ] `verbs/1 (map)`
+- [x] `verbs/1 (int)` covered by `builtins/verbs_call_shapes.yaml`
+- [x] `verbs/1 (float)` covered by `builtins/verbs_call_shapes.yaml`
+- [x] `verbs/1 (obj)` covered by `builtins/verbs_call_shapes.yaml`
+- [x] `verbs/1 (str)` covered by `builtins/verbs_call_shapes.yaml`
+- [x] `verbs/1 (err)` covered by `builtins/verbs_call_shapes.yaml`
+- [x] `verbs/1 (list)` covered by `builtins/verbs.yaml`, `builtins/verbs.yaml`, `builtins/verbs.yaml` and 3 more
+- [x] `verbs/1 (map)` covered by `builtins/verbs_call_shapes.yaml`
 
 ### `waif_stats`
 

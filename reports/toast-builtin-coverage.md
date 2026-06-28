@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T07:56:38Z`
+- generated_at: `2026-06-28T07:59:53Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `857`
-- missing_call_shapes: `6744`
+- covered_call_shapes: `864`
+- missing_call_shapes: `6737`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -142,14 +142,6 @@ still needs explicit human review.
   - [ ] `call_function/2 (str, map)`
 - `connection_name` signature `1..2 (obj, int)`
   - [ ] `connection_name/2 (obj, int)`
-- `connection_name_lookup` signature `1..2 (obj, any)`
-  - [ ] `connection_name_lookup/2 (obj, int)`
-  - [ ] `connection_name_lookup/2 (obj, float)`
-  - [ ] `connection_name_lookup/2 (obj, obj)`
-  - [ ] `connection_name_lookup/2 (obj, str)`
-  - [ ] `connection_name_lookup/2 (obj, err)`
-  - [ ] `connection_name_lookup/2 (obj, list)`
-  - [ ] `connection_name_lookup/2 (obj, map)`
 - `connection_options` signature `1..2 (obj, str)`
   - [ ] `connection_options/2 (obj, str)`
 - `create` signature `1..4 (any, any, any, any)`
@@ -7208,13 +7200,13 @@ still needs explicit human review.
 - signature: `1..2 (obj, any)`
 - source: `server.cc`
 - [x] `connection_name_lookup/1 (obj)` covered by `builtins/server_admin.yaml`
-- [ ] `connection_name_lookup/2 (obj, int)`
-- [ ] `connection_name_lookup/2 (obj, float)`
-- [ ] `connection_name_lookup/2 (obj, obj)`
-- [ ] `connection_name_lookup/2 (obj, str)`
-- [ ] `connection_name_lookup/2 (obj, err)`
-- [ ] `connection_name_lookup/2 (obj, list)`
-- [ ] `connection_name_lookup/2 (obj, map)`
+- [x] `connection_name_lookup/2 (obj, int)` covered by `builtins/connection_name_lookup_call_shapes.yaml`
+- [x] `connection_name_lookup/2 (obj, float)` covered by `builtins/connection_name_lookup_call_shapes.yaml`
+- [x] `connection_name_lookup/2 (obj, obj)` covered by `builtins/connection_name_lookup_call_shapes.yaml`
+- [x] `connection_name_lookup/2 (obj, str)` covered by `builtins/connection_name_lookup_call_shapes.yaml`
+- [x] `connection_name_lookup/2 (obj, err)` covered by `builtins/connection_name_lookup_call_shapes.yaml`
+- [x] `connection_name_lookup/2 (obj, list)` covered by `builtins/connection_name_lookup_call_shapes.yaml`
+- [x] `connection_name_lookup/2 (obj, map)` covered by `builtins/connection_name_lookup_call_shapes.yaml`
 
 ### `connection_options`
 

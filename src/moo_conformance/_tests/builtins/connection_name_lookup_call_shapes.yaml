@@ -1,0 +1,23 @@
+name: connection_name_lookup_call_shapes
+description: Table-driven TYPE_ANY coverage for connection_name_lookup().
+
+requires:
+  builtins:
+    - connection_name_lookup
+
+tests:
+  - name: connection_name_lookup_rewrite_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [int, "1"]
+        - [float, "1.5"]
+        - [obj, "#0"]
+        - [str, '"x"']
+        - [err, "E_ARGS"]
+        - [list, "{}"]
+        - [map, "[1 -> 2]"]
+    code: "connection_name_lookup(#999999, {expr})"
+    expect:
+      error: E_INVARG

@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T08:02:39Z`
+- generated_at: `2026-06-28T08:04:50Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `865`
-- missing_call_shapes: `6736`
+- covered_call_shapes: `866`
+- missing_call_shapes: `6735`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -140,8 +140,6 @@ still needs explicit human review.
   - [ ] `call_function/2 (str, obj)`
   - [ ] `call_function/2 (str, err)`
   - [ ] `call_function/2 (str, map)`
-- `connection_options` signature `1..2 (obj, str)`
-  - [ ] `connection_options/2 (obj, str)`
 - `create` signature `1..4 (any, any, any, any)`
   - [ ] `create/1 (float)`
   - [ ] `create/1 (err)`
@@ -7211,7 +7209,7 @@ still needs explicit human review.
 - signature: `1..2 (obj, str)`
 - source: `server.cc`
 - [x] `connection_options/1 (obj)` covered by `builtins/server_admin.yaml`
-- [ ] `connection_options/2 (obj, str)`
+- [x] `connection_options/2 (obj, str)` covered by `builtins/connection_options_call_shapes.yaml`
 - [?] `connection_options/2` unknown argument types covered by `audit/gap_followups_toast_oracle.yaml`, `audit/gap_followups_toast_oracle.yaml`, `audit/gap_followups_toast_oracle.yaml` and 6 more
 
 ### `cos`

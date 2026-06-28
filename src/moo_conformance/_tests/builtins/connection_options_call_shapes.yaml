@@ -1,0 +1,13 @@
+name: connection_options_call_shapes
+description: Arity coverage for connection_options().
+
+requires:
+  builtins:
+    - connection_options
+
+tests:
+  - name: connection_options_named_invalid_connection
+    permission: wizard
+    code: 'connection_options(#999999, "call-shape-option")'
+    expect:
+      error: E_INVARG

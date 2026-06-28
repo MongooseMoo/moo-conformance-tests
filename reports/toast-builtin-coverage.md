@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T06:41:29Z`
+- generated_at: `2026-06-28T06:44:19Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `593`
-- missing_call_shapes: `7008`
+- covered_call_shapes: `599`
+- missing_call_shapes: `7002`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3742,13 +3742,6 @@ still needs explicit human review.
   - [ ] `rindex/4 (str, str, err, int)`
   - [ ] `rindex/4 (str, str, list, int)`
   - [ ] `rindex/4 (str, str, map, int)`
-- `rmatch` signature `2..3 (str, str, any)`
-  - [ ] `rmatch/3 (str, str, float)`
-  - [ ] `rmatch/3 (str, str, obj)`
-  - [ ] `rmatch/3 (str, str, str)`
-  - [ ] `rmatch/3 (str, str, err)`
-  - [ ] `rmatch/3 (str, str, list)`
-  - [ ] `rmatch/3 (str, str, map)`
 - `server_log` signature `1..2 (str, any)`
   - [ ] `server_log/2 (str, float)`
   - [ ] `server_log/2 (str, obj)`
@@ -12059,12 +12052,12 @@ still needs explicit human review.
 - source: `list.cc`
 - [x] `rmatch/2 (str, str)` covered by `builtins/match_percent_escapes.yaml`, `builtins/match_rmatch.yaml`, `builtins/match_rmatch.yaml` and 2 more
 - [x] `rmatch/3 (str, str, int)` covered by `builtins/match_rmatch.yaml`
-- [ ] `rmatch/3 (str, str, float)`
-- [ ] `rmatch/3 (str, str, obj)`
-- [ ] `rmatch/3 (str, str, str)`
-- [ ] `rmatch/3 (str, str, err)`
-- [ ] `rmatch/3 (str, str, list)`
-- [ ] `rmatch/3 (str, str, map)`
+- [x] `rmatch/3 (str, str, float)` covered by `builtins/rmatch_call_shapes.yaml`
+- [x] `rmatch/3 (str, str, obj)` covered by `builtins/rmatch_call_shapes.yaml`
+- [x] `rmatch/3 (str, str, str)` covered by `builtins/rmatch_call_shapes.yaml`
+- [x] `rmatch/3 (str, str, err)` covered by `builtins/rmatch_call_shapes.yaml`
+- [x] `rmatch/3 (str, str, list)` covered by `builtins/rmatch_call_shapes.yaml`
+- [x] `rmatch/3 (str, str, map)` covered by `builtins/rmatch_call_shapes.yaml`
 
 ### `round`
 

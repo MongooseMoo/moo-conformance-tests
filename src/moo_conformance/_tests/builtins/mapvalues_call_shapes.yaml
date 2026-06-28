@@ -1,0 +1,22 @@
+name: mapvalues_call_shapes
+description: Table-driven variadic key coverage for mapvalues().
+
+requires:
+  builtins:
+    - mapvalues
+
+tests:
+  - name: mapvalues_second_arg_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [int, "mapvalues([], 1)"]
+        - [float, "mapvalues([], 1.5)"]
+        - [obj, "mapvalues([], #0)"]
+        - [err, "mapvalues([], E_ARGS)"]
+        - [list, "mapvalues([], {})"]
+        - [map, "mapvalues([], [1 -> 2])"]
+    code: "{expr}"
+    expect:
+      error: E_RANGE

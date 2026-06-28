@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T06:35:32Z`
+- generated_at: `2026-06-28T06:38:31Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `581`
-- missing_call_shapes: `7020`
+- covered_call_shapes: `587`
+- missing_call_shapes: `7014`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3544,13 +3544,6 @@ still needs explicit human review.
   - [ ] `maphaskey/3 (map, err, int)`
   - [ ] `maphaskey/3 (map, list, int)`
   - [ ] `maphaskey/3 (map, map, int)`
-- `mapvalues` signature `1..* (map)`
-  - [ ] `mapvalues/2 (map, int)`
-  - [ ] `mapvalues/2 (map, float)`
-  - [ ] `mapvalues/2 (map, obj)`
-  - [ ] `mapvalues/2 (map, err)`
-  - [ ] `mapvalues/2 (map, list)`
-  - [ ] `mapvalues/2 (map, map)`
 - `match` signature `2..3 (str, str, any)`
   - [ ] `match/3 (str, str, float)`
   - [ ] `match/3 (str, str, obj)`
@@ -11489,13 +11482,13 @@ still needs explicit human review.
 - signature: `1..* (map)`
 - source: `map.cc`
 - [x] `mapvalues/1 (map)` covered by `builtins/map.yaml`, `builtins/map.yaml`, `builtins/map.yaml`
-- [ ] `mapvalues/2 (map, int)`
-- [ ] `mapvalues/2 (map, float)`
-- [ ] `mapvalues/2 (map, obj)`
+- [x] `mapvalues/2 (map, int)` covered by `builtins/mapvalues_call_shapes.yaml`
+- [x] `mapvalues/2 (map, float)` covered by `builtins/mapvalues_call_shapes.yaml`
+- [x] `mapvalues/2 (map, obj)` covered by `builtins/mapvalues_call_shapes.yaml`
 - [x] `mapvalues/2 (map, str)` covered by `builtins/map.yaml`, `builtins/map.yaml`, `builtins/map.yaml`
-- [ ] `mapvalues/2 (map, err)`
-- [ ] `mapvalues/2 (map, list)`
-- [ ] `mapvalues/2 (map, map)`
+- [x] `mapvalues/2 (map, err)` covered by `builtins/mapvalues_call_shapes.yaml`
+- [x] `mapvalues/2 (map, list)` covered by `builtins/mapvalues_call_shapes.yaml`
+- [x] `mapvalues/2 (map, map)` covered by `builtins/mapvalues_call_shapes.yaml`
 - [?] `mapvalues/1` unknown argument types covered by `builtins/map.yaml`
 
 ### `match`

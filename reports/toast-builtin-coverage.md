@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T09:00:11Z`
+- generated_at: `2026-06-28T09:04:20Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `3998`
-- missing_call_shapes: `3603`
+- covered_call_shapes: `4040`
+- missing_call_shapes: `3561`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -27,56 +27,6 @@ still needs explicit human review.
 - `file_grep` signature `2..3 (int, str, int)`
   - [ ] `file_grep/2 (int, str)`
   - [ ] `file_grep/3 (int, str, int)`
-- `file_last_access` signature `1..1 (any)`
-  - [ ] `file_last_access/1 (float)`
-  - [ ] `file_last_access/1 (obj)`
-  - [ ] `file_last_access/1 (err)`
-  - [ ] `file_last_access/1 (list)`
-  - [ ] `file_last_access/1 (map)`
-- `file_last_change` signature `1..1 (any)`
-  - [ ] `file_last_change/1 (float)`
-  - [ ] `file_last_change/1 (obj)`
-  - [ ] `file_last_change/1 (err)`
-  - [ ] `file_last_change/1 (list)`
-  - [ ] `file_last_change/1 (map)`
-- `file_last_modify` signature `1..1 (any)`
-  - [ ] `file_last_modify/1 (float)`
-  - [ ] `file_last_modify/1 (obj)`
-  - [ ] `file_last_modify/1 (err)`
-  - [ ] `file_last_modify/1 (list)`
-  - [ ] `file_last_modify/1 (map)`
-- `file_list` signature `1..2 (str, any)`
-  - [ ] `file_list/2 (str, float)`
-  - [ ] `file_list/2 (str, obj)`
-  - [ ] `file_list/2 (str, str)`
-  - [ ] `file_list/2 (str, err)`
-  - [ ] `file_list/2 (str, list)`
-  - [ ] `file_list/2 (str, map)`
-- `file_mode` signature `1..1 (any)`
-  - [ ] `file_mode/1 (float)`
-  - [ ] `file_mode/1 (obj)`
-  - [ ] `file_mode/1 (err)`
-  - [ ] `file_mode/1 (list)`
-  - [ ] `file_mode/1 (map)`
-- `file_size` signature `1..1 (any)`
-  - [ ] `file_size/1 (float)`
-  - [ ] `file_size/1 (obj)`
-  - [ ] `file_size/1 (err)`
-  - [ ] `file_size/1 (list)`
-  - [ ] `file_size/1 (map)`
-- `file_stat` signature `1..1 (any)`
-  - [ ] `file_stat/1 (float)`
-  - [ ] `file_stat/1 (obj)`
-  - [ ] `file_stat/1 (err)`
-  - [ ] `file_stat/1 (list)`
-  - [ ] `file_stat/1 (map)`
-- `file_type` signature `1..1 (any)`
-  - [ ] `file_type/1 (int)`
-  - [ ] `file_type/1 (float)`
-  - [ ] `file_type/1 (obj)`
-  - [ ] `file_type/1 (err)`
-  - [ ] `file_type/1 (list)`
-  - [ ] `file_type/1 (map)`
 - `flush_input` signature `1..2 (obj, any)`
   - [ ] `flush_input/2 (obj, int)`
   - [ ] `flush_input/2 (obj, float)`
@@ -7300,36 +7250,36 @@ still needs explicit human review.
 - signature: `1..1 (any)`
 - source: `fileio.cc`
 - [x] `file_last_access/1 (int)` covered by `builtins/fileio.yaml`
-- [ ] `file_last_access/1 (float)`
-- [ ] `file_last_access/1 (obj)`
+- [x] `file_last_access/1 (float)` covered by `builtins/file_stat_call_shapes.yaml`
+- [x] `file_last_access/1 (obj)` covered by `builtins/file_stat_call_shapes.yaml`
 - [x] `file_last_access/1 (str)` covered by `builtins/fileio.yaml`
-- [ ] `file_last_access/1 (err)`
-- [ ] `file_last_access/1 (list)`
-- [ ] `file_last_access/1 (map)`
+- [x] `file_last_access/1 (err)` covered by `builtins/file_stat_call_shapes.yaml`
+- [x] `file_last_access/1 (list)` covered by `builtins/file_stat_call_shapes.yaml`
+- [x] `file_last_access/1 (map)` covered by `builtins/file_stat_call_shapes.yaml`
 
 ### `file_last_change`
 
 - signature: `1..1 (any)`
 - source: `fileio.cc`
 - [x] `file_last_change/1 (int)` covered by `builtins/fileio.yaml`
-- [ ] `file_last_change/1 (float)`
-- [ ] `file_last_change/1 (obj)`
+- [x] `file_last_change/1 (float)` covered by `builtins/file_stat_call_shapes.yaml`
+- [x] `file_last_change/1 (obj)` covered by `builtins/file_stat_call_shapes.yaml`
 - [x] `file_last_change/1 (str)` covered by `builtins/fileio.yaml`
-- [ ] `file_last_change/1 (err)`
-- [ ] `file_last_change/1 (list)`
-- [ ] `file_last_change/1 (map)`
+- [x] `file_last_change/1 (err)` covered by `builtins/file_stat_call_shapes.yaml`
+- [x] `file_last_change/1 (list)` covered by `builtins/file_stat_call_shapes.yaml`
+- [x] `file_last_change/1 (map)` covered by `builtins/file_stat_call_shapes.yaml`
 
 ### `file_last_modify`
 
 - signature: `1..1 (any)`
 - source: `fileio.cc`
 - [x] `file_last_modify/1 (int)` covered by `builtins/fileio.yaml`
-- [ ] `file_last_modify/1 (float)`
-- [ ] `file_last_modify/1 (obj)`
+- [x] `file_last_modify/1 (float)` covered by `builtins/file_stat_call_shapes.yaml`
+- [x] `file_last_modify/1 (obj)` covered by `builtins/file_stat_call_shapes.yaml`
 - [x] `file_last_modify/1 (str)` covered by `builtins/fileio.yaml`
-- [ ] `file_last_modify/1 (err)`
-- [ ] `file_last_modify/1 (list)`
-- [ ] `file_last_modify/1 (map)`
+- [x] `file_last_modify/1 (err)` covered by `builtins/file_stat_call_shapes.yaml`
+- [x] `file_last_modify/1 (list)` covered by `builtins/file_stat_call_shapes.yaml`
+- [x] `file_last_modify/1 (map)` covered by `builtins/file_stat_call_shapes.yaml`
 
 ### `file_list`
 
@@ -7337,12 +7287,12 @@ still needs explicit human review.
 - source: `fileio.cc`
 - [x] `file_list/1 (str)` covered by `builtins/fileio.yaml`, `builtins/fileio_security.yaml`, `builtins/fileio_security.yaml` and 1 more
 - [x] `file_list/2 (str, int)` covered by `builtins/fileio.yaml`
-- [ ] `file_list/2 (str, float)`
-- [ ] `file_list/2 (str, obj)`
-- [ ] `file_list/2 (str, str)`
-- [ ] `file_list/2 (str, err)`
-- [ ] `file_list/2 (str, list)`
-- [ ] `file_list/2 (str, map)`
+- [x] `file_list/2 (str, float)` covered by `builtins/file_stat_call_shapes.yaml`
+- [x] `file_list/2 (str, obj)` covered by `builtins/file_stat_call_shapes.yaml`
+- [x] `file_list/2 (str, str)` covered by `builtins/file_stat_call_shapes.yaml`
+- [x] `file_list/2 (str, err)` covered by `builtins/file_stat_call_shapes.yaml`
+- [x] `file_list/2 (str, list)` covered by `builtins/file_stat_call_shapes.yaml`
+- [x] `file_list/2 (str, map)` covered by `builtins/file_stat_call_shapes.yaml`
 
 ### `file_mkdir`
 
@@ -7355,12 +7305,12 @@ still needs explicit human review.
 - signature: `1..1 (any)`
 - source: `fileio.cc`
 - [x] `file_mode/1 (int)` covered by `builtins/fileio.yaml`
-- [ ] `file_mode/1 (float)`
-- [ ] `file_mode/1 (obj)`
+- [x] `file_mode/1 (float)` covered by `builtins/file_stat_call_shapes.yaml`
+- [x] `file_mode/1 (obj)` covered by `builtins/file_stat_call_shapes.yaml`
 - [x] `file_mode/1 (str)` covered by `builtins/fileio.yaml`
-- [ ] `file_mode/1 (err)`
-- [ ] `file_mode/1 (list)`
-- [ ] `file_mode/1 (map)`
+- [x] `file_mode/1 (err)` covered by `builtins/file_stat_call_shapes.yaml`
+- [x] `file_mode/1 (list)` covered by `builtins/file_stat_call_shapes.yaml`
+- [x] `file_mode/1 (map)` covered by `builtins/file_stat_call_shapes.yaml`
 
 ### `file_name`
 
@@ -7432,24 +7382,24 @@ still needs explicit human review.
 - signature: `1..1 (any)`
 - source: `fileio.cc`
 - [x] `file_size/1 (int)` covered by `builtins/fileio.yaml`
-- [ ] `file_size/1 (float)`
-- [ ] `file_size/1 (obj)`
+- [x] `file_size/1 (float)` covered by `builtins/file_stat_call_shapes.yaml`
+- [x] `file_size/1 (obj)` covered by `builtins/file_stat_call_shapes.yaml`
 - [x] `file_size/1 (str)` covered by `builtins/fileio.yaml`, `builtins/fileio.yaml`, `builtins/fileio.yaml` and 1 more
-- [ ] `file_size/1 (err)`
-- [ ] `file_size/1 (list)`
-- [ ] `file_size/1 (map)`
+- [x] `file_size/1 (err)` covered by `builtins/file_stat_call_shapes.yaml`
+- [x] `file_size/1 (list)` covered by `builtins/file_stat_call_shapes.yaml`
+- [x] `file_size/1 (map)` covered by `builtins/file_stat_call_shapes.yaml`
 
 ### `file_stat`
 
 - signature: `1..1 (any)`
 - source: `fileio.cc`
 - [x] `file_stat/1 (int)` covered by `builtins/fileio.yaml`
-- [ ] `file_stat/1 (float)`
-- [ ] `file_stat/1 (obj)`
+- [x] `file_stat/1 (float)` covered by `builtins/file_stat_call_shapes.yaml`
+- [x] `file_stat/1 (obj)` covered by `builtins/file_stat_call_shapes.yaml`
 - [x] `file_stat/1 (str)` covered by `builtins/fileio.yaml`, `builtins/fileio_security.yaml`, `builtins/fileio_verified.yaml` and 1 more
-- [ ] `file_stat/1 (err)`
-- [ ] `file_stat/1 (list)`
-- [ ] `file_stat/1 (map)`
+- [x] `file_stat/1 (err)` covered by `builtins/file_stat_call_shapes.yaml`
+- [x] `file_stat/1 (list)` covered by `builtins/file_stat_call_shapes.yaml`
+- [x] `file_stat/1 (map)` covered by `builtins/file_stat_call_shapes.yaml`
 
 ### `file_tell`
 
@@ -7461,13 +7411,13 @@ still needs explicit human review.
 
 - signature: `1..1 (any)`
 - source: `fileio.cc`
-- [ ] `file_type/1 (int)`
-- [ ] `file_type/1 (float)`
-- [ ] `file_type/1 (obj)`
+- [x] `file_type/1 (int)` covered by `builtins/file_stat_call_shapes.yaml`
+- [x] `file_type/1 (float)` covered by `builtins/file_stat_call_shapes.yaml`
+- [x] `file_type/1 (obj)` covered by `builtins/file_stat_call_shapes.yaml`
 - [x] `file_type/1 (str)` covered by `builtins/fileio.yaml`, `builtins/fileio_security.yaml`
-- [ ] `file_type/1 (err)`
-- [ ] `file_type/1 (list)`
-- [ ] `file_type/1 (map)`
+- [x] `file_type/1 (err)` covered by `builtins/file_stat_call_shapes.yaml`
+- [x] `file_type/1 (list)` covered by `builtins/file_stat_call_shapes.yaml`
+- [x] `file_type/1 (map)` covered by `builtins/file_stat_call_shapes.yaml`
 
 ### `file_write`
 

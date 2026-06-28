@@ -1,0 +1,67 @@
+name: file_stat_call_shapes
+description: Call-shape coverage for file stat and listing builtins.
+
+requires:
+  builtins:
+    - file_last_access
+    - file_last_change
+    - file_last_modify
+    - file_list
+    - file_mode
+    - file_size
+    - file_stat
+    - file_type
+
+tests:
+  - name: file_stat_builtin_rejects_invalid_handle_{builtin}_{kind}
+    permission: wizard
+    table:
+      product:
+        - columns: [builtin]
+          rows:
+            - [file_last_access]
+            - [file_last_change]
+            - [file_last_modify]
+            - [file_mode]
+            - [file_size]
+            - [file_stat]
+        - columns: [kind, expr]
+          rows:
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+    code: "{builtin}({expr})"
+    expect:
+      error: E_INVARG
+
+  - name: file_type_rejects_invalid_handle_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [int, "0"]
+        - [float, "1.5"]
+        - [obj, "#0"]
+        - [err, "E_ARGS"]
+        - [list, "{}"]
+        - [map, "[1 -> 2]"]
+    code: "file_type({expr})"
+    expect:
+      error: E_INVARG
+
+  - name: file_list_detail_flag_type_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [float, "1.5"]
+        - [obj, "#0"]
+        - [str, '"x"']
+        - [err, "E_ARGS"]
+        - [list, "{}"]
+        - [map, "[1 -> 2]"]
+    code: 'file_list(".", {expr})'
+    expect:
+      error: E_FILE

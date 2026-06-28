@@ -1,0 +1,26 @@
+name: set_task_local_call_shapes
+description: Table-driven TYPE_ANY coverage for set_task_local().
+
+requires:
+  builtins:
+    - set_task_local
+
+tests:
+  - name: set_task_local_value_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [int, "1"]
+        - [float, "1.5"]
+        - [obj, "#0"]
+        - [str, '"x"']
+        - [err, "E_ARGS"]
+        - [list, "{}"]
+        - [map, "[1 -> 2]"]
+    statement: |
+      result = set_task_local({expr});
+      set_task_local(0);
+      return result == 0;
+    expect:
+      value: 1

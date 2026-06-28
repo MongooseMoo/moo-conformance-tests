@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T07:39:50Z`
+- generated_at: `2026-06-28T07:41:43Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `830`
-- missing_call_shapes: `6771`
+- covered_call_shapes: `834`
+- missing_call_shapes: `6767`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3680,11 +3680,6 @@ still needs explicit human review.
   - [ ] `set_player_flag/2 (obj, err)`
   - [ ] `set_player_flag/2 (obj, list)`
   - [ ] `set_player_flag/2 (obj, map)`
-- `set_task_local` signature `1..1 (any)`
-  - [ ] `set_task_local/1 (float)`
-  - [ ] `set_task_local/1 (obj)`
-  - [ ] `set_task_local/1 (err)`
-  - [ ] `set_task_local/1 (map)`
 - `set_verb_args` signature `3..3 (any, any, list)`
   - [ ] `set_verb_args/3 (int, int, list)`
   - [ ] `set_verb_args/3 (int, float, list)`
@@ -11902,13 +11897,13 @@ still needs explicit human review.
 
 - signature: `1..1 (any)`
 - source: `tasks.cc`
-- [x] `set_task_local/1 (int)` covered by `builtins/task_local.yaml`, `generated_builtins/set_task_local.yaml`
-- [ ] `set_task_local/1 (float)`
-- [ ] `set_task_local/1 (obj)`
-- [x] `set_task_local/1 (str)` covered by `builtins/task_local.yaml`
-- [ ] `set_task_local/1 (err)`
-- [x] `set_task_local/1 (list)` covered by `audit/gap_followups_toast_oracle.yaml`, `builtins/task_local.yaml`, `builtins/task_local.yaml` and 7 more
-- [ ] `set_task_local/1 (map)`
+- [x] `set_task_local/1 (int)` covered by `builtins/set_task_local_call_shapes.yaml`, `builtins/set_task_local_call_shapes.yaml`, `builtins/set_task_local_call_shapes.yaml` and 7 more
+- [x] `set_task_local/1 (float)` covered by `builtins/set_task_local_call_shapes.yaml`
+- [x] `set_task_local/1 (obj)` covered by `builtins/set_task_local_call_shapes.yaml`
+- [x] `set_task_local/1 (str)` covered by `builtins/set_task_local_call_shapes.yaml`, `builtins/task_local.yaml`
+- [x] `set_task_local/1 (err)` covered by `builtins/set_task_local_call_shapes.yaml`
+- [x] `set_task_local/1 (list)` covered by `audit/gap_followups_toast_oracle.yaml`, `builtins/set_task_local_call_shapes.yaml`, `builtins/task_local.yaml` and 8 more
+- [x] `set_task_local/1 (map)` covered by `builtins/set_task_local_call_shapes.yaml`
 
 ### `set_task_perms`
 

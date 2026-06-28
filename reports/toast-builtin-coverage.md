@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T06:03:46Z`
+- generated_at: `2026-06-28T06:05:53Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `243`
 - required_call_shapes: `7721`
-- covered_call_shapes: `558`
-- missing_call_shapes: `7163`
+- covered_call_shapes: `564`
+- missing_call_shapes: `7157`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3932,13 +3932,6 @@ still needs explicit human review.
   - [ ] `set_player_flag/2 (obj, err)`
   - [ ] `set_player_flag/2 (obj, list)`
   - [ ] `set_player_flag/2 (obj, map)`
-- `set_property_info` signature `3..3 (any, str, list)`
-  - [ ] `set_property_info/3 (int, str, list)`
-  - [ ] `set_property_info/3 (float, str, list)`
-  - [ ] `set_property_info/3 (obj, str, list)`
-  - [ ] `set_property_info/3 (str, str, list)`
-  - [ ] `set_property_info/3 (err, str, list)`
-  - [ ] `set_property_info/3 (map, str, list)`
 - `set_task_local` signature `1..1 (any)`
   - [ ] `set_task_local/1 (float)`
   - [ ] `set_task_local/1 (obj)`
@@ -12482,13 +12475,13 @@ still needs explicit human review.
 
 - signature: `3..3 (any, str, list)`
 - source: `property.cc`
-- [ ] `set_property_info/3 (int, str, list)`
-- [ ] `set_property_info/3 (float, str, list)`
-- [ ] `set_property_info/3 (obj, str, list)`
-- [ ] `set_property_info/3 (str, str, list)`
-- [ ] `set_property_info/3 (err, str, list)`
+- [x] `set_property_info/3 (int, str, list)` covered by `builtins/set_property_info_call_shapes.yaml`
+- [x] `set_property_info/3 (float, str, list)` covered by `builtins/set_property_info_call_shapes.yaml`
+- [x] `set_property_info/3 (obj, str, list)` covered by `builtins/set_property_info_call_shapes.yaml`
+- [x] `set_property_info/3 (str, str, list)` covered by `builtins/set_property_info_call_shapes.yaml`
+- [x] `set_property_info/3 (err, str, list)` covered by `builtins/set_property_info_call_shapes.yaml`
 - [x] `set_property_info/3 (list, str, list)` covered by `audit/time_server_builtins_toast_oracle.yaml`, `builtins/properties.yaml`, `builtins/properties.yaml` and 2 more
-- [ ] `set_property_info/3 (map, str, list)`
+- [x] `set_property_info/3 (map, str, list)` covered by `builtins/set_property_info_call_shapes.yaml`
 - [?] `set_property_info/3` unknown argument types covered by `builtins/objects.yaml`
 
 ### `set_task_local`

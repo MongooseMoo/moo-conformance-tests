@@ -1,0 +1,25 @@
+name: locations_call_shapes
+description: Object-argument call-shape coverage for locations().
+
+requires:
+  builtins:
+    - locations
+
+tests:
+  - name: locations_one_arg_accepts_object
+    permission: wizard
+    code: "locations(#0)"
+    expect:
+      type: list
+
+  - name: locations_two_args_accepts_object_base
+    permission: wizard
+    code: "locations(#0, #0)"
+    expect:
+      type: list
+
+  - name: locations_three_args_accepts_object_base_and_check_flag
+    permission: wizard
+    code: "locations(#0, #0, 1)"
+    expect:
+      type: list

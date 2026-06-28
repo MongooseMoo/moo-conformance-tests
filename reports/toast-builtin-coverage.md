@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T09:26:16Z`
+- generated_at: `2026-06-28T09:27:57Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `4270`
-- missing_call_shapes: `3331`
+- covered_call_shapes: `4273`
+- missing_call_shapes: `3328`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,10 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `locations` signature `1..3 (obj, obj, int)`
-  - [ ] `locations/1 (obj)`
-  - [ ] `locations/2 (obj, obj)`
-  - [ ] `locations/3 (obj, obj, int)`
 - `move` signature `2..3 (obj, obj, int)`
   - [ ] `move/2 (obj, obj)`
   - [ ] `move/3 (obj, obj, int)`
@@ -7663,9 +7659,9 @@ still needs explicit human review.
 
 - signature: `1..3 (obj, obj, int)`
 - source: `objects.cc`
-- [ ] `locations/1 (obj)`
-- [ ] `locations/2 (obj, obj)`
-- [ ] `locations/3 (obj, obj, int)`
+- [x] `locations/1 (obj)` covered by `builtins/locations_call_shapes.yaml`
+- [x] `locations/2 (obj, obj)` covered by `builtins/locations_call_shapes.yaml`
+- [x] `locations/3 (obj, obj, int)` covered by `builtins/locations_call_shapes.yaml`
 - [?] `locations/1` unknown argument types covered by `builtins/object_hierarchy.yaml`, `builtins/object_hierarchy.yaml`, `builtins/object_hierarchy.yaml`
 - [?] `locations/2` unknown argument types covered by `builtins/object_hierarchy.yaml`
 - [?] `locations/3` unknown argument types covered by `builtins/object_hierarchy.yaml`

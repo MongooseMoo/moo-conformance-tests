@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T08:20:49Z`
+- generated_at: `2026-06-28T08:23:04Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `985`
-- missing_call_shapes: `6616`
+- covered_call_shapes: `990`
+- missing_call_shapes: `6611`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -64,12 +64,6 @@ still needs explicit human review.
   - [ ] `add_property/4 (map, str, err, list)`
   - [ ] `add_property/4 (map, str, list, list)`
   - [ ] `add_property/4 (map, str, map, list)`
-- `add_verb` signature `3..3 (any, list, list)`
-  - [ ] `add_verb/3 (int, list, list)`
-  - [ ] `add_verb/3 (float, list, list)`
-  - [ ] `add_verb/3 (str, list, list)`
-  - [ ] `add_verb/3 (err, list, list)`
-  - [ ] `add_verb/3 (map, list, list)`
 - `create` signature `1..4 (any, any, any, any)`
   - [ ] `create/1 (float)`
   - [ ] `create/1 (err)`
@@ -6776,13 +6770,13 @@ still needs explicit human review.
 
 - signature: `3..3 (any, list, list)`
 - source: `verbs.cc`
-- [ ] `add_verb/3 (int, list, list)`
-- [ ] `add_verb/3 (float, list, list)`
+- [x] `add_verb/3 (int, list, list)` covered by `builtins/add_verb_call_shapes.yaml`
+- [x] `add_verb/3 (float, list, list)` covered by `builtins/add_verb_call_shapes.yaml`
 - [x] `add_verb/3 (obj, list, list)` covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 24 more
-- [ ] `add_verb/3 (str, list, list)`
-- [ ] `add_verb/3 (err, list, list)`
+- [x] `add_verb/3 (str, list, list)` covered by `builtins/add_verb_call_shapes.yaml`
+- [x] `add_verb/3 (err, list, list)` covered by `builtins/add_verb_call_shapes.yaml`
 - [x] `add_verb/3 (list, list, list)` covered by `builtins/eval.yaml`, `builtins/recycle.yaml`, `builtins/recycle.yaml` and 51 more
-- [ ] `add_verb/3 (map, list, list)`
+- [x] `add_verb/3 (map, list, list)` covered by `builtins/add_verb_call_shapes.yaml`
 - [?] `add_verb/3` unknown argument types covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml` and 313 more
 
 ### `all_members`

@@ -1,0 +1,21 @@
+name: add_verb_call_shapes
+description: Table-driven TYPE_ANY coverage for add_verb().
+
+requires:
+  builtins:
+    - add_verb
+
+tests:
+  - name: add_verb_object_type_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [int, "1"]
+        - [float, "1.5"]
+        - [str, '"x"']
+        - [err, "E_ARGS"]
+        - [map, "[1 -> 2]"]
+    code: 'add_verb({expr}, {player, "x", "shape"}, {"this", "none", "this"})'
+    expect:
+      error: E_TYPE

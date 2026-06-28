@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T05:43:05Z`
+- generated_at: `2026-06-28T05:45:00Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `243`
 - required_call_shapes: `7721`
-- covered_call_shapes: `507`
-- missing_call_shapes: `7214`
+- covered_call_shapes: `510`
+- missing_call_shapes: `7211`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3937,10 +3937,6 @@ still needs explicit human review.
   - [ ] `resume/2 (int, err)`
   - [ ] `resume/2 (int, list)`
   - [ ] `resume/2 (int, map)`
-- `reverse` signature `1..1 (any)`
-  - [ ] `reverse/1 (float)`
-  - [ ] `reverse/1 (obj)`
-  - [ ] `reverse/1 (err)`
 - `rindex` signature `2..4 (str, str, any, int)`
   - [ ] `rindex/3 (str, str, float)`
   - [ ] `rindex/3 (str, str, obj)`
@@ -12423,10 +12419,10 @@ still needs explicit human review.
 - signature: `1..1 (any)`
 - source: `list.cc`
 - [x] `reverse/1 (int)` covered by `builtins/reverse.yaml`
-- [ ] `reverse/1 (float)`
-- [ ] `reverse/1 (obj)`
+- [x] `reverse/1 (float)` covered by `builtins/reverse_call_shapes.yaml`
+- [x] `reverse/1 (obj)` covered by `builtins/reverse_call_shapes.yaml`
 - [x] `reverse/1 (str)` covered by `builtins/reverse.yaml`, `builtins/reverse.yaml`, `builtins/reverse.yaml` and 1 more
-- [ ] `reverse/1 (err)`
+- [x] `reverse/1 (err)` covered by `builtins/reverse_call_shapes.yaml`
 - [x] `reverse/1 (list)` covered by `builtins/reverse.yaml`, `builtins/reverse.yaml`, `builtins/reverse.yaml` and 1 more
 - [x] `reverse/1 (map)` covered by `builtins/reverse.yaml`
 

@@ -1,0 +1,19 @@
+name: reverse_call_shapes
+description: Table-driven TYPE_ANY coverage for reverse().
+
+requires:
+  builtins:
+    - reverse
+
+tests:
+  - name: reverse_arg_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [float, "reverse(1.5)"]
+        - [obj, "reverse(#0)"]
+        - [err, "reverse(E_ARGS)"]
+    code: "{expr}"
+    expect:
+      error: E_INVARG

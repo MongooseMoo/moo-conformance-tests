@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T06:05:53Z`
+- generated_at: `2026-06-28T06:08:49Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `243`
 - required_call_shapes: `7721`
-- covered_call_shapes: `564`
-- missing_call_shapes: `7157`
+- covered_call_shapes: `565`
+- missing_call_shapes: `7156`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3320,8 +3320,6 @@ still needs explicit human review.
   - [ ] `force_input/3 (obj, str, err)`
   - [ ] `force_input/3 (obj, str, list)`
   - [ ] `force_input/3 (obj, str, map)`
-- `function_info` signature `0..1 (str)`
-  - [ ] `function_info/0 ()`
 - `generate_json` signature `1..3 (any, str, any)`
   - [ ] `generate_json/3 (int, str, int)`
   - [ ] `generate_json/3 (int, str, float)`
@@ -11250,7 +11248,7 @@ still needs explicit human review.
 
 - signature: `0..1 (str)`
 - source: `functions.cc`
-- [ ] `function_info/0 ()`
+- [x] `function_info/0 ()` covered by `builtins/function_info_call_shapes.yaml`
 - [x] `function_info/1 (str)` covered by `builtins/server_admin.yaml`, `builtins/server_admin.yaml`, `builtins/server_admin.yaml` and 236 more
 
 ### `gc_stats`

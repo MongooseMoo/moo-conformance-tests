@@ -1,0 +1,13 @@
+name: function_info_call_shapes
+description: Call-shape coverage for function_info().
+
+requires:
+  builtins:
+    - function_info
+
+tests:
+  - name: function_info_no_args
+    permission: wizard
+    code: "function_info()"
+    expect:
+      type: list

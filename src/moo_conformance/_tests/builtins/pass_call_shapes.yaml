@@ -1,0 +1,135 @@
+name: pass_call_shapes
+description: Vararg call-shape coverage for pass() inside verb bodies.
+
+requires:
+  builtins:
+    - create
+    - pass
+    - recycle
+    - typeof
+
+tests:
+  - name: pass_vararg_type_shapes
+    permission: wizard
+    steps:
+      - run: "create($nothing)"
+        capture: parent
+      - run: "create({parent})"
+        capture: child
+
+      - verb_setup:
+          object: "{parent}"
+          name: "pass_zero"
+          args: ["this", "none", "this"]
+          code: "return length(args);"
+      - verb_setup:
+          object: "{child}"
+          name: "pass_zero"
+          args: ["this", "none", "this"]
+          code: "return pass();"
+      - run: "{child}:pass_zero()"
+        expect:
+          value: 0
+
+      - verb_setup:
+          object: "{parent}"
+          name: "pass_int"
+          args: ["this", "none", "this"]
+          code: "return typeof(args[1]);"
+      - verb_setup:
+          object: "{child}"
+          name: "pass_int"
+          args: ["this", "none", "this"]
+          code: "return pass(1);"
+      - run: "{child}:pass_int()"
+        expect:
+          value: 0
+
+      - verb_setup:
+          object: "{parent}"
+          name: "pass_float"
+          args: ["this", "none", "this"]
+          code: "return typeof(args[1]);"
+      - verb_setup:
+          object: "{child}"
+          name: "pass_float"
+          args: ["this", "none", "this"]
+          code: "return pass(1.5);"
+      - run: "{child}:pass_float()"
+        expect:
+          value: 9
+
+      - verb_setup:
+          object: "{parent}"
+          name: "pass_obj"
+          args: ["this", "none", "this"]
+          code: "return typeof(args[1]);"
+      - verb_setup:
+          object: "{child}"
+          name: "pass_obj"
+          args: ["this", "none", "this"]
+          code: "return pass(#0);"
+      - run: "{child}:pass_obj()"
+        expect:
+          value: 1
+
+      - verb_setup:
+          object: "{parent}"
+          name: "pass_str"
+          args: ["this", "none", "this"]
+          code: "return typeof(args[1]);"
+      - verb_setup:
+          object: "{child}"
+          name: "pass_str"
+          args: ["this", "none", "this"]
+          code: 'return pass("x");'
+      - run: "{child}:pass_str()"
+        expect:
+          value: 2
+
+      - verb_setup:
+          object: "{parent}"
+          name: "pass_err"
+          args: ["this", "none", "this"]
+          code: "return typeof(args[1]);"
+      - verb_setup:
+          object: "{child}"
+          name: "pass_err"
+          args: ["this", "none", "this"]
+          code: "return pass(E_ARGS);"
+      - run: "{child}:pass_err()"
+        expect:
+          value: 3
+
+      - verb_setup:
+          object: "{parent}"
+          name: "pass_list"
+          args: ["this", "none", "this"]
+          code: "return typeof(args[1]);"
+      - verb_setup:
+          object: "{child}"
+          name: "pass_list"
+          args: ["this", "none", "this"]
+          code: "return pass({});"
+      - run: "{child}:pass_list()"
+        expect:
+          value: 4
+
+      - verb_setup:
+          object: "{parent}"
+          name: "pass_map"
+          args: ["this", "none", "this"]
+          code: "return typeof(args[1]);"
+      - verb_setup:
+          object: "{child}"
+          name: "pass_map"
+          args: ["this", "none", "this"]
+          code: "return pass([1 -> 2]);"
+      - run: "{child}:pass_map()"
+        expect:
+          value: 10
+    cleanup:
+      - run: "recycle({child})"
+        as: wizard
+      - run: "recycle({parent})"
+        as: wizard

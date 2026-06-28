@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T09:39:07Z`
+- generated_at: `2026-06-28T09:42:10Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `4350`
-- missing_call_shapes: `3251`
+- covered_call_shapes: `4358`
+- missing_call_shapes: `3243`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,15 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `pass` signature `0..* ()`
-  - [ ] `pass/0 ()`
-  - [ ] `pass/1 (int)`
-  - [ ] `pass/1 (float)`
-  - [ ] `pass/1 (obj)`
-  - [ ] `pass/1 (str)`
-  - [ ] `pass/1 (err)`
-  - [ ] `pass/1 (list)`
-  - [ ] `pass/1 (map)`
 - `queued_tasks` signature `0..2 (int, int)`
   - [ ] `queued_tasks/1 (int)`
 - `raise` signature `1..3 (any, str, any)`
@@ -3709,7 +3700,7 @@ still needs explicit human review.
 - [x] `create/1 (obj)` covered by `basic/object.yaml`, `basic/object.yaml`, `basic/object.yaml` and 6 more
 - [x] `create/1 (str)` covered by `builtins/create_call_shapes.yaml`, `builtins/objects.yaml`
 - [x] `create/1 (err)` covered by `builtins/create_call_shapes.yaml`
-- [x] `create/1 (list)` covered by `audit/verb_dispatch_toast_oracle.yaml`, `audit/verb_dispatch_toast_oracle.yaml`, `builtins/create.yaml` and 102 more
+- [x] `create/1 (list)` covered by `audit/verb_dispatch_toast_oracle.yaml`, `audit/verb_dispatch_toast_oracle.yaml`, `builtins/create.yaml` and 103 more
 - [x] `create/1 (map)` covered by `builtins/create_call_shapes.yaml`
 - [x] `create/2 (int, int)` covered by `builtins/create_call_shapes.yaml`, `builtins/objects.yaml`
 - [x] `create/2 (int, float)` covered by `builtins/create_call_shapes.yaml`
@@ -6504,7 +6495,7 @@ still needs explicit human review.
 - [x] `create/4 (map, map, map, err)` covered by `builtins/create_call_shapes.yaml`
 - [x] `create/4 (map, map, map, list)` covered by `builtins/create_call_shapes.yaml`
 - [x] `create/4 (map, map, map, map)` covered by `builtins/create_call_shapes.yaml`
-- [?] `create/1` unknown argument types covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml` and 894 more
+- [?] `create/1` unknown argument types covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml` and 895 more
 - [?] `create/2` unknown argument types covered by `builtins/objects.yaml`, `builtins/objects.yaml`, `builtins/create.yaml` and 140 more
 - [?] `create/3` unknown argument types covered by `builtins/create.yaml`, `builtins/create.yaml`, `builtins/create.yaml` and 10 more
 - [?] `create/4` unknown argument types covered by `builtins/create.yaml`, `builtins/create.yaml`, `builtins/create.yaml` and 3 more
@@ -7465,7 +7456,7 @@ still needs explicit human review.
 - [x] `length/1 (err)` covered by `builtins/length_call_shapes.yaml`
 - [x] `length/1 (list)` covered by `audit/time_server_builtins_toast_oracle.yaml`, `basic/list.yaml`, `features/steps_basic.yaml`
 - [x] `length/1 (map)` covered by `builtins/map.yaml`
-- [?] `length/1` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/time_server_builtins_toast_oracle.yaml`, `builtins/algorithms.yaml` and 133 more
+- [?] `length/1` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/time_server_builtins_toast_oracle.yaml`, `builtins/algorithms.yaml` and 134 more
 
 ### `listappend`
 
@@ -7923,14 +7914,14 @@ still needs explicit human review.
 
 - signature: `0..* ()`
 - source: `execute.cc`
-- [ ] `pass/0 ()`
-- [ ] `pass/1 (int)`
-- [ ] `pass/1 (float)`
-- [ ] `pass/1 (obj)`
-- [ ] `pass/1 (str)`
-- [ ] `pass/1 (err)`
-- [ ] `pass/1 (list)`
-- [ ] `pass/1 (map)`
+- [x] `pass/0 ()` covered by `builtins/pass_call_shapes.yaml`
+- [x] `pass/1 (int)` covered by `builtins/pass_call_shapes.yaml`
+- [x] `pass/1 (float)` covered by `builtins/pass_call_shapes.yaml`
+- [x] `pass/1 (obj)` covered by `builtins/pass_call_shapes.yaml`
+- [x] `pass/1 (str)` covered by `builtins/pass_call_shapes.yaml`
+- [x] `pass/1 (err)` covered by `builtins/pass_call_shapes.yaml`
+- [x] `pass/1 (list)` covered by `builtins/pass_call_shapes.yaml`
+- [x] `pass/1 (map)` covered by `builtins/pass_call_shapes.yaml`
 
 ### `pcre_cache_stats`
 
@@ -8127,7 +8118,7 @@ still needs explicit human review.
 - [x] `recycle/1 (obj)` covered by `builtins/recycle.yaml`, `builtins/task_local.yaml`
 - [x] `recycle/1 (str)` covered by `builtins/recycle.yaml`
 - [x] `recycle/1 (err)` covered by `builtins/recycle_call_shapes.yaml`
-- [x] `recycle/1 (list)` covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml` and 241 more
+- [x] `recycle/1 (list)` covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml` and 243 more
 - [x] `recycle/1 (map)` covered by `builtins/recycle.yaml`
 - [?] `recycle/1` unknown argument types covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml` and 369 more
 
@@ -8993,7 +8984,7 @@ still needs explicit human review.
 - [x] `typeof/1 (err)` covered by `basic/types.yaml`, `basic/types.yaml`
 - [x] `typeof/1 (list)` covered by `basic/types.yaml`, `basic/value.yaml`, `builtins/pcre.yaml` and 1 more
 - [x] `typeof/1 (map)` covered by `basic/types.yaml`, `basic/types.yaml`
-- [?] `typeof/1` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 163 more
+- [?] `typeof/1` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 170 more
 
 ### `unlisten`
 

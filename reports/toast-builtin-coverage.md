@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T05:36:24Z`
+- generated_at: `2026-06-28T05:39:59Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `243`
 - required_call_shapes: `7721`
-- covered_call_shapes: `500`
-- missing_call_shapes: `7221`
+- covered_call_shapes: `505`
+- missing_call_shapes: `7216`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -4394,12 +4394,6 @@ still needs explicit human review.
   - [ ] `unlisten/2 (map, err)`
   - [ ] `unlisten/2 (map, list)`
   - [ ] `unlisten/2 (map, map)`
-- `valid` signature `1..1 (any)`
-  - [ ] `valid/1 (int)`
-  - [ ] `valid/1 (float)`
-  - [ ] `valid/1 (str)`
-  - [ ] `valid/1 (err)`
-  - [ ] `valid/1 (map)`
 - `value_bytes` signature `1..1 (any)`
   - [ ] `value_bytes/1 (float)`
   - [ ] `value_bytes/1 (obj)`
@@ -13337,13 +13331,13 @@ still needs explicit human review.
 
 - signature: `1..1 (any)`
 - source: `objects.cc`
-- [ ] `valid/1 (int)`
-- [ ] `valid/1 (float)`
+- [x] `valid/1 (int)` covered by `builtins/valid_call_shapes.yaml`
+- [x] `valid/1 (float)` covered by `builtins/valid_call_shapes.yaml`
 - [x] `valid/1 (obj)` covered by `basic/object.yaml`, `basic/object.yaml`
-- [ ] `valid/1 (str)`
-- [ ] `valid/1 (err)`
+- [x] `valid/1 (str)` covered by `builtins/valid_call_shapes.yaml`
+- [x] `valid/1 (err)` covered by `builtins/valid_call_shapes.yaml`
 - [x] `valid/1 (list)` covered by `features/steps_basic.yaml`, `features/steps_basic.yaml`
-- [ ] `valid/1 (map)`
+- [x] `valid/1 (map)` covered by `builtins/valid_call_shapes.yaml`
 - [?] `valid/1` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml`, `audit/time_server_builtins_toast_oracle.yaml` and 46 more
 
 ### `value_bytes`

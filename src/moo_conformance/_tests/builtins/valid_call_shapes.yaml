@@ -1,0 +1,21 @@
+name: valid_call_shapes
+description: Table-driven TYPE_ANY coverage for valid().
+
+requires:
+  builtins:
+    - valid
+
+tests:
+  - name: valid_arg_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [int, "valid(1)"]
+        - [float, "valid(1.5)"]
+        - [str, 'valid("x")']
+        - [err, "valid(E_ARGS)"]
+        - [map, "valid([1 -> 2])"]
+    code: "{expr}"
+    expect:
+      error: E_TYPE

@@ -343,6 +343,18 @@ tests:
       value: []
   cleanup:
   - run: recycle({obj})
+- name: verb_code_by_index
+  description: verb_code accepts an integer index as the verb specifier; returns a list
+  permission: programmer
+  steps:
+  - run: create($nothing)
+    capture: obj
+  - run: add_verb({obj}, {player, "rw", "foobar"}, {"any", "on", "this"})
+  - run: typeof(verb_code({obj}, 1))
+    expect:
+      value: 4
+  cleanup:
+  - run: recycle({obj})
 - name: verb_code_recycled_object
   description: verb_code fails with E_INVARG if object is not valid
   permission: programmer

@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T08:17:01Z`
+- generated_at: `2026-06-28T08:20:49Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `978`
-- missing_call_shapes: `6623`
+- covered_call_shapes: `985`
+- missing_call_shapes: `6616`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -70,14 +70,6 @@ still needs explicit human review.
   - [ ] `add_verb/3 (str, list, list)`
   - [ ] `add_verb/3 (err, list, list)`
   - [ ] `add_verb/3 (map, list, list)`
-- `all_members` signature `2..2 (any, list)`
-  - [ ] `all_members/2 (int, list)`
-  - [ ] `all_members/2 (float, list)`
-  - [ ] `all_members/2 (obj, list)`
-  - [ ] `all_members/2 (str, list)`
-  - [ ] `all_members/2 (err, list)`
-  - [ ] `all_members/2 (list, list)`
-  - [ ] `all_members/2 (map, list)`
 - `create` signature `1..4 (any, any, any, any)`
   - [ ] `create/1 (float)`
   - [ ] `create/1 (err)`
@@ -6797,13 +6789,13 @@ still needs explicit human review.
 
 - signature: `2..2 (any, list)`
 - source: `list.cc`
-- [ ] `all_members/2 (int, list)`
-- [ ] `all_members/2 (float, list)`
-- [ ] `all_members/2 (obj, list)`
-- [ ] `all_members/2 (str, list)`
-- [ ] `all_members/2 (err, list)`
-- [ ] `all_members/2 (list, list)`
-- [ ] `all_members/2 (map, list)`
+- [x] `all_members/2 (int, list)` covered by `builtins/all_members_call_shapes.yaml`
+- [x] `all_members/2 (float, list)` covered by `builtins/all_members_call_shapes.yaml`
+- [x] `all_members/2 (obj, list)` covered by `builtins/all_members_call_shapes.yaml`
+- [x] `all_members/2 (str, list)` covered by `builtins/all_members_call_shapes.yaml`
+- [x] `all_members/2 (err, list)` covered by `builtins/all_members_call_shapes.yaml`
+- [x] `all_members/2 (list, list)` covered by `builtins/all_members_call_shapes.yaml`
+- [x] `all_members/2 (map, list)` covered by `builtins/all_members_call_shapes.yaml`
 
 ### `ancestors`
 

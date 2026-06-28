@@ -1,0 +1,27 @@
+name: is_clear_property_call_shapes
+description: Table-driven TYPE_ANY coverage for is_clear_property().
+
+requires:
+  builtins:
+    - is_clear_property
+
+tests:
+  - name: is_clear_property_arg_obj
+    permission: wizard
+    code: 'is_clear_property(#0, "nothing")'
+    expect:
+      type: int
+
+  - name: is_clear_property_arg_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [int, 'is_clear_property(1, "name")']
+        - [float, 'is_clear_property(1.5, "name")']
+        - [str, 'is_clear_property("x", "name")']
+        - [err, 'is_clear_property(E_ARGS, "name")']
+        - [map, 'is_clear_property([1 -> 2], "name")']
+    code: "{expr}"
+    expect:
+      error: E_INVARG

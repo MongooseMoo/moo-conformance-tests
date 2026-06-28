@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T05:54:32Z`
+- generated_at: `2026-06-28T05:58:10Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `243`
 - required_call_shapes: `7721`
-- covered_call_shapes: `541`
-- missing_call_shapes: `7180`
+- covered_call_shapes: `547`
+- missing_call_shapes: `7174`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3398,13 +3398,6 @@ still needs explicit human review.
   - [ ] `index/4 (str, str, err, int)`
   - [ ] `index/4 (str, str, list, int)`
   - [ ] `index/4 (str, str, map, int)`
-- `is_clear_property` signature `2..2 (any, str)`
-  - [ ] `is_clear_property/2 (int, str)`
-  - [ ] `is_clear_property/2 (float, str)`
-  - [ ] `is_clear_property/2 (obj, str)`
-  - [ ] `is_clear_property/2 (str, str)`
-  - [ ] `is_clear_property/2 (err, str)`
-  - [ ] `is_clear_property/2 (map, str)`
 - `is_member` signature `2..3 (any, any, int)`
   - [ ] `is_member/2 (int, int)`
   - [ ] `is_member/2 (int, float)`
@@ -11394,13 +11387,13 @@ still needs explicit human review.
 
 - signature: `2..2 (any, str)`
 - source: `property.cc`
-- [ ] `is_clear_property/2 (int, str)`
-- [ ] `is_clear_property/2 (float, str)`
-- [ ] `is_clear_property/2 (obj, str)`
-- [ ] `is_clear_property/2 (str, str)`
-- [ ] `is_clear_property/2 (err, str)`
+- [x] `is_clear_property/2 (int, str)` covered by `builtins/is_clear_property_call_shapes.yaml`
+- [x] `is_clear_property/2 (float, str)` covered by `builtins/is_clear_property_call_shapes.yaml`
+- [x] `is_clear_property/2 (obj, str)` covered by `builtins/is_clear_property_call_shapes.yaml`
+- [x] `is_clear_property/2 (str, str)` covered by `builtins/is_clear_property_call_shapes.yaml`
+- [x] `is_clear_property/2 (err, str)` covered by `builtins/is_clear_property_call_shapes.yaml`
 - [x] `is_clear_property/2 (list, str)` covered by `builtins/properties.yaml`, `builtins/properties.yaml`, `builtins/properties.yaml` and 6 more
-- [ ] `is_clear_property/2 (map, str)`
+- [x] `is_clear_property/2 (map, str)` covered by `builtins/is_clear_property_call_shapes.yaml`
 - [?] `is_clear_property/2` unknown argument types covered by `basic/property.yaml`, `basic/property.yaml`, `language/waif.yaml`
 
 ### `is_member`

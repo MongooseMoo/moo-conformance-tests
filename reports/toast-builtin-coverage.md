@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T05:46:38Z`
+- generated_at: `2026-06-28T05:48:30Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `243`
 - required_call_shapes: `7721`
-- covered_call_shapes: `514`
-- missing_call_shapes: `7207`
+- covered_call_shapes: `520`
+- missing_call_shapes: `7201`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -161,13 +161,6 @@ still needs explicit human review.
   - [ ] `call_function/2 (str, obj)`
   - [ ] `call_function/2 (str, err)`
   - [ ] `call_function/2 (str, map)`
-- `children` signature `1..1 (any)`
-  - [ ] `children/1 (int)`
-  - [ ] `children/1 (float)`
-  - [ ] `children/1 (str)`
-  - [ ] `children/1 (err)`
-  - [ ] `children/1 (list)`
-  - [ ] `children/1 (map)`
 - `chparent` signature `2..2 (any, obj)`
   - [ ] `chparent/2 (int, obj)`
   - [ ] `chparent/2 (float, obj)`
@@ -7675,13 +7668,13 @@ still needs explicit human review.
 
 - signature: `1..1 (any)`
 - source: `objects.cc`
-- [ ] `children/1 (int)`
-- [ ] `children/1 (float)`
+- [x] `children/1 (int)` covered by `builtins/children_call_shapes.yaml`
+- [x] `children/1 (float)` covered by `builtins/children_call_shapes.yaml`
 - [x] `children/1 (obj)` covered by `basic/object.yaml`
-- [ ] `children/1 (str)`
-- [ ] `children/1 (err)`
-- [ ] `children/1 (list)`
-- [ ] `children/1 (map)`
+- [x] `children/1 (str)` covered by `builtins/children_call_shapes.yaml`
+- [x] `children/1 (err)` covered by `builtins/children_call_shapes.yaml`
+- [x] `children/1 (list)` covered by `builtins/children_call_shapes.yaml`
+- [x] `children/1 (map)` covered by `builtins/children_call_shapes.yaml`
 - [?] `children/1` unknown argument types covered by `builtins/create.yaml`, `builtins/objects.yaml`, `builtins/objects.yaml` and 41 more
 
 ### `chparent`

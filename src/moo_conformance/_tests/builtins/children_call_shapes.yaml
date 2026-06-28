@@ -1,0 +1,22 @@
+name: children_call_shapes
+description: Table-driven TYPE_ANY coverage for children().
+
+requires:
+  builtins:
+    - children
+
+tests:
+  - name: children_arg_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [int, "children(1)"]
+        - [float, "children(1.5)"]
+        - [str, 'children("x")']
+        - [err, "children(E_ARGS)"]
+        - [list, "children({})"]
+        - [map, "children([1 -> 2])"]
+    code: "{expr}"
+    expect:
+      error: E_TYPE

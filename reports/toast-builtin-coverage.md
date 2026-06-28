@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T09:18:24Z`
+- generated_at: `2026-06-28T09:21:50Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `4155`
-- missing_call_shapes: `3446`
+- covered_call_shapes: `4252`
+- missing_call_shapes: `3349`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,104 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `isa` signature `2..3 (any, any, int)`
-  - [ ] `isa/2 (int, int)`
-  - [ ] `isa/2 (int, float)`
-  - [ ] `isa/2 (int, obj)`
-  - [ ] `isa/2 (int, str)`
-  - [ ] `isa/2 (int, err)`
-  - [ ] `isa/2 (int, list)`
-  - [ ] `isa/2 (int, map)`
-  - [ ] `isa/2 (float, int)`
-  - [ ] `isa/2 (float, float)`
-  - [ ] `isa/2 (float, obj)`
-  - [ ] `isa/2 (float, str)`
-  - [ ] `isa/2 (float, err)`
-  - [ ] `isa/2 (float, list)`
-  - [ ] `isa/2 (float, map)`
-  - [ ] `isa/2 (obj, int)`
-  - [ ] `isa/2 (obj, float)`
-  - [ ] `isa/2 (obj, str)`
-  - [ ] `isa/2 (obj, err)`
-  - [ ] `isa/2 (obj, list)`
-  - [ ] `isa/2 (obj, map)`
-  - [ ] `isa/2 (str, int)`
-  - [ ] `isa/2 (str, float)`
-  - [ ] `isa/2 (str, obj)`
-  - [ ] `isa/2 (str, str)`
-  - [ ] `isa/2 (str, err)`
-  - [ ] `isa/2 (str, list)`
-  - [ ] `isa/2 (str, map)`
-  - [ ] `isa/2 (err, int)`
-  - [ ] `isa/2 (err, float)`
-  - [ ] `isa/2 (err, obj)`
-  - [ ] `isa/2 (err, str)`
-  - [ ] `isa/2 (err, err)`
-  - [ ] `isa/2 (err, list)`
-  - [ ] `isa/2 (err, map)`
-  - [ ] `isa/2 (list, int)`
-  - [ ] `isa/2 (list, float)`
-  - [ ] `isa/2 (list, obj)`
-  - [ ] `isa/2 (list, str)`
-  - [ ] `isa/2 (list, err)`
-  - [ ] `isa/2 (list, list)`
-  - [ ] `isa/2 (list, map)`
-  - [ ] `isa/2 (map, int)`
-  - [ ] `isa/2 (map, float)`
-  - [ ] `isa/2 (map, obj)`
-  - [ ] `isa/2 (map, str)`
-  - [ ] `isa/2 (map, err)`
-  - [ ] `isa/2 (map, list)`
-  - [ ] `isa/2 (map, map)`
-  - [ ] `isa/3 (int, int, int)`
-  - [ ] `isa/3 (int, float, int)`
-  - [ ] `isa/3 (int, obj, int)`
-  - [ ] `isa/3 (int, str, int)`
-  - [ ] `isa/3 (int, err, int)`
-  - [ ] `isa/3 (int, list, int)`
-  - [ ] `isa/3 (int, map, int)`
-  - [ ] `isa/3 (float, int, int)`
-  - [ ] `isa/3 (float, float, int)`
-  - [ ] `isa/3 (float, obj, int)`
-  - [ ] `isa/3 (float, str, int)`
-  - [ ] `isa/3 (float, err, int)`
-  - [ ] `isa/3 (float, list, int)`
-  - [ ] `isa/3 (float, map, int)`
-  - [ ] `isa/3 (obj, int, int)`
-  - [ ] `isa/3 (obj, float, int)`
-  - [ ] `isa/3 (obj, obj, int)`
-  - [ ] `isa/3 (obj, str, int)`
-  - [ ] `isa/3 (obj, err, int)`
-  - [ ] `isa/3 (obj, list, int)`
-  - [ ] `isa/3 (obj, map, int)`
-  - [ ] `isa/3 (str, int, int)`
-  - [ ] `isa/3 (str, float, int)`
-  - [ ] `isa/3 (str, obj, int)`
-  - [ ] `isa/3 (str, str, int)`
-  - [ ] `isa/3 (str, err, int)`
-  - [ ] `isa/3 (str, list, int)`
-  - [ ] `isa/3 (str, map, int)`
-  - [ ] `isa/3 (err, int, int)`
-  - [ ] `isa/3 (err, float, int)`
-  - [ ] `isa/3 (err, obj, int)`
-  - [ ] `isa/3 (err, str, int)`
-  - [ ] `isa/3 (err, err, int)`
-  - [ ] `isa/3 (err, list, int)`
-  - [ ] `isa/3 (err, map, int)`
-  - [ ] `isa/3 (list, int, int)`
-  - [ ] `isa/3 (list, float, int)`
-  - [ ] `isa/3 (list, obj, int)`
-  - [ ] `isa/3 (list, str, int)`
-  - [ ] `isa/3 (list, err, int)`
-  - [ ] `isa/3 (list, list, int)`
-  - [ ] `isa/3 (list, map, int)`
-  - [ ] `isa/3 (map, int, int)`
-  - [ ] `isa/3 (map, float, int)`
-  - [ ] `isa/3 (map, obj, int)`
-  - [ ] `isa/3 (map, str, int)`
-  - [ ] `isa/3 (map, err, int)`
-  - [ ] `isa/3 (map, list, int)`
-  - [ ] `isa/3 (map, map, int)`
 - `listen` signature `2..3 (obj, any, map)`
   - [ ] `listen/2 (obj, int)`
   - [ ] `listen/2 (obj, float)`
@@ -7549,104 +7451,104 @@ still needs explicit human review.
 
 - signature: `2..3 (any, any, int)`
 - source: `objects.cc`
-- [ ] `isa/2 (int, int)`
-- [ ] `isa/2 (int, float)`
-- [ ] `isa/2 (int, obj)`
-- [ ] `isa/2 (int, str)`
-- [ ] `isa/2 (int, err)`
-- [ ] `isa/2 (int, list)`
-- [ ] `isa/2 (int, map)`
-- [ ] `isa/2 (float, int)`
-- [ ] `isa/2 (float, float)`
-- [ ] `isa/2 (float, obj)`
-- [ ] `isa/2 (float, str)`
-- [ ] `isa/2 (float, err)`
-- [ ] `isa/2 (float, list)`
-- [ ] `isa/2 (float, map)`
-- [ ] `isa/2 (obj, int)`
-- [ ] `isa/2 (obj, float)`
-- [x] `isa/2 (obj, obj)` covered by `builtins/miscellaneous.yaml`, `builtins/miscellaneous.yaml`, `builtins/miscellaneous.yaml` and 2 more
-- [ ] `isa/2 (obj, str)`
-- [ ] `isa/2 (obj, err)`
-- [ ] `isa/2 (obj, list)`
-- [ ] `isa/2 (obj, map)`
-- [ ] `isa/2 (str, int)`
-- [ ] `isa/2 (str, float)`
-- [ ] `isa/2 (str, obj)`
-- [ ] `isa/2 (str, str)`
-- [ ] `isa/2 (str, err)`
-- [ ] `isa/2 (str, list)`
-- [ ] `isa/2 (str, map)`
-- [ ] `isa/2 (err, int)`
-- [ ] `isa/2 (err, float)`
-- [ ] `isa/2 (err, obj)`
-- [ ] `isa/2 (err, str)`
-- [ ] `isa/2 (err, err)`
-- [ ] `isa/2 (err, list)`
-- [ ] `isa/2 (err, map)`
-- [ ] `isa/2 (list, int)`
-- [ ] `isa/2 (list, float)`
-- [ ] `isa/2 (list, obj)`
-- [ ] `isa/2 (list, str)`
-- [ ] `isa/2 (list, err)`
-- [ ] `isa/2 (list, list)`
-- [ ] `isa/2 (list, map)`
-- [ ] `isa/2 (map, int)`
-- [ ] `isa/2 (map, float)`
-- [ ] `isa/2 (map, obj)`
-- [ ] `isa/2 (map, str)`
-- [ ] `isa/2 (map, err)`
-- [ ] `isa/2 (map, list)`
-- [ ] `isa/2 (map, map)`
-- [ ] `isa/3 (int, int, int)`
-- [ ] `isa/3 (int, float, int)`
-- [ ] `isa/3 (int, obj, int)`
-- [ ] `isa/3 (int, str, int)`
-- [ ] `isa/3 (int, err, int)`
-- [ ] `isa/3 (int, list, int)`
-- [ ] `isa/3 (int, map, int)`
-- [ ] `isa/3 (float, int, int)`
-- [ ] `isa/3 (float, float, int)`
-- [ ] `isa/3 (float, obj, int)`
-- [ ] `isa/3 (float, str, int)`
-- [ ] `isa/3 (float, err, int)`
-- [ ] `isa/3 (float, list, int)`
-- [ ] `isa/3 (float, map, int)`
-- [ ] `isa/3 (obj, int, int)`
-- [ ] `isa/3 (obj, float, int)`
-- [ ] `isa/3 (obj, obj, int)`
-- [ ] `isa/3 (obj, str, int)`
-- [ ] `isa/3 (obj, err, int)`
-- [ ] `isa/3 (obj, list, int)`
-- [ ] `isa/3 (obj, map, int)`
-- [ ] `isa/3 (str, int, int)`
-- [ ] `isa/3 (str, float, int)`
-- [ ] `isa/3 (str, obj, int)`
-- [ ] `isa/3 (str, str, int)`
-- [ ] `isa/3 (str, err, int)`
-- [ ] `isa/3 (str, list, int)`
-- [ ] `isa/3 (str, map, int)`
-- [ ] `isa/3 (err, int, int)`
-- [ ] `isa/3 (err, float, int)`
-- [ ] `isa/3 (err, obj, int)`
-- [ ] `isa/3 (err, str, int)`
-- [ ] `isa/3 (err, err, int)`
-- [ ] `isa/3 (err, list, int)`
-- [ ] `isa/3 (err, map, int)`
-- [ ] `isa/3 (list, int, int)`
-- [ ] `isa/3 (list, float, int)`
-- [ ] `isa/3 (list, obj, int)`
-- [ ] `isa/3 (list, str, int)`
-- [ ] `isa/3 (list, err, int)`
-- [ ] `isa/3 (list, list, int)`
-- [ ] `isa/3 (list, map, int)`
-- [ ] `isa/3 (map, int, int)`
-- [ ] `isa/3 (map, float, int)`
-- [ ] `isa/3 (map, obj, int)`
-- [ ] `isa/3 (map, str, int)`
-- [ ] `isa/3 (map, err, int)`
-- [ ] `isa/3 (map, list, int)`
-- [ ] `isa/3 (map, map, int)`
+- [x] `isa/2 (int, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (int, float)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (int, obj)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (int, str)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (int, err)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (int, list)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (int, map)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (float, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (float, float)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (float, obj)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (float, str)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (float, err)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (float, list)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (float, map)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (obj, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (obj, float)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (obj, obj)` covered by `builtins/isa_call_shapes.yaml`, `builtins/miscellaneous.yaml`, `builtins/miscellaneous.yaml` and 3 more
+- [x] `isa/2 (obj, str)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (obj, err)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (obj, list)` covered by `builtins/isa_call_shapes.yaml`, `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (obj, map)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (str, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (str, float)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (str, obj)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (str, str)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (str, err)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (str, list)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (str, map)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (err, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (err, float)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (err, obj)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (err, str)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (err, err)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (err, list)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (err, map)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (list, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (list, float)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (list, obj)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (list, str)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (list, err)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (list, list)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (list, map)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (map, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (map, float)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (map, obj)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (map, str)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (map, err)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (map, list)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/2 (map, map)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (int, int, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (int, float, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (int, obj, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (int, str, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (int, err, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (int, list, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (int, map, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (float, int, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (float, float, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (float, obj, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (float, str, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (float, err, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (float, list, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (float, map, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (obj, int, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (obj, float, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (obj, obj, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (obj, str, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (obj, err, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (obj, list, int)` covered by `builtins/isa_call_shapes.yaml`, `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (obj, map, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (str, int, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (str, float, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (str, obj, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (str, str, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (str, err, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (str, list, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (str, map, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (err, int, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (err, float, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (err, obj, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (err, str, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (err, err, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (err, list, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (err, map, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (list, int, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (list, float, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (list, obj, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (list, str, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (list, err, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (list, list, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (list, map, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (map, int, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (map, float, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (map, obj, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (map, str, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (map, err, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (map, list, int)` covered by `builtins/isa_call_shapes.yaml`
+- [x] `isa/3 (map, map, int)` covered by `builtins/isa_call_shapes.yaml`
 - [?] `isa/2` unknown argument types covered by `builtins/miscellaneous.yaml`, `builtins/miscellaneous.yaml`, `builtins/miscellaneous.yaml` and 6 more
 - [?] `isa/3` unknown argument types covered by `builtins/miscellaneous.yaml`, `builtins/miscellaneous.yaml`, `builtins/miscellaneous.yaml` and 1 more
 

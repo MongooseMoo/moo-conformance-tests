@@ -1,0 +1,109 @@
+name: isa_call_shapes
+description: Product-table TYPE_ANY coverage for isa().
+
+requires:
+  builtins:
+    - isa
+
+tests:
+  - name: isa_two_args_rejects_non_object_subject_{subject_kind}_{parent_kind}
+    permission: wizard
+    table:
+      product:
+        - columns: [subject_kind, subject_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+        - columns: [parent_kind, parent_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [list, "{#0}"]
+            - [map, "[1 -> 2]"]
+    code: "isa({subject_expr}, {parent_expr})"
+    expect:
+      error: E_TYPE
+
+  - name: isa_two_args_rejects_bad_parent_{parent_kind}
+    permission: wizard
+    table:
+      columns: [parent_kind, parent_expr]
+      rows:
+        - [int, "1"]
+        - [float, "1.5"]
+        - [str, '"x"']
+        - [err, "E_ARGS"]
+        - [map, "[1 -> 2]"]
+    code: "isa(#0, {parent_expr})"
+    expect:
+      error: E_TYPE
+
+  - name: isa_two_args_accepts_object_parent_{parent_kind}
+    permission: wizard
+    table:
+      columns: [parent_kind, parent_expr]
+      rows:
+        - [obj, "#0"]
+        - [list_empty, "{}"]
+        - [list, "{#0}"]
+    code: "isa(#0, {parent_expr})"
+    expect:
+      type: int
+
+  - name: isa_three_args_rejects_non_object_subject_{subject_kind}_{parent_kind}
+    permission: wizard
+    table:
+      product:
+        - columns: [subject_kind, subject_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+        - columns: [parent_kind, parent_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [list, "{#0}"]
+            - [map, "[1 -> 2]"]
+    code: "isa({subject_expr}, {parent_expr}, 1)"
+    expect:
+      error: E_TYPE
+
+  - name: isa_three_args_rejects_bad_parent_{parent_kind}
+    permission: wizard
+    table:
+      columns: [parent_kind, parent_expr]
+      rows:
+        - [int, "1"]
+        - [float, "1.5"]
+        - [str, '"x"']
+        - [err, "E_ARGS"]
+        - [map, "[1 -> 2]"]
+    code: "isa(#0, {parent_expr}, 1)"
+    expect:
+      error: E_TYPE
+
+  - name: isa_three_args_accepts_object_parent_{parent_kind}
+    permission: wizard
+    table:
+      columns: [parent_kind, parent_expr]
+      rows:
+        - [obj, "#0"]
+        - [list_empty, "{}"]
+        - [list, "{#0}"]
+    code: "isa(#0, {parent_expr}, 1)"
+    expect:
+      type: obj

@@ -1,0 +1,21 @@
+name: properties_call_shapes
+description: Table-driven TYPE_ANY coverage for properties().
+
+requires:
+  builtins:
+    - properties
+
+tests:
+  - name: properties_arg_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [int, "properties(1)"]
+        - [float, "properties(1.5)"]
+        - [str, 'properties("x")']
+        - [err, "properties(E_ARGS)"]
+        - [map, "properties([1 -> 2])"]
+    code: "{expr}"
+    expect:
+      error: E_TYPE

@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T05:51:46Z`
+- generated_at: `2026-06-28T05:53:07Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `243`
 - required_call_shapes: `7721`
-- covered_call_shapes: `531`
-- missing_call_shapes: `7190`
+- covered_call_shapes: `536`
+- missing_call_shapes: `7185`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3808,12 +3808,6 @@ still needs explicit human review.
   - [ ] `pass/1 (err)`
   - [ ] `pass/1 (list)`
   - [ ] `pass/1 (map)`
-- `properties` signature `1..1 (any)`
-  - [ ] `properties/1 (int)`
-  - [ ] `properties/1 (float)`
-  - [ ] `properties/1 (str)`
-  - [ ] `properties/1 (err)`
-  - [ ] `properties/1 (map)`
 - `property_info` signature `2..2 (any, str)`
   - [ ] `property_info/2 (int, str)`
   - [ ] `property_info/2 (float, str)`
@@ -12150,13 +12144,13 @@ still needs explicit human review.
 
 - signature: `1..1 (any)`
 - source: `property.cc`
-- [ ] `properties/1 (int)`
-- [ ] `properties/1 (float)`
+- [x] `properties/1 (int)` covered by `builtins/properties_call_shapes.yaml`
+- [x] `properties/1 (float)` covered by `builtins/properties_call_shapes.yaml`
 - [x] `properties/1 (obj)` covered by `builtins/properties.yaml`, `builtins/properties.yaml`
-- [ ] `properties/1 (str)`
-- [ ] `properties/1 (err)`
+- [x] `properties/1 (str)` covered by `builtins/properties_call_shapes.yaml`
+- [x] `properties/1 (err)` covered by `builtins/properties_call_shapes.yaml`
 - [x] `properties/1 (list)` covered by `builtins/properties.yaml`, `builtins/properties.yaml`, `builtins/properties.yaml` and 5 more
-- [ ] `properties/1 (map)`
+- [x] `properties/1 (map)` covered by `builtins/properties_call_shapes.yaml`
 - [?] `properties/1` unknown argument types covered by `basic/property.yaml`, `basic/property.yaml`, `language/anonymous.yaml` and 3 more
 
 ### `property_info`

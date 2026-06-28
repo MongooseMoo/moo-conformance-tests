@@ -1,0 +1,27 @@
+name: clear_property_call_shapes
+description: Table-driven TYPE_ANY coverage for clear_property().
+
+requires:
+  builtins:
+    - clear_property
+
+tests:
+  - name: clear_property_arg_obj
+    permission: programmer
+    code: 'clear_property(#0, "nothing")'
+    expect:
+      error: E_PERM
+
+  - name: clear_property_arg_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [int, 'clear_property(1, "name")']
+        - [float, 'clear_property(1.5, "name")']
+        - [str, 'clear_property("x", "name")']
+        - [err, 'clear_property(E_ARGS, "name")']
+        - [map, 'clear_property([1 -> 2], "name")']
+    code: "{expr}"
+    expect:
+      error: E_TYPE

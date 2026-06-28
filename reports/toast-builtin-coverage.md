@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T06:47:40Z`
+- generated_at: `2026-06-28T06:51:46Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `611`
-- missing_call_shapes: `6990`
+- covered_call_shapes: `623`
+- missing_call_shapes: `6978`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3716,19 +3716,6 @@ still needs explicit human review.
   - [ ] `resume/2 (int, err)`
   - [ ] `resume/2 (int, list)`
   - [ ] `resume/2 (int, map)`
-- `rindex` signature `2..4 (str, str, any, int)`
-  - [ ] `rindex/3 (str, str, float)`
-  - [ ] `rindex/3 (str, str, obj)`
-  - [ ] `rindex/3 (str, str, str)`
-  - [ ] `rindex/3 (str, str, err)`
-  - [ ] `rindex/3 (str, str, list)`
-  - [ ] `rindex/3 (str, str, map)`
-  - [ ] `rindex/4 (str, str, float, int)`
-  - [ ] `rindex/4 (str, str, obj, int)`
-  - [ ] `rindex/4 (str, str, str, int)`
-  - [ ] `rindex/4 (str, str, err, int)`
-  - [ ] `rindex/4 (str, str, list, int)`
-  - [ ] `rindex/4 (str, str, map, int)`
 - `server_log` signature `1..2 (str, any)`
   - [ ] `server_log/2 (str, float)`
   - [ ] `server_log/2 (str, obj)`
@@ -12019,19 +12006,19 @@ still needs explicit human review.
 - source: `list.cc`
 - [x] `rindex/2 (str, str)` covered by `basic/string.yaml`, `basic/string.yaml`, `basic/string.yaml` and 2 more
 - [x] `rindex/3 (str, str, int)` covered by `basic/string.yaml`, `builtins/string_operations.yaml`, `builtins/string_operations.yaml`
-- [ ] `rindex/3 (str, str, float)`
-- [ ] `rindex/3 (str, str, obj)`
-- [ ] `rindex/3 (str, str, str)`
-- [ ] `rindex/3 (str, str, err)`
-- [ ] `rindex/3 (str, str, list)`
-- [ ] `rindex/3 (str, str, map)`
+- [x] `rindex/3 (str, str, float)` covered by `builtins/rindex_call_shapes.yaml`
+- [x] `rindex/3 (str, str, obj)` covered by `builtins/rindex_call_shapes.yaml`
+- [x] `rindex/3 (str, str, str)` covered by `builtins/rindex_call_shapes.yaml`
+- [x] `rindex/3 (str, str, err)` covered by `builtins/rindex_call_shapes.yaml`
+- [x] `rindex/3 (str, str, list)` covered by `builtins/rindex_call_shapes.yaml`
+- [x] `rindex/3 (str, str, map)` covered by `builtins/rindex_call_shapes.yaml`
 - [x] `rindex/4 (str, str, int, int)` covered by `builtins/string_operations.yaml`, `builtins/string_operations.yaml`, `builtins/string_operations.yaml` and 2 more
-- [ ] `rindex/4 (str, str, float, int)`
-- [ ] `rindex/4 (str, str, obj, int)`
-- [ ] `rindex/4 (str, str, str, int)`
-- [ ] `rindex/4 (str, str, err, int)`
-- [ ] `rindex/4 (str, str, list, int)`
-- [ ] `rindex/4 (str, str, map, int)`
+- [x] `rindex/4 (str, str, float, int)` covered by `builtins/rindex_call_shapes.yaml`
+- [x] `rindex/4 (str, str, obj, int)` covered by `builtins/rindex_call_shapes.yaml`
+- [x] `rindex/4 (str, str, str, int)` covered by `builtins/rindex_call_shapes.yaml`
+- [x] `rindex/4 (str, str, err, int)` covered by `builtins/rindex_call_shapes.yaml`
+- [x] `rindex/4 (str, str, list, int)` covered by `builtins/rindex_call_shapes.yaml`
+- [x] `rindex/4 (str, str, map, int)` covered by `builtins/rindex_call_shapes.yaml`
 
 ### `rmatch`
 

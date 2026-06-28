@@ -1,0 +1,48 @@
+name: notify_call_shapes
+description: TYPE_ANY optional flag call-shape coverage for notify().
+
+requires:
+  builtins:
+    - notify
+
+tests:
+  - name: notify_three_args_accepts_flag_{flag_kind}
+    permission: wizard
+    table:
+      columns: [flag_kind, flag_expr]
+      rows:
+        - [float, "1.5"]
+        - [obj, "#0"]
+        - [str, '"x"']
+        - [err, "E_ARGS"]
+        - [list, "{}"]
+        - [map, "[1 -> 2]"]
+    code: 'notify(#0, "shape", {flag_expr})'
+    expect:
+      value: 1
+
+  - name: notify_four_args_accepts_flags_{flush_kind}_{newline_kind}
+    permission: wizard
+    table:
+      product:
+        - columns: [flush_kind, flush_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+        - columns: [newline_kind, newline_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+    code: 'notify(#0, "shape", {flush_expr}, {newline_expr})'
+    expect:
+      value: 1

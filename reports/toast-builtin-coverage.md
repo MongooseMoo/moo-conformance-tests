@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T09:32:12Z`
+- generated_at: `2026-06-28T09:34:10Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `4275`
-- missing_call_shapes: `3326`
+- covered_call_shapes: `4329`
+- missing_call_shapes: `3272`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,61 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `notify` signature `2..4 (obj, str, any, any)`
-  - [ ] `notify/3 (obj, str, float)`
-  - [ ] `notify/3 (obj, str, obj)`
-  - [ ] `notify/3 (obj, str, str)`
-  - [ ] `notify/3 (obj, str, err)`
-  - [ ] `notify/3 (obj, str, list)`
-  - [ ] `notify/3 (obj, str, map)`
-  - [ ] `notify/4 (obj, str, int, float)`
-  - [ ] `notify/4 (obj, str, int, obj)`
-  - [ ] `notify/4 (obj, str, int, str)`
-  - [ ] `notify/4 (obj, str, int, err)`
-  - [ ] `notify/4 (obj, str, int, list)`
-  - [ ] `notify/4 (obj, str, int, map)`
-  - [ ] `notify/4 (obj, str, float, int)`
-  - [ ] `notify/4 (obj, str, float, float)`
-  - [ ] `notify/4 (obj, str, float, obj)`
-  - [ ] `notify/4 (obj, str, float, str)`
-  - [ ] `notify/4 (obj, str, float, err)`
-  - [ ] `notify/4 (obj, str, float, list)`
-  - [ ] `notify/4 (obj, str, float, map)`
-  - [ ] `notify/4 (obj, str, obj, int)`
-  - [ ] `notify/4 (obj, str, obj, float)`
-  - [ ] `notify/4 (obj, str, obj, obj)`
-  - [ ] `notify/4 (obj, str, obj, str)`
-  - [ ] `notify/4 (obj, str, obj, err)`
-  - [ ] `notify/4 (obj, str, obj, list)`
-  - [ ] `notify/4 (obj, str, obj, map)`
-  - [ ] `notify/4 (obj, str, str, int)`
-  - [ ] `notify/4 (obj, str, str, float)`
-  - [ ] `notify/4 (obj, str, str, obj)`
-  - [ ] `notify/4 (obj, str, str, str)`
-  - [ ] `notify/4 (obj, str, str, err)`
-  - [ ] `notify/4 (obj, str, str, list)`
-  - [ ] `notify/4 (obj, str, str, map)`
-  - [ ] `notify/4 (obj, str, err, int)`
-  - [ ] `notify/4 (obj, str, err, float)`
-  - [ ] `notify/4 (obj, str, err, obj)`
-  - [ ] `notify/4 (obj, str, err, str)`
-  - [ ] `notify/4 (obj, str, err, err)`
-  - [ ] `notify/4 (obj, str, err, list)`
-  - [ ] `notify/4 (obj, str, err, map)`
-  - [ ] `notify/4 (obj, str, list, int)`
-  - [ ] `notify/4 (obj, str, list, float)`
-  - [ ] `notify/4 (obj, str, list, obj)`
-  - [ ] `notify/4 (obj, str, list, str)`
-  - [ ] `notify/4 (obj, str, list, err)`
-  - [ ] `notify/4 (obj, str, list, list)`
-  - [ ] `notify/4 (obj, str, list, map)`
-  - [ ] `notify/4 (obj, str, map, int)`
-  - [ ] `notify/4 (obj, str, map, float)`
-  - [ ] `notify/4 (obj, str, map, obj)`
-  - [ ] `notify/4 (obj, str, map, str)`
-  - [ ] `notify/4 (obj, str, map, err)`
-  - [ ] `notify/4 (obj, str, map, list)`
-  - [ ] `notify/4 (obj, str, map, map)`
 - `occupants` signature `1..4 (list, any, int, int)`
   - [ ] `occupants/2 (list, int)`
   - [ ] `occupants/2 (list, float)`
@@ -7833,61 +7778,61 @@ still needs explicit human review.
 - source: `server.cc`
 - [x] `notify/2 (obj, str)` covered by `builtins/server_admin.yaml`, `builtins/server_admin.yaml`
 - [x] `notify/3 (obj, str, int)` covered by `builtins/server_admin.yaml`
-- [ ] `notify/3 (obj, str, float)`
-- [ ] `notify/3 (obj, str, obj)`
-- [ ] `notify/3 (obj, str, str)`
-- [ ] `notify/3 (obj, str, err)`
-- [ ] `notify/3 (obj, str, list)`
-- [ ] `notify/3 (obj, str, map)`
-- [x] `notify/4 (obj, str, int, int)` covered by `builtins/server_admin.yaml`
-- [ ] `notify/4 (obj, str, int, float)`
-- [ ] `notify/4 (obj, str, int, obj)`
-- [ ] `notify/4 (obj, str, int, str)`
-- [ ] `notify/4 (obj, str, int, err)`
-- [ ] `notify/4 (obj, str, int, list)`
-- [ ] `notify/4 (obj, str, int, map)`
-- [ ] `notify/4 (obj, str, float, int)`
-- [ ] `notify/4 (obj, str, float, float)`
-- [ ] `notify/4 (obj, str, float, obj)`
-- [ ] `notify/4 (obj, str, float, str)`
-- [ ] `notify/4 (obj, str, float, err)`
-- [ ] `notify/4 (obj, str, float, list)`
-- [ ] `notify/4 (obj, str, float, map)`
-- [ ] `notify/4 (obj, str, obj, int)`
-- [ ] `notify/4 (obj, str, obj, float)`
-- [ ] `notify/4 (obj, str, obj, obj)`
-- [ ] `notify/4 (obj, str, obj, str)`
-- [ ] `notify/4 (obj, str, obj, err)`
-- [ ] `notify/4 (obj, str, obj, list)`
-- [ ] `notify/4 (obj, str, obj, map)`
-- [ ] `notify/4 (obj, str, str, int)`
-- [ ] `notify/4 (obj, str, str, float)`
-- [ ] `notify/4 (obj, str, str, obj)`
-- [ ] `notify/4 (obj, str, str, str)`
-- [ ] `notify/4 (obj, str, str, err)`
-- [ ] `notify/4 (obj, str, str, list)`
-- [ ] `notify/4 (obj, str, str, map)`
-- [ ] `notify/4 (obj, str, err, int)`
-- [ ] `notify/4 (obj, str, err, float)`
-- [ ] `notify/4 (obj, str, err, obj)`
-- [ ] `notify/4 (obj, str, err, str)`
-- [ ] `notify/4 (obj, str, err, err)`
-- [ ] `notify/4 (obj, str, err, list)`
-- [ ] `notify/4 (obj, str, err, map)`
-- [ ] `notify/4 (obj, str, list, int)`
-- [ ] `notify/4 (obj, str, list, float)`
-- [ ] `notify/4 (obj, str, list, obj)`
-- [ ] `notify/4 (obj, str, list, str)`
-- [ ] `notify/4 (obj, str, list, err)`
-- [ ] `notify/4 (obj, str, list, list)`
-- [ ] `notify/4 (obj, str, list, map)`
-- [ ] `notify/4 (obj, str, map, int)`
-- [ ] `notify/4 (obj, str, map, float)`
-- [ ] `notify/4 (obj, str, map, obj)`
-- [ ] `notify/4 (obj, str, map, str)`
-- [ ] `notify/4 (obj, str, map, err)`
-- [ ] `notify/4 (obj, str, map, list)`
-- [ ] `notify/4 (obj, str, map, map)`
+- [x] `notify/3 (obj, str, float)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/3 (obj, str, obj)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/3 (obj, str, str)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/3 (obj, str, err)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/3 (obj, str, list)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/3 (obj, str, map)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, int, int)` covered by `builtins/notify_call_shapes.yaml`, `builtins/server_admin.yaml`
+- [x] `notify/4 (obj, str, int, float)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, int, obj)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, int, str)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, int, err)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, int, list)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, int, map)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, float, int)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, float, float)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, float, obj)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, float, str)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, float, err)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, float, list)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, float, map)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, obj, int)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, obj, float)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, obj, obj)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, obj, str)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, obj, err)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, obj, list)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, obj, map)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, str, int)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, str, float)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, str, obj)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, str, str)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, str, err)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, str, list)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, str, map)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, err, int)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, err, float)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, err, obj)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, err, str)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, err, err)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, err, list)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, err, map)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, list, int)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, list, float)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, list, obj)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, list, str)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, list, err)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, list, list)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, list, map)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, map, int)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, map, float)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, map, obj)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, map, str)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, map, err)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, map, list)` covered by `builtins/notify_call_shapes.yaml`
+- [x] `notify/4 (obj, str, map, map)` covered by `builtins/notify_call_shapes.yaml`
 - [?] `notify/1` unknown argument types covered by `builtins/server_admin.yaml`, `builtins/server_admin.yaml`
 - [?] `notify/2` unknown argument types covered by `builtins/server_admin.yaml`
 

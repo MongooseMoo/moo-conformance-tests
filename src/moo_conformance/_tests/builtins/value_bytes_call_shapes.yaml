@@ -1,0 +1,21 @@
+name: value_bytes_call_shapes
+description: Table-driven TYPE_ANY coverage for value_bytes().
+
+requires:
+  builtins:
+    - value_bytes
+
+tests:
+  - name: value_bytes_arg_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [float, "1.5"]
+        - [obj, "#0"]
+        - [err, "E_ARGS"]
+        - [map, "[1 -> 2]"]
+    code: "value_bytes({expr}) > 0"
+    expect:
+      type: int
+      value: 1

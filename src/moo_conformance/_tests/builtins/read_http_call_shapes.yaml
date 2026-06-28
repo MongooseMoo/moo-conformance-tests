@@ -1,0 +1,13 @@
+name: read_http_call_shapes
+description: Two-argument object call-shape coverage for read_http().
+
+requires:
+  builtins:
+    - read_http
+
+tests:
+  - name: read_http_two_args_rejects_invalid_mode_before_suspend
+    permission: wizard
+    code: 'read_http("x", #0)'
+    expect:
+      error: E_INVARG

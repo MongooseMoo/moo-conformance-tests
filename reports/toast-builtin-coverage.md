@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T09:50:05Z`
+- generated_at: `2026-06-28T09:51:37Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `4426`
-- missing_call_shapes: `3175`
+- covered_call_shapes: `4427`
+- missing_call_shapes: `3174`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,8 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `read_http` signature `1..2 (str, obj)`
-  - [ ] `read_http/2 (str, obj)`
 - `recreate` signature `2..3 (obj, obj, obj)`
   - [ ] `recreate/2 (obj, obj)`
   - [ ] `recreate/3 (obj, obj, obj)`
@@ -8026,7 +8024,7 @@ still needs explicit human review.
 - signature: `1..2 (str, obj)`
 - source: `execute.cc`
 - [x] `read_http/1 (str)` covered by `builtins/http.yaml`, `builtins/http.yaml`, `builtins/http.yaml` and 17 more
-- [ ] `read_http/2 (str, obj)`
+- [x] `read_http/2 (str, obj)` covered by `builtins/read_http_call_shapes.yaml`
 - [?] `read_http/2` unknown argument types covered by `builtins/http.yaml`, `builtins/http.yaml`, `builtins/http.yaml` and 2 more
 
 ### `recreate`

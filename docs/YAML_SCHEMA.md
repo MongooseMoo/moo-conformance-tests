@@ -115,6 +115,38 @@ expect:
     - "World"
 ```
 
+## Table-Driven Tests
+
+Use `table` to expand one test template into multiple concrete tests. This is
+intended for builtin arity and type-permutation matrices.
+
+```yaml
+tests:
+  - name: typeof_{kind}
+    table:
+      columns: [kind, expr, expected]
+      rows:
+        - [int, "typeof(1)", 0]
+        - [str, 'typeof("x")', 2]
+    code: "{expr}"
+    expect:
+      value: "{expected}"
+```
+
+Rows may also be mappings:
+
+```yaml
+table:
+  rows:
+    - {case: int, expr: "typeof(1)", expected: 0}
+    - {case: str, expr: 'typeof("x")', expected: 2}
+```
+
+A scalar that is exactly `{column}` is replaced with the row value without
+changing its type, so `value: "{expected}"` can become an integer, float, list,
+or map. Embedded placeholders are string substitutions, so `name: typeof_{kind}`
+becomes `typeof_int`.
+
 ## Skip Conditions
 
 ```yaml

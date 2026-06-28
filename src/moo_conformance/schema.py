@@ -61,6 +61,25 @@ tests:
           error: E_QUOTA
 ```
 
+Table-Driven Example:
+---------------------
+```yaml
+tests:
+  - name: typeof_{kind}
+    table:
+      columns: [kind, expr, expected]
+      rows:
+        - [int, "typeof(1)", 0]
+        - [str, 'typeof("x")', 2]
+    code: "{expr}"
+    expect:
+      value: "{expected}"
+```
+
+Table rows may also be mappings. A scalar that is exactly `{name}` is replaced
+with the row value without changing its type; embedded placeholders are replaced
+as strings.
+
 STEP FIELDS
 ===========
 
@@ -107,6 +126,7 @@ skip_if: str
     - "missing builtin.foo" - Skip if builtin 'foo' is not implemented
 """
 
+from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -462,8 +482,9 @@ def validate_test_suite(data: dict) -> MooTestSuite:
     # Build test cases
     tests = []
     for test_data in data.get('tests', []):
-        test = _parse_test_case(test_data)
-        tests.append(test)
+        for expanded_test_data in _expand_table_test(test_data):
+            test = _parse_test_case(expanded_test_data)
+            tests.append(test)
 
     # Parse suite-level capability dependencies
     provides = data.get('provides')
@@ -530,6 +551,67 @@ def _parse_expectation(data: dict) -> Expectation:
         notifications=data.get('notifications'),
         output=output,
     )
+
+
+def _expand_table_test(data: dict) -> list[dict]:
+    """Expand a table-driven test template into concrete test dictionaries."""
+    table = data.get('table')
+    if table is None:
+        return [data]
+    if not isinstance(table, dict):
+        raise ValueError("Test table must be a mapping with rows")
+
+    rows = table.get('rows')
+    if not isinstance(rows, list):
+        raise ValueError("Test table must include a rows list")
+
+    columns = table.get('columns')
+    expanded: list[dict] = []
+    for index, row in enumerate(rows):
+        variables = _table_row_variables(row, columns, index)
+        template = deepcopy({key: value for key, value in data.items() if key != 'table'})
+        expanded.append(_substitute_table_values(template, variables))
+    return expanded
+
+
+def _table_row_variables(row: Any, columns: Any, index: int) -> dict[str, Any]:
+    if isinstance(row, dict):
+        variables = dict(row)
+    else:
+        if not isinstance(columns, list) or not all(isinstance(item, str) for item in columns):
+            raise ValueError("List table rows require string columns")
+        if not isinstance(row, list):
+            raise ValueError("Table row must be a mapping or list")
+        if len(row) != len(columns):
+            raise ValueError("Table row length must match columns length")
+        variables = dict(zip(columns, row))
+    variables.setdefault("index", index)
+    return variables
+
+
+def _substitute_table_values(value: Any, variables: dict[str, Any]) -> Any:
+    if isinstance(value, str):
+        return _substitute_table_string(value, variables)
+    if isinstance(value, list):
+        return [_substitute_table_values(item, variables) for item in value]
+    if isinstance(value, dict):
+        return {
+            key: _substitute_table_values(item, variables)
+            for key, item in value.items()
+        }
+    return value
+
+
+def _substitute_table_string(value: str, variables: dict[str, Any]) -> Any:
+    if value.startswith("{") and value.endswith("}") and value.count("{") == 1:
+        key = value[1:-1]
+        if key in variables:
+            return variables[key]
+
+    result = value
+    for key, replacement in variables.items():
+        result = result.replace("{" + key + "}", str(replacement))
+    return result
 
 
 def _parse_test_step(data: dict) -> TestStep:

@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T06:11:18Z`
+- generated_at: `2026-06-28T06:15:20Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
-- builtins: `243`
-- required_call_shapes: `7721`
-- covered_call_shapes: `566`
-- missing_call_shapes: `7155`
+- builtins: `229`
+- required_call_shapes: `7601`
+- covered_call_shapes: `544`
+- missing_call_shapes: `7057`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -132,23 +132,9 @@ still needs explicit human review.
   - [ ] `ancestors/2 (map, err)`
   - [ ] `ancestors/2 (map, list)`
   - [ ] `ancestors/2 (map, map)`
-- `anon` signature `0..2 (list, any)`
-  - [ ] `anon/0 ()`
-  - [ ] `anon/1 (list)`
-  - [ ] `anon/2 (list, int)`
-  - [ ] `anon/2 (list, float)`
-  - [ ] `anon/2 (list, obj)`
-  - [ ] `anon/2 (list, str)`
-  - [ ] `anon/2 (list, err)`
-  - [ ] `anon/2 (list, list)`
-  - [ ] `anon/2 (list, map)`
 - `argon2` signature `2..5 (str, str, int, int, int)`
   - [ ] `argon2/3 (str, str, int)`
   - [ ] `argon2/4 (str, str, int, int)`
-- `background_test` signature `0..2 (str, int)`
-  - [ ] `background_test/0 ()`
-  - [ ] `background_test/1 (str)`
-  - [ ] `background_test/2 (str, int)`
 - `binary_hmac` signature `2..4 (str, str, str, any)`
   - [ ] `binary_hmac/4 (str, str, str, float)`
   - [ ] `binary_hmac/4 (str, str, str, obj)`
@@ -161,21 +147,6 @@ still needs explicit human review.
   - [ ] `call_function/2 (str, obj)`
   - [ ] `call_function/2 (str, err)`
   - [ ] `call_function/2 (str, map)`
-- `chparent` signature `2..2 (any, obj)`
-  - [ ] `chparent/2 (int, obj)`
-  - [ ] `chparent/2 (float, obj)`
-  - [ ] `chparent/2 (obj, obj)`
-  - [ ] `chparent/2 (str, obj)`
-  - [ ] `chparent/2 (err, obj)`
-  - [ ] `chparent/2 (list, obj)`
-  - [ ] `chparent/2 (map, obj)`
-- `chparents` signature `2..2 (any, list)`
-  - [ ] `chparents/2 (int, list)`
-  - [ ] `chparents/2 (float, list)`
-  - [ ] `chparents/2 (obj, list)`
-  - [ ] `chparents/2 (str, list)`
-  - [ ] `chparents/2 (err, list)`
-  - [ ] `chparents/2 (map, list)`
 - `chr` signature `0..* ()`
   - [ ] `chr/1 (float)`
   - [ ] `chr/1 (obj)`
@@ -2990,21 +2961,6 @@ still needs explicit human review.
   - [ ] `create/4 (map, map, map, map)`
 - `crypt` signature `1..2 (str, str)`
   - [ ] `crypt/1 (str)`
-- `curl` signature `1..3 (str, any, int)`
-  - [ ] `curl/2 (str, int)`
-  - [ ] `curl/2 (str, float)`
-  - [ ] `curl/2 (str, obj)`
-  - [ ] `curl/2 (str, str)`
-  - [ ] `curl/2 (str, err)`
-  - [ ] `curl/2 (str, list)`
-  - [ ] `curl/2 (str, map)`
-  - [ ] `curl/3 (str, int, int)`
-  - [ ] `curl/3 (str, float, int)`
-  - [ ] `curl/3 (str, obj, int)`
-  - [ ] `curl/3 (str, str, int)`
-  - [ ] `curl/3 (str, err, int)`
-  - [ ] `curl/3 (str, list, int)`
-  - [ ] `curl/3 (str, map, int)`
 - `decode_base64` signature `1..2 (str, any)`
   - [ ] `decode_base64/2 (str, float)`
   - [ ] `decode_base64/2 (str, obj)`
@@ -3318,56 +3274,6 @@ still needs explicit human review.
   - [ ] `force_input/3 (obj, str, err)`
   - [ ] `force_input/3 (obj, str, list)`
   - [ ] `force_input/3 (obj, str, map)`
-- `generate_json` signature `1..3 (any, str, any)`
-  - [ ] `generate_json/3 (int, str, int)`
-  - [ ] `generate_json/3 (int, str, float)`
-  - [ ] `generate_json/3 (int, str, obj)`
-  - [ ] `generate_json/3 (int, str, str)`
-  - [ ] `generate_json/3 (int, str, err)`
-  - [ ] `generate_json/3 (int, str, list)`
-  - [ ] `generate_json/3 (int, str, map)`
-  - [ ] `generate_json/3 (float, str, int)`
-  - [ ] `generate_json/3 (float, str, float)`
-  - [ ] `generate_json/3 (float, str, obj)`
-  - [ ] `generate_json/3 (float, str, str)`
-  - [ ] `generate_json/3 (float, str, err)`
-  - [ ] `generate_json/3 (float, str, list)`
-  - [ ] `generate_json/3 (float, str, map)`
-  - [ ] `generate_json/3 (obj, str, int)`
-  - [ ] `generate_json/3 (obj, str, float)`
-  - [ ] `generate_json/3 (obj, str, obj)`
-  - [ ] `generate_json/3 (obj, str, str)`
-  - [ ] `generate_json/3 (obj, str, err)`
-  - [ ] `generate_json/3 (obj, str, list)`
-  - [ ] `generate_json/3 (obj, str, map)`
-  - [ ] `generate_json/3 (str, str, int)`
-  - [ ] `generate_json/3 (str, str, float)`
-  - [ ] `generate_json/3 (str, str, obj)`
-  - [ ] `generate_json/3 (str, str, str)`
-  - [ ] `generate_json/3 (str, str, err)`
-  - [ ] `generate_json/3 (str, str, list)`
-  - [ ] `generate_json/3 (str, str, map)`
-  - [ ] `generate_json/3 (err, str, int)`
-  - [ ] `generate_json/3 (err, str, float)`
-  - [ ] `generate_json/3 (err, str, obj)`
-  - [ ] `generate_json/3 (err, str, str)`
-  - [ ] `generate_json/3 (err, str, err)`
-  - [ ] `generate_json/3 (err, str, list)`
-  - [ ] `generate_json/3 (err, str, map)`
-  - [ ] `generate_json/3 (list, str, int)`
-  - [ ] `generate_json/3 (list, str, float)`
-  - [ ] `generate_json/3 (list, str, obj)`
-  - [ ] `generate_json/3 (list, str, str)`
-  - [ ] `generate_json/3 (list, str, err)`
-  - [ ] `generate_json/3 (list, str, list)`
-  - [ ] `generate_json/3 (list, str, map)`
-  - [ ] `generate_json/3 (map, str, int)`
-  - [ ] `generate_json/3 (map, str, float)`
-  - [ ] `generate_json/3 (map, str, obj)`
-  - [ ] `generate_json/3 (map, str, str)`
-  - [ ] `generate_json/3 (map, str, err)`
-  - [ ] `generate_json/3 (map, str, list)`
-  - [ ] `generate_json/3 (map, str, map)`
 - `index` signature `2..4 (str, str, any, int)`
   - [ ] `index/3 (str, str, float)`
   - [ ] `index/3 (str, str, obj)`
@@ -3633,8 +3539,6 @@ still needs explicit human review.
   - [ ] `locations/1 (obj)`
   - [ ] `locations/2 (obj, obj)`
   - [ ] `locations/3 (obj, obj, int)`
-- `malloc_stats` signature `0..0 ()`
-  - [ ] `malloc_stats/0 ()`
 - `mapdelete` signature `2..2 (map, any)`
   - [ ] `mapdelete/2 (map, int)`
   - [ ] `mapdelete/2 (map, float)`
@@ -3857,8 +3761,6 @@ still needs explicit human review.
   - [ ] `read/2 (obj, map)`
 - `read_http` signature `1..2 (str, obj)`
   - [ ] `read_http/2 (str, obj)`
-- `read_stdin` signature `0..0 ()`
-  - [ ] `read_stdin/0 ()`
 - `recreate` signature `2..3 (obj, obj, obj)`
   - [ ] `recreate/2 (obj, obj)`
   - [ ] `recreate/3 (obj, obj, obj)`
@@ -4093,15 +3995,6 @@ still needs explicit human review.
   - [ ] `setremove/2 (list, err)`
   - [ ] `setremove/2 (list, list)`
   - [ ] `setremove/2 (list, map)`
-- `shutdown` signature `0..2 (str, any)`
-  - [ ] `shutdown/2 (str, float)`
-  - [ ] `shutdown/2 (str, obj)`
-  - [ ] `shutdown/2 (str, str)`
-  - [ ] `shutdown/2 (str, err)`
-  - [ ] `shutdown/2 (str, list)`
-  - [ ] `shutdown/2 (str, map)`
-- `simplex_noise` signature `1..1 (list)`
-  - [ ] `simplex_noise/1 (list)`
 - `slice` signature `1..3 (list, any, any)`
   - [ ] `slice/1 (list)`
   - [ ] `slice/2 (list, int)`
@@ -4165,8 +4058,6 @@ still needs explicit human review.
   - [ ] `sort/2 (list, list)`
   - [ ] `sort/3 (list, list, int)`
   - [ ] `sort/4 (list, list, int, int)`
-- `spellcheck` signature `1..1 (str)`
-  - [ ] `spellcheck/1 (str)`
 - `sqlite_last_insert_row_id` signature `1..1 (int)`
   - [ ] `sqlite_last_insert_row_id/1 (int)`
 - `sqlite_limit` signature `3..3 (int, any, int)`
@@ -7453,20 +7344,6 @@ still needs explicit human review.
 - [?] `ancestors/1` unknown argument types covered by `builtins/objects.yaml`, `builtins/objects.yaml`, `builtins/objects.yaml` and 15 more
 - [?] `ancestors/2` unknown argument types covered by `builtins/objects.yaml`, `builtins/objects.yaml`, `server/stress_objects.yaml` and 3 more
 
-### `anon`
-
-- signature: `0..2 (list, any)`
-- source: `objects.cc`
-- [ ] `anon/0 ()`
-- [ ] `anon/1 (list)`
-- [ ] `anon/2 (list, int)`
-- [ ] `anon/2 (list, float)`
-- [ ] `anon/2 (list, obj)`
-- [ ] `anon/2 (list, str)`
-- [ ] `anon/2 (list, err)`
-- [ ] `anon/2 (list, list)`
-- [ ] `anon/2 (list, map)`
-
 ### `argon2`
 
 - signature: `2..5 (str, str, int, int, int)`
@@ -7512,14 +7389,6 @@ still needs explicit human review.
 - signature: `1..1 (float)`
 - source: `numbers.cc`
 - [x] `atanh/1 (float)` covered by `builtins/math.yaml`, `builtins/math.yaml`, `builtins/math.yaml` and 1 more
-
-### `background_test`
-
-- signature: `0..2 (str, int)`
-- source: `background.cc`
-- [ ] `background_test/0 ()`
-- [ ] `background_test/1 (str)`
-- [ ] `background_test/2 (str, int)`
 
 ### `binary_hash`
 
@@ -7620,34 +7489,6 @@ still needs explicit human review.
 - [x] `children/1 (list)` covered by `builtins/children_call_shapes.yaml`
 - [x] `children/1 (map)` covered by `builtins/children_call_shapes.yaml`
 - [?] `children/1` unknown argument types covered by `builtins/create.yaml`, `builtins/objects.yaml`, `builtins/objects.yaml` and 41 more
-
-### `chparent`
-
-- signature: `2..2 (any, obj)`
-- source: `objects.cc`
-- [ ] `chparent/2 (int, obj)`
-- [ ] `chparent/2 (float, obj)`
-- [ ] `chparent/2 (obj, obj)`
-- [ ] `chparent/2 (str, obj)`
-- [ ] `chparent/2 (err, obj)`
-- [ ] `chparent/2 (list, obj)`
-- [ ] `chparent/2 (map, obj)`
-- [?] `chparent/2` unknown argument types covered by `builtins/properties.yaml`, `builtins/properties.yaml`, `server/stress_objects.yaml` and 75 more
-- [?] `chparent/3` unknown argument types covered by `server/stress_objects.yaml`
-
-### `chparents`
-
-- signature: `2..2 (any, list)`
-- source: `objects.cc`
-- [ ] `chparents/2 (int, list)`
-- [ ] `chparents/2 (float, list)`
-- [ ] `chparents/2 (obj, list)`
-- [ ] `chparents/2 (str, list)`
-- [ ] `chparents/2 (err, list)`
-- [x] `chparents/2 (list, list)` covered by `builtins/properties.yaml`
-- [ ] `chparents/2 (map, list)`
-- [?] `chparents/1` unknown argument types covered by `server/stress_objects.yaml`
-- [?] `chparents/2` unknown argument types covered by `server/stress_objects.yaml`, `builtins/objects.yaml`, `builtins/objects.yaml` and 38 more
 
 ### `chr`
 
@@ -10549,7 +10390,7 @@ still needs explicit human review.
 - [ ] `create/4 (map, map, map, list)`
 - [ ] `create/4 (map, map, map, map)`
 - [?] `create/1` unknown argument types covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml` and 894 more
-- [?] `create/2` unknown argument types covered by `builtins/objects.yaml`, `builtins/objects.yaml`, `builtins/create.yaml` and 128 more
+- [?] `create/2` unknown argument types covered by `builtins/objects.yaml`, `builtins/objects.yaml`, `builtins/create.yaml` and 140 more
 - [?] `create/3` unknown argument types covered by `builtins/create.yaml`, `builtins/create.yaml`, `builtins/create.yaml` and 10 more
 - [?] `create/4` unknown argument types covered by `builtins/create.yaml`, `builtins/create.yaml`, `builtins/create.yaml` and 3 more
 
@@ -10567,26 +10408,6 @@ still needs explicit human review.
 - [x] `ctime/0 ()` covered by `audit/time_server_builtins_toast_oracle.yaml`, `builtins/math.yaml`, `builtins/math.yaml`
 - [x] `ctime/1 (int)` covered by `audit/time_server_builtins_toast_oracle.yaml`
 - [?] `ctime/1` unknown argument types covered by `builtins/math.yaml`
-
-### `curl`
-
-- signature: `1..3 (str, any, int)`
-- source: `curl.cc`
-- [x] `curl/1 (str)` covered by `builtins/url_curl.yaml`
-- [ ] `curl/2 (str, int)`
-- [ ] `curl/2 (str, float)`
-- [ ] `curl/2 (str, obj)`
-- [ ] `curl/2 (str, str)`
-- [ ] `curl/2 (str, err)`
-- [ ] `curl/2 (str, list)`
-- [ ] `curl/2 (str, map)`
-- [ ] `curl/3 (str, int, int)`
-- [ ] `curl/3 (str, float, int)`
-- [ ] `curl/3 (str, obj, int)`
-- [ ] `curl/3 (str, str, int)`
-- [ ] `curl/3 (str, err, int)`
-- [ ] `curl/3 (str, list, int)`
-- [ ] `curl/3 (str, map, int)`
 
 ### `db_disk_size`
 
@@ -11172,12 +10993,6 @@ still needs explicit human review.
 - [x] `file_writeline/2 (int, str)` covered by `builtins/fileio.yaml`, `builtins/fileio_security.yaml`
 - [?] `file_writeline/2` unknown argument types covered by `builtins/fileio.yaml`, `builtins/fileio.yaml`, `builtins/fileio.yaml` and 34 more
 
-### `finished_tasks`
-
-- signature: `0..0 ()`
-- source: `tasks.cc`
-- [x] `finished_tasks/0 ()` covered by `builtins/task_management.yaml`
-
 ### `floatstr`
 
 - signature: `2..3 (float, int, any)`
@@ -11254,76 +11069,6 @@ still needs explicit human review.
 - signature: `0..0 ()`
 - source: `garbage.cc`
 - [x] `gc_stats/0 ()` covered by `builtins/gc.yaml`, `builtins/gc.yaml`, `builtins/gc.yaml` and 8 more
-
-### `generate_json`
-
-- signature: `1..3 (any, str, any)`
-- source: `json.cc`
-- [x] `generate_json/1 (int)` covered by `builtins/json.yaml`
-- [x] `generate_json/1 (float)` covered by `builtins/json.yaml`, `builtins/json.yaml`
-- [x] `generate_json/1 (obj)` covered by `builtins/json.yaml`
-- [x] `generate_json/1 (str)` covered by `builtins/json.yaml`
-- [x] `generate_json/1 (err)` covered by `builtins/json.yaml`
-- [x] `generate_json/1 (list)` covered by `builtins/json.yaml`, `builtins/json.yaml`, `builtins/json.yaml` and 2 more
-- [x] `generate_json/1 (map)` covered by `builtins/json.yaml`, `builtins/json.yaml`, `builtins/json.yaml` and 9 more
-- [x] `generate_json/2 (int, str)` covered by `builtins/json.yaml`, `builtins/json.yaml`, `builtins/json.yaml`
-- [x] `generate_json/2 (float, str)` covered by `builtins/json.yaml`, `builtins/json.yaml`
-- [x] `generate_json/2 (obj, str)` covered by `builtins/json.yaml`, `builtins/json.yaml`
-- [x] `generate_json/2 (str, str)` covered by `builtins/json.yaml`, `builtins/json.yaml`
-- [x] `generate_json/2 (err, str)` covered by `builtins/json.yaml`, `builtins/json.yaml`
-- [x] `generate_json/2 (list, str)` covered by `builtins/json.yaml`, `builtins/json.yaml`, `builtins/json.yaml` and 3 more
-- [x] `generate_json/2 (map, str)` covered by `builtins/json.yaml`, `builtins/json.yaml`, `builtins/json.yaml` and 5 more
-- [ ] `generate_json/3 (int, str, int)`
-- [ ] `generate_json/3 (int, str, float)`
-- [ ] `generate_json/3 (int, str, obj)`
-- [ ] `generate_json/3 (int, str, str)`
-- [ ] `generate_json/3 (int, str, err)`
-- [ ] `generate_json/3 (int, str, list)`
-- [ ] `generate_json/3 (int, str, map)`
-- [ ] `generate_json/3 (float, str, int)`
-- [ ] `generate_json/3 (float, str, float)`
-- [ ] `generate_json/3 (float, str, obj)`
-- [ ] `generate_json/3 (float, str, str)`
-- [ ] `generate_json/3 (float, str, err)`
-- [ ] `generate_json/3 (float, str, list)`
-- [ ] `generate_json/3 (float, str, map)`
-- [ ] `generate_json/3 (obj, str, int)`
-- [ ] `generate_json/3 (obj, str, float)`
-- [ ] `generate_json/3 (obj, str, obj)`
-- [ ] `generate_json/3 (obj, str, str)`
-- [ ] `generate_json/3 (obj, str, err)`
-- [ ] `generate_json/3 (obj, str, list)`
-- [ ] `generate_json/3 (obj, str, map)`
-- [ ] `generate_json/3 (str, str, int)`
-- [ ] `generate_json/3 (str, str, float)`
-- [ ] `generate_json/3 (str, str, obj)`
-- [ ] `generate_json/3 (str, str, str)`
-- [ ] `generate_json/3 (str, str, err)`
-- [ ] `generate_json/3 (str, str, list)`
-- [ ] `generate_json/3 (str, str, map)`
-- [ ] `generate_json/3 (err, str, int)`
-- [ ] `generate_json/3 (err, str, float)`
-- [ ] `generate_json/3 (err, str, obj)`
-- [ ] `generate_json/3 (err, str, str)`
-- [ ] `generate_json/3 (err, str, err)`
-- [ ] `generate_json/3 (err, str, list)`
-- [ ] `generate_json/3 (err, str, map)`
-- [ ] `generate_json/3 (list, str, int)`
-- [ ] `generate_json/3 (list, str, float)`
-- [ ] `generate_json/3 (list, str, obj)`
-- [ ] `generate_json/3 (list, str, str)`
-- [ ] `generate_json/3 (list, str, err)`
-- [ ] `generate_json/3 (list, str, list)`
-- [ ] `generate_json/3 (list, str, map)`
-- [ ] `generate_json/3 (map, str, int)`
-- [ ] `generate_json/3 (map, str, float)`
-- [ ] `generate_json/3 (map, str, obj)`
-- [ ] `generate_json/3 (map, str, str)`
-- [ ] `generate_json/3 (map, str, err)`
-- [ ] `generate_json/3 (map, str, list)`
-- [ ] `generate_json/3 (map, str, map)`
-- [?] `generate_json/1` unknown argument types covered by `builtins/json.yaml`
-- [?] `generate_json/2` unknown argument types covered by `builtins/json.yaml`, `builtins/json.yaml`
 
 ### `getenv`
 
@@ -11742,12 +11487,6 @@ still needs explicit human review.
 - signature: `0..0 ()`
 - source: `extensions.cc`
 - [x] `log_cache_stats/0 ()` covered by `generated_builtins/log_cache_stats.yaml`
-
-### `malloc_stats`
-
-- signature: `0..0 ()`
-- source: `server.cc`
-- [ ] `malloc_stats/0 ()`
 
 ### `mapdelete`
 
@@ -12254,12 +11993,6 @@ still needs explicit human review.
 - [ ] `read_http/2 (str, obj)`
 - [?] `read_http/2` unknown argument types covered by `builtins/http.yaml`, `builtins/http.yaml`, `builtins/http.yaml` and 2 more
 
-### `read_stdin`
-
-- signature: `0..0 ()`
-- source: `extensions.cc`
-- [ ] `read_stdin/0 ()`
-
 ### `recreate`
 
 - signature: `2..3 (obj, obj, obj)`
@@ -12698,26 +12431,6 @@ still needs explicit human review.
 - [ ] `setremove/2 (list, map)`
 - [?] `setremove/2` unknown argument types covered by `server/limits.yaml`
 
-### `shutdown`
-
-- signature: `0..2 (str, any)`
-- source: `server.cc`
-- [x] `shutdown/0 ()` covered by `builtins/server_admin.yaml`
-- [x] `shutdown/1 (str)` covered by `builtins/server_admin.yaml`
-- [x] `shutdown/2 (str, int)` covered by `audit/time_server_builtins_toast_oracle.yaml`
-- [ ] `shutdown/2 (str, float)`
-- [ ] `shutdown/2 (str, obj)`
-- [ ] `shutdown/2 (str, str)`
-- [ ] `shutdown/2 (str, err)`
-- [ ] `shutdown/2 (str, list)`
-- [ ] `shutdown/2 (str, map)`
-
-### `simplex_noise`
-
-- signature: `1..1 (list)`
-- source: `simplexnoise.cc`
-- [ ] `simplex_noise/1 (list)`
-
 ### `sin`
 
 - signature: `1..1 (float)`
@@ -12801,12 +12514,6 @@ still needs explicit human review.
 - [ ] `sort/2 (list, list)`
 - [ ] `sort/3 (list, list, int)`
 - [ ] `sort/4 (list, list, int, int)`
-
-### `spellcheck`
-
-- signature: `1..1 (str)`
-- source: `spellcheck.cc`
-- [ ] `spellcheck/1 (str)`
 
 ### `sqlite_close`
 
@@ -13233,18 +12940,6 @@ still needs explicit human review.
 - [ ] `unlisten/2 (map, list)`
 - [ ] `unlisten/2 (map, map)`
 - [?] `unlisten/1` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 6 more
-
-### `url_decode`
-
-- signature: `1..1 (str)`
-- source: `curl.cc`
-- [x] `url_decode/1 (str)` covered by `builtins/url_curl.yaml`
-
-### `url_encode`
-
-- signature: `1..1 (str)`
-- source: `curl.cc`
-- [x] `url_encode/1 (str)` covered by `builtins/url_curl.yaml`
 
 ### `usage`
 

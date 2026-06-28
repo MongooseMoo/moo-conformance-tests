@@ -54,7 +54,7 @@ def generate_builtin_coverage_report(
     tests_path = Path(tests_dir)
     output_path = Path(out_path)
 
-    specs = extract_builtin_specs(toast_path, include_excluded=True)
+    specs = extract_builtin_specs(toast_path)
     calls = collect_builtin_calls(tests_path, {spec.name for spec in specs})
     coverage = build_coverage(specs, calls)
 

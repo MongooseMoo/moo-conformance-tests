@@ -1,8 +1,14 @@
 from pathlib import Path
 
 import yaml
+from pytest import MonkeyPatch
 
-from moo_conformance.builtin_coverage import collect_builtin_calls, iter_builtin_calls
+from moo_conformance.builtin_coverage import (
+    collect_builtin_calls,
+    generate_builtin_coverage_report,
+    iter_builtin_calls,
+)
+from moo_conformance.builtin_io_generator import BuiltinSpec
 
 
 def test_iter_builtin_calls_reports_literal_type_shapes() -> None:
@@ -52,3 +58,31 @@ def test_collect_builtin_calls_sees_expanded_table_rows(tmp_path: Path) -> None:
         ("value_hash", 1, ("int",), "hash_int"),
         ("value_hash", 1, ("str",), "hash_str"),
     ]
+
+
+def test_generate_report_uses_non_excluded_builtin_inventory(
+    tmp_path: Path,
+    monkeypatch: MonkeyPatch,
+) -> None:
+    seen_include_excluded: list[bool] = []
+
+    def fake_extract_builtin_specs(
+        _toast_src: Path,
+        *,
+        include_excluded: bool = False,
+    ) -> list[BuiltinSpec]:
+        seen_include_excluded.append(include_excluded)
+        return []
+
+    monkeypatch.setattr(
+        "moo_conformance.builtin_coverage.extract_builtin_specs",
+        fake_extract_builtin_specs,
+    )
+    tests_dir = tmp_path / "tests"
+    tests_dir.mkdir()
+    out_path = tmp_path / "report.md"
+
+    generate_builtin_coverage_report(tmp_path / "toast", tests_dir, out_path)
+
+    assert seen_include_excluded == [False]
+    assert "- builtins: `0`" in out_path.read_text(encoding="utf-8")

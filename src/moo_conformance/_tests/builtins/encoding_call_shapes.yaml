@@ -1,0 +1,67 @@
+name: encoding_call_shapes
+description: Call-shape coverage for encoding and decoding helpers.
+
+requires:
+  builtins:
+    - decode_base64
+    - decode_binary
+    - encode_base64
+    - encode_binary
+
+tests:
+  - name: decode_base64_flag_type_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [float, "1.5"]
+        - [obj, "#0"]
+        - [str, '"x"']
+        - [err, "E_ARGS"]
+        - [list, "{}"]
+        - [map, "[1 -> 2]"]
+    code: 'decode_base64("YQ==", {expr})'
+    expect:
+      value: "a"
+
+  - name: decode_binary_flag_type_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [float, "1.5"]
+        - [obj, "#0"]
+        - [str, '"x"']
+        - [err, "E_ARGS"]
+        - [list, "{}"]
+        - [map, "[1 -> 2]"]
+    code: 'decode_binary("", {expr})'
+    expect:
+      value: []
+
+  - name: encode_base64_flag_type_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [float, "1.5"]
+        - [obj, "#0"]
+        - [str, '"x"']
+        - [err, "E_ARGS"]
+        - [list, "{}"]
+        - [map, "[1 -> 2]"]
+    code: 'encode_base64("aaa", {expr})'
+    expect:
+      value: "YWFh"
+
+  - name: encode_binary_rejects_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [float, "1.5"]
+        - [err, "E_ARGS"]
+        - [map, "[1 -> 2]"]
+    code: "encode_binary({expr})"
+    expect:
+      error: E_INVARG

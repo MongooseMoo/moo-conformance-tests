@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T08:43:03Z`
+- generated_at: `2026-06-28T08:46:02Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `3828`
-- missing_call_shapes: `3773`
+- covered_call_shapes: `3849`
+- missing_call_shapes: `3752`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,20 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `decode_base64` signature `1..2 (str, any)`
-  - [ ] `decode_base64/2 (str, float)`
-  - [ ] `decode_base64/2 (str, obj)`
-  - [ ] `decode_base64/2 (str, str)`
-  - [ ] `decode_base64/2 (str, err)`
-  - [ ] `decode_base64/2 (str, list)`
-  - [ ] `decode_base64/2 (str, map)`
-- `decode_binary` signature `1..2 (str, any)`
-  - [ ] `decode_binary/2 (str, float)`
-  - [ ] `decode_binary/2 (str, obj)`
-  - [ ] `decode_binary/2 (str, str)`
-  - [ ] `decode_binary/2 (str, err)`
-  - [ ] `decode_binary/2 (str, list)`
-  - [ ] `decode_binary/2 (str, map)`
 - `delete_verb` signature `2..2 (any, any)`
   - [ ] `delete_verb/2 (int, int)`
   - [ ] `delete_verb/2 (int, float)`
@@ -131,17 +117,6 @@ still needs explicit human review.
   - [ ] `disassemble/2 (map, err)`
   - [ ] `disassemble/2 (map, list)`
   - [ ] `disassemble/2 (map, map)`
-- `encode_base64` signature `1..2 (str, any)`
-  - [ ] `encode_base64/2 (str, float)`
-  - [ ] `encode_base64/2 (str, obj)`
-  - [ ] `encode_base64/2 (str, str)`
-  - [ ] `encode_base64/2 (str, err)`
-  - [ ] `encode_base64/2 (str, list)`
-  - [ ] `encode_base64/2 (str, map)`
-- `encode_binary` signature `0..* ()`
-  - [ ] `encode_binary/1 (float)`
-  - [ ] `encode_binary/1 (err)`
-  - [ ] `encode_binary/1 (map)`
 - `equal` signature `2..2 (any, any)`
   - [ ] `equal/2 (int, int)`
   - [ ] `equal/2 (int, float)`
@@ -7090,12 +7065,12 @@ still needs explicit human review.
 - source: `base64.cc`
 - [x] `decode_base64/1 (str)` covered by `builtins/algorithms.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml` and 11 more
 - [x] `decode_base64/2 (str, int)` covered by `builtins/algorithms.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml` and 11 more
-- [ ] `decode_base64/2 (str, float)`
-- [ ] `decode_base64/2 (str, obj)`
-- [ ] `decode_base64/2 (str, str)`
-- [ ] `decode_base64/2 (str, err)`
-- [ ] `decode_base64/2 (str, list)`
-- [ ] `decode_base64/2 (str, map)`
+- [x] `decode_base64/2 (str, float)` covered by `builtins/encoding_call_shapes.yaml`
+- [x] `decode_base64/2 (str, obj)` covered by `builtins/encoding_call_shapes.yaml`
+- [x] `decode_base64/2 (str, str)` covered by `builtins/encoding_call_shapes.yaml`
+- [x] `decode_base64/2 (str, err)` covered by `builtins/encoding_call_shapes.yaml`
+- [x] `decode_base64/2 (str, list)` covered by `builtins/encoding_call_shapes.yaml`
+- [x] `decode_base64/2 (str, map)` covered by `builtins/encoding_call_shapes.yaml`
 
 ### `decode_binary`
 
@@ -7103,12 +7078,12 @@ still needs explicit human review.
 - source: `list.cc`
 - [x] `decode_binary/1 (str)` covered by `basic/string.yaml`, `basic/string.yaml`, `basic/string.yaml` and 3 more
 - [x] `decode_binary/2 (str, int)` covered by `basic/string.yaml`, `basic/string.yaml`
-- [ ] `decode_binary/2 (str, float)`
-- [ ] `decode_binary/2 (str, obj)`
-- [ ] `decode_binary/2 (str, str)`
-- [ ] `decode_binary/2 (str, err)`
-- [ ] `decode_binary/2 (str, list)`
-- [ ] `decode_binary/2 (str, map)`
+- [x] `decode_binary/2 (str, float)` covered by `builtins/encoding_call_shapes.yaml`
+- [x] `decode_binary/2 (str, obj)` covered by `builtins/encoding_call_shapes.yaml`
+- [x] `decode_binary/2 (str, str)` covered by `builtins/encoding_call_shapes.yaml`
+- [x] `decode_binary/2 (str, err)` covered by `builtins/encoding_call_shapes.yaml`
+- [x] `decode_binary/2 (str, list)` covered by `builtins/encoding_call_shapes.yaml`
+- [x] `decode_binary/2 (str, map)` covered by `builtins/encoding_call_shapes.yaml`
 - [?] `decode_binary/1` unknown argument types covered by `server/limits.yaml`
 - [?] `decode_binary/2` unknown argument types covered by `basic/string.yaml`, `server/limits.yaml`
 
@@ -7316,12 +7291,12 @@ still needs explicit human review.
 - source: `base64.cc`
 - [x] `encode_base64/1 (str)` covered by `builtins/algorithms.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml` and 7 more
 - [x] `encode_base64/2 (str, int)` covered by `builtins/algorithms.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml` and 5 more
-- [ ] `encode_base64/2 (str, float)`
-- [ ] `encode_base64/2 (str, obj)`
-- [ ] `encode_base64/2 (str, str)`
-- [ ] `encode_base64/2 (str, err)`
-- [ ] `encode_base64/2 (str, list)`
-- [ ] `encode_base64/2 (str, map)`
+- [x] `encode_base64/2 (str, float)` covered by `builtins/encoding_call_shapes.yaml`
+- [x] `encode_base64/2 (str, obj)` covered by `builtins/encoding_call_shapes.yaml`
+- [x] `encode_base64/2 (str, str)` covered by `builtins/encoding_call_shapes.yaml`
+- [x] `encode_base64/2 (str, err)` covered by `builtins/encoding_call_shapes.yaml`
+- [x] `encode_base64/2 (str, list)` covered by `builtins/encoding_call_shapes.yaml`
+- [x] `encode_base64/2 (str, map)` covered by `builtins/encoding_call_shapes.yaml`
 - [?] `encode_base64/1` unknown argument types covered by `server/limits.yaml`, `server/limits.yaml`
 
 ### `encode_binary`
@@ -7330,12 +7305,12 @@ still needs explicit human review.
 - source: `list.cc`
 - [x] `encode_binary/0 ()` covered by `basic/string.yaml`
 - [x] `encode_binary/1 (int)` covered by `basic/string.yaml`, `basic/string.yaml`
-- [ ] `encode_binary/1 (float)`
+- [x] `encode_binary/1 (float)` covered by `builtins/encoding_call_shapes.yaml`
 - [x] `encode_binary/1 (obj)` covered by `basic/string.yaml`
 - [x] `encode_binary/1 (str)` covered by `basic/string.yaml`
-- [ ] `encode_binary/1 (err)`
+- [x] `encode_binary/1 (err)` covered by `builtins/encoding_call_shapes.yaml`
 - [x] `encode_binary/1 (list)` covered by `basic/string.yaml`
-- [ ] `encode_binary/1 (map)`
+- [x] `encode_binary/1 (map)` covered by `builtins/encoding_call_shapes.yaml`
 - [?] `encode_binary/1` unknown argument types covered by `builtins/chr_raw_bytes.yaml`, `builtins/chr_raw_bytes.yaml`, `server/limits.yaml` and 1 more
 
 ### `equal`

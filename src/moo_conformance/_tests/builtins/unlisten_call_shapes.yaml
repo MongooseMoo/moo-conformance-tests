@@ -1,0 +1,49 @@
+name: unlisten_call_shapes
+description: TYPE_ANY listener descriptor and IPv6 flag call-shape coverage for unlisten().
+
+requires:
+  builtins:
+    - unlisten
+
+tests:
+  - name: unlisten_one_arg_rejects_missing_listener_{desc_kind}
+    permission: wizard
+    table:
+      columns: [desc_kind, desc_expr]
+      rows:
+        - [int, "999999"]
+        - [float, "1.5"]
+        - [obj, "#0"]
+        - [str, '"no_such_listener"']
+        - [err, "E_ARGS"]
+        - [list, "{}"]
+        - [map, "[1 -> 2]"]
+    code: "unlisten({desc_expr})"
+    expect:
+      error: E_INVARG
+
+  - name: unlisten_two_args_rejects_missing_listener_{desc_kind}_{ipv6_kind}
+    permission: wizard
+    table:
+      product:
+        - columns: [desc_kind, desc_expr]
+          rows:
+            - [int, "999999"]
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"no_such_listener"']
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+        - columns: [ipv6_kind, ipv6_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+    code: "unlisten({desc_expr}, {ipv6_expr})"
+    expect:
+      error: E_INVARG

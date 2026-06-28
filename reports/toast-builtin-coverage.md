@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T10:13:55Z`
+- generated_at: `2026-06-28T10:15:26Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `4650`
-- missing_call_shapes: `2951`
+- covered_call_shapes: `4704`
+- missing_call_shapes: `2897`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,61 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `unlisten` signature `1..2 (any, any)`
-  - [ ] `unlisten/1 (float)`
-  - [ ] `unlisten/1 (obj)`
-  - [ ] `unlisten/1 (str)`
-  - [ ] `unlisten/1 (err)`
-  - [ ] `unlisten/1 (map)`
-  - [ ] `unlisten/2 (int, int)`
-  - [ ] `unlisten/2 (int, float)`
-  - [ ] `unlisten/2 (int, obj)`
-  - [ ] `unlisten/2 (int, str)`
-  - [ ] `unlisten/2 (int, err)`
-  - [ ] `unlisten/2 (int, list)`
-  - [ ] `unlisten/2 (int, map)`
-  - [ ] `unlisten/2 (float, int)`
-  - [ ] `unlisten/2 (float, float)`
-  - [ ] `unlisten/2 (float, obj)`
-  - [ ] `unlisten/2 (float, str)`
-  - [ ] `unlisten/2 (float, err)`
-  - [ ] `unlisten/2 (float, list)`
-  - [ ] `unlisten/2 (float, map)`
-  - [ ] `unlisten/2 (obj, int)`
-  - [ ] `unlisten/2 (obj, float)`
-  - [ ] `unlisten/2 (obj, obj)`
-  - [ ] `unlisten/2 (obj, str)`
-  - [ ] `unlisten/2 (obj, err)`
-  - [ ] `unlisten/2 (obj, list)`
-  - [ ] `unlisten/2 (obj, map)`
-  - [ ] `unlisten/2 (str, int)`
-  - [ ] `unlisten/2 (str, float)`
-  - [ ] `unlisten/2 (str, obj)`
-  - [ ] `unlisten/2 (str, str)`
-  - [ ] `unlisten/2 (str, err)`
-  - [ ] `unlisten/2 (str, list)`
-  - [ ] `unlisten/2 (str, map)`
-  - [ ] `unlisten/2 (err, int)`
-  - [ ] `unlisten/2 (err, float)`
-  - [ ] `unlisten/2 (err, obj)`
-  - [ ] `unlisten/2 (err, str)`
-  - [ ] `unlisten/2 (err, err)`
-  - [ ] `unlisten/2 (err, list)`
-  - [ ] `unlisten/2 (err, map)`
-  - [ ] `unlisten/2 (list, int)`
-  - [ ] `unlisten/2 (list, float)`
-  - [ ] `unlisten/2 (list, obj)`
-  - [ ] `unlisten/2 (list, str)`
-  - [ ] `unlisten/2 (list, err)`
-  - [ ] `unlisten/2 (list, list)`
-  - [ ] `unlisten/2 (list, map)`
-  - [ ] `unlisten/2 (map, int)`
-  - [ ] `unlisten/2 (map, float)`
-  - [ ] `unlisten/2 (map, obj)`
-  - [ ] `unlisten/2 (map, str)`
-  - [ ] `unlisten/2 (map, err)`
-  - [ ] `unlisten/2 (map, list)`
-  - [ ] `unlisten/2 (map, map)`
 - `verb_args` signature `2..2 (any, any)`
   - [ ] `verb_args/2 (int, int)`
   - [ ] `verb_args/2 (int, float)`
@@ -8683,62 +8628,62 @@ still needs explicit human review.
 
 - signature: `1..2 (any, any)`
 - source: `server.cc`
-- [x] `unlisten/1 (int)` covered by `builtins/server_admin.yaml`
-- [ ] `unlisten/1 (float)`
-- [ ] `unlisten/1 (obj)`
-- [ ] `unlisten/1 (str)`
-- [ ] `unlisten/1 (err)`
-- [x] `unlisten/1 (list)` covered by `builtins/listen_call_shapes.yaml`, `builtins/server_admin.yaml`, `builtins/server_admin.yaml`
-- [ ] `unlisten/1 (map)`
-- [ ] `unlisten/2 (int, int)`
-- [ ] `unlisten/2 (int, float)`
-- [ ] `unlisten/2 (int, obj)`
-- [ ] `unlisten/2 (int, str)`
-- [ ] `unlisten/2 (int, err)`
-- [ ] `unlisten/2 (int, list)`
-- [ ] `unlisten/2 (int, map)`
-- [ ] `unlisten/2 (float, int)`
-- [ ] `unlisten/2 (float, float)`
-- [ ] `unlisten/2 (float, obj)`
-- [ ] `unlisten/2 (float, str)`
-- [ ] `unlisten/2 (float, err)`
-- [ ] `unlisten/2 (float, list)`
-- [ ] `unlisten/2 (float, map)`
-- [ ] `unlisten/2 (obj, int)`
-- [ ] `unlisten/2 (obj, float)`
-- [ ] `unlisten/2 (obj, obj)`
-- [ ] `unlisten/2 (obj, str)`
-- [ ] `unlisten/2 (obj, err)`
-- [ ] `unlisten/2 (obj, list)`
-- [ ] `unlisten/2 (obj, map)`
-- [ ] `unlisten/2 (str, int)`
-- [ ] `unlisten/2 (str, float)`
-- [ ] `unlisten/2 (str, obj)`
-- [ ] `unlisten/2 (str, str)`
-- [ ] `unlisten/2 (str, err)`
-- [ ] `unlisten/2 (str, list)`
-- [ ] `unlisten/2 (str, map)`
-- [ ] `unlisten/2 (err, int)`
-- [ ] `unlisten/2 (err, float)`
-- [ ] `unlisten/2 (err, obj)`
-- [ ] `unlisten/2 (err, str)`
-- [ ] `unlisten/2 (err, err)`
-- [ ] `unlisten/2 (err, list)`
-- [ ] `unlisten/2 (err, map)`
-- [ ] `unlisten/2 (list, int)`
-- [ ] `unlisten/2 (list, float)`
-- [ ] `unlisten/2 (list, obj)`
-- [ ] `unlisten/2 (list, str)`
-- [ ] `unlisten/2 (list, err)`
-- [ ] `unlisten/2 (list, list)`
-- [ ] `unlisten/2 (list, map)`
-- [ ] `unlisten/2 (map, int)`
-- [ ] `unlisten/2 (map, float)`
-- [ ] `unlisten/2 (map, obj)`
-- [ ] `unlisten/2 (map, str)`
-- [ ] `unlisten/2 (map, err)`
-- [ ] `unlisten/2 (map, list)`
-- [ ] `unlisten/2 (map, map)`
+- [x] `unlisten/1 (int)` covered by `builtins/server_admin.yaml`, `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/1 (float)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/1 (obj)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/1 (str)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/1 (err)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/1 (list)` covered by `builtins/listen_call_shapes.yaml`, `builtins/server_admin.yaml`, `builtins/server_admin.yaml` and 1 more
+- [x] `unlisten/1 (map)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (int, int)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (int, float)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (int, obj)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (int, str)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (int, err)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (int, list)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (int, map)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (float, int)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (float, float)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (float, obj)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (float, str)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (float, err)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (float, list)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (float, map)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (obj, int)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (obj, float)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (obj, obj)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (obj, str)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (obj, err)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (obj, list)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (obj, map)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (str, int)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (str, float)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (str, obj)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (str, str)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (str, err)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (str, list)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (str, map)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (err, int)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (err, float)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (err, obj)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (err, str)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (err, err)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (err, list)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (err, map)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (list, int)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (list, float)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (list, obj)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (list, str)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (list, err)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (list, list)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (list, map)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (map, int)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (map, float)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (map, obj)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (map, str)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (map, err)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (map, list)` covered by `builtins/unlisten_call_shapes.yaml`
+- [x] `unlisten/2 (map, map)` covered by `builtins/unlisten_call_shapes.yaml`
 - [?] `unlisten/1` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 6 more
 
 ### `usage`

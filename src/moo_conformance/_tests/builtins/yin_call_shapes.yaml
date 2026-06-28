@@ -1,0 +1,37 @@
+name: yin_call_shapes
+description: Numeric argument call-shape coverage for yin().
+
+requires:
+  builtins:
+    - yin
+
+tests:
+  - name: yin_one_arg_rejects_negative_int
+    permission: wizard
+    code: "yin(-1)"
+    expect:
+      error: E_INVARG
+
+  - name: yin_one_arg_rejects_negative_float
+    permission: wizard
+    code: "yin(-1.5)"
+    expect:
+      error: E_INVARG
+
+  - name: yin_two_args_rejects_negative_int
+    permission: wizard
+    code: "yin(-1, 1)"
+    expect:
+      error: E_INVARG
+
+  - name: yin_two_args_rejects_negative_float
+    permission: wizard
+    code: "yin(-1.5, 1)"
+    expect:
+      error: E_INVARG
+
+  - name: yin_three_args_rejects_negative_float
+    permission: wizard
+    code: "yin(-1.5, 1, 1)"
+    expect:
+      error: E_INVARG

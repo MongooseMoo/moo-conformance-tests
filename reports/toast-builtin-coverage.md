@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T10:25:45Z`
+- generated_at: `2026-06-28T10:27:55Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `7596`
-- missing_call_shapes: `5`
+- covered_call_shapes: `7601`
+- missing_call_shapes: `0`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,12 +20,7 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `yin` signature `0..3 (numeric, int, int)`
-  - [ ] `yin/1 (int)`
-  - [ ] `yin/1 (float)`
-  - [ ] `yin/2 (int, int)`
-  - [ ] `yin/2 (float, int)`
-  - [ ] `yin/3 (float, int, int)`
+All required call shapes have at least one YAML call.
 
 ## Full Builtin Checklist
 
@@ -8895,9 +8890,9 @@ still needs explicit human review.
 - signature: `0..3 (numeric, int, int)`
 - source: `execute.cc`
 - [x] `yin/0 ()` covered by `generated_builtins/yin.yaml`
-- [ ] `yin/1 (int)`
-- [ ] `yin/1 (float)`
-- [ ] `yin/2 (int, int)`
-- [ ] `yin/2 (float, int)`
+- [x] `yin/1 (int)` covered by `builtins/yin_call_shapes.yaml`
+- [x] `yin/1 (float)` covered by `builtins/yin_call_shapes.yaml`
+- [x] `yin/2 (int, int)` covered by `builtins/yin_call_shapes.yaml`
+- [x] `yin/2 (float, int)` covered by `builtins/yin_call_shapes.yaml`
 - [x] `yin/3 (int, int, int)` covered by `audit/task_scheduling_toast_oracle.yaml`
-- [ ] `yin/3 (float, int, int)`
+- [x] `yin/3 (float, int, int)` covered by `builtins/yin_call_shapes.yaml`

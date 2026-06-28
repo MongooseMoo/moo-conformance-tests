@@ -1,0 +1,97 @@
+name: is_member_call_shapes
+description: Product-table TYPE_ANY coverage for is_member().
+
+requires:
+  builtins:
+    - is_member
+
+tests:
+  - name: is_member_two_args_rejects_non_collection_{left_kind}_{right_kind}
+    permission: wizard
+    table:
+      product:
+        - columns: [left_kind, left_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+        - columns: [right_kind, right_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+    code: "is_member({left_expr}, {right_expr})"
+    expect:
+      error: E_INVARG
+
+  - name: is_member_two_args_collection_{left_kind}_{right_kind}
+    permission: wizard
+    table:
+      product:
+        - columns: [left_kind, left_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+        - columns: [right_kind, right_expr]
+          rows:
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+    code: "is_member({left_expr}, {right_expr})"
+    expect:
+      type: int
+
+  - name: is_member_three_args_rejects_non_collection_{left_kind}_{right_kind}
+    permission: wizard
+    table:
+      product:
+        - columns: [left_kind, left_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+        - columns: [right_kind, right_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+    code: "is_member({left_expr}, {right_expr}, 1)"
+    expect:
+      error: E_INVARG
+
+  - name: is_member_three_args_collection_{left_kind}_{right_kind}
+    permission: wizard
+    table:
+      product:
+        - columns: [left_kind, left_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+        - columns: [right_kind, right_expr]
+          rows:
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+    code: "is_member({left_expr}, {right_expr}, 1)"
+    expect:
+      type: int

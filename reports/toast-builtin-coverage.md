@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T09:10:53Z`
+- generated_at: `2026-06-28T09:14:46Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `4058`
-- missing_call_shapes: `3543`
+- covered_call_shapes: `4154`
+- missing_call_shapes: `3447`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,103 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `is_member` signature `2..3 (any, any, int)`
-  - [ ] `is_member/2 (int, int)`
-  - [ ] `is_member/2 (int, float)`
-  - [ ] `is_member/2 (int, obj)`
-  - [ ] `is_member/2 (int, str)`
-  - [ ] `is_member/2 (int, err)`
-  - [ ] `is_member/2 (int, list)`
-  - [ ] `is_member/2 (float, int)`
-  - [ ] `is_member/2 (float, float)`
-  - [ ] `is_member/2 (float, obj)`
-  - [ ] `is_member/2 (float, str)`
-  - [ ] `is_member/2 (float, err)`
-  - [ ] `is_member/2 (float, list)`
-  - [ ] `is_member/2 (float, map)`
-  - [ ] `is_member/2 (obj, int)`
-  - [ ] `is_member/2 (obj, float)`
-  - [ ] `is_member/2 (obj, obj)`
-  - [ ] `is_member/2 (obj, str)`
-  - [ ] `is_member/2 (obj, err)`
-  - [ ] `is_member/2 (obj, list)`
-  - [ ] `is_member/2 (obj, map)`
-  - [ ] `is_member/2 (str, int)`
-  - [ ] `is_member/2 (str, float)`
-  - [ ] `is_member/2 (str, obj)`
-  - [ ] `is_member/2 (str, str)`
-  - [ ] `is_member/2 (str, err)`
-  - [ ] `is_member/2 (str, list)`
-  - [ ] `is_member/2 (err, int)`
-  - [ ] `is_member/2 (err, float)`
-  - [ ] `is_member/2 (err, obj)`
-  - [ ] `is_member/2 (err, str)`
-  - [ ] `is_member/2 (err, err)`
-  - [ ] `is_member/2 (err, list)`
-  - [ ] `is_member/2 (err, map)`
-  - [ ] `is_member/2 (list, int)`
-  - [ ] `is_member/2 (list, float)`
-  - [ ] `is_member/2 (list, obj)`
-  - [ ] `is_member/2 (list, str)`
-  - [ ] `is_member/2 (list, err)`
-  - [ ] `is_member/2 (list, list)`
-  - [ ] `is_member/2 (list, map)`
-  - [ ] `is_member/2 (map, int)`
-  - [ ] `is_member/2 (map, float)`
-  - [ ] `is_member/2 (map, obj)`
-  - [ ] `is_member/2 (map, str)`
-  - [ ] `is_member/2 (map, err)`
-  - [ ] `is_member/2 (map, list)`
-  - [ ] `is_member/2 (map, map)`
-  - [ ] `is_member/3 (int, int, int)`
-  - [ ] `is_member/3 (int, float, int)`
-  - [ ] `is_member/3 (int, obj, int)`
-  - [ ] `is_member/3 (int, str, int)`
-  - [ ] `is_member/3 (int, err, int)`
-  - [ ] `is_member/3 (int, list, int)`
-  - [ ] `is_member/3 (int, map, int)`
-  - [ ] `is_member/3 (float, int, int)`
-  - [ ] `is_member/3 (float, float, int)`
-  - [ ] `is_member/3 (float, obj, int)`
-  - [ ] `is_member/3 (float, str, int)`
-  - [ ] `is_member/3 (float, err, int)`
-  - [ ] `is_member/3 (float, list, int)`
-  - [ ] `is_member/3 (float, map, int)`
-  - [ ] `is_member/3 (obj, int, int)`
-  - [ ] `is_member/3 (obj, float, int)`
-  - [ ] `is_member/3 (obj, obj, int)`
-  - [ ] `is_member/3 (obj, str, int)`
-  - [ ] `is_member/3 (obj, err, int)`
-  - [ ] `is_member/3 (obj, list, int)`
-  - [ ] `is_member/3 (obj, map, int)`
-  - [ ] `is_member/3 (str, int, int)`
-  - [ ] `is_member/3 (str, float, int)`
-  - [ ] `is_member/3 (str, obj, int)`
-  - [ ] `is_member/3 (str, str, int)`
-  - [ ] `is_member/3 (str, err, int)`
-  - [ ] `is_member/3 (str, list, int)`
-  - [ ] `is_member/3 (str, map, int)`
-  - [ ] `is_member/3 (err, int, int)`
-  - [ ] `is_member/3 (err, float, int)`
-  - [ ] `is_member/3 (err, obj, int)`
-  - [ ] `is_member/3 (err, str, int)`
-  - [ ] `is_member/3 (err, err, int)`
-  - [ ] `is_member/3 (err, list, int)`
-  - [ ] `is_member/3 (err, map, int)`
-  - [ ] `is_member/3 (list, int, int)`
-  - [ ] `is_member/3 (list, float, int)`
-  - [ ] `is_member/3 (list, obj, int)`
-  - [ ] `is_member/3 (list, str, int)`
-  - [ ] `is_member/3 (list, err, int)`
-  - [ ] `is_member/3 (list, list, int)`
-  - [ ] `is_member/3 (list, map, int)`
-  - [ ] `is_member/3 (map, int, int)`
-  - [ ] `is_member/3 (map, float, int)`
-  - [ ] `is_member/3 (map, obj, int)`
-  - [ ] `is_member/3 (map, str, int)`
-  - [ ] `is_member/3 (map, err, int)`
-  - [ ] `is_member/3 (map, list, int)`
-  - [ ] `is_member/3 (map, map, int)`
 - `is_player` signature `1..1 (obj)`
   - [ ] `is_player/1 (obj)`
 - `isa` signature `2..3 (any, any, int)`
@@ -7538,104 +7441,104 @@ still needs explicit human review.
 
 - signature: `2..3 (any, any, int)`
 - source: `collection.cc`
-- [ ] `is_member/2 (int, int)`
-- [ ] `is_member/2 (int, float)`
-- [ ] `is_member/2 (int, obj)`
-- [ ] `is_member/2 (int, str)`
-- [ ] `is_member/2 (int, err)`
-- [ ] `is_member/2 (int, list)`
-- [x] `is_member/2 (int, map)` covered by `builtins/map.yaml`
-- [ ] `is_member/2 (float, int)`
-- [ ] `is_member/2 (float, float)`
-- [ ] `is_member/2 (float, obj)`
-- [ ] `is_member/2 (float, str)`
-- [ ] `is_member/2 (float, err)`
-- [ ] `is_member/2 (float, list)`
-- [ ] `is_member/2 (float, map)`
-- [ ] `is_member/2 (obj, int)`
-- [ ] `is_member/2 (obj, float)`
-- [ ] `is_member/2 (obj, obj)`
-- [ ] `is_member/2 (obj, str)`
-- [ ] `is_member/2 (obj, err)`
-- [ ] `is_member/2 (obj, list)`
-- [ ] `is_member/2 (obj, map)`
-- [ ] `is_member/2 (str, int)`
-- [ ] `is_member/2 (str, float)`
-- [ ] `is_member/2 (str, obj)`
-- [ ] `is_member/2 (str, str)`
-- [ ] `is_member/2 (str, err)`
-- [ ] `is_member/2 (str, list)`
-- [x] `is_member/2 (str, map)` covered by `builtins/map.yaml`, `builtins/map.yaml`, `builtins/map.yaml`
-- [ ] `is_member/2 (err, int)`
-- [ ] `is_member/2 (err, float)`
-- [ ] `is_member/2 (err, obj)`
-- [ ] `is_member/2 (err, str)`
-- [ ] `is_member/2 (err, err)`
-- [ ] `is_member/2 (err, list)`
-- [ ] `is_member/2 (err, map)`
-- [ ] `is_member/2 (list, int)`
-- [ ] `is_member/2 (list, float)`
-- [ ] `is_member/2 (list, obj)`
-- [ ] `is_member/2 (list, str)`
-- [ ] `is_member/2 (list, err)`
-- [ ] `is_member/2 (list, list)`
-- [ ] `is_member/2 (list, map)`
-- [ ] `is_member/2 (map, int)`
-- [ ] `is_member/2 (map, float)`
-- [ ] `is_member/2 (map, obj)`
-- [ ] `is_member/2 (map, str)`
-- [ ] `is_member/2 (map, err)`
-- [ ] `is_member/2 (map, list)`
-- [ ] `is_member/2 (map, map)`
-- [ ] `is_member/3 (int, int, int)`
-- [ ] `is_member/3 (int, float, int)`
-- [ ] `is_member/3 (int, obj, int)`
-- [ ] `is_member/3 (int, str, int)`
-- [ ] `is_member/3 (int, err, int)`
-- [ ] `is_member/3 (int, list, int)`
-- [ ] `is_member/3 (int, map, int)`
-- [ ] `is_member/3 (float, int, int)`
-- [ ] `is_member/3 (float, float, int)`
-- [ ] `is_member/3 (float, obj, int)`
-- [ ] `is_member/3 (float, str, int)`
-- [ ] `is_member/3 (float, err, int)`
-- [ ] `is_member/3 (float, list, int)`
-- [ ] `is_member/3 (float, map, int)`
-- [ ] `is_member/3 (obj, int, int)`
-- [ ] `is_member/3 (obj, float, int)`
-- [ ] `is_member/3 (obj, obj, int)`
-- [ ] `is_member/3 (obj, str, int)`
-- [ ] `is_member/3 (obj, err, int)`
-- [ ] `is_member/3 (obj, list, int)`
-- [ ] `is_member/3 (obj, map, int)`
-- [ ] `is_member/3 (str, int, int)`
-- [ ] `is_member/3 (str, float, int)`
-- [ ] `is_member/3 (str, obj, int)`
-- [ ] `is_member/3 (str, str, int)`
-- [ ] `is_member/3 (str, err, int)`
-- [ ] `is_member/3 (str, list, int)`
-- [ ] `is_member/3 (str, map, int)`
-- [ ] `is_member/3 (err, int, int)`
-- [ ] `is_member/3 (err, float, int)`
-- [ ] `is_member/3 (err, obj, int)`
-- [ ] `is_member/3 (err, str, int)`
-- [ ] `is_member/3 (err, err, int)`
-- [ ] `is_member/3 (err, list, int)`
-- [ ] `is_member/3 (err, map, int)`
-- [ ] `is_member/3 (list, int, int)`
-- [ ] `is_member/3 (list, float, int)`
-- [ ] `is_member/3 (list, obj, int)`
-- [ ] `is_member/3 (list, str, int)`
-- [ ] `is_member/3 (list, err, int)`
-- [ ] `is_member/3 (list, list, int)`
-- [ ] `is_member/3 (list, map, int)`
-- [ ] `is_member/3 (map, int, int)`
-- [ ] `is_member/3 (map, float, int)`
-- [ ] `is_member/3 (map, obj, int)`
-- [ ] `is_member/3 (map, str, int)`
-- [ ] `is_member/3 (map, err, int)`
-- [ ] `is_member/3 (map, list, int)`
-- [ ] `is_member/3 (map, map, int)`
+- [x] `is_member/2 (int, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (int, float)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (int, obj)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (int, str)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (int, err)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (int, list)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (int, map)` covered by `builtins/is_member_call_shapes.yaml`, `builtins/map.yaml`
+- [x] `is_member/2 (float, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (float, float)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (float, obj)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (float, str)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (float, err)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (float, list)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (float, map)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (obj, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (obj, float)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (obj, obj)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (obj, str)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (obj, err)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (obj, list)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (obj, map)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (str, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (str, float)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (str, obj)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (str, str)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (str, err)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (str, list)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (str, map)` covered by `builtins/is_member_call_shapes.yaml`, `builtins/map.yaml`, `builtins/map.yaml` and 1 more
+- [x] `is_member/2 (err, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (err, float)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (err, obj)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (err, str)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (err, err)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (err, list)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (err, map)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (list, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (list, float)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (list, obj)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (list, str)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (list, err)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (list, list)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (list, map)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (map, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (map, float)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (map, obj)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (map, str)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (map, err)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (map, list)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/2 (map, map)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (int, int, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (int, float, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (int, obj, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (int, str, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (int, err, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (int, list, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (int, map, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (float, int, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (float, float, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (float, obj, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (float, str, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (float, err, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (float, list, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (float, map, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (obj, int, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (obj, float, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (obj, obj, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (obj, str, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (obj, err, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (obj, list, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (obj, map, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (str, int, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (str, float, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (str, obj, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (str, str, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (str, err, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (str, list, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (str, map, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (err, int, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (err, float, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (err, obj, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (err, str, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (err, err, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (err, list, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (err, map, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (list, int, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (list, float, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (list, obj, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (list, str, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (list, err, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (list, list, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (list, map, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (map, int, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (map, float, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (map, obj, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (map, str, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (map, err, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (map, list, int)` covered by `builtins/is_member_call_shapes.yaml`
+- [x] `is_member/3 (map, map, int)` covered by `builtins/is_member_call_shapes.yaml`
 
 ### `is_player`
 

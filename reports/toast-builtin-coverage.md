@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T09:54:57Z`
+- generated_at: `2026-06-28T09:56:52Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `4430`
-- missing_call_shapes: `3171`
+- covered_call_shapes: `4437`
+- missing_call_shapes: `3164`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,14 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `resume` signature `1..2 (int, any)`
-  - [ ] `resume/2 (int, int)`
-  - [ ] `resume/2 (int, float)`
-  - [ ] `resume/2 (int, obj)`
-  - [ ] `resume/2 (int, str)`
-  - [ ] `resume/2 (int, err)`
-  - [ ] `resume/2 (int, list)`
-  - [ ] `resume/2 (int, map)`
 - `set_verb_args` signature `3..3 (any, any, list)`
   - [ ] `set_verb_args/3 (int, int, list)`
   - [ ] `set_verb_args/3 (int, float, list)`
@@ -8098,13 +8090,13 @@ still needs explicit human review.
 - signature: `1..2 (int, any)`
 - source: `tasks.cc`
 - [x] `resume/1 (int)` covered by `builtins/task_management.yaml`, `builtins/task_management.yaml`
-- [ ] `resume/2 (int, int)`
-- [ ] `resume/2 (int, float)`
-- [ ] `resume/2 (int, obj)`
-- [ ] `resume/2 (int, str)`
-- [ ] `resume/2 (int, err)`
-- [ ] `resume/2 (int, list)`
-- [ ] `resume/2 (int, map)`
+- [x] `resume/2 (int, int)` covered by `builtins/resume_call_shapes.yaml`
+- [x] `resume/2 (int, float)` covered by `builtins/resume_call_shapes.yaml`
+- [x] `resume/2 (int, obj)` covered by `builtins/resume_call_shapes.yaml`
+- [x] `resume/2 (int, str)` covered by `builtins/resume_call_shapes.yaml`
+- [x] `resume/2 (int, err)` covered by `builtins/resume_call_shapes.yaml`
+- [x] `resume/2 (int, list)` covered by `builtins/resume_call_shapes.yaml`
+- [x] `resume/2 (int, map)` covered by `builtins/resume_call_shapes.yaml`
 - [?] `resume/1` unknown argument types covered by `server/exec.yaml`
 - [?] `resume/2` unknown argument types covered by `builtins/task_local.yaml`, `builtins/task_local.yaml`
 

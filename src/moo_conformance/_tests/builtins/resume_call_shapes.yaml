@@ -1,0 +1,23 @@
+name: resume_call_shapes
+description: TYPE_ANY resume value call-shape coverage for resume().
+
+requires:
+  builtins:
+    - resume
+
+tests:
+  - name: resume_two_args_rejects_missing_task_with_value_{value_kind}
+    permission: wizard
+    table:
+      columns: [value_kind, value_expr]
+      rows:
+        - [int, "1"]
+        - [float, "1.5"]
+        - [obj, "#0"]
+        - [str, '"x"']
+        - [err, "E_ARGS"]
+        - [list, "{}"]
+        - [map, "[1 -> 2]"]
+    code: "resume(999999999, {value_expr})"
+    expect:
+      error: E_INVARG

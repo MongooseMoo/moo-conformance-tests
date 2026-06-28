@@ -1,0 +1,83 @@
+name: ancestors_call_shapes
+description: Table-driven TYPE_ANY coverage for ancestors().
+
+requires:
+  builtins:
+    - ancestors
+
+tests:
+  - name: ancestors_one_arg_invalid_object
+    permission: wizard
+    code: "ancestors(#999999)"
+    expect:
+      error: E_INVARG
+
+  - name: ancestors_one_arg_rejects_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [err, "E_ARGS"]
+        - [list, "{}"]
+        - [map, "[1 -> 2]"]
+    code: "ancestors({expr})"
+    expect:
+      error: E_TYPE
+
+  - name: ancestors_two_args_{case}
+    permission: wizard
+    table:
+      columns: [case, expr, error]
+      rows:
+        - [int_int, "ancestors(1, 1)", E_TYPE]
+        - [int_float, "ancestors(1, 1.5)", E_TYPE]
+        - [int_obj, "ancestors(1, #0)", E_TYPE]
+        - [int_str, 'ancestors(1, "x")', E_TYPE]
+        - [int_err, "ancestors(1, E_ARGS)", E_TYPE]
+        - [int_list, "ancestors(1, {})", E_TYPE]
+        - [int_map, "ancestors(1, [1 -> 2])", E_TYPE]
+        - [float_int, "ancestors(1.5, 1)", E_TYPE]
+        - [float_float, "ancestors(1.5, 1.5)", E_TYPE]
+        - [float_obj, "ancestors(1.5, #0)", E_TYPE]
+        - [float_str, 'ancestors(1.5, "x")', E_TYPE]
+        - [float_err, "ancestors(1.5, E_ARGS)", E_TYPE]
+        - [float_list, "ancestors(1.5, {})", E_TYPE]
+        - [float_map, "ancestors(1.5, [1 -> 2])", E_TYPE]
+        - [obj_int, "ancestors(#999999, 1)", E_INVARG]
+        - [obj_float, "ancestors(#999999, 1.5)", E_INVARG]
+        - [obj_obj, "ancestors(#999999, #0)", E_INVARG]
+        - [obj_str, 'ancestors(#999999, "x")', E_INVARG]
+        - [obj_err, "ancestors(#999999, E_ARGS)", E_INVARG]
+        - [obj_list, "ancestors(#999999, {})", E_INVARG]
+        - [obj_map, "ancestors(#999999, [1 -> 2])", E_INVARG]
+        - [str_int, 'ancestors("x", 1)', E_TYPE]
+        - [str_float, 'ancestors("x", 1.5)', E_TYPE]
+        - [str_obj, 'ancestors("x", #0)', E_TYPE]
+        - [str_str, 'ancestors("x", "x")', E_TYPE]
+        - [str_err, 'ancestors("x", E_ARGS)', E_TYPE]
+        - [str_list, 'ancestors("x", {})', E_TYPE]
+        - [str_map, 'ancestors("x", [1 -> 2])', E_TYPE]
+        - [err_int, "ancestors(E_ARGS, 1)", E_TYPE]
+        - [err_float, "ancestors(E_ARGS, 1.5)", E_TYPE]
+        - [err_obj, "ancestors(E_ARGS, #0)", E_TYPE]
+        - [err_str, 'ancestors(E_ARGS, "x")', E_TYPE]
+        - [err_err, "ancestors(E_ARGS, E_ARGS)", E_TYPE]
+        - [err_list, "ancestors(E_ARGS, {})", E_TYPE]
+        - [err_map, "ancestors(E_ARGS, [1 -> 2])", E_TYPE]
+        - [list_int, "ancestors({}, 1)", E_TYPE]
+        - [list_float, "ancestors({}, 1.5)", E_TYPE]
+        - [list_obj, "ancestors({}, #0)", E_TYPE]
+        - [list_str, 'ancestors({}, "x")', E_TYPE]
+        - [list_err, "ancestors({}, E_ARGS)", E_TYPE]
+        - [list_list, "ancestors({}, {})", E_TYPE]
+        - [list_map, "ancestors({}, [1 -> 2])", E_TYPE]
+        - [map_int, "ancestors([1 -> 2], 1)", E_TYPE]
+        - [map_float, "ancestors([1 -> 2], 1.5)", E_TYPE]
+        - [map_obj, "ancestors([1 -> 2], #0)", E_TYPE]
+        - [map_str, 'ancestors([1 -> 2], "x")', E_TYPE]
+        - [map_err, "ancestors([1 -> 2], E_ARGS)", E_TYPE]
+        - [map_list, "ancestors([1 -> 2], {})", E_TYPE]
+        - [map_map, "ancestors([1 -> 2], [1 -> 2])", E_TYPE]
+    code: "{expr}"
+    expect:
+      error: "{error}"

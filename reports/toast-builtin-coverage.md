@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T08:09:19Z`
+- generated_at: `2026-06-28T08:14:07Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `872`
-- missing_call_shapes: `6729`
+- covered_call_shapes: `925`
+- missing_call_shapes: `6676`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -78,60 +78,6 @@ still needs explicit human review.
   - [ ] `all_members/2 (err, list)`
   - [ ] `all_members/2 (list, list)`
   - [ ] `all_members/2 (map, list)`
-- `ancestors` signature `1..2 (any, any)`
-  - [ ] `ancestors/1 (obj)`
-  - [ ] `ancestors/1 (err)`
-  - [ ] `ancestors/1 (list)`
-  - [ ] `ancestors/1 (map)`
-  - [ ] `ancestors/2 (int, int)`
-  - [ ] `ancestors/2 (int, float)`
-  - [ ] `ancestors/2 (int, obj)`
-  - [ ] `ancestors/2 (int, str)`
-  - [ ] `ancestors/2 (int, err)`
-  - [ ] `ancestors/2 (int, list)`
-  - [ ] `ancestors/2 (int, map)`
-  - [ ] `ancestors/2 (float, int)`
-  - [ ] `ancestors/2 (float, float)`
-  - [ ] `ancestors/2 (float, obj)`
-  - [ ] `ancestors/2 (float, str)`
-  - [ ] `ancestors/2 (float, err)`
-  - [ ] `ancestors/2 (float, list)`
-  - [ ] `ancestors/2 (float, map)`
-  - [ ] `ancestors/2 (obj, int)`
-  - [ ] `ancestors/2 (obj, float)`
-  - [ ] `ancestors/2 (obj, obj)`
-  - [ ] `ancestors/2 (obj, str)`
-  - [ ] `ancestors/2 (obj, err)`
-  - [ ] `ancestors/2 (obj, list)`
-  - [ ] `ancestors/2 (obj, map)`
-  - [ ] `ancestors/2 (str, int)`
-  - [ ] `ancestors/2 (str, float)`
-  - [ ] `ancestors/2 (str, obj)`
-  - [ ] `ancestors/2 (str, str)`
-  - [ ] `ancestors/2 (str, err)`
-  - [ ] `ancestors/2 (str, list)`
-  - [ ] `ancestors/2 (str, map)`
-  - [ ] `ancestors/2 (err, int)`
-  - [ ] `ancestors/2 (err, float)`
-  - [ ] `ancestors/2 (err, obj)`
-  - [ ] `ancestors/2 (err, str)`
-  - [ ] `ancestors/2 (err, err)`
-  - [ ] `ancestors/2 (err, list)`
-  - [ ] `ancestors/2 (err, map)`
-  - [ ] `ancestors/2 (list, int)`
-  - [ ] `ancestors/2 (list, float)`
-  - [ ] `ancestors/2 (list, obj)`
-  - [ ] `ancestors/2 (list, str)`
-  - [ ] `ancestors/2 (list, err)`
-  - [ ] `ancestors/2 (list, list)`
-  - [ ] `ancestors/2 (list, map)`
-  - [ ] `ancestors/2 (map, int)`
-  - [ ] `ancestors/2 (map, float)`
-  - [ ] `ancestors/2 (map, obj)`
-  - [ ] `ancestors/2 (map, str)`
-  - [ ] `ancestors/2 (map, err)`
-  - [ ] `ancestors/2 (map, list)`
-  - [ ] `ancestors/2 (map, map)`
 - `create` signature `1..4 (any, any, any, any)`
   - [ ] `create/1 (float)`
   - [ ] `create/1 (err)`
@@ -6919,60 +6865,60 @@ still needs explicit human review.
 - source: `objects.cc`
 - [x] `ancestors/1 (int)` covered by `server/stress_objects.yaml`
 - [x] `ancestors/1 (float)` covered by `server/stress_objects.yaml`
-- [ ] `ancestors/1 (obj)`
+- [x] `ancestors/1 (obj)` covered by `builtins/ancestors_call_shapes.yaml`
 - [x] `ancestors/1 (str)` covered by `server/stress_objects.yaml`
-- [ ] `ancestors/1 (err)`
-- [ ] `ancestors/1 (list)`
-- [ ] `ancestors/1 (map)`
-- [ ] `ancestors/2 (int, int)`
-- [ ] `ancestors/2 (int, float)`
-- [ ] `ancestors/2 (int, obj)`
-- [ ] `ancestors/2 (int, str)`
-- [ ] `ancestors/2 (int, err)`
-- [ ] `ancestors/2 (int, list)`
-- [ ] `ancestors/2 (int, map)`
-- [ ] `ancestors/2 (float, int)`
-- [ ] `ancestors/2 (float, float)`
-- [ ] `ancestors/2 (float, obj)`
-- [ ] `ancestors/2 (float, str)`
-- [ ] `ancestors/2 (float, err)`
-- [ ] `ancestors/2 (float, list)`
-- [ ] `ancestors/2 (float, map)`
-- [ ] `ancestors/2 (obj, int)`
-- [ ] `ancestors/2 (obj, float)`
-- [ ] `ancestors/2 (obj, obj)`
-- [ ] `ancestors/2 (obj, str)`
-- [ ] `ancestors/2 (obj, err)`
-- [ ] `ancestors/2 (obj, list)`
-- [ ] `ancestors/2 (obj, map)`
-- [ ] `ancestors/2 (str, int)`
-- [ ] `ancestors/2 (str, float)`
-- [ ] `ancestors/2 (str, obj)`
-- [ ] `ancestors/2 (str, str)`
-- [ ] `ancestors/2 (str, err)`
-- [ ] `ancestors/2 (str, list)`
-- [ ] `ancestors/2 (str, map)`
-- [ ] `ancestors/2 (err, int)`
-- [ ] `ancestors/2 (err, float)`
-- [ ] `ancestors/2 (err, obj)`
-- [ ] `ancestors/2 (err, str)`
-- [ ] `ancestors/2 (err, err)`
-- [ ] `ancestors/2 (err, list)`
-- [ ] `ancestors/2 (err, map)`
-- [ ] `ancestors/2 (list, int)`
-- [ ] `ancestors/2 (list, float)`
-- [ ] `ancestors/2 (list, obj)`
-- [ ] `ancestors/2 (list, str)`
-- [ ] `ancestors/2 (list, err)`
-- [ ] `ancestors/2 (list, list)`
-- [ ] `ancestors/2 (list, map)`
-- [ ] `ancestors/2 (map, int)`
-- [ ] `ancestors/2 (map, float)`
-- [ ] `ancestors/2 (map, obj)`
-- [ ] `ancestors/2 (map, str)`
-- [ ] `ancestors/2 (map, err)`
-- [ ] `ancestors/2 (map, list)`
-- [ ] `ancestors/2 (map, map)`
+- [x] `ancestors/1 (err)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/1 (list)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/1 (map)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (int, int)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (int, float)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (int, obj)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (int, str)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (int, err)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (int, list)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (int, map)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (float, int)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (float, float)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (float, obj)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (float, str)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (float, err)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (float, list)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (float, map)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (obj, int)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (obj, float)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (obj, obj)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (obj, str)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (obj, err)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (obj, list)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (obj, map)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (str, int)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (str, float)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (str, obj)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (str, str)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (str, err)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (str, list)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (str, map)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (err, int)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (err, float)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (err, obj)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (err, str)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (err, err)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (err, list)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (err, map)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (list, int)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (list, float)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (list, obj)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (list, str)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (list, err)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (list, list)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (list, map)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (map, int)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (map, float)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (map, obj)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (map, str)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (map, err)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (map, list)` covered by `builtins/ancestors_call_shapes.yaml`
+- [x] `ancestors/2 (map, map)` covered by `builtins/ancestors_call_shapes.yaml`
 - [?] `ancestors/1` unknown argument types covered by `builtins/objects.yaml`, `builtins/objects.yaml`, `builtins/objects.yaml` and 15 more
 - [?] `ancestors/2` unknown argument types covered by `builtins/objects.yaml`, `builtins/objects.yaml`, `server/stress_objects.yaml` and 3 more
 

@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T10:19:49Z`
+- generated_at: `2026-06-28T10:21:44Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `7542`
-- missing_call_shapes: `59`
+- covered_call_shapes: `7589`
+- missing_call_shapes: `12`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,54 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `verb_info` signature `2..2 (any, any)`
-  - [ ] `verb_info/2 (int, int)`
-  - [ ] `verb_info/2 (int, float)`
-  - [ ] `verb_info/2 (int, obj)`
-  - [ ] `verb_info/2 (int, str)`
-  - [ ] `verb_info/2 (int, err)`
-  - [ ] `verb_info/2 (int, list)`
-  - [ ] `verb_info/2 (int, map)`
-  - [ ] `verb_info/2 (float, int)`
-  - [ ] `verb_info/2 (float, float)`
-  - [ ] `verb_info/2 (float, obj)`
-  - [ ] `verb_info/2 (float, str)`
-  - [ ] `verb_info/2 (float, err)`
-  - [ ] `verb_info/2 (float, list)`
-  - [ ] `verb_info/2 (float, map)`
-  - [ ] `verb_info/2 (obj, int)`
-  - [ ] `verb_info/2 (obj, float)`
-  - [ ] `verb_info/2 (obj, obj)`
-  - [ ] `verb_info/2 (obj, err)`
-  - [ ] `verb_info/2 (obj, list)`
-  - [ ] `verb_info/2 (obj, map)`
-  - [ ] `verb_info/2 (str, int)`
-  - [ ] `verb_info/2 (str, float)`
-  - [ ] `verb_info/2 (str, obj)`
-  - [ ] `verb_info/2 (str, str)`
-  - [ ] `verb_info/2 (str, err)`
-  - [ ] `verb_info/2 (str, list)`
-  - [ ] `verb_info/2 (str, map)`
-  - [ ] `verb_info/2 (err, int)`
-  - [ ] `verb_info/2 (err, float)`
-  - [ ] `verb_info/2 (err, obj)`
-  - [ ] `verb_info/2 (err, str)`
-  - [ ] `verb_info/2 (err, err)`
-  - [ ] `verb_info/2 (err, list)`
-  - [ ] `verb_info/2 (err, map)`
-  - [ ] `verb_info/2 (list, int)`
-  - [ ] `verb_info/2 (list, float)`
-  - [ ] `verb_info/2 (list, obj)`
-  - [ ] `verb_info/2 (list, err)`
-  - [ ] `verb_info/2 (list, list)`
-  - [ ] `verb_info/2 (list, map)`
-  - [ ] `verb_info/2 (map, int)`
-  - [ ] `verb_info/2 (map, float)`
-  - [ ] `verb_info/2 (map, obj)`
-  - [ ] `verb_info/2 (map, str)`
-  - [ ] `verb_info/2 (map, err)`
-  - [ ] `verb_info/2 (map, list)`
-  - [ ] `verb_info/2 (map, map)`
 - `verbs` signature `1..1 (any)`
   - [ ] `verbs/1 (int)`
   - [ ] `verbs/1 (float)`
@@ -8878,55 +8830,55 @@ still needs explicit human review.
 
 - signature: `2..2 (any, any)`
 - source: `verbs.cc`
-- [ ] `verb_info/2 (int, int)`
-- [ ] `verb_info/2 (int, float)`
-- [ ] `verb_info/2 (int, obj)`
-- [ ] `verb_info/2 (int, str)`
-- [ ] `verb_info/2 (int, err)`
-- [ ] `verb_info/2 (int, list)`
-- [ ] `verb_info/2 (int, map)`
-- [ ] `verb_info/2 (float, int)`
-- [ ] `verb_info/2 (float, float)`
-- [ ] `verb_info/2 (float, obj)`
-- [ ] `verb_info/2 (float, str)`
-- [ ] `verb_info/2 (float, err)`
-- [ ] `verb_info/2 (float, list)`
-- [ ] `verb_info/2 (float, map)`
-- [ ] `verb_info/2 (obj, int)`
-- [ ] `verb_info/2 (obj, float)`
-- [ ] `verb_info/2 (obj, obj)`
-- [x] `verb_info/2 (obj, str)` covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 18 more
-- [ ] `verb_info/2 (obj, err)`
-- [ ] `verb_info/2 (obj, list)`
-- [ ] `verb_info/2 (obj, map)`
-- [ ] `verb_info/2 (str, int)`
-- [ ] `verb_info/2 (str, float)`
-- [ ] `verb_info/2 (str, obj)`
-- [ ] `verb_info/2 (str, str)`
-- [ ] `verb_info/2 (str, err)`
-- [ ] `verb_info/2 (str, list)`
-- [ ] `verb_info/2 (str, map)`
-- [ ] `verb_info/2 (err, int)`
-- [ ] `verb_info/2 (err, float)`
-- [ ] `verb_info/2 (err, obj)`
-- [ ] `verb_info/2 (err, str)`
-- [ ] `verb_info/2 (err, err)`
-- [ ] `verb_info/2 (err, list)`
-- [ ] `verb_info/2 (err, map)`
-- [ ] `verb_info/2 (list, int)`
-- [ ] `verb_info/2 (list, float)`
-- [ ] `verb_info/2 (list, obj)`
-- [x] `verb_info/2 (list, str)` covered by `audit/verb_dispatch_toast_oracle.yaml`, `builtins/verbs.yaml`, `builtins/verbs.yaml` and 6 more
-- [ ] `verb_info/2 (list, err)`
-- [ ] `verb_info/2 (list, list)`
-- [ ] `verb_info/2 (list, map)`
-- [ ] `verb_info/2 (map, int)`
-- [ ] `verb_info/2 (map, float)`
-- [ ] `verb_info/2 (map, obj)`
-- [ ] `verb_info/2 (map, str)`
-- [ ] `verb_info/2 (map, err)`
-- [ ] `verb_info/2 (map, list)`
-- [ ] `verb_info/2 (map, map)`
+- [x] `verb_info/2 (int, int)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (int, float)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (int, obj)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (int, str)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (int, err)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (int, list)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (int, map)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (float, int)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (float, float)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (float, obj)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (float, str)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (float, err)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (float, list)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (float, map)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (obj, int)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (obj, float)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (obj, obj)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (obj, str)` covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 19 more
+- [x] `verb_info/2 (obj, err)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (obj, list)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (obj, map)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (str, int)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (str, float)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (str, obj)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (str, str)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (str, err)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (str, list)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (str, map)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (err, int)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (err, float)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (err, obj)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (err, str)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (err, err)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (err, list)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (err, map)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (list, int)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (list, float)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (list, obj)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (list, str)` covered by `audit/verb_dispatch_toast_oracle.yaml`, `builtins/verb_info_call_shapes.yaml`, `builtins/verbs.yaml` and 7 more
+- [x] `verb_info/2 (list, err)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (list, list)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (list, map)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (map, int)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (map, float)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (map, obj)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (map, str)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (map, err)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (map, list)` covered by `builtins/verb_info_call_shapes.yaml`
+- [x] `verb_info/2 (map, map)` covered by `builtins/verb_info_call_shapes.yaml`
 - [?] `verb_info/2` unknown argument types covered by `audit/verb_dispatch_toast_oracle.yaml`
 
 ### `verbs`

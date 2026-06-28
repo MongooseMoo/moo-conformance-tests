@@ -6,6 +6,29 @@ requires:
     - value_hmac
 
 tests:
+  - name: value_hmac_arity_{case}
+    permission: wizard
+    table:
+      columns: [case, expr]
+      rows:
+        - [two_int, 'value_hmac(1, "key")']
+        - [two_float, 'value_hmac(1.5, "key")']
+        - [two_obj, 'value_hmac(#0, "key")']
+        - [two_str, 'value_hmac("x", "key")']
+        - [two_err, 'value_hmac(E_ARGS, "key")']
+        - [two_list, 'value_hmac({1, "x"}, "key")']
+        - [two_map, 'value_hmac([1 -> "x"], "key")']
+        - [three_int, 'value_hmac(1, "key", "sha256")']
+        - [three_float, 'value_hmac(1.5, "key", "sha256")']
+        - [three_obj, 'value_hmac(#0, "key", "sha256")']
+        - [three_str, 'value_hmac("x", "key", "sha256")']
+        - [three_err, 'value_hmac(E_ARGS, "key", "sha256")']
+        - [three_list, 'value_hmac({1, "x"}, "key", "sha256")']
+        - [three_map, 'value_hmac([1 -> "x"], "key", "sha256")']
+    code: "{expr}"
+    expect:
+      type: str
+
   - name: value_hmac_{case}
     permission: wizard
     table:

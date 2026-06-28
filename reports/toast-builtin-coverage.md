@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T07:29:53Z`
+- generated_at: `2026-06-28T07:31:30Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `806`
-- missing_call_shapes: `6795`
+- covered_call_shapes: `818`
+- missing_call_shapes: `6783`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3976,19 +3976,6 @@ still needs explicit human review.
   - [ ] `unlisten/2 (map, err)`
   - [ ] `unlisten/2 (map, list)`
   - [ ] `unlisten/2 (map, map)`
-- `value_hmac` signature `2..4 (any, str, str, any)`
-  - [ ] `value_hmac/2 (int, str)`
-  - [ ] `value_hmac/2 (float, str)`
-  - [ ] `value_hmac/2 (obj, str)`
-  - [ ] `value_hmac/2 (err, str)`
-  - [ ] `value_hmac/2 (list, str)`
-  - [ ] `value_hmac/2 (map, str)`
-  - [ ] `value_hmac/3 (int, str, str)`
-  - [ ] `value_hmac/3 (float, str, str)`
-  - [ ] `value_hmac/3 (obj, str, str)`
-  - [ ] `value_hmac/3 (err, str, str)`
-  - [ ] `value_hmac/3 (list, str, str)`
-  - [ ] `value_hmac/3 (map, str, str)`
 - `verb_args` signature `2..2 (any, any)`
   - [ ] `verb_args/2 (int, int)`
   - [ ] `verb_args/2 (int, float)`
@@ -12758,20 +12745,20 @@ still needs explicit human review.
 
 - signature: `2..4 (any, str, str, any)`
 - source: `crypto.cc`
-- [ ] `value_hmac/2 (int, str)`
-- [ ] `value_hmac/2 (float, str)`
-- [ ] `value_hmac/2 (obj, str)`
-- [x] `value_hmac/2 (str, str)` covered by `builtins/algorithms.yaml`
-- [ ] `value_hmac/2 (err, str)`
-- [ ] `value_hmac/2 (list, str)`
-- [ ] `value_hmac/2 (map, str)`
-- [ ] `value_hmac/3 (int, str, str)`
-- [ ] `value_hmac/3 (float, str, str)`
-- [ ] `value_hmac/3 (obj, str, str)`
-- [x] `value_hmac/3 (str, str, str)` covered by `builtins/algorithms.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml` and 1 more
-- [ ] `value_hmac/3 (err, str, str)`
-- [ ] `value_hmac/3 (list, str, str)`
-- [ ] `value_hmac/3 (map, str, str)`
+- [x] `value_hmac/2 (int, str)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/2 (float, str)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/2 (obj, str)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/2 (str, str)` covered by `builtins/algorithms.yaml`, `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/2 (err, str)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/2 (list, str)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/2 (map, str)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/3 (int, str, str)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/3 (float, str, str)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/3 (obj, str, str)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/3 (str, str, str)` covered by `builtins/algorithms.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml` and 2 more
+- [x] `value_hmac/3 (err, str, str)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/3 (list, str, str)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/3 (map, str, str)` covered by `builtins/value_hmac_call_shapes.yaml`
 - [x] `value_hmac/4 (int, str, str, int)` covered by `builtins/value_hmac_call_shapes.yaml`
 - [x] `value_hmac/4 (int, str, str, float)` covered by `builtins/value_hmac_call_shapes.yaml`
 - [x] `value_hmac/4 (int, str, str, obj)` covered by `builtins/value_hmac_call_shapes.yaml`

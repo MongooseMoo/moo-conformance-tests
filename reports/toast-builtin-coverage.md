@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T08:51:06Z`
+- generated_at: `2026-06-28T08:53:47Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `3944`
-- missing_call_shapes: `3657`
+- covered_call_shapes: `3990`
+- missing_call_shapes: `3611`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,53 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `equal` signature `2..2 (any, any)`
-  - [ ] `equal/2 (int, int)`
-  - [ ] `equal/2 (int, float)`
-  - [ ] `equal/2 (int, obj)`
-  - [ ] `equal/2 (int, str)`
-  - [ ] `equal/2 (int, err)`
-  - [ ] `equal/2 (int, list)`
-  - [ ] `equal/2 (int, map)`
-  - [ ] `equal/2 (float, int)`
-  - [ ] `equal/2 (float, float)`
-  - [ ] `equal/2 (float, obj)`
-  - [ ] `equal/2 (float, str)`
-  - [ ] `equal/2 (float, err)`
-  - [ ] `equal/2 (float, list)`
-  - [ ] `equal/2 (float, map)`
-  - [ ] `equal/2 (obj, int)`
-  - [ ] `equal/2 (obj, float)`
-  - [ ] `equal/2 (obj, obj)`
-  - [ ] `equal/2 (obj, str)`
-  - [ ] `equal/2 (obj, err)`
-  - [ ] `equal/2 (obj, list)`
-  - [ ] `equal/2 (obj, map)`
-  - [ ] `equal/2 (str, int)`
-  - [ ] `equal/2 (str, float)`
-  - [ ] `equal/2 (str, obj)`
-  - [ ] `equal/2 (str, err)`
-  - [ ] `equal/2 (str, list)`
-  - [ ] `equal/2 (str, map)`
-  - [ ] `equal/2 (err, int)`
-  - [ ] `equal/2 (err, float)`
-  - [ ] `equal/2 (err, obj)`
-  - [ ] `equal/2 (err, str)`
-  - [ ] `equal/2 (err, err)`
-  - [ ] `equal/2 (err, list)`
-  - [ ] `equal/2 (err, map)`
-  - [ ] `equal/2 (list, int)`
-  - [ ] `equal/2 (list, float)`
-  - [ ] `equal/2 (list, obj)`
-  - [ ] `equal/2 (list, str)`
-  - [ ] `equal/2 (list, err)`
-  - [ ] `equal/2 (list, map)`
-  - [ ] `equal/2 (map, int)`
-  - [ ] `equal/2 (map, float)`
-  - [ ] `equal/2 (map, obj)`
-  - [ ] `equal/2 (map, str)`
-  - [ ] `equal/2 (map, err)`
-  - [ ] `equal/2 (map, list)`
 - `eval` signature `1..* (str)`
   - [ ] `eval/2 (str, int)`
   - [ ] `eval/2 (str, float)`
@@ -7220,55 +7173,55 @@ still needs explicit human review.
 
 - signature: `2..2 (any, any)`
 - source: `list.cc`
-- [ ] `equal/2 (int, int)`
-- [ ] `equal/2 (int, float)`
-- [ ] `equal/2 (int, obj)`
-- [ ] `equal/2 (int, str)`
-- [ ] `equal/2 (int, err)`
-- [ ] `equal/2 (int, list)`
-- [ ] `equal/2 (int, map)`
-- [ ] `equal/2 (float, int)`
-- [ ] `equal/2 (float, float)`
-- [ ] `equal/2 (float, obj)`
-- [ ] `equal/2 (float, str)`
-- [ ] `equal/2 (float, err)`
-- [ ] `equal/2 (float, list)`
-- [ ] `equal/2 (float, map)`
-- [ ] `equal/2 (obj, int)`
-- [ ] `equal/2 (obj, float)`
-- [ ] `equal/2 (obj, obj)`
-- [ ] `equal/2 (obj, str)`
-- [ ] `equal/2 (obj, err)`
-- [ ] `equal/2 (obj, list)`
-- [ ] `equal/2 (obj, map)`
-- [ ] `equal/2 (str, int)`
-- [ ] `equal/2 (str, float)`
-- [ ] `equal/2 (str, obj)`
-- [x] `equal/2 (str, str)` covered by `basic/value.yaml`, `basic/value.yaml`, `language/string_comparison_case.yaml`
-- [ ] `equal/2 (str, err)`
-- [ ] `equal/2 (str, list)`
-- [ ] `equal/2 (str, map)`
-- [ ] `equal/2 (err, int)`
-- [ ] `equal/2 (err, float)`
-- [ ] `equal/2 (err, obj)`
-- [ ] `equal/2 (err, str)`
-- [ ] `equal/2 (err, err)`
-- [ ] `equal/2 (err, list)`
-- [ ] `equal/2 (err, map)`
-- [ ] `equal/2 (list, int)`
-- [ ] `equal/2 (list, float)`
-- [ ] `equal/2 (list, obj)`
-- [ ] `equal/2 (list, str)`
-- [ ] `equal/2 (list, err)`
-- [x] `equal/2 (list, list)` covered by `basic/value.yaml`, `basic/value.yaml`
-- [ ] `equal/2 (list, map)`
-- [ ] `equal/2 (map, int)`
-- [ ] `equal/2 (map, float)`
-- [ ] `equal/2 (map, obj)`
-- [ ] `equal/2 (map, str)`
-- [ ] `equal/2 (map, err)`
-- [ ] `equal/2 (map, list)`
-- [x] `equal/2 (map, map)` covered by `builtins/map.yaml`, `builtins/map.yaml`, `builtins/map.yaml` and 4 more
+- [x] `equal/2 (int, int)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (int, float)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (int, obj)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (int, str)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (int, err)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (int, list)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (int, map)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (float, int)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (float, float)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (float, obj)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (float, str)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (float, err)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (float, list)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (float, map)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (obj, int)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (obj, float)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (obj, obj)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (obj, str)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (obj, err)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (obj, list)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (obj, map)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (str, int)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (str, float)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (str, obj)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (str, str)` covered by `basic/value.yaml`, `basic/value.yaml`, `builtins/equal_call_shapes.yaml` and 1 more
+- [x] `equal/2 (str, err)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (str, list)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (str, map)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (err, int)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (err, float)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (err, obj)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (err, str)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (err, err)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (err, list)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (err, map)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (list, int)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (list, float)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (list, obj)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (list, str)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (list, err)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (list, list)` covered by `basic/value.yaml`, `basic/value.yaml`, `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (list, map)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (map, int)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (map, float)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (map, obj)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (map, str)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (map, err)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (map, list)` covered by `builtins/equal_call_shapes.yaml`
+- [x] `equal/2 (map, map)` covered by `builtins/equal_call_shapes.yaml`, `builtins/map.yaml`, `builtins/map.yaml` and 5 more
 - [?] `equal/2` unknown argument types covered by `basic/value.yaml`
 
 ### `eval`

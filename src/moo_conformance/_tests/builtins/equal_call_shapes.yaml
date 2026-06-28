@@ -1,0 +1,33 @@
+name: equal_call_shapes
+description: Product-table TYPE_ANY coverage for equal().
+
+requires:
+  builtins:
+    - equal
+
+tests:
+  - name: equal_arg_types_{left_kind}_{right_kind}
+    permission: wizard
+    table:
+      product:
+        - columns: [left_kind, left_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+        - columns: [right_kind, right_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+    code: "equal({left_expr}, {right_expr})"
+    expect:
+      type: int

@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T09:27:57Z`
+- generated_at: `2026-06-28T09:32:12Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `4273`
-- missing_call_shapes: `3328`
+- covered_call_shapes: `4275`
+- missing_call_shapes: `3326`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,9 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `move` signature `2..3 (obj, obj, int)`
-  - [ ] `move/2 (obj, obj)`
-  - [ ] `move/3 (obj, obj, int)`
 - `notify` signature `2..4 (obj, str, any, any)`
   - [ ] `notify/3 (obj, str, float)`
   - [ ] `notify/3 (obj, str, obj)`
@@ -7811,8 +7808,8 @@ still needs explicit human review.
 
 - signature: `2..3 (obj, obj, int)`
 - source: `objects.cc`
-- [ ] `move/2 (obj, obj)`
-- [ ] `move/3 (obj, obj, int)`
+- [x] `move/2 (obj, obj)` covered by `builtins/move_call_shapes.yaml`
+- [x] `move/3 (obj, obj, int)` covered by `builtins/move_call_shapes.yaml`
 - [?] `move/2` unknown argument types covered by `builtins/move_invalid_args.yaml`, `builtins/move_invalid_args.yaml`, `builtins/move_invalid_args.yaml` and 83 more
 - [?] `move/3` unknown argument types covered by `builtins/move.yaml`, `builtins/move.yaml`, `builtins/move.yaml` and 1 more
 

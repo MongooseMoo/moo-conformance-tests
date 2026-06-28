@@ -1,0 +1,19 @@
+name: move_call_shapes
+description: Object-argument call-shape coverage for move().
+
+requires:
+  builtins:
+    - move
+
+tests:
+  - name: move_two_args_accepts_objects
+    permission: wizard
+    code: "move(#0, #0)"
+    expect:
+      error: E_RECMOVE
+
+  - name: move_three_args_accepts_objects_and_position
+    permission: wizard
+    code: "move(#0, #0, 1)"
+    expect:
+      error: E_RECMOVE

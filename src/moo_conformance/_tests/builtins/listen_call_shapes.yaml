@@ -1,0 +1,48 @@
+name: listen_call_shapes
+description: TYPE_ANY description call-shape coverage for listen().
+
+requires:
+  builtins:
+    - listen
+    - unlisten
+
+tests:
+  - name: listen_two_args_accepts_integer_description
+    permission: wizard
+    steps:
+      - run: "listen(#0, 0)"
+        capture: port
+        expect:
+          type: int
+    cleanup:
+      - run: "unlisten({port})"
+        as: wizard
+
+  - name: listen_two_args_rejects_non_integer_description_{desc_kind}
+    permission: wizard
+    table:
+      columns: [desc_kind, desc_expr]
+      rows:
+        - [float, "1.5"]
+        - [obj, "#0"]
+        - [str, '"listener"']
+        - [err, "E_ARGS"]
+        - [list, "{}"]
+        - [map, "[1 -> 2]"]
+    code: "listen(#0, {desc_expr})"
+    expect:
+      error: E_TYPE
+
+  - name: listen_three_args_rejects_non_integer_description_{desc_kind}
+    permission: wizard
+    table:
+      columns: [desc_kind, desc_expr]
+      rows:
+        - [float, "1.5"]
+        - [obj, "#0"]
+        - [str, '"listener"']
+        - [err, "E_ARGS"]
+        - [map, "[1 -> 2]"]
+    code: 'listen(#0, {desc_expr}, ["print-messages" -> 0])'
+    expect:
+      error: E_TYPE

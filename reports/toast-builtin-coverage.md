@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T09:21:50Z`
+- generated_at: `2026-06-28T09:24:48Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `4252`
-- missing_call_shapes: `3349`
+- covered_call_shapes: `4264`
+- missing_call_shapes: `3337`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,19 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `listen` signature `2..3 (obj, any, map)`
-  - [ ] `listen/2 (obj, int)`
-  - [ ] `listen/2 (obj, float)`
-  - [ ] `listen/2 (obj, obj)`
-  - [ ] `listen/2 (obj, str)`
-  - [ ] `listen/2 (obj, err)`
-  - [ ] `listen/2 (obj, list)`
-  - [ ] `listen/2 (obj, map)`
-  - [ ] `listen/3 (obj, float, map)`
-  - [ ] `listen/3 (obj, obj, map)`
-  - [ ] `listen/3 (obj, str, map)`
-  - [ ] `listen/3 (obj, err, map)`
-  - [ ] `listen/3 (obj, map, map)`
 - `listeners` signature `0..1 (any)`
   - [ ] `listeners/1 (int)`
   - [ ] `listeners/1 (float)`
@@ -7603,20 +7590,20 @@ still needs explicit human review.
 
 - signature: `2..3 (obj, any, map)`
 - source: `server.cc`
-- [ ] `listen/2 (obj, int)`
-- [ ] `listen/2 (obj, float)`
-- [ ] `listen/2 (obj, obj)`
-- [ ] `listen/2 (obj, str)`
-- [ ] `listen/2 (obj, err)`
-- [ ] `listen/2 (obj, list)`
-- [ ] `listen/2 (obj, map)`
+- [x] `listen/2 (obj, int)` covered by `builtins/listen_call_shapes.yaml`
+- [x] `listen/2 (obj, float)` covered by `builtins/listen_call_shapes.yaml`
+- [x] `listen/2 (obj, obj)` covered by `builtins/listen_call_shapes.yaml`
+- [x] `listen/2 (obj, str)` covered by `builtins/listen_call_shapes.yaml`
+- [x] `listen/2 (obj, err)` covered by `builtins/listen_call_shapes.yaml`
+- [x] `listen/2 (obj, list)` covered by `builtins/listen_call_shapes.yaml`
+- [x] `listen/2 (obj, map)` covered by `builtins/listen_call_shapes.yaml`
 - [x] `listen/3 (obj, int, map)` covered by `builtins/server_admin.yaml`, `builtins/server_admin.yaml`, `builtins/server_admin.yaml`
-- [ ] `listen/3 (obj, float, map)`
-- [ ] `listen/3 (obj, obj, map)`
-- [ ] `listen/3 (obj, str, map)`
-- [ ] `listen/3 (obj, err, map)`
+- [x] `listen/3 (obj, float, map)` covered by `builtins/listen_call_shapes.yaml`
+- [x] `listen/3 (obj, obj, map)` covered by `builtins/listen_call_shapes.yaml`
+- [x] `listen/3 (obj, str, map)` covered by `builtins/listen_call_shapes.yaml`
+- [x] `listen/3 (obj, err, map)` covered by `builtins/listen_call_shapes.yaml`
 - [x] `listen/3 (obj, list, map)` covered by `builtins/server_admin.yaml`
-- [ ] `listen/3 (obj, map, map)`
+- [x] `listen/3 (obj, map, map)` covered by `builtins/listen_call_shapes.yaml`
 - [?] `listen/2` unknown argument types covered by `builtins/server_admin.yaml`
 - [?] `listen/3` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 3 more
 
@@ -9108,7 +9095,7 @@ still needs explicit human review.
 - [ ] `unlisten/1 (obj)`
 - [ ] `unlisten/1 (str)`
 - [ ] `unlisten/1 (err)`
-- [x] `unlisten/1 (list)` covered by `builtins/server_admin.yaml`, `builtins/server_admin.yaml`
+- [x] `unlisten/1 (list)` covered by `builtins/listen_call_shapes.yaml`, `builtins/server_admin.yaml`, `builtins/server_admin.yaml`
 - [ ] `unlisten/1 (map)`
 - [ ] `unlisten/2 (int, int)`
 - [ ] `unlisten/2 (int, float)`

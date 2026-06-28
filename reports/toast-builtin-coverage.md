@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T06:38:31Z`
+- generated_at: `2026-06-28T06:41:29Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `587`
-- missing_call_shapes: `7014`
+- covered_call_shapes: `593`
+- missing_call_shapes: `7008`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3544,13 +3544,6 @@ still needs explicit human review.
   - [ ] `maphaskey/3 (map, err, int)`
   - [ ] `maphaskey/3 (map, list, int)`
   - [ ] `maphaskey/3 (map, map, int)`
-- `match` signature `2..3 (str, str, any)`
-  - [ ] `match/3 (str, str, float)`
-  - [ ] `match/3 (str, str, obj)`
-  - [ ] `match/3 (str, str, str)`
-  - [ ] `match/3 (str, str, err)`
-  - [ ] `match/3 (str, str, list)`
-  - [ ] `match/3 (str, str, map)`
 - `move` signature `2..3 (obj, obj, int)`
   - [ ] `move/2 (obj, obj)`
   - [ ] `move/3 (obj, obj, int)`
@@ -11497,12 +11490,12 @@ still needs explicit human review.
 - source: `list.cc`
 - [x] `match/2 (str, str)` covered by `builtins/match_percent_escapes.yaml`, `builtins/match_percent_escapes.yaml`, `builtins/match_percent_escapes.yaml` and 30 more
 - [x] `match/3 (str, str, int)` covered by `builtins/match_rmatch.yaml`
-- [ ] `match/3 (str, str, float)`
-- [ ] `match/3 (str, str, obj)`
-- [ ] `match/3 (str, str, str)`
-- [ ] `match/3 (str, str, err)`
-- [ ] `match/3 (str, str, list)`
-- [ ] `match/3 (str, str, map)`
+- [x] `match/3 (str, str, float)` covered by `builtins/match_call_shapes.yaml`
+- [x] `match/3 (str, str, obj)` covered by `builtins/match_call_shapes.yaml`
+- [x] `match/3 (str, str, str)` covered by `builtins/match_call_shapes.yaml`
+- [x] `match/3 (str, str, err)` covered by `builtins/match_call_shapes.yaml`
+- [x] `match/3 (str, str, list)` covered by `builtins/match_call_shapes.yaml`
+- [x] `match/3 (str, str, map)` covered by `builtins/match_call_shapes.yaml`
 
 ### `max`
 

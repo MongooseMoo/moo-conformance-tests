@@ -1,0 +1,22 @@
+name: match_call_shapes
+description: Table-driven TYPE_ANY coverage for match().
+
+requires:
+  builtins:
+    - match
+
+tests:
+  - name: match_third_arg_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [float, "1.5"]
+        - [obj, "#0"]
+        - [str, '"x"']
+        - [err, "E_ARGS"]
+        - [list, "{}"]
+        - [map, "[1 -> 2]"]
+    code: 'match("foo", "foo", {expr})'
+    expect:
+      type: list

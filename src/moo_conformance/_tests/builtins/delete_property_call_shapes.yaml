@@ -1,0 +1,21 @@
+name: delete_property_call_shapes
+description: Table-driven TYPE_ANY coverage for delete_property().
+
+requires:
+  builtins:
+    - delete_property
+
+tests:
+  - name: delete_property_arg_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [int, 'delete_property(1, "name")']
+        - [float, 'delete_property(1.5, "name")']
+        - [str, 'delete_property("x", "name")']
+        - [err, 'delete_property(E_ARGS, "name")']
+        - [map, 'delete_property([1 -> 2], "name")']
+    code: "{expr}"
+    expect:
+      error: E_TYPE

@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T06:01:26Z`
+- generated_at: `2026-06-28T06:03:46Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `243`
 - required_call_shapes: `7721`
-- covered_call_shapes: `553`
-- missing_call_shapes: `7168`
+- covered_call_shapes: `558`
+- missing_call_shapes: `7163`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3019,12 +3019,6 @@ still needs explicit human review.
   - [ ] `decode_binary/2 (str, err)`
   - [ ] `decode_binary/2 (str, list)`
   - [ ] `decode_binary/2 (str, map)`
-- `delete_property` signature `2..2 (any, str)`
-  - [ ] `delete_property/2 (int, str)`
-  - [ ] `delete_property/2 (float, str)`
-  - [ ] `delete_property/2 (str, str)`
-  - [ ] `delete_property/2 (err, str)`
-  - [ ] `delete_property/2 (map, str)`
 - `delete_verb` signature `2..2 (any, any)`
   - [ ] `delete_verb/2 (int, int)`
   - [ ] `delete_verb/2 (int, float)`
@@ -10643,13 +10637,13 @@ still needs explicit human review.
 
 - signature: `2..2 (any, str)`
 - source: `property.cc`
-- [ ] `delete_property/2 (int, str)`
-- [ ] `delete_property/2 (float, str)`
+- [x] `delete_property/2 (int, str)` covered by `builtins/delete_property_call_shapes.yaml`
+- [x] `delete_property/2 (float, str)` covered by `builtins/delete_property_call_shapes.yaml`
 - [x] `delete_property/2 (obj, str)` covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 75 more
-- [ ] `delete_property/2 (str, str)`
-- [ ] `delete_property/2 (err, str)`
+- [x] `delete_property/2 (str, str)` covered by `builtins/delete_property_call_shapes.yaml`
+- [x] `delete_property/2 (err, str)` covered by `builtins/delete_property_call_shapes.yaml`
 - [x] `delete_property/2 (list, str)` covered by `builtins/properties.yaml`, `builtins/properties.yaml`, `builtins/properties.yaml` and 6 more
-- [ ] `delete_property/2 (map, str)`
+- [x] `delete_property/2 (map, str)` covered by `builtins/delete_property_call_shapes.yaml`
 - [?] `delete_property/2` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 51 more
 
 ### `delete_verb`

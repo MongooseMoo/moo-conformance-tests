@@ -1,0 +1,57 @@
+name: disassemble_call_shapes
+description: Product-table TYPE_ANY coverage for disassemble().
+
+requires:
+  builtins:
+    - disassemble
+
+tests:
+  - name: disassemble_non_object_{object_kind}_{desc_kind}
+    permission: wizard
+    table:
+      product:
+        - columns: [object_kind, object_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+        - columns: [desc_kind, desc_expr]
+          rows:
+            - [int, "1"]
+            - [float, "1.5"]
+            - [obj, "#0"]
+            - [str, '"x"']
+            - [err, "E_ARGS"]
+            - [list, "{}"]
+            - [map, "[1 -> 2]"]
+    code: "disassemble({object_expr}, {desc_expr})"
+    expect:
+      error: E_TYPE
+
+  - name: disassemble_invalid_object_bad_descriptor_{desc_kind}
+    permission: wizard
+    table:
+      columns: [desc_kind, desc_expr]
+      rows:
+        - [float, "1.5"]
+        - [obj, "#0"]
+        - [err, "E_ARGS"]
+        - [list, "{}"]
+        - [map, "[1 -> 2]"]
+    code: "disassemble(#999999, {desc_expr})"
+    expect:
+      error: E_TYPE
+
+  - name: disassemble_invalid_object_valid_descriptor_{desc_kind}
+    permission: wizard
+    table:
+      columns: [desc_kind, desc_expr]
+      rows:
+        - [int, "1"]
+        - [str, '"x"']
+    code: "disassemble(#999999, {desc_expr})"
+    expect:
+      error: E_INVARG

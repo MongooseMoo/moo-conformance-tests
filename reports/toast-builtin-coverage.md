@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T08:48:39Z`
+- generated_at: `2026-06-28T08:51:06Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `3896`
-- missing_call_shapes: `3705`
+- covered_call_shapes: `3944`
+- missing_call_shapes: `3657`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,55 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `disassemble` signature `2..2 (any, any)`
-  - [ ] `disassemble/2 (int, int)`
-  - [ ] `disassemble/2 (int, float)`
-  - [ ] `disassemble/2 (int, obj)`
-  - [ ] `disassemble/2 (int, str)`
-  - [ ] `disassemble/2 (int, err)`
-  - [ ] `disassemble/2 (int, list)`
-  - [ ] `disassemble/2 (int, map)`
-  - [ ] `disassemble/2 (float, int)`
-  - [ ] `disassemble/2 (float, float)`
-  - [ ] `disassemble/2 (float, obj)`
-  - [ ] `disassemble/2 (float, str)`
-  - [ ] `disassemble/2 (float, err)`
-  - [ ] `disassemble/2 (float, list)`
-  - [ ] `disassemble/2 (float, map)`
-  - [ ] `disassemble/2 (obj, int)`
-  - [ ] `disassemble/2 (obj, float)`
-  - [ ] `disassemble/2 (obj, obj)`
-  - [ ] `disassemble/2 (obj, str)`
-  - [ ] `disassemble/2 (obj, err)`
-  - [ ] `disassemble/2 (obj, list)`
-  - [ ] `disassemble/2 (obj, map)`
-  - [ ] `disassemble/2 (str, int)`
-  - [ ] `disassemble/2 (str, float)`
-  - [ ] `disassemble/2 (str, obj)`
-  - [ ] `disassemble/2 (str, str)`
-  - [ ] `disassemble/2 (str, err)`
-  - [ ] `disassemble/2 (str, list)`
-  - [ ] `disassemble/2 (str, map)`
-  - [ ] `disassemble/2 (err, int)`
-  - [ ] `disassemble/2 (err, float)`
-  - [ ] `disassemble/2 (err, obj)`
-  - [ ] `disassemble/2 (err, str)`
-  - [ ] `disassemble/2 (err, err)`
-  - [ ] `disassemble/2 (err, list)`
-  - [ ] `disassemble/2 (err, map)`
-  - [ ] `disassemble/2 (list, int)`
-  - [ ] `disassemble/2 (list, float)`
-  - [ ] `disassemble/2 (list, obj)`
-  - [ ] `disassemble/2 (list, err)`
-  - [ ] `disassemble/2 (list, list)`
-  - [ ] `disassemble/2 (list, map)`
-  - [ ] `disassemble/2 (map, int)`
-  - [ ] `disassemble/2 (map, float)`
-  - [ ] `disassemble/2 (map, obj)`
-  - [ ] `disassemble/2 (map, str)`
-  - [ ] `disassemble/2 (map, err)`
-  - [ ] `disassemble/2 (map, list)`
-  - [ ] `disassemble/2 (map, map)`
 - `equal` signature `2..2 (any, any)`
   - [ ] `equal/2 (int, int)`
   - [ ] `equal/2 (int, float)`
@@ -7174,55 +7125,55 @@ still needs explicit human review.
 
 - signature: `2..2 (any, any)`
 - source: `disassemble.cc`
-- [ ] `disassemble/2 (int, int)`
-- [ ] `disassemble/2 (int, float)`
-- [ ] `disassemble/2 (int, obj)`
-- [ ] `disassemble/2 (int, str)`
-- [ ] `disassemble/2 (int, err)`
-- [ ] `disassemble/2 (int, list)`
-- [ ] `disassemble/2 (int, map)`
-- [ ] `disassemble/2 (float, int)`
-- [ ] `disassemble/2 (float, float)`
-- [ ] `disassemble/2 (float, obj)`
-- [ ] `disassemble/2 (float, str)`
-- [ ] `disassemble/2 (float, err)`
-- [ ] `disassemble/2 (float, list)`
-- [ ] `disassemble/2 (float, map)`
-- [ ] `disassemble/2 (obj, int)`
-- [ ] `disassemble/2 (obj, float)`
-- [ ] `disassemble/2 (obj, obj)`
-- [ ] `disassemble/2 (obj, str)`
-- [ ] `disassemble/2 (obj, err)`
-- [ ] `disassemble/2 (obj, list)`
-- [ ] `disassemble/2 (obj, map)`
-- [ ] `disassemble/2 (str, int)`
-- [ ] `disassemble/2 (str, float)`
-- [ ] `disassemble/2 (str, obj)`
-- [ ] `disassemble/2 (str, str)`
-- [ ] `disassemble/2 (str, err)`
-- [ ] `disassemble/2 (str, list)`
-- [ ] `disassemble/2 (str, map)`
-- [ ] `disassemble/2 (err, int)`
-- [ ] `disassemble/2 (err, float)`
-- [ ] `disassemble/2 (err, obj)`
-- [ ] `disassemble/2 (err, str)`
-- [ ] `disassemble/2 (err, err)`
-- [ ] `disassemble/2 (err, list)`
-- [ ] `disassemble/2 (err, map)`
-- [ ] `disassemble/2 (list, int)`
-- [ ] `disassemble/2 (list, float)`
-- [ ] `disassemble/2 (list, obj)`
-- [x] `disassemble/2 (list, str)` covered by `builtins/verbs.yaml`, `builtins/verbs.yaml`, `builtins/verbs.yaml`
-- [ ] `disassemble/2 (list, err)`
-- [ ] `disassemble/2 (list, list)`
-- [ ] `disassemble/2 (list, map)`
-- [ ] `disassemble/2 (map, int)`
-- [ ] `disassemble/2 (map, float)`
-- [ ] `disassemble/2 (map, obj)`
-- [ ] `disassemble/2 (map, str)`
-- [ ] `disassemble/2 (map, err)`
-- [ ] `disassemble/2 (map, list)`
-- [ ] `disassemble/2 (map, map)`
+- [x] `disassemble/2 (int, int)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (int, float)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (int, obj)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (int, str)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (int, err)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (int, list)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (int, map)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (float, int)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (float, float)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (float, obj)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (float, str)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (float, err)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (float, list)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (float, map)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (obj, int)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (obj, float)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (obj, obj)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (obj, str)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (obj, err)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (obj, list)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (obj, map)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (str, int)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (str, float)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (str, obj)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (str, str)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (str, err)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (str, list)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (str, map)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (err, int)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (err, float)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (err, obj)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (err, str)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (err, err)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (err, list)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (err, map)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (list, int)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (list, float)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (list, obj)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (list, str)` covered by `builtins/disassemble_call_shapes.yaml`, `builtins/verbs.yaml`, `builtins/verbs.yaml` and 1 more
+- [x] `disassemble/2 (list, err)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (list, list)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (list, map)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (map, int)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (map, float)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (map, obj)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (map, str)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (map, err)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (map, list)` covered by `builtins/disassemble_call_shapes.yaml`
+- [x] `disassemble/2 (map, map)` covered by `builtins/disassemble_call_shapes.yaml`
 - [?] `disassemble/2` unknown argument types covered by `language/index_and_range.yaml`, `language/moocode_parsing.yaml`, `language/moocode_parsing.yaml` and 4 more
 
 ### `distance`

@@ -195,7 +195,11 @@ def generate_builtin_io_yamls(
     return generated
 
 
-def extract_builtin_specs(source_root: str | Path) -> list[BuiltinSpec]:
+def extract_builtin_specs(
+    source_root: str | Path,
+    *,
+    include_excluded: bool = False,
+) -> list[BuiltinSpec]:
     """Extract builtin registrations and emitted type metadata."""
     root = _resolve_toast_src(Path(source_root))
     source_files = _source_files(root)
@@ -207,10 +211,11 @@ def extract_builtin_specs(source_root: str | Path) -> list[BuiltinSpec]:
         for kind, call_text in _find_registration_calls(text):
             spec = _parse_registration(path, kind, call_text, implementations)
             if spec is not None:
-                if spec.name in EXCLUDED_SOURCE_ONLY_BUILTINS:
-                    continue
-                if spec.name in EXCLUDED_GENERATED_BUILTINS:
-                    continue
+                if not include_excluded:
+                    if spec.name in EXCLUDED_SOURCE_ONLY_BUILTINS:
+                        continue
+                    if spec.name in EXCLUDED_GENERATED_BUILTINS:
+                        continue
                 specs.append(spec)
 
     specs.sort(key=lambda item: item.name)

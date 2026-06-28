@@ -1,0 +1,16529 @@
+# Toast Builtin Call-Shape Coverage
+
+- generated_at: `2026-06-28T05:22:46Z`
+- toast_source: `C:\Users\Q\src\toaststunt`
+- conformance_tests: `src\moo_conformance\_tests`
+- generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
+- builtins: `243`
+- required_call_shapes: `7721`
+- covered_call_shapes: `417`
+- missing_call_shapes: `7304`
+
+A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
+and `TYPE_NUMERIC` registrations expand into concrete type permutations.
+Calls through variables or complex expressions are listed as unknown and
+do not count as covering a concrete type permutation.
+
+Variadic signatures (`maxargs == -1`) currently require the minimum arity
+and one extra arity as a smoke sample; behavior-specific variadic expansion
+still needs explicit human review.
+
+## Missing Call-Shape Checklist
+
+- `add_property` signature `4..4 (any, str, any, list)`
+  - [ ] `add_property/4 (int, str, int, list)`
+  - [ ] `add_property/4 (int, str, float, list)`
+  - [ ] `add_property/4 (int, str, obj, list)`
+  - [ ] `add_property/4 (int, str, str, list)`
+  - [ ] `add_property/4 (int, str, err, list)`
+  - [ ] `add_property/4 (int, str, list, list)`
+  - [ ] `add_property/4 (int, str, map, list)`
+  - [ ] `add_property/4 (float, str, int, list)`
+  - [ ] `add_property/4 (float, str, float, list)`
+  - [ ] `add_property/4 (float, str, obj, list)`
+  - [ ] `add_property/4 (float, str, str, list)`
+  - [ ] `add_property/4 (float, str, err, list)`
+  - [ ] `add_property/4 (float, str, list, list)`
+  - [ ] `add_property/4 (float, str, map, list)`
+  - [ ] `add_property/4 (obj, str, float, list)`
+  - [ ] `add_property/4 (obj, str, err, list)`
+  - [ ] `add_property/4 (obj, str, map, list)`
+  - [ ] `add_property/4 (str, str, int, list)`
+  - [ ] `add_property/4 (str, str, float, list)`
+  - [ ] `add_property/4 (str, str, obj, list)`
+  - [ ] `add_property/4 (str, str, str, list)`
+  - [ ] `add_property/4 (str, str, err, list)`
+  - [ ] `add_property/4 (str, str, list, list)`
+  - [ ] `add_property/4 (str, str, map, list)`
+  - [ ] `add_property/4 (err, str, int, list)`
+  - [ ] `add_property/4 (err, str, float, list)`
+  - [ ] `add_property/4 (err, str, obj, list)`
+  - [ ] `add_property/4 (err, str, str, list)`
+  - [ ] `add_property/4 (err, str, err, list)`
+  - [ ] `add_property/4 (err, str, list, list)`
+  - [ ] `add_property/4 (err, str, map, list)`
+  - [ ] `add_property/4 (list, str, float, list)`
+  - [ ] `add_property/4 (list, str, obj, list)`
+  - [ ] `add_property/4 (list, str, err, list)`
+  - [ ] `add_property/4 (list, str, list, list)`
+  - [ ] `add_property/4 (list, str, map, list)`
+  - [ ] `add_property/4 (map, str, int, list)`
+  - [ ] `add_property/4 (map, str, float, list)`
+  - [ ] `add_property/4 (map, str, obj, list)`
+  - [ ] `add_property/4 (map, str, str, list)`
+  - [ ] `add_property/4 (map, str, err, list)`
+  - [ ] `add_property/4 (map, str, list, list)`
+  - [ ] `add_property/4 (map, str, map, list)`
+- `add_verb` signature `3..3 (any, list, list)`
+  - [ ] `add_verb/3 (int, list, list)`
+  - [ ] `add_verb/3 (float, list, list)`
+  - [ ] `add_verb/3 (str, list, list)`
+  - [ ] `add_verb/3 (err, list, list)`
+  - [ ] `add_verb/3 (map, list, list)`
+- `all_members` signature `2..2 (any, list)`
+  - [ ] `all_members/2 (int, list)`
+  - [ ] `all_members/2 (float, list)`
+  - [ ] `all_members/2 (obj, list)`
+  - [ ] `all_members/2 (str, list)`
+  - [ ] `all_members/2 (err, list)`
+  - [ ] `all_members/2 (list, list)`
+  - [ ] `all_members/2 (map, list)`
+- `ancestors` signature `1..2 (any, any)`
+  - [ ] `ancestors/1 (obj)`
+  - [ ] `ancestors/1 (err)`
+  - [ ] `ancestors/1 (list)`
+  - [ ] `ancestors/1 (map)`
+  - [ ] `ancestors/2 (int, int)`
+  - [ ] `ancestors/2 (int, float)`
+  - [ ] `ancestors/2 (int, obj)`
+  - [ ] `ancestors/2 (int, str)`
+  - [ ] `ancestors/2 (int, err)`
+  - [ ] `ancestors/2 (int, list)`
+  - [ ] `ancestors/2 (int, map)`
+  - [ ] `ancestors/2 (float, int)`
+  - [ ] `ancestors/2 (float, float)`
+  - [ ] `ancestors/2 (float, obj)`
+  - [ ] `ancestors/2 (float, str)`
+  - [ ] `ancestors/2 (float, err)`
+  - [ ] `ancestors/2 (float, list)`
+  - [ ] `ancestors/2 (float, map)`
+  - [ ] `ancestors/2 (obj, int)`
+  - [ ] `ancestors/2 (obj, float)`
+  - [ ] `ancestors/2 (obj, obj)`
+  - [ ] `ancestors/2 (obj, str)`
+  - [ ] `ancestors/2 (obj, err)`
+  - [ ] `ancestors/2 (obj, list)`
+  - [ ] `ancestors/2 (obj, map)`
+  - [ ] `ancestors/2 (str, int)`
+  - [ ] `ancestors/2 (str, float)`
+  - [ ] `ancestors/2 (str, obj)`
+  - [ ] `ancestors/2 (str, str)`
+  - [ ] `ancestors/2 (str, err)`
+  - [ ] `ancestors/2 (str, list)`
+  - [ ] `ancestors/2 (str, map)`
+  - [ ] `ancestors/2 (err, int)`
+  - [ ] `ancestors/2 (err, float)`
+  - [ ] `ancestors/2 (err, obj)`
+  - [ ] `ancestors/2 (err, str)`
+  - [ ] `ancestors/2 (err, err)`
+  - [ ] `ancestors/2 (err, list)`
+  - [ ] `ancestors/2 (err, map)`
+  - [ ] `ancestors/2 (list, int)`
+  - [ ] `ancestors/2 (list, float)`
+  - [ ] `ancestors/2 (list, obj)`
+  - [ ] `ancestors/2 (list, str)`
+  - [ ] `ancestors/2 (list, err)`
+  - [ ] `ancestors/2 (list, list)`
+  - [ ] `ancestors/2 (list, map)`
+  - [ ] `ancestors/2 (map, int)`
+  - [ ] `ancestors/2 (map, float)`
+  - [ ] `ancestors/2 (map, obj)`
+  - [ ] `ancestors/2 (map, str)`
+  - [ ] `ancestors/2 (map, err)`
+  - [ ] `ancestors/2 (map, list)`
+  - [ ] `ancestors/2 (map, map)`
+- `anon` signature `0..2 (list, any)`
+  - [ ] `anon/0 ()`
+  - [ ] `anon/1 (list)`
+  - [ ] `anon/2 (list, int)`
+  - [ ] `anon/2 (list, float)`
+  - [ ] `anon/2 (list, obj)`
+  - [ ] `anon/2 (list, str)`
+  - [ ] `anon/2 (list, err)`
+  - [ ] `anon/2 (list, list)`
+  - [ ] `anon/2 (list, map)`
+- `argon2` signature `2..5 (str, str, int, int, int)`
+  - [ ] `argon2/3 (str, str, int)`
+  - [ ] `argon2/4 (str, str, int, int)`
+- `background_test` signature `0..2 (str, int)`
+  - [ ] `background_test/0 ()`
+  - [ ] `background_test/1 (str)`
+  - [ ] `background_test/2 (str, int)`
+- `binary_hash` signature `1..3 (str, str, any)`
+  - [ ] `binary_hash/3 (str, str, float)`
+  - [ ] `binary_hash/3 (str, str, obj)`
+  - [ ] `binary_hash/3 (str, str, str)`
+  - [ ] `binary_hash/3 (str, str, err)`
+  - [ ] `binary_hash/3 (str, str, list)`
+  - [ ] `binary_hash/3 (str, str, map)`
+- `binary_hmac` signature `2..4 (str, str, str, any)`
+  - [ ] `binary_hmac/4 (str, str, str, float)`
+  - [ ] `binary_hmac/4 (str, str, str, obj)`
+  - [ ] `binary_hmac/4 (str, str, str, str)`
+  - [ ] `binary_hmac/4 (str, str, str, err)`
+  - [ ] `binary_hmac/4 (str, str, str, list)`
+  - [ ] `binary_hmac/4 (str, str, str, map)`
+- `call_function` signature `1..* (str)`
+  - [ ] `call_function/2 (str, float)`
+  - [ ] `call_function/2 (str, obj)`
+  - [ ] `call_function/2 (str, err)`
+  - [ ] `call_function/2 (str, map)`
+- `callers` signature `0..1 (any)`
+  - [ ] `callers/1 (float)`
+  - [ ] `callers/1 (obj)`
+  - [ ] `callers/1 (str)`
+  - [ ] `callers/1 (err)`
+  - [ ] `callers/1 (list)`
+  - [ ] `callers/1 (map)`
+- `children` signature `1..1 (any)`
+  - [ ] `children/1 (int)`
+  - [ ] `children/1 (float)`
+  - [ ] `children/1 (str)`
+  - [ ] `children/1 (err)`
+  - [ ] `children/1 (list)`
+  - [ ] `children/1 (map)`
+- `chparent` signature `2..2 (any, obj)`
+  - [ ] `chparent/2 (int, obj)`
+  - [ ] `chparent/2 (float, obj)`
+  - [ ] `chparent/2 (obj, obj)`
+  - [ ] `chparent/2 (str, obj)`
+  - [ ] `chparent/2 (err, obj)`
+  - [ ] `chparent/2 (list, obj)`
+  - [ ] `chparent/2 (map, obj)`
+- `chparents` signature `2..2 (any, list)`
+  - [ ] `chparents/2 (int, list)`
+  - [ ] `chparents/2 (float, list)`
+  - [ ] `chparents/2 (obj, list)`
+  - [ ] `chparents/2 (str, list)`
+  - [ ] `chparents/2 (err, list)`
+  - [ ] `chparents/2 (map, list)`
+- `chr` signature `0..* ()`
+  - [ ] `chr/1 (float)`
+  - [ ] `chr/1 (obj)`
+  - [ ] `chr/1 (err)`
+  - [ ] `chr/1 (map)`
+- `clear_property` signature `2..2 (any, str)`
+  - [ ] `clear_property/2 (int, str)`
+  - [ ] `clear_property/2 (float, str)`
+  - [ ] `clear_property/2 (obj, str)`
+  - [ ] `clear_property/2 (str, str)`
+  - [ ] `clear_property/2 (err, str)`
+  - [ ] `clear_property/2 (map, str)`
+- `connected_players` signature `0..1 (any)`
+  - [ ] `connected_players/1 (float)`
+  - [ ] `connected_players/1 (obj)`
+  - [ ] `connected_players/1 (str)`
+  - [ ] `connected_players/1 (err)`
+  - [ ] `connected_players/1 (list)`
+  - [ ] `connected_players/1 (map)`
+- `connection_name` signature `1..2 (obj, int)`
+  - [ ] `connection_name/2 (obj, int)`
+- `connection_name_lookup` signature `1..2 (obj, any)`
+  - [ ] `connection_name_lookup/2 (obj, int)`
+  - [ ] `connection_name_lookup/2 (obj, float)`
+  - [ ] `connection_name_lookup/2 (obj, obj)`
+  - [ ] `connection_name_lookup/2 (obj, str)`
+  - [ ] `connection_name_lookup/2 (obj, err)`
+  - [ ] `connection_name_lookup/2 (obj, list)`
+  - [ ] `connection_name_lookup/2 (obj, map)`
+- `connection_options` signature `1..2 (obj, str)`
+  - [ ] `connection_options/2 (obj, str)`
+- `create` signature `1..4 (any, any, any, any)`
+  - [ ] `create/1 (float)`
+  - [ ] `create/1 (err)`
+  - [ ] `create/1 (map)`
+  - [ ] `create/2 (int, float)`
+  - [ ] `create/2 (int, obj)`
+  - [ ] `create/2 (int, str)`
+  - [ ] `create/2 (int, err)`
+  - [ ] `create/2 (int, list)`
+  - [ ] `create/2 (int, map)`
+  - [ ] `create/2 (float, int)`
+  - [ ] `create/2 (float, float)`
+  - [ ] `create/2 (float, obj)`
+  - [ ] `create/2 (float, str)`
+  - [ ] `create/2 (float, err)`
+  - [ ] `create/2 (float, list)`
+  - [ ] `create/2 (float, map)`
+  - [ ] `create/2 (obj, int)`
+  - [ ] `create/2 (obj, float)`
+  - [ ] `create/2 (obj, obj)`
+  - [ ] `create/2 (obj, str)`
+  - [ ] `create/2 (obj, err)`
+  - [ ] `create/2 (obj, list)`
+  - [ ] `create/2 (obj, map)`
+  - [ ] `create/2 (str, int)`
+  - [ ] `create/2 (str, float)`
+  - [ ] `create/2 (str, obj)`
+  - [ ] `create/2 (str, str)`
+  - [ ] `create/2 (str, err)`
+  - [ ] `create/2 (str, list)`
+  - [ ] `create/2 (str, map)`
+  - [ ] `create/2 (err, int)`
+  - [ ] `create/2 (err, float)`
+  - [ ] `create/2 (err, obj)`
+  - [ ] `create/2 (err, str)`
+  - [ ] `create/2 (err, err)`
+  - [ ] `create/2 (err, list)`
+  - [ ] `create/2 (err, map)`
+  - [ ] `create/2 (list, float)`
+  - [ ] `create/2 (list, obj)`
+  - [ ] `create/2 (list, str)`
+  - [ ] `create/2 (list, err)`
+  - [ ] `create/2 (list, list)`
+  - [ ] `create/2 (list, map)`
+  - [ ] `create/2 (map, int)`
+  - [ ] `create/2 (map, float)`
+  - [ ] `create/2 (map, obj)`
+  - [ ] `create/2 (map, str)`
+  - [ ] `create/2 (map, err)`
+  - [ ] `create/2 (map, list)`
+  - [ ] `create/2 (map, map)`
+  - [ ] `create/3 (int, int, int)`
+  - [ ] `create/3 (int, int, float)`
+  - [ ] `create/3 (int, int, obj)`
+  - [ ] `create/3 (int, int, str)`
+  - [ ] `create/3 (int, int, err)`
+  - [ ] `create/3 (int, int, list)`
+  - [ ] `create/3 (int, int, map)`
+  - [ ] `create/3 (int, float, int)`
+  - [ ] `create/3 (int, float, float)`
+  - [ ] `create/3 (int, float, obj)`
+  - [ ] `create/3 (int, float, str)`
+  - [ ] `create/3 (int, float, err)`
+  - [ ] `create/3 (int, float, list)`
+  - [ ] `create/3 (int, float, map)`
+  - [ ] `create/3 (int, obj, int)`
+  - [ ] `create/3 (int, obj, float)`
+  - [ ] `create/3 (int, obj, obj)`
+  - [ ] `create/3 (int, obj, str)`
+  - [ ] `create/3 (int, obj, err)`
+  - [ ] `create/3 (int, obj, list)`
+  - [ ] `create/3 (int, obj, map)`
+  - [ ] `create/3 (int, str, int)`
+  - [ ] `create/3 (int, str, float)`
+  - [ ] `create/3 (int, str, obj)`
+  - [ ] `create/3 (int, str, str)`
+  - [ ] `create/3 (int, str, err)`
+  - [ ] `create/3 (int, str, list)`
+  - [ ] `create/3 (int, str, map)`
+  - [ ] `create/3 (int, err, int)`
+  - [ ] `create/3 (int, err, float)`
+  - [ ] `create/3 (int, err, obj)`
+  - [ ] `create/3 (int, err, str)`
+  - [ ] `create/3 (int, err, err)`
+  - [ ] `create/3 (int, err, list)`
+  - [ ] `create/3 (int, err, map)`
+  - [ ] `create/3 (int, list, int)`
+  - [ ] `create/3 (int, list, float)`
+  - [ ] `create/3 (int, list, obj)`
+  - [ ] `create/3 (int, list, str)`
+  - [ ] `create/3 (int, list, err)`
+  - [ ] `create/3 (int, list, list)`
+  - [ ] `create/3 (int, list, map)`
+  - [ ] `create/3 (int, map, int)`
+  - [ ] `create/3 (int, map, float)`
+  - [ ] `create/3 (int, map, obj)`
+  - [ ] `create/3 (int, map, str)`
+  - [ ] `create/3 (int, map, err)`
+  - [ ] `create/3 (int, map, list)`
+  - [ ] `create/3 (int, map, map)`
+  - [ ] `create/3 (float, int, int)`
+  - [ ] `create/3 (float, int, float)`
+  - [ ] `create/3 (float, int, obj)`
+  - [ ] `create/3 (float, int, str)`
+  - [ ] `create/3 (float, int, err)`
+  - [ ] `create/3 (float, int, list)`
+  - [ ] `create/3 (float, int, map)`
+  - [ ] `create/3 (float, float, int)`
+  - [ ] `create/3 (float, float, float)`
+  - [ ] `create/3 (float, float, obj)`
+  - [ ] `create/3 (float, float, str)`
+  - [ ] `create/3 (float, float, err)`
+  - [ ] `create/3 (float, float, list)`
+  - [ ] `create/3 (float, float, map)`
+  - [ ] `create/3 (float, obj, int)`
+  - [ ] `create/3 (float, obj, float)`
+  - [ ] `create/3 (float, obj, obj)`
+  - [ ] `create/3 (float, obj, str)`
+  - [ ] `create/3 (float, obj, err)`
+  - [ ] `create/3 (float, obj, list)`
+  - [ ] `create/3 (float, obj, map)`
+  - [ ] `create/3 (float, str, int)`
+  - [ ] `create/3 (float, str, float)`
+  - [ ] `create/3 (float, str, obj)`
+  - [ ] `create/3 (float, str, str)`
+  - [ ] `create/3 (float, str, err)`
+  - [ ] `create/3 (float, str, list)`
+  - [ ] `create/3 (float, str, map)`
+  - [ ] `create/3 (float, err, int)`
+  - [ ] `create/3 (float, err, float)`
+  - [ ] `create/3 (float, err, obj)`
+  - [ ] `create/3 (float, err, str)`
+  - [ ] `create/3 (float, err, err)`
+  - [ ] `create/3 (float, err, list)`
+  - [ ] `create/3 (float, err, map)`
+  - [ ] `create/3 (float, list, int)`
+  - [ ] `create/3 (float, list, float)`
+  - [ ] `create/3 (float, list, obj)`
+  - [ ] `create/3 (float, list, str)`
+  - [ ] `create/3 (float, list, err)`
+  - [ ] `create/3 (float, list, list)`
+  - [ ] `create/3 (float, list, map)`
+  - [ ] `create/3 (float, map, int)`
+  - [ ] `create/3 (float, map, float)`
+  - [ ] `create/3 (float, map, obj)`
+  - [ ] `create/3 (float, map, str)`
+  - [ ] `create/3 (float, map, err)`
+  - [ ] `create/3 (float, map, list)`
+  - [ ] `create/3 (float, map, map)`
+  - [ ] `create/3 (obj, int, int)`
+  - [ ] `create/3 (obj, int, float)`
+  - [ ] `create/3 (obj, int, obj)`
+  - [ ] `create/3 (obj, int, str)`
+  - [ ] `create/3 (obj, int, err)`
+  - [ ] `create/3 (obj, int, list)`
+  - [ ] `create/3 (obj, int, map)`
+  - [ ] `create/3 (obj, float, int)`
+  - [ ] `create/3 (obj, float, float)`
+  - [ ] `create/3 (obj, float, obj)`
+  - [ ] `create/3 (obj, float, str)`
+  - [ ] `create/3 (obj, float, err)`
+  - [ ] `create/3 (obj, float, list)`
+  - [ ] `create/3 (obj, float, map)`
+  - [ ] `create/3 (obj, obj, int)`
+  - [ ] `create/3 (obj, obj, float)`
+  - [ ] `create/3 (obj, obj, obj)`
+  - [ ] `create/3 (obj, obj, str)`
+  - [ ] `create/3 (obj, obj, err)`
+  - [ ] `create/3 (obj, obj, list)`
+  - [ ] `create/3 (obj, obj, map)`
+  - [ ] `create/3 (obj, str, int)`
+  - [ ] `create/3 (obj, str, float)`
+  - [ ] `create/3 (obj, str, obj)`
+  - [ ] `create/3 (obj, str, str)`
+  - [ ] `create/3 (obj, str, err)`
+  - [ ] `create/3 (obj, str, list)`
+  - [ ] `create/3 (obj, str, map)`
+  - [ ] `create/3 (obj, err, int)`
+  - [ ] `create/3 (obj, err, float)`
+  - [ ] `create/3 (obj, err, obj)`
+  - [ ] `create/3 (obj, err, str)`
+  - [ ] `create/3 (obj, err, err)`
+  - [ ] `create/3 (obj, err, list)`
+  - [ ] `create/3 (obj, err, map)`
+  - [ ] `create/3 (obj, list, int)`
+  - [ ] `create/3 (obj, list, float)`
+  - [ ] `create/3 (obj, list, obj)`
+  - [ ] `create/3 (obj, list, str)`
+  - [ ] `create/3 (obj, list, err)`
+  - [ ] `create/3 (obj, list, list)`
+  - [ ] `create/3 (obj, list, map)`
+  - [ ] `create/3 (obj, map, int)`
+  - [ ] `create/3 (obj, map, float)`
+  - [ ] `create/3 (obj, map, obj)`
+  - [ ] `create/3 (obj, map, str)`
+  - [ ] `create/3 (obj, map, err)`
+  - [ ] `create/3 (obj, map, list)`
+  - [ ] `create/3 (obj, map, map)`
+  - [ ] `create/3 (str, int, int)`
+  - [ ] `create/3 (str, int, float)`
+  - [ ] `create/3 (str, int, obj)`
+  - [ ] `create/3 (str, int, str)`
+  - [ ] `create/3 (str, int, err)`
+  - [ ] `create/3 (str, int, list)`
+  - [ ] `create/3 (str, int, map)`
+  - [ ] `create/3 (str, float, int)`
+  - [ ] `create/3 (str, float, float)`
+  - [ ] `create/3 (str, float, obj)`
+  - [ ] `create/3 (str, float, str)`
+  - [ ] `create/3 (str, float, err)`
+  - [ ] `create/3 (str, float, list)`
+  - [ ] `create/3 (str, float, map)`
+  - [ ] `create/3 (str, obj, int)`
+  - [ ] `create/3 (str, obj, float)`
+  - [ ] `create/3 (str, obj, obj)`
+  - [ ] `create/3 (str, obj, str)`
+  - [ ] `create/3 (str, obj, err)`
+  - [ ] `create/3 (str, obj, list)`
+  - [ ] `create/3 (str, obj, map)`
+  - [ ] `create/3 (str, str, int)`
+  - [ ] `create/3 (str, str, float)`
+  - [ ] `create/3 (str, str, obj)`
+  - [ ] `create/3 (str, str, str)`
+  - [ ] `create/3 (str, str, err)`
+  - [ ] `create/3 (str, str, list)`
+  - [ ] `create/3 (str, str, map)`
+  - [ ] `create/3 (str, err, int)`
+  - [ ] `create/3 (str, err, float)`
+  - [ ] `create/3 (str, err, obj)`
+  - [ ] `create/3 (str, err, str)`
+  - [ ] `create/3 (str, err, err)`
+  - [ ] `create/3 (str, err, list)`
+  - [ ] `create/3 (str, err, map)`
+  - [ ] `create/3 (str, list, int)`
+  - [ ] `create/3 (str, list, float)`
+  - [ ] `create/3 (str, list, obj)`
+  - [ ] `create/3 (str, list, str)`
+  - [ ] `create/3 (str, list, err)`
+  - [ ] `create/3 (str, list, list)`
+  - [ ] `create/3 (str, list, map)`
+  - [ ] `create/3 (str, map, int)`
+  - [ ] `create/3 (str, map, float)`
+  - [ ] `create/3 (str, map, obj)`
+  - [ ] `create/3 (str, map, str)`
+  - [ ] `create/3 (str, map, err)`
+  - [ ] `create/3 (str, map, list)`
+  - [ ] `create/3 (str, map, map)`
+  - [ ] `create/3 (err, int, int)`
+  - [ ] `create/3 (err, int, float)`
+  - [ ] `create/3 (err, int, obj)`
+  - [ ] `create/3 (err, int, str)`
+  - [ ] `create/3 (err, int, err)`
+  - [ ] `create/3 (err, int, list)`
+  - [ ] `create/3 (err, int, map)`
+  - [ ] `create/3 (err, float, int)`
+  - [ ] `create/3 (err, float, float)`
+  - [ ] `create/3 (err, float, obj)`
+  - [ ] `create/3 (err, float, str)`
+  - [ ] `create/3 (err, float, err)`
+  - [ ] `create/3 (err, float, list)`
+  - [ ] `create/3 (err, float, map)`
+  - [ ] `create/3 (err, obj, int)`
+  - [ ] `create/3 (err, obj, float)`
+  - [ ] `create/3 (err, obj, obj)`
+  - [ ] `create/3 (err, obj, str)`
+  - [ ] `create/3 (err, obj, err)`
+  - [ ] `create/3 (err, obj, list)`
+  - [ ] `create/3 (err, obj, map)`
+  - [ ] `create/3 (err, str, int)`
+  - [ ] `create/3 (err, str, float)`
+  - [ ] `create/3 (err, str, obj)`
+  - [ ] `create/3 (err, str, str)`
+  - [ ] `create/3 (err, str, err)`
+  - [ ] `create/3 (err, str, list)`
+  - [ ] `create/3 (err, str, map)`
+  - [ ] `create/3 (err, err, int)`
+  - [ ] `create/3 (err, err, float)`
+  - [ ] `create/3 (err, err, obj)`
+  - [ ] `create/3 (err, err, str)`
+  - [ ] `create/3 (err, err, err)`
+  - [ ] `create/3 (err, err, list)`
+  - [ ] `create/3 (err, err, map)`
+  - [ ] `create/3 (err, list, int)`
+  - [ ] `create/3 (err, list, float)`
+  - [ ] `create/3 (err, list, obj)`
+  - [ ] `create/3 (err, list, str)`
+  - [ ] `create/3 (err, list, err)`
+  - [ ] `create/3 (err, list, list)`
+  - [ ] `create/3 (err, list, map)`
+  - [ ] `create/3 (err, map, int)`
+  - [ ] `create/3 (err, map, float)`
+  - [ ] `create/3 (err, map, obj)`
+  - [ ] `create/3 (err, map, str)`
+  - [ ] `create/3 (err, map, err)`
+  - [ ] `create/3 (err, map, list)`
+  - [ ] `create/3 (err, map, map)`
+  - [ ] `create/3 (list, int, int)`
+  - [ ] `create/3 (list, int, float)`
+  - [ ] `create/3 (list, int, obj)`
+  - [ ] `create/3 (list, int, str)`
+  - [ ] `create/3 (list, int, err)`
+  - [ ] `create/3 (list, int, list)`
+  - [ ] `create/3 (list, int, map)`
+  - [ ] `create/3 (list, float, int)`
+  - [ ] `create/3 (list, float, float)`
+  - [ ] `create/3 (list, float, obj)`
+  - [ ] `create/3 (list, float, str)`
+  - [ ] `create/3 (list, float, err)`
+  - [ ] `create/3 (list, float, list)`
+  - [ ] `create/3 (list, float, map)`
+  - [ ] `create/3 (list, obj, int)`
+  - [ ] `create/3 (list, obj, float)`
+  - [ ] `create/3 (list, obj, obj)`
+  - [ ] `create/3 (list, obj, str)`
+  - [ ] `create/3 (list, obj, err)`
+  - [ ] `create/3 (list, obj, list)`
+  - [ ] `create/3 (list, obj, map)`
+  - [ ] `create/3 (list, str, int)`
+  - [ ] `create/3 (list, str, float)`
+  - [ ] `create/3 (list, str, obj)`
+  - [ ] `create/3 (list, str, str)`
+  - [ ] `create/3 (list, str, err)`
+  - [ ] `create/3 (list, str, list)`
+  - [ ] `create/3 (list, str, map)`
+  - [ ] `create/3 (list, err, int)`
+  - [ ] `create/3 (list, err, float)`
+  - [ ] `create/3 (list, err, obj)`
+  - [ ] `create/3 (list, err, str)`
+  - [ ] `create/3 (list, err, err)`
+  - [ ] `create/3 (list, err, list)`
+  - [ ] `create/3 (list, err, map)`
+  - [ ] `create/3 (list, list, int)`
+  - [ ] `create/3 (list, list, float)`
+  - [ ] `create/3 (list, list, obj)`
+  - [ ] `create/3 (list, list, str)`
+  - [ ] `create/3 (list, list, err)`
+  - [ ] `create/3 (list, list, list)`
+  - [ ] `create/3 (list, list, map)`
+  - [ ] `create/3 (list, map, int)`
+  - [ ] `create/3 (list, map, float)`
+  - [ ] `create/3 (list, map, obj)`
+  - [ ] `create/3 (list, map, str)`
+  - [ ] `create/3 (list, map, err)`
+  - [ ] `create/3 (list, map, list)`
+  - [ ] `create/3 (list, map, map)`
+  - [ ] `create/3 (map, int, int)`
+  - [ ] `create/3 (map, int, float)`
+  - [ ] `create/3 (map, int, obj)`
+  - [ ] `create/3 (map, int, str)`
+  - [ ] `create/3 (map, int, err)`
+  - [ ] `create/3 (map, int, list)`
+  - [ ] `create/3 (map, int, map)`
+  - [ ] `create/3 (map, float, int)`
+  - [ ] `create/3 (map, float, float)`
+  - [ ] `create/3 (map, float, obj)`
+  - [ ] `create/3 (map, float, str)`
+  - [ ] `create/3 (map, float, err)`
+  - [ ] `create/3 (map, float, list)`
+  - [ ] `create/3 (map, float, map)`
+  - [ ] `create/3 (map, obj, int)`
+  - [ ] `create/3 (map, obj, float)`
+  - [ ] `create/3 (map, obj, obj)`
+  - [ ] `create/3 (map, obj, str)`
+  - [ ] `create/3 (map, obj, err)`
+  - [ ] `create/3 (map, obj, list)`
+  - [ ] `create/3 (map, obj, map)`
+  - [ ] `create/3 (map, str, int)`
+  - [ ] `create/3 (map, str, float)`
+  - [ ] `create/3 (map, str, obj)`
+  - [ ] `create/3 (map, str, str)`
+  - [ ] `create/3 (map, str, err)`
+  - [ ] `create/3 (map, str, list)`
+  - [ ] `create/3 (map, str, map)`
+  - [ ] `create/3 (map, err, int)`
+  - [ ] `create/3 (map, err, float)`
+  - [ ] `create/3 (map, err, obj)`
+  - [ ] `create/3 (map, err, str)`
+  - [ ] `create/3 (map, err, err)`
+  - [ ] `create/3 (map, err, list)`
+  - [ ] `create/3 (map, err, map)`
+  - [ ] `create/3 (map, list, int)`
+  - [ ] `create/3 (map, list, float)`
+  - [ ] `create/3 (map, list, obj)`
+  - [ ] `create/3 (map, list, str)`
+  - [ ] `create/3 (map, list, err)`
+  - [ ] `create/3 (map, list, list)`
+  - [ ] `create/3 (map, list, map)`
+  - [ ] `create/3 (map, map, int)`
+  - [ ] `create/3 (map, map, float)`
+  - [ ] `create/3 (map, map, obj)`
+  - [ ] `create/3 (map, map, str)`
+  - [ ] `create/3 (map, map, err)`
+  - [ ] `create/3 (map, map, list)`
+  - [ ] `create/3 (map, map, map)`
+  - [ ] `create/4 (int, int, int, int)`
+  - [ ] `create/4 (int, int, int, float)`
+  - [ ] `create/4 (int, int, int, obj)`
+  - [ ] `create/4 (int, int, int, str)`
+  - [ ] `create/4 (int, int, int, err)`
+  - [ ] `create/4 (int, int, int, list)`
+  - [ ] `create/4 (int, int, int, map)`
+  - [ ] `create/4 (int, int, float, int)`
+  - [ ] `create/4 (int, int, float, float)`
+  - [ ] `create/4 (int, int, float, obj)`
+  - [ ] `create/4 (int, int, float, str)`
+  - [ ] `create/4 (int, int, float, err)`
+  - [ ] `create/4 (int, int, float, list)`
+  - [ ] `create/4 (int, int, float, map)`
+  - [ ] `create/4 (int, int, obj, int)`
+  - [ ] `create/4 (int, int, obj, float)`
+  - [ ] `create/4 (int, int, obj, obj)`
+  - [ ] `create/4 (int, int, obj, str)`
+  - [ ] `create/4 (int, int, obj, err)`
+  - [ ] `create/4 (int, int, obj, list)`
+  - [ ] `create/4 (int, int, obj, map)`
+  - [ ] `create/4 (int, int, str, int)`
+  - [ ] `create/4 (int, int, str, float)`
+  - [ ] `create/4 (int, int, str, obj)`
+  - [ ] `create/4 (int, int, str, str)`
+  - [ ] `create/4 (int, int, str, err)`
+  - [ ] `create/4 (int, int, str, list)`
+  - [ ] `create/4 (int, int, str, map)`
+  - [ ] `create/4 (int, int, err, int)`
+  - [ ] `create/4 (int, int, err, float)`
+  - [ ] `create/4 (int, int, err, obj)`
+  - [ ] `create/4 (int, int, err, str)`
+  - [ ] `create/4 (int, int, err, err)`
+  - [ ] `create/4 (int, int, err, list)`
+  - [ ] `create/4 (int, int, err, map)`
+  - [ ] `create/4 (int, int, list, int)`
+  - [ ] `create/4 (int, int, list, float)`
+  - [ ] `create/4 (int, int, list, obj)`
+  - [ ] `create/4 (int, int, list, str)`
+  - [ ] `create/4 (int, int, list, err)`
+  - [ ] `create/4 (int, int, list, list)`
+  - [ ] `create/4 (int, int, list, map)`
+  - [ ] `create/4 (int, int, map, int)`
+  - [ ] `create/4 (int, int, map, float)`
+  - [ ] `create/4 (int, int, map, obj)`
+  - [ ] `create/4 (int, int, map, str)`
+  - [ ] `create/4 (int, int, map, err)`
+  - [ ] `create/4 (int, int, map, list)`
+  - [ ] `create/4 (int, int, map, map)`
+  - [ ] `create/4 (int, float, int, int)`
+  - [ ] `create/4 (int, float, int, float)`
+  - [ ] `create/4 (int, float, int, obj)`
+  - [ ] `create/4 (int, float, int, str)`
+  - [ ] `create/4 (int, float, int, err)`
+  - [ ] `create/4 (int, float, int, list)`
+  - [ ] `create/4 (int, float, int, map)`
+  - [ ] `create/4 (int, float, float, int)`
+  - [ ] `create/4 (int, float, float, float)`
+  - [ ] `create/4 (int, float, float, obj)`
+  - [ ] `create/4 (int, float, float, str)`
+  - [ ] `create/4 (int, float, float, err)`
+  - [ ] `create/4 (int, float, float, list)`
+  - [ ] `create/4 (int, float, float, map)`
+  - [ ] `create/4 (int, float, obj, int)`
+  - [ ] `create/4 (int, float, obj, float)`
+  - [ ] `create/4 (int, float, obj, obj)`
+  - [ ] `create/4 (int, float, obj, str)`
+  - [ ] `create/4 (int, float, obj, err)`
+  - [ ] `create/4 (int, float, obj, list)`
+  - [ ] `create/4 (int, float, obj, map)`
+  - [ ] `create/4 (int, float, str, int)`
+  - [ ] `create/4 (int, float, str, float)`
+  - [ ] `create/4 (int, float, str, obj)`
+  - [ ] `create/4 (int, float, str, str)`
+  - [ ] `create/4 (int, float, str, err)`
+  - [ ] `create/4 (int, float, str, list)`
+  - [ ] `create/4 (int, float, str, map)`
+  - [ ] `create/4 (int, float, err, int)`
+  - [ ] `create/4 (int, float, err, float)`
+  - [ ] `create/4 (int, float, err, obj)`
+  - [ ] `create/4 (int, float, err, str)`
+  - [ ] `create/4 (int, float, err, err)`
+  - [ ] `create/4 (int, float, err, list)`
+  - [ ] `create/4 (int, float, err, map)`
+  - [ ] `create/4 (int, float, list, int)`
+  - [ ] `create/4 (int, float, list, float)`
+  - [ ] `create/4 (int, float, list, obj)`
+  - [ ] `create/4 (int, float, list, str)`
+  - [ ] `create/4 (int, float, list, err)`
+  - [ ] `create/4 (int, float, list, list)`
+  - [ ] `create/4 (int, float, list, map)`
+  - [ ] `create/4 (int, float, map, int)`
+  - [ ] `create/4 (int, float, map, float)`
+  - [ ] `create/4 (int, float, map, obj)`
+  - [ ] `create/4 (int, float, map, str)`
+  - [ ] `create/4 (int, float, map, err)`
+  - [ ] `create/4 (int, float, map, list)`
+  - [ ] `create/4 (int, float, map, map)`
+  - [ ] `create/4 (int, obj, int, int)`
+  - [ ] `create/4 (int, obj, int, float)`
+  - [ ] `create/4 (int, obj, int, obj)`
+  - [ ] `create/4 (int, obj, int, str)`
+  - [ ] `create/4 (int, obj, int, err)`
+  - [ ] `create/4 (int, obj, int, list)`
+  - [ ] `create/4 (int, obj, int, map)`
+  - [ ] `create/4 (int, obj, float, int)`
+  - [ ] `create/4 (int, obj, float, float)`
+  - [ ] `create/4 (int, obj, float, obj)`
+  - [ ] `create/4 (int, obj, float, str)`
+  - [ ] `create/4 (int, obj, float, err)`
+  - [ ] `create/4 (int, obj, float, list)`
+  - [ ] `create/4 (int, obj, float, map)`
+  - [ ] `create/4 (int, obj, obj, int)`
+  - [ ] `create/4 (int, obj, obj, float)`
+  - [ ] `create/4 (int, obj, obj, obj)`
+  - [ ] `create/4 (int, obj, obj, str)`
+  - [ ] `create/4 (int, obj, obj, err)`
+  - [ ] `create/4 (int, obj, obj, list)`
+  - [ ] `create/4 (int, obj, obj, map)`
+  - [ ] `create/4 (int, obj, str, int)`
+  - [ ] `create/4 (int, obj, str, float)`
+  - [ ] `create/4 (int, obj, str, obj)`
+  - [ ] `create/4 (int, obj, str, str)`
+  - [ ] `create/4 (int, obj, str, err)`
+  - [ ] `create/4 (int, obj, str, list)`
+  - [ ] `create/4 (int, obj, str, map)`
+  - [ ] `create/4 (int, obj, err, int)`
+  - [ ] `create/4 (int, obj, err, float)`
+  - [ ] `create/4 (int, obj, err, obj)`
+  - [ ] `create/4 (int, obj, err, str)`
+  - [ ] `create/4 (int, obj, err, err)`
+  - [ ] `create/4 (int, obj, err, list)`
+  - [ ] `create/4 (int, obj, err, map)`
+  - [ ] `create/4 (int, obj, list, int)`
+  - [ ] `create/4 (int, obj, list, float)`
+  - [ ] `create/4 (int, obj, list, obj)`
+  - [ ] `create/4 (int, obj, list, str)`
+  - [ ] `create/4 (int, obj, list, err)`
+  - [ ] `create/4 (int, obj, list, list)`
+  - [ ] `create/4 (int, obj, list, map)`
+  - [ ] `create/4 (int, obj, map, int)`
+  - [ ] `create/4 (int, obj, map, float)`
+  - [ ] `create/4 (int, obj, map, obj)`
+  - [ ] `create/4 (int, obj, map, str)`
+  - [ ] `create/4 (int, obj, map, err)`
+  - [ ] `create/4 (int, obj, map, list)`
+  - [ ] `create/4 (int, obj, map, map)`
+  - [ ] `create/4 (int, str, int, int)`
+  - [ ] `create/4 (int, str, int, float)`
+  - [ ] `create/4 (int, str, int, obj)`
+  - [ ] `create/4 (int, str, int, str)`
+  - [ ] `create/4 (int, str, int, err)`
+  - [ ] `create/4 (int, str, int, list)`
+  - [ ] `create/4 (int, str, int, map)`
+  - [ ] `create/4 (int, str, float, int)`
+  - [ ] `create/4 (int, str, float, float)`
+  - [ ] `create/4 (int, str, float, obj)`
+  - [ ] `create/4 (int, str, float, str)`
+  - [ ] `create/4 (int, str, float, err)`
+  - [ ] `create/4 (int, str, float, list)`
+  - [ ] `create/4 (int, str, float, map)`
+  - [ ] `create/4 (int, str, obj, int)`
+  - [ ] `create/4 (int, str, obj, float)`
+  - [ ] `create/4 (int, str, obj, obj)`
+  - [ ] `create/4 (int, str, obj, str)`
+  - [ ] `create/4 (int, str, obj, err)`
+  - [ ] `create/4 (int, str, obj, list)`
+  - [ ] `create/4 (int, str, obj, map)`
+  - [ ] `create/4 (int, str, str, int)`
+  - [ ] `create/4 (int, str, str, float)`
+  - [ ] `create/4 (int, str, str, obj)`
+  - [ ] `create/4 (int, str, str, str)`
+  - [ ] `create/4 (int, str, str, err)`
+  - [ ] `create/4 (int, str, str, list)`
+  - [ ] `create/4 (int, str, str, map)`
+  - [ ] `create/4 (int, str, err, int)`
+  - [ ] `create/4 (int, str, err, float)`
+  - [ ] `create/4 (int, str, err, obj)`
+  - [ ] `create/4 (int, str, err, str)`
+  - [ ] `create/4 (int, str, err, err)`
+  - [ ] `create/4 (int, str, err, list)`
+  - [ ] `create/4 (int, str, err, map)`
+  - [ ] `create/4 (int, str, list, int)`
+  - [ ] `create/4 (int, str, list, float)`
+  - [ ] `create/4 (int, str, list, obj)`
+  - [ ] `create/4 (int, str, list, str)`
+  - [ ] `create/4 (int, str, list, err)`
+  - [ ] `create/4 (int, str, list, list)`
+  - [ ] `create/4 (int, str, list, map)`
+  - [ ] `create/4 (int, str, map, int)`
+  - [ ] `create/4 (int, str, map, float)`
+  - [ ] `create/4 (int, str, map, obj)`
+  - [ ] `create/4 (int, str, map, str)`
+  - [ ] `create/4 (int, str, map, err)`
+  - [ ] `create/4 (int, str, map, list)`
+  - [ ] `create/4 (int, str, map, map)`
+  - [ ] `create/4 (int, err, int, int)`
+  - [ ] `create/4 (int, err, int, float)`
+  - [ ] `create/4 (int, err, int, obj)`
+  - [ ] `create/4 (int, err, int, str)`
+  - [ ] `create/4 (int, err, int, err)`
+  - [ ] `create/4 (int, err, int, list)`
+  - [ ] `create/4 (int, err, int, map)`
+  - [ ] `create/4 (int, err, float, int)`
+  - [ ] `create/4 (int, err, float, float)`
+  - [ ] `create/4 (int, err, float, obj)`
+  - [ ] `create/4 (int, err, float, str)`
+  - [ ] `create/4 (int, err, float, err)`
+  - [ ] `create/4 (int, err, float, list)`
+  - [ ] `create/4 (int, err, float, map)`
+  - [ ] `create/4 (int, err, obj, int)`
+  - [ ] `create/4 (int, err, obj, float)`
+  - [ ] `create/4 (int, err, obj, obj)`
+  - [ ] `create/4 (int, err, obj, str)`
+  - [ ] `create/4 (int, err, obj, err)`
+  - [ ] `create/4 (int, err, obj, list)`
+  - [ ] `create/4 (int, err, obj, map)`
+  - [ ] `create/4 (int, err, str, int)`
+  - [ ] `create/4 (int, err, str, float)`
+  - [ ] `create/4 (int, err, str, obj)`
+  - [ ] `create/4 (int, err, str, str)`
+  - [ ] `create/4 (int, err, str, err)`
+  - [ ] `create/4 (int, err, str, list)`
+  - [ ] `create/4 (int, err, str, map)`
+  - [ ] `create/4 (int, err, err, int)`
+  - [ ] `create/4 (int, err, err, float)`
+  - [ ] `create/4 (int, err, err, obj)`
+  - [ ] `create/4 (int, err, err, str)`
+  - [ ] `create/4 (int, err, err, err)`
+  - [ ] `create/4 (int, err, err, list)`
+  - [ ] `create/4 (int, err, err, map)`
+  - [ ] `create/4 (int, err, list, int)`
+  - [ ] `create/4 (int, err, list, float)`
+  - [ ] `create/4 (int, err, list, obj)`
+  - [ ] `create/4 (int, err, list, str)`
+  - [ ] `create/4 (int, err, list, err)`
+  - [ ] `create/4 (int, err, list, list)`
+  - [ ] `create/4 (int, err, list, map)`
+  - [ ] `create/4 (int, err, map, int)`
+  - [ ] `create/4 (int, err, map, float)`
+  - [ ] `create/4 (int, err, map, obj)`
+  - [ ] `create/4 (int, err, map, str)`
+  - [ ] `create/4 (int, err, map, err)`
+  - [ ] `create/4 (int, err, map, list)`
+  - [ ] `create/4 (int, err, map, map)`
+  - [ ] `create/4 (int, list, int, int)`
+  - [ ] `create/4 (int, list, int, float)`
+  - [ ] `create/4 (int, list, int, obj)`
+  - [ ] `create/4 (int, list, int, str)`
+  - [ ] `create/4 (int, list, int, err)`
+  - [ ] `create/4 (int, list, int, list)`
+  - [ ] `create/4 (int, list, int, map)`
+  - [ ] `create/4 (int, list, float, int)`
+  - [ ] `create/4 (int, list, float, float)`
+  - [ ] `create/4 (int, list, float, obj)`
+  - [ ] `create/4 (int, list, float, str)`
+  - [ ] `create/4 (int, list, float, err)`
+  - [ ] `create/4 (int, list, float, list)`
+  - [ ] `create/4 (int, list, float, map)`
+  - [ ] `create/4 (int, list, obj, int)`
+  - [ ] `create/4 (int, list, obj, float)`
+  - [ ] `create/4 (int, list, obj, obj)`
+  - [ ] `create/4 (int, list, obj, str)`
+  - [ ] `create/4 (int, list, obj, err)`
+  - [ ] `create/4 (int, list, obj, list)`
+  - [ ] `create/4 (int, list, obj, map)`
+  - [ ] `create/4 (int, list, str, int)`
+  - [ ] `create/4 (int, list, str, float)`
+  - [ ] `create/4 (int, list, str, obj)`
+  - [ ] `create/4 (int, list, str, str)`
+  - [ ] `create/4 (int, list, str, err)`
+  - [ ] `create/4 (int, list, str, list)`
+  - [ ] `create/4 (int, list, str, map)`
+  - [ ] `create/4 (int, list, err, int)`
+  - [ ] `create/4 (int, list, err, float)`
+  - [ ] `create/4 (int, list, err, obj)`
+  - [ ] `create/4 (int, list, err, str)`
+  - [ ] `create/4 (int, list, err, err)`
+  - [ ] `create/4 (int, list, err, list)`
+  - [ ] `create/4 (int, list, err, map)`
+  - [ ] `create/4 (int, list, list, int)`
+  - [ ] `create/4 (int, list, list, float)`
+  - [ ] `create/4 (int, list, list, obj)`
+  - [ ] `create/4 (int, list, list, str)`
+  - [ ] `create/4 (int, list, list, err)`
+  - [ ] `create/4 (int, list, list, list)`
+  - [ ] `create/4 (int, list, list, map)`
+  - [ ] `create/4 (int, list, map, int)`
+  - [ ] `create/4 (int, list, map, float)`
+  - [ ] `create/4 (int, list, map, obj)`
+  - [ ] `create/4 (int, list, map, str)`
+  - [ ] `create/4 (int, list, map, err)`
+  - [ ] `create/4 (int, list, map, list)`
+  - [ ] `create/4 (int, list, map, map)`
+  - [ ] `create/4 (int, map, int, int)`
+  - [ ] `create/4 (int, map, int, float)`
+  - [ ] `create/4 (int, map, int, obj)`
+  - [ ] `create/4 (int, map, int, str)`
+  - [ ] `create/4 (int, map, int, err)`
+  - [ ] `create/4 (int, map, int, list)`
+  - [ ] `create/4 (int, map, int, map)`
+  - [ ] `create/4 (int, map, float, int)`
+  - [ ] `create/4 (int, map, float, float)`
+  - [ ] `create/4 (int, map, float, obj)`
+  - [ ] `create/4 (int, map, float, str)`
+  - [ ] `create/4 (int, map, float, err)`
+  - [ ] `create/4 (int, map, float, list)`
+  - [ ] `create/4 (int, map, float, map)`
+  - [ ] `create/4 (int, map, obj, int)`
+  - [ ] `create/4 (int, map, obj, float)`
+  - [ ] `create/4 (int, map, obj, obj)`
+  - [ ] `create/4 (int, map, obj, str)`
+  - [ ] `create/4 (int, map, obj, err)`
+  - [ ] `create/4 (int, map, obj, list)`
+  - [ ] `create/4 (int, map, obj, map)`
+  - [ ] `create/4 (int, map, str, int)`
+  - [ ] `create/4 (int, map, str, float)`
+  - [ ] `create/4 (int, map, str, obj)`
+  - [ ] `create/4 (int, map, str, str)`
+  - [ ] `create/4 (int, map, str, err)`
+  - [ ] `create/4 (int, map, str, list)`
+  - [ ] `create/4 (int, map, str, map)`
+  - [ ] `create/4 (int, map, err, int)`
+  - [ ] `create/4 (int, map, err, float)`
+  - [ ] `create/4 (int, map, err, obj)`
+  - [ ] `create/4 (int, map, err, str)`
+  - [ ] `create/4 (int, map, err, err)`
+  - [ ] `create/4 (int, map, err, list)`
+  - [ ] `create/4 (int, map, err, map)`
+  - [ ] `create/4 (int, map, list, int)`
+  - [ ] `create/4 (int, map, list, float)`
+  - [ ] `create/4 (int, map, list, obj)`
+  - [ ] `create/4 (int, map, list, str)`
+  - [ ] `create/4 (int, map, list, err)`
+  - [ ] `create/4 (int, map, list, list)`
+  - [ ] `create/4 (int, map, list, map)`
+  - [ ] `create/4 (int, map, map, int)`
+  - [ ] `create/4 (int, map, map, float)`
+  - [ ] `create/4 (int, map, map, obj)`
+  - [ ] `create/4 (int, map, map, str)`
+  - [ ] `create/4 (int, map, map, err)`
+  - [ ] `create/4 (int, map, map, list)`
+  - [ ] `create/4 (int, map, map, map)`
+  - [ ] `create/4 (float, int, int, int)`
+  - [ ] `create/4 (float, int, int, float)`
+  - [ ] `create/4 (float, int, int, obj)`
+  - [ ] `create/4 (float, int, int, str)`
+  - [ ] `create/4 (float, int, int, err)`
+  - [ ] `create/4 (float, int, int, list)`
+  - [ ] `create/4 (float, int, int, map)`
+  - [ ] `create/4 (float, int, float, int)`
+  - [ ] `create/4 (float, int, float, float)`
+  - [ ] `create/4 (float, int, float, obj)`
+  - [ ] `create/4 (float, int, float, str)`
+  - [ ] `create/4 (float, int, float, err)`
+  - [ ] `create/4 (float, int, float, list)`
+  - [ ] `create/4 (float, int, float, map)`
+  - [ ] `create/4 (float, int, obj, int)`
+  - [ ] `create/4 (float, int, obj, float)`
+  - [ ] `create/4 (float, int, obj, obj)`
+  - [ ] `create/4 (float, int, obj, str)`
+  - [ ] `create/4 (float, int, obj, err)`
+  - [ ] `create/4 (float, int, obj, list)`
+  - [ ] `create/4 (float, int, obj, map)`
+  - [ ] `create/4 (float, int, str, int)`
+  - [ ] `create/4 (float, int, str, float)`
+  - [ ] `create/4 (float, int, str, obj)`
+  - [ ] `create/4 (float, int, str, str)`
+  - [ ] `create/4 (float, int, str, err)`
+  - [ ] `create/4 (float, int, str, list)`
+  - [ ] `create/4 (float, int, str, map)`
+  - [ ] `create/4 (float, int, err, int)`
+  - [ ] `create/4 (float, int, err, float)`
+  - [ ] `create/4 (float, int, err, obj)`
+  - [ ] `create/4 (float, int, err, str)`
+  - [ ] `create/4 (float, int, err, err)`
+  - [ ] `create/4 (float, int, err, list)`
+  - [ ] `create/4 (float, int, err, map)`
+  - [ ] `create/4 (float, int, list, int)`
+  - [ ] `create/4 (float, int, list, float)`
+  - [ ] `create/4 (float, int, list, obj)`
+  - [ ] `create/4 (float, int, list, str)`
+  - [ ] `create/4 (float, int, list, err)`
+  - [ ] `create/4 (float, int, list, list)`
+  - [ ] `create/4 (float, int, list, map)`
+  - [ ] `create/4 (float, int, map, int)`
+  - [ ] `create/4 (float, int, map, float)`
+  - [ ] `create/4 (float, int, map, obj)`
+  - [ ] `create/4 (float, int, map, str)`
+  - [ ] `create/4 (float, int, map, err)`
+  - [ ] `create/4 (float, int, map, list)`
+  - [ ] `create/4 (float, int, map, map)`
+  - [ ] `create/4 (float, float, int, int)`
+  - [ ] `create/4 (float, float, int, float)`
+  - [ ] `create/4 (float, float, int, obj)`
+  - [ ] `create/4 (float, float, int, str)`
+  - [ ] `create/4 (float, float, int, err)`
+  - [ ] `create/4 (float, float, int, list)`
+  - [ ] `create/4 (float, float, int, map)`
+  - [ ] `create/4 (float, float, float, int)`
+  - [ ] `create/4 (float, float, float, float)`
+  - [ ] `create/4 (float, float, float, obj)`
+  - [ ] `create/4 (float, float, float, str)`
+  - [ ] `create/4 (float, float, float, err)`
+  - [ ] `create/4 (float, float, float, list)`
+  - [ ] `create/4 (float, float, float, map)`
+  - [ ] `create/4 (float, float, obj, int)`
+  - [ ] `create/4 (float, float, obj, float)`
+  - [ ] `create/4 (float, float, obj, obj)`
+  - [ ] `create/4 (float, float, obj, str)`
+  - [ ] `create/4 (float, float, obj, err)`
+  - [ ] `create/4 (float, float, obj, list)`
+  - [ ] `create/4 (float, float, obj, map)`
+  - [ ] `create/4 (float, float, str, int)`
+  - [ ] `create/4 (float, float, str, float)`
+  - [ ] `create/4 (float, float, str, obj)`
+  - [ ] `create/4 (float, float, str, str)`
+  - [ ] `create/4 (float, float, str, err)`
+  - [ ] `create/4 (float, float, str, list)`
+  - [ ] `create/4 (float, float, str, map)`
+  - [ ] `create/4 (float, float, err, int)`
+  - [ ] `create/4 (float, float, err, float)`
+  - [ ] `create/4 (float, float, err, obj)`
+  - [ ] `create/4 (float, float, err, str)`
+  - [ ] `create/4 (float, float, err, err)`
+  - [ ] `create/4 (float, float, err, list)`
+  - [ ] `create/4 (float, float, err, map)`
+  - [ ] `create/4 (float, float, list, int)`
+  - [ ] `create/4 (float, float, list, float)`
+  - [ ] `create/4 (float, float, list, obj)`
+  - [ ] `create/4 (float, float, list, str)`
+  - [ ] `create/4 (float, float, list, err)`
+  - [ ] `create/4 (float, float, list, list)`
+  - [ ] `create/4 (float, float, list, map)`
+  - [ ] `create/4 (float, float, map, int)`
+  - [ ] `create/4 (float, float, map, float)`
+  - [ ] `create/4 (float, float, map, obj)`
+  - [ ] `create/4 (float, float, map, str)`
+  - [ ] `create/4 (float, float, map, err)`
+  - [ ] `create/4 (float, float, map, list)`
+  - [ ] `create/4 (float, float, map, map)`
+  - [ ] `create/4 (float, obj, int, int)`
+  - [ ] `create/4 (float, obj, int, float)`
+  - [ ] `create/4 (float, obj, int, obj)`
+  - [ ] `create/4 (float, obj, int, str)`
+  - [ ] `create/4 (float, obj, int, err)`
+  - [ ] `create/4 (float, obj, int, list)`
+  - [ ] `create/4 (float, obj, int, map)`
+  - [ ] `create/4 (float, obj, float, int)`
+  - [ ] `create/4 (float, obj, float, float)`
+  - [ ] `create/4 (float, obj, float, obj)`
+  - [ ] `create/4 (float, obj, float, str)`
+  - [ ] `create/4 (float, obj, float, err)`
+  - [ ] `create/4 (float, obj, float, list)`
+  - [ ] `create/4 (float, obj, float, map)`
+  - [ ] `create/4 (float, obj, obj, int)`
+  - [ ] `create/4 (float, obj, obj, float)`
+  - [ ] `create/4 (float, obj, obj, obj)`
+  - [ ] `create/4 (float, obj, obj, str)`
+  - [ ] `create/4 (float, obj, obj, err)`
+  - [ ] `create/4 (float, obj, obj, list)`
+  - [ ] `create/4 (float, obj, obj, map)`
+  - [ ] `create/4 (float, obj, str, int)`
+  - [ ] `create/4 (float, obj, str, float)`
+  - [ ] `create/4 (float, obj, str, obj)`
+  - [ ] `create/4 (float, obj, str, str)`
+  - [ ] `create/4 (float, obj, str, err)`
+  - [ ] `create/4 (float, obj, str, list)`
+  - [ ] `create/4 (float, obj, str, map)`
+  - [ ] `create/4 (float, obj, err, int)`
+  - [ ] `create/4 (float, obj, err, float)`
+  - [ ] `create/4 (float, obj, err, obj)`
+  - [ ] `create/4 (float, obj, err, str)`
+  - [ ] `create/4 (float, obj, err, err)`
+  - [ ] `create/4 (float, obj, err, list)`
+  - [ ] `create/4 (float, obj, err, map)`
+  - [ ] `create/4 (float, obj, list, int)`
+  - [ ] `create/4 (float, obj, list, float)`
+  - [ ] `create/4 (float, obj, list, obj)`
+  - [ ] `create/4 (float, obj, list, str)`
+  - [ ] `create/4 (float, obj, list, err)`
+  - [ ] `create/4 (float, obj, list, list)`
+  - [ ] `create/4 (float, obj, list, map)`
+  - [ ] `create/4 (float, obj, map, int)`
+  - [ ] `create/4 (float, obj, map, float)`
+  - [ ] `create/4 (float, obj, map, obj)`
+  - [ ] `create/4 (float, obj, map, str)`
+  - [ ] `create/4 (float, obj, map, err)`
+  - [ ] `create/4 (float, obj, map, list)`
+  - [ ] `create/4 (float, obj, map, map)`
+  - [ ] `create/4 (float, str, int, int)`
+  - [ ] `create/4 (float, str, int, float)`
+  - [ ] `create/4 (float, str, int, obj)`
+  - [ ] `create/4 (float, str, int, str)`
+  - [ ] `create/4 (float, str, int, err)`
+  - [ ] `create/4 (float, str, int, list)`
+  - [ ] `create/4 (float, str, int, map)`
+  - [ ] `create/4 (float, str, float, int)`
+  - [ ] `create/4 (float, str, float, float)`
+  - [ ] `create/4 (float, str, float, obj)`
+  - [ ] `create/4 (float, str, float, str)`
+  - [ ] `create/4 (float, str, float, err)`
+  - [ ] `create/4 (float, str, float, list)`
+  - [ ] `create/4 (float, str, float, map)`
+  - [ ] `create/4 (float, str, obj, int)`
+  - [ ] `create/4 (float, str, obj, float)`
+  - [ ] `create/4 (float, str, obj, obj)`
+  - [ ] `create/4 (float, str, obj, str)`
+  - [ ] `create/4 (float, str, obj, err)`
+  - [ ] `create/4 (float, str, obj, list)`
+  - [ ] `create/4 (float, str, obj, map)`
+  - [ ] `create/4 (float, str, str, int)`
+  - [ ] `create/4 (float, str, str, float)`
+  - [ ] `create/4 (float, str, str, obj)`
+  - [ ] `create/4 (float, str, str, str)`
+  - [ ] `create/4 (float, str, str, err)`
+  - [ ] `create/4 (float, str, str, list)`
+  - [ ] `create/4 (float, str, str, map)`
+  - [ ] `create/4 (float, str, err, int)`
+  - [ ] `create/4 (float, str, err, float)`
+  - [ ] `create/4 (float, str, err, obj)`
+  - [ ] `create/4 (float, str, err, str)`
+  - [ ] `create/4 (float, str, err, err)`
+  - [ ] `create/4 (float, str, err, list)`
+  - [ ] `create/4 (float, str, err, map)`
+  - [ ] `create/4 (float, str, list, int)`
+  - [ ] `create/4 (float, str, list, float)`
+  - [ ] `create/4 (float, str, list, obj)`
+  - [ ] `create/4 (float, str, list, str)`
+  - [ ] `create/4 (float, str, list, err)`
+  - [ ] `create/4 (float, str, list, list)`
+  - [ ] `create/4 (float, str, list, map)`
+  - [ ] `create/4 (float, str, map, int)`
+  - [ ] `create/4 (float, str, map, float)`
+  - [ ] `create/4 (float, str, map, obj)`
+  - [ ] `create/4 (float, str, map, str)`
+  - [ ] `create/4 (float, str, map, err)`
+  - [ ] `create/4 (float, str, map, list)`
+  - [ ] `create/4 (float, str, map, map)`
+  - [ ] `create/4 (float, err, int, int)`
+  - [ ] `create/4 (float, err, int, float)`
+  - [ ] `create/4 (float, err, int, obj)`
+  - [ ] `create/4 (float, err, int, str)`
+  - [ ] `create/4 (float, err, int, err)`
+  - [ ] `create/4 (float, err, int, list)`
+  - [ ] `create/4 (float, err, int, map)`
+  - [ ] `create/4 (float, err, float, int)`
+  - [ ] `create/4 (float, err, float, float)`
+  - [ ] `create/4 (float, err, float, obj)`
+  - [ ] `create/4 (float, err, float, str)`
+  - [ ] `create/4 (float, err, float, err)`
+  - [ ] `create/4 (float, err, float, list)`
+  - [ ] `create/4 (float, err, float, map)`
+  - [ ] `create/4 (float, err, obj, int)`
+  - [ ] `create/4 (float, err, obj, float)`
+  - [ ] `create/4 (float, err, obj, obj)`
+  - [ ] `create/4 (float, err, obj, str)`
+  - [ ] `create/4 (float, err, obj, err)`
+  - [ ] `create/4 (float, err, obj, list)`
+  - [ ] `create/4 (float, err, obj, map)`
+  - [ ] `create/4 (float, err, str, int)`
+  - [ ] `create/4 (float, err, str, float)`
+  - [ ] `create/4 (float, err, str, obj)`
+  - [ ] `create/4 (float, err, str, str)`
+  - [ ] `create/4 (float, err, str, err)`
+  - [ ] `create/4 (float, err, str, list)`
+  - [ ] `create/4 (float, err, str, map)`
+  - [ ] `create/4 (float, err, err, int)`
+  - [ ] `create/4 (float, err, err, float)`
+  - [ ] `create/4 (float, err, err, obj)`
+  - [ ] `create/4 (float, err, err, str)`
+  - [ ] `create/4 (float, err, err, err)`
+  - [ ] `create/4 (float, err, err, list)`
+  - [ ] `create/4 (float, err, err, map)`
+  - [ ] `create/4 (float, err, list, int)`
+  - [ ] `create/4 (float, err, list, float)`
+  - [ ] `create/4 (float, err, list, obj)`
+  - [ ] `create/4 (float, err, list, str)`
+  - [ ] `create/4 (float, err, list, err)`
+  - [ ] `create/4 (float, err, list, list)`
+  - [ ] `create/4 (float, err, list, map)`
+  - [ ] `create/4 (float, err, map, int)`
+  - [ ] `create/4 (float, err, map, float)`
+  - [ ] `create/4 (float, err, map, obj)`
+  - [ ] `create/4 (float, err, map, str)`
+  - [ ] `create/4 (float, err, map, err)`
+  - [ ] `create/4 (float, err, map, list)`
+  - [ ] `create/4 (float, err, map, map)`
+  - [ ] `create/4 (float, list, int, int)`
+  - [ ] `create/4 (float, list, int, float)`
+  - [ ] `create/4 (float, list, int, obj)`
+  - [ ] `create/4 (float, list, int, str)`
+  - [ ] `create/4 (float, list, int, err)`
+  - [ ] `create/4 (float, list, int, list)`
+  - [ ] `create/4 (float, list, int, map)`
+  - [ ] `create/4 (float, list, float, int)`
+  - [ ] `create/4 (float, list, float, float)`
+  - [ ] `create/4 (float, list, float, obj)`
+  - [ ] `create/4 (float, list, float, str)`
+  - [ ] `create/4 (float, list, float, err)`
+  - [ ] `create/4 (float, list, float, list)`
+  - [ ] `create/4 (float, list, float, map)`
+  - [ ] `create/4 (float, list, obj, int)`
+  - [ ] `create/4 (float, list, obj, float)`
+  - [ ] `create/4 (float, list, obj, obj)`
+  - [ ] `create/4 (float, list, obj, str)`
+  - [ ] `create/4 (float, list, obj, err)`
+  - [ ] `create/4 (float, list, obj, list)`
+  - [ ] `create/4 (float, list, obj, map)`
+  - [ ] `create/4 (float, list, str, int)`
+  - [ ] `create/4 (float, list, str, float)`
+  - [ ] `create/4 (float, list, str, obj)`
+  - [ ] `create/4 (float, list, str, str)`
+  - [ ] `create/4 (float, list, str, err)`
+  - [ ] `create/4 (float, list, str, list)`
+  - [ ] `create/4 (float, list, str, map)`
+  - [ ] `create/4 (float, list, err, int)`
+  - [ ] `create/4 (float, list, err, float)`
+  - [ ] `create/4 (float, list, err, obj)`
+  - [ ] `create/4 (float, list, err, str)`
+  - [ ] `create/4 (float, list, err, err)`
+  - [ ] `create/4 (float, list, err, list)`
+  - [ ] `create/4 (float, list, err, map)`
+  - [ ] `create/4 (float, list, list, int)`
+  - [ ] `create/4 (float, list, list, float)`
+  - [ ] `create/4 (float, list, list, obj)`
+  - [ ] `create/4 (float, list, list, str)`
+  - [ ] `create/4 (float, list, list, err)`
+  - [ ] `create/4 (float, list, list, list)`
+  - [ ] `create/4 (float, list, list, map)`
+  - [ ] `create/4 (float, list, map, int)`
+  - [ ] `create/4 (float, list, map, float)`
+  - [ ] `create/4 (float, list, map, obj)`
+  - [ ] `create/4 (float, list, map, str)`
+  - [ ] `create/4 (float, list, map, err)`
+  - [ ] `create/4 (float, list, map, list)`
+  - [ ] `create/4 (float, list, map, map)`
+  - [ ] `create/4 (float, map, int, int)`
+  - [ ] `create/4 (float, map, int, float)`
+  - [ ] `create/4 (float, map, int, obj)`
+  - [ ] `create/4 (float, map, int, str)`
+  - [ ] `create/4 (float, map, int, err)`
+  - [ ] `create/4 (float, map, int, list)`
+  - [ ] `create/4 (float, map, int, map)`
+  - [ ] `create/4 (float, map, float, int)`
+  - [ ] `create/4 (float, map, float, float)`
+  - [ ] `create/4 (float, map, float, obj)`
+  - [ ] `create/4 (float, map, float, str)`
+  - [ ] `create/4 (float, map, float, err)`
+  - [ ] `create/4 (float, map, float, list)`
+  - [ ] `create/4 (float, map, float, map)`
+  - [ ] `create/4 (float, map, obj, int)`
+  - [ ] `create/4 (float, map, obj, float)`
+  - [ ] `create/4 (float, map, obj, obj)`
+  - [ ] `create/4 (float, map, obj, str)`
+  - [ ] `create/4 (float, map, obj, err)`
+  - [ ] `create/4 (float, map, obj, list)`
+  - [ ] `create/4 (float, map, obj, map)`
+  - [ ] `create/4 (float, map, str, int)`
+  - [ ] `create/4 (float, map, str, float)`
+  - [ ] `create/4 (float, map, str, obj)`
+  - [ ] `create/4 (float, map, str, str)`
+  - [ ] `create/4 (float, map, str, err)`
+  - [ ] `create/4 (float, map, str, list)`
+  - [ ] `create/4 (float, map, str, map)`
+  - [ ] `create/4 (float, map, err, int)`
+  - [ ] `create/4 (float, map, err, float)`
+  - [ ] `create/4 (float, map, err, obj)`
+  - [ ] `create/4 (float, map, err, str)`
+  - [ ] `create/4 (float, map, err, err)`
+  - [ ] `create/4 (float, map, err, list)`
+  - [ ] `create/4 (float, map, err, map)`
+  - [ ] `create/4 (float, map, list, int)`
+  - [ ] `create/4 (float, map, list, float)`
+  - [ ] `create/4 (float, map, list, obj)`
+  - [ ] `create/4 (float, map, list, str)`
+  - [ ] `create/4 (float, map, list, err)`
+  - [ ] `create/4 (float, map, list, list)`
+  - [ ] `create/4 (float, map, list, map)`
+  - [ ] `create/4 (float, map, map, int)`
+  - [ ] `create/4 (float, map, map, float)`
+  - [ ] `create/4 (float, map, map, obj)`
+  - [ ] `create/4 (float, map, map, str)`
+  - [ ] `create/4 (float, map, map, err)`
+  - [ ] `create/4 (float, map, map, list)`
+  - [ ] `create/4 (float, map, map, map)`
+  - [ ] `create/4 (obj, int, int, int)`
+  - [ ] `create/4 (obj, int, int, float)`
+  - [ ] `create/4 (obj, int, int, obj)`
+  - [ ] `create/4 (obj, int, int, str)`
+  - [ ] `create/4 (obj, int, int, err)`
+  - [ ] `create/4 (obj, int, int, list)`
+  - [ ] `create/4 (obj, int, int, map)`
+  - [ ] `create/4 (obj, int, float, int)`
+  - [ ] `create/4 (obj, int, float, float)`
+  - [ ] `create/4 (obj, int, float, obj)`
+  - [ ] `create/4 (obj, int, float, str)`
+  - [ ] `create/4 (obj, int, float, err)`
+  - [ ] `create/4 (obj, int, float, list)`
+  - [ ] `create/4 (obj, int, float, map)`
+  - [ ] `create/4 (obj, int, obj, int)`
+  - [ ] `create/4 (obj, int, obj, float)`
+  - [ ] `create/4 (obj, int, obj, obj)`
+  - [ ] `create/4 (obj, int, obj, str)`
+  - [ ] `create/4 (obj, int, obj, err)`
+  - [ ] `create/4 (obj, int, obj, list)`
+  - [ ] `create/4 (obj, int, obj, map)`
+  - [ ] `create/4 (obj, int, str, int)`
+  - [ ] `create/4 (obj, int, str, float)`
+  - [ ] `create/4 (obj, int, str, obj)`
+  - [ ] `create/4 (obj, int, str, str)`
+  - [ ] `create/4 (obj, int, str, err)`
+  - [ ] `create/4 (obj, int, str, list)`
+  - [ ] `create/4 (obj, int, str, map)`
+  - [ ] `create/4 (obj, int, err, int)`
+  - [ ] `create/4 (obj, int, err, float)`
+  - [ ] `create/4 (obj, int, err, obj)`
+  - [ ] `create/4 (obj, int, err, str)`
+  - [ ] `create/4 (obj, int, err, err)`
+  - [ ] `create/4 (obj, int, err, list)`
+  - [ ] `create/4 (obj, int, err, map)`
+  - [ ] `create/4 (obj, int, list, int)`
+  - [ ] `create/4 (obj, int, list, float)`
+  - [ ] `create/4 (obj, int, list, obj)`
+  - [ ] `create/4 (obj, int, list, str)`
+  - [ ] `create/4 (obj, int, list, err)`
+  - [ ] `create/4 (obj, int, list, list)`
+  - [ ] `create/4 (obj, int, list, map)`
+  - [ ] `create/4 (obj, int, map, int)`
+  - [ ] `create/4 (obj, int, map, float)`
+  - [ ] `create/4 (obj, int, map, obj)`
+  - [ ] `create/4 (obj, int, map, str)`
+  - [ ] `create/4 (obj, int, map, err)`
+  - [ ] `create/4 (obj, int, map, list)`
+  - [ ] `create/4 (obj, int, map, map)`
+  - [ ] `create/4 (obj, float, int, int)`
+  - [ ] `create/4 (obj, float, int, float)`
+  - [ ] `create/4 (obj, float, int, obj)`
+  - [ ] `create/4 (obj, float, int, str)`
+  - [ ] `create/4 (obj, float, int, err)`
+  - [ ] `create/4 (obj, float, int, list)`
+  - [ ] `create/4 (obj, float, int, map)`
+  - [ ] `create/4 (obj, float, float, int)`
+  - [ ] `create/4 (obj, float, float, float)`
+  - [ ] `create/4 (obj, float, float, obj)`
+  - [ ] `create/4 (obj, float, float, str)`
+  - [ ] `create/4 (obj, float, float, err)`
+  - [ ] `create/4 (obj, float, float, list)`
+  - [ ] `create/4 (obj, float, float, map)`
+  - [ ] `create/4 (obj, float, obj, int)`
+  - [ ] `create/4 (obj, float, obj, float)`
+  - [ ] `create/4 (obj, float, obj, obj)`
+  - [ ] `create/4 (obj, float, obj, str)`
+  - [ ] `create/4 (obj, float, obj, err)`
+  - [ ] `create/4 (obj, float, obj, list)`
+  - [ ] `create/4 (obj, float, obj, map)`
+  - [ ] `create/4 (obj, float, str, int)`
+  - [ ] `create/4 (obj, float, str, float)`
+  - [ ] `create/4 (obj, float, str, obj)`
+  - [ ] `create/4 (obj, float, str, str)`
+  - [ ] `create/4 (obj, float, str, err)`
+  - [ ] `create/4 (obj, float, str, list)`
+  - [ ] `create/4 (obj, float, str, map)`
+  - [ ] `create/4 (obj, float, err, int)`
+  - [ ] `create/4 (obj, float, err, float)`
+  - [ ] `create/4 (obj, float, err, obj)`
+  - [ ] `create/4 (obj, float, err, str)`
+  - [ ] `create/4 (obj, float, err, err)`
+  - [ ] `create/4 (obj, float, err, list)`
+  - [ ] `create/4 (obj, float, err, map)`
+  - [ ] `create/4 (obj, float, list, int)`
+  - [ ] `create/4 (obj, float, list, float)`
+  - [ ] `create/4 (obj, float, list, obj)`
+  - [ ] `create/4 (obj, float, list, str)`
+  - [ ] `create/4 (obj, float, list, err)`
+  - [ ] `create/4 (obj, float, list, list)`
+  - [ ] `create/4 (obj, float, list, map)`
+  - [ ] `create/4 (obj, float, map, int)`
+  - [ ] `create/4 (obj, float, map, float)`
+  - [ ] `create/4 (obj, float, map, obj)`
+  - [ ] `create/4 (obj, float, map, str)`
+  - [ ] `create/4 (obj, float, map, err)`
+  - [ ] `create/4 (obj, float, map, list)`
+  - [ ] `create/4 (obj, float, map, map)`
+  - [ ] `create/4 (obj, obj, int, int)`
+  - [ ] `create/4 (obj, obj, int, float)`
+  - [ ] `create/4 (obj, obj, int, obj)`
+  - [ ] `create/4 (obj, obj, int, str)`
+  - [ ] `create/4 (obj, obj, int, err)`
+  - [ ] `create/4 (obj, obj, int, list)`
+  - [ ] `create/4 (obj, obj, int, map)`
+  - [ ] `create/4 (obj, obj, float, int)`
+  - [ ] `create/4 (obj, obj, float, float)`
+  - [ ] `create/4 (obj, obj, float, obj)`
+  - [ ] `create/4 (obj, obj, float, str)`
+  - [ ] `create/4 (obj, obj, float, err)`
+  - [ ] `create/4 (obj, obj, float, list)`
+  - [ ] `create/4 (obj, obj, float, map)`
+  - [ ] `create/4 (obj, obj, obj, int)`
+  - [ ] `create/4 (obj, obj, obj, float)`
+  - [ ] `create/4 (obj, obj, obj, obj)`
+  - [ ] `create/4 (obj, obj, obj, str)`
+  - [ ] `create/4 (obj, obj, obj, err)`
+  - [ ] `create/4 (obj, obj, obj, list)`
+  - [ ] `create/4 (obj, obj, obj, map)`
+  - [ ] `create/4 (obj, obj, str, int)`
+  - [ ] `create/4 (obj, obj, str, float)`
+  - [ ] `create/4 (obj, obj, str, obj)`
+  - [ ] `create/4 (obj, obj, str, str)`
+  - [ ] `create/4 (obj, obj, str, err)`
+  - [ ] `create/4 (obj, obj, str, list)`
+  - [ ] `create/4 (obj, obj, str, map)`
+  - [ ] `create/4 (obj, obj, err, int)`
+  - [ ] `create/4 (obj, obj, err, float)`
+  - [ ] `create/4 (obj, obj, err, obj)`
+  - [ ] `create/4 (obj, obj, err, str)`
+  - [ ] `create/4 (obj, obj, err, err)`
+  - [ ] `create/4 (obj, obj, err, list)`
+  - [ ] `create/4 (obj, obj, err, map)`
+  - [ ] `create/4 (obj, obj, list, int)`
+  - [ ] `create/4 (obj, obj, list, float)`
+  - [ ] `create/4 (obj, obj, list, obj)`
+  - [ ] `create/4 (obj, obj, list, str)`
+  - [ ] `create/4 (obj, obj, list, err)`
+  - [ ] `create/4 (obj, obj, list, list)`
+  - [ ] `create/4 (obj, obj, list, map)`
+  - [ ] `create/4 (obj, obj, map, int)`
+  - [ ] `create/4 (obj, obj, map, float)`
+  - [ ] `create/4 (obj, obj, map, obj)`
+  - [ ] `create/4 (obj, obj, map, str)`
+  - [ ] `create/4 (obj, obj, map, err)`
+  - [ ] `create/4 (obj, obj, map, list)`
+  - [ ] `create/4 (obj, obj, map, map)`
+  - [ ] `create/4 (obj, str, int, int)`
+  - [ ] `create/4 (obj, str, int, float)`
+  - [ ] `create/4 (obj, str, int, obj)`
+  - [ ] `create/4 (obj, str, int, str)`
+  - [ ] `create/4 (obj, str, int, err)`
+  - [ ] `create/4 (obj, str, int, list)`
+  - [ ] `create/4 (obj, str, int, map)`
+  - [ ] `create/4 (obj, str, float, int)`
+  - [ ] `create/4 (obj, str, float, float)`
+  - [ ] `create/4 (obj, str, float, obj)`
+  - [ ] `create/4 (obj, str, float, str)`
+  - [ ] `create/4 (obj, str, float, err)`
+  - [ ] `create/4 (obj, str, float, list)`
+  - [ ] `create/4 (obj, str, float, map)`
+  - [ ] `create/4 (obj, str, obj, int)`
+  - [ ] `create/4 (obj, str, obj, float)`
+  - [ ] `create/4 (obj, str, obj, obj)`
+  - [ ] `create/4 (obj, str, obj, str)`
+  - [ ] `create/4 (obj, str, obj, err)`
+  - [ ] `create/4 (obj, str, obj, list)`
+  - [ ] `create/4 (obj, str, obj, map)`
+  - [ ] `create/4 (obj, str, str, int)`
+  - [ ] `create/4 (obj, str, str, float)`
+  - [ ] `create/4 (obj, str, str, obj)`
+  - [ ] `create/4 (obj, str, str, str)`
+  - [ ] `create/4 (obj, str, str, err)`
+  - [ ] `create/4 (obj, str, str, list)`
+  - [ ] `create/4 (obj, str, str, map)`
+  - [ ] `create/4 (obj, str, err, int)`
+  - [ ] `create/4 (obj, str, err, float)`
+  - [ ] `create/4 (obj, str, err, obj)`
+  - [ ] `create/4 (obj, str, err, str)`
+  - [ ] `create/4 (obj, str, err, err)`
+  - [ ] `create/4 (obj, str, err, list)`
+  - [ ] `create/4 (obj, str, err, map)`
+  - [ ] `create/4 (obj, str, list, int)`
+  - [ ] `create/4 (obj, str, list, float)`
+  - [ ] `create/4 (obj, str, list, obj)`
+  - [ ] `create/4 (obj, str, list, str)`
+  - [ ] `create/4 (obj, str, list, err)`
+  - [ ] `create/4 (obj, str, list, list)`
+  - [ ] `create/4 (obj, str, list, map)`
+  - [ ] `create/4 (obj, str, map, int)`
+  - [ ] `create/4 (obj, str, map, float)`
+  - [ ] `create/4 (obj, str, map, obj)`
+  - [ ] `create/4 (obj, str, map, str)`
+  - [ ] `create/4 (obj, str, map, err)`
+  - [ ] `create/4 (obj, str, map, list)`
+  - [ ] `create/4 (obj, str, map, map)`
+  - [ ] `create/4 (obj, err, int, int)`
+  - [ ] `create/4 (obj, err, int, float)`
+  - [ ] `create/4 (obj, err, int, obj)`
+  - [ ] `create/4 (obj, err, int, str)`
+  - [ ] `create/4 (obj, err, int, err)`
+  - [ ] `create/4 (obj, err, int, list)`
+  - [ ] `create/4 (obj, err, int, map)`
+  - [ ] `create/4 (obj, err, float, int)`
+  - [ ] `create/4 (obj, err, float, float)`
+  - [ ] `create/4 (obj, err, float, obj)`
+  - [ ] `create/4 (obj, err, float, str)`
+  - [ ] `create/4 (obj, err, float, err)`
+  - [ ] `create/4 (obj, err, float, list)`
+  - [ ] `create/4 (obj, err, float, map)`
+  - [ ] `create/4 (obj, err, obj, int)`
+  - [ ] `create/4 (obj, err, obj, float)`
+  - [ ] `create/4 (obj, err, obj, obj)`
+  - [ ] `create/4 (obj, err, obj, str)`
+  - [ ] `create/4 (obj, err, obj, err)`
+  - [ ] `create/4 (obj, err, obj, list)`
+  - [ ] `create/4 (obj, err, obj, map)`
+  - [ ] `create/4 (obj, err, str, int)`
+  - [ ] `create/4 (obj, err, str, float)`
+  - [ ] `create/4 (obj, err, str, obj)`
+  - [ ] `create/4 (obj, err, str, str)`
+  - [ ] `create/4 (obj, err, str, err)`
+  - [ ] `create/4 (obj, err, str, list)`
+  - [ ] `create/4 (obj, err, str, map)`
+  - [ ] `create/4 (obj, err, err, int)`
+  - [ ] `create/4 (obj, err, err, float)`
+  - [ ] `create/4 (obj, err, err, obj)`
+  - [ ] `create/4 (obj, err, err, str)`
+  - [ ] `create/4 (obj, err, err, err)`
+  - [ ] `create/4 (obj, err, err, list)`
+  - [ ] `create/4 (obj, err, err, map)`
+  - [ ] `create/4 (obj, err, list, int)`
+  - [ ] `create/4 (obj, err, list, float)`
+  - [ ] `create/4 (obj, err, list, obj)`
+  - [ ] `create/4 (obj, err, list, str)`
+  - [ ] `create/4 (obj, err, list, err)`
+  - [ ] `create/4 (obj, err, list, list)`
+  - [ ] `create/4 (obj, err, list, map)`
+  - [ ] `create/4 (obj, err, map, int)`
+  - [ ] `create/4 (obj, err, map, float)`
+  - [ ] `create/4 (obj, err, map, obj)`
+  - [ ] `create/4 (obj, err, map, str)`
+  - [ ] `create/4 (obj, err, map, err)`
+  - [ ] `create/4 (obj, err, map, list)`
+  - [ ] `create/4 (obj, err, map, map)`
+  - [ ] `create/4 (obj, list, int, int)`
+  - [ ] `create/4 (obj, list, int, float)`
+  - [ ] `create/4 (obj, list, int, obj)`
+  - [ ] `create/4 (obj, list, int, str)`
+  - [ ] `create/4 (obj, list, int, err)`
+  - [ ] `create/4 (obj, list, int, list)`
+  - [ ] `create/4 (obj, list, int, map)`
+  - [ ] `create/4 (obj, list, float, int)`
+  - [ ] `create/4 (obj, list, float, float)`
+  - [ ] `create/4 (obj, list, float, obj)`
+  - [ ] `create/4 (obj, list, float, str)`
+  - [ ] `create/4 (obj, list, float, err)`
+  - [ ] `create/4 (obj, list, float, list)`
+  - [ ] `create/4 (obj, list, float, map)`
+  - [ ] `create/4 (obj, list, obj, int)`
+  - [ ] `create/4 (obj, list, obj, float)`
+  - [ ] `create/4 (obj, list, obj, obj)`
+  - [ ] `create/4 (obj, list, obj, str)`
+  - [ ] `create/4 (obj, list, obj, err)`
+  - [ ] `create/4 (obj, list, obj, list)`
+  - [ ] `create/4 (obj, list, obj, map)`
+  - [ ] `create/4 (obj, list, str, int)`
+  - [ ] `create/4 (obj, list, str, float)`
+  - [ ] `create/4 (obj, list, str, obj)`
+  - [ ] `create/4 (obj, list, str, str)`
+  - [ ] `create/4 (obj, list, str, err)`
+  - [ ] `create/4 (obj, list, str, list)`
+  - [ ] `create/4 (obj, list, str, map)`
+  - [ ] `create/4 (obj, list, err, int)`
+  - [ ] `create/4 (obj, list, err, float)`
+  - [ ] `create/4 (obj, list, err, obj)`
+  - [ ] `create/4 (obj, list, err, str)`
+  - [ ] `create/4 (obj, list, err, err)`
+  - [ ] `create/4 (obj, list, err, list)`
+  - [ ] `create/4 (obj, list, err, map)`
+  - [ ] `create/4 (obj, list, list, int)`
+  - [ ] `create/4 (obj, list, list, float)`
+  - [ ] `create/4 (obj, list, list, obj)`
+  - [ ] `create/4 (obj, list, list, str)`
+  - [ ] `create/4 (obj, list, list, err)`
+  - [ ] `create/4 (obj, list, list, list)`
+  - [ ] `create/4 (obj, list, list, map)`
+  - [ ] `create/4 (obj, list, map, int)`
+  - [ ] `create/4 (obj, list, map, float)`
+  - [ ] `create/4 (obj, list, map, obj)`
+  - [ ] `create/4 (obj, list, map, str)`
+  - [ ] `create/4 (obj, list, map, err)`
+  - [ ] `create/4 (obj, list, map, list)`
+  - [ ] `create/4 (obj, list, map, map)`
+  - [ ] `create/4 (obj, map, int, int)`
+  - [ ] `create/4 (obj, map, int, float)`
+  - [ ] `create/4 (obj, map, int, obj)`
+  - [ ] `create/4 (obj, map, int, str)`
+  - [ ] `create/4 (obj, map, int, err)`
+  - [ ] `create/4 (obj, map, int, list)`
+  - [ ] `create/4 (obj, map, int, map)`
+  - [ ] `create/4 (obj, map, float, int)`
+  - [ ] `create/4 (obj, map, float, float)`
+  - [ ] `create/4 (obj, map, float, obj)`
+  - [ ] `create/4 (obj, map, float, str)`
+  - [ ] `create/4 (obj, map, float, err)`
+  - [ ] `create/4 (obj, map, float, list)`
+  - [ ] `create/4 (obj, map, float, map)`
+  - [ ] `create/4 (obj, map, obj, int)`
+  - [ ] `create/4 (obj, map, obj, float)`
+  - [ ] `create/4 (obj, map, obj, obj)`
+  - [ ] `create/4 (obj, map, obj, str)`
+  - [ ] `create/4 (obj, map, obj, err)`
+  - [ ] `create/4 (obj, map, obj, list)`
+  - [ ] `create/4 (obj, map, obj, map)`
+  - [ ] `create/4 (obj, map, str, int)`
+  - [ ] `create/4 (obj, map, str, float)`
+  - [ ] `create/4 (obj, map, str, obj)`
+  - [ ] `create/4 (obj, map, str, str)`
+  - [ ] `create/4 (obj, map, str, err)`
+  - [ ] `create/4 (obj, map, str, list)`
+  - [ ] `create/4 (obj, map, str, map)`
+  - [ ] `create/4 (obj, map, err, int)`
+  - [ ] `create/4 (obj, map, err, float)`
+  - [ ] `create/4 (obj, map, err, obj)`
+  - [ ] `create/4 (obj, map, err, str)`
+  - [ ] `create/4 (obj, map, err, err)`
+  - [ ] `create/4 (obj, map, err, list)`
+  - [ ] `create/4 (obj, map, err, map)`
+  - [ ] `create/4 (obj, map, list, int)`
+  - [ ] `create/4 (obj, map, list, float)`
+  - [ ] `create/4 (obj, map, list, obj)`
+  - [ ] `create/4 (obj, map, list, str)`
+  - [ ] `create/4 (obj, map, list, err)`
+  - [ ] `create/4 (obj, map, list, list)`
+  - [ ] `create/4 (obj, map, list, map)`
+  - [ ] `create/4 (obj, map, map, int)`
+  - [ ] `create/4 (obj, map, map, float)`
+  - [ ] `create/4 (obj, map, map, obj)`
+  - [ ] `create/4 (obj, map, map, str)`
+  - [ ] `create/4 (obj, map, map, err)`
+  - [ ] `create/4 (obj, map, map, list)`
+  - [ ] `create/4 (obj, map, map, map)`
+  - [ ] `create/4 (str, int, int, int)`
+  - [ ] `create/4 (str, int, int, float)`
+  - [ ] `create/4 (str, int, int, obj)`
+  - [ ] `create/4 (str, int, int, str)`
+  - [ ] `create/4 (str, int, int, err)`
+  - [ ] `create/4 (str, int, int, list)`
+  - [ ] `create/4 (str, int, int, map)`
+  - [ ] `create/4 (str, int, float, int)`
+  - [ ] `create/4 (str, int, float, float)`
+  - [ ] `create/4 (str, int, float, obj)`
+  - [ ] `create/4 (str, int, float, str)`
+  - [ ] `create/4 (str, int, float, err)`
+  - [ ] `create/4 (str, int, float, list)`
+  - [ ] `create/4 (str, int, float, map)`
+  - [ ] `create/4 (str, int, obj, int)`
+  - [ ] `create/4 (str, int, obj, float)`
+  - [ ] `create/4 (str, int, obj, obj)`
+  - [ ] `create/4 (str, int, obj, str)`
+  - [ ] `create/4 (str, int, obj, err)`
+  - [ ] `create/4 (str, int, obj, list)`
+  - [ ] `create/4 (str, int, obj, map)`
+  - [ ] `create/4 (str, int, str, int)`
+  - [ ] `create/4 (str, int, str, float)`
+  - [ ] `create/4 (str, int, str, obj)`
+  - [ ] `create/4 (str, int, str, str)`
+  - [ ] `create/4 (str, int, str, err)`
+  - [ ] `create/4 (str, int, str, list)`
+  - [ ] `create/4 (str, int, str, map)`
+  - [ ] `create/4 (str, int, err, int)`
+  - [ ] `create/4 (str, int, err, float)`
+  - [ ] `create/4 (str, int, err, obj)`
+  - [ ] `create/4 (str, int, err, str)`
+  - [ ] `create/4 (str, int, err, err)`
+  - [ ] `create/4 (str, int, err, list)`
+  - [ ] `create/4 (str, int, err, map)`
+  - [ ] `create/4 (str, int, list, int)`
+  - [ ] `create/4 (str, int, list, float)`
+  - [ ] `create/4 (str, int, list, obj)`
+  - [ ] `create/4 (str, int, list, str)`
+  - [ ] `create/4 (str, int, list, err)`
+  - [ ] `create/4 (str, int, list, list)`
+  - [ ] `create/4 (str, int, list, map)`
+  - [ ] `create/4 (str, int, map, int)`
+  - [ ] `create/4 (str, int, map, float)`
+  - [ ] `create/4 (str, int, map, obj)`
+  - [ ] `create/4 (str, int, map, str)`
+  - [ ] `create/4 (str, int, map, err)`
+  - [ ] `create/4 (str, int, map, list)`
+  - [ ] `create/4 (str, int, map, map)`
+  - [ ] `create/4 (str, float, int, int)`
+  - [ ] `create/4 (str, float, int, float)`
+  - [ ] `create/4 (str, float, int, obj)`
+  - [ ] `create/4 (str, float, int, str)`
+  - [ ] `create/4 (str, float, int, err)`
+  - [ ] `create/4 (str, float, int, list)`
+  - [ ] `create/4 (str, float, int, map)`
+  - [ ] `create/4 (str, float, float, int)`
+  - [ ] `create/4 (str, float, float, float)`
+  - [ ] `create/4 (str, float, float, obj)`
+  - [ ] `create/4 (str, float, float, str)`
+  - [ ] `create/4 (str, float, float, err)`
+  - [ ] `create/4 (str, float, float, list)`
+  - [ ] `create/4 (str, float, float, map)`
+  - [ ] `create/4 (str, float, obj, int)`
+  - [ ] `create/4 (str, float, obj, float)`
+  - [ ] `create/4 (str, float, obj, obj)`
+  - [ ] `create/4 (str, float, obj, str)`
+  - [ ] `create/4 (str, float, obj, err)`
+  - [ ] `create/4 (str, float, obj, list)`
+  - [ ] `create/4 (str, float, obj, map)`
+  - [ ] `create/4 (str, float, str, int)`
+  - [ ] `create/4 (str, float, str, float)`
+  - [ ] `create/4 (str, float, str, obj)`
+  - [ ] `create/4 (str, float, str, str)`
+  - [ ] `create/4 (str, float, str, err)`
+  - [ ] `create/4 (str, float, str, list)`
+  - [ ] `create/4 (str, float, str, map)`
+  - [ ] `create/4 (str, float, err, int)`
+  - [ ] `create/4 (str, float, err, float)`
+  - [ ] `create/4 (str, float, err, obj)`
+  - [ ] `create/4 (str, float, err, str)`
+  - [ ] `create/4 (str, float, err, err)`
+  - [ ] `create/4 (str, float, err, list)`
+  - [ ] `create/4 (str, float, err, map)`
+  - [ ] `create/4 (str, float, list, int)`
+  - [ ] `create/4 (str, float, list, float)`
+  - [ ] `create/4 (str, float, list, obj)`
+  - [ ] `create/4 (str, float, list, str)`
+  - [ ] `create/4 (str, float, list, err)`
+  - [ ] `create/4 (str, float, list, list)`
+  - [ ] `create/4 (str, float, list, map)`
+  - [ ] `create/4 (str, float, map, int)`
+  - [ ] `create/4 (str, float, map, float)`
+  - [ ] `create/4 (str, float, map, obj)`
+  - [ ] `create/4 (str, float, map, str)`
+  - [ ] `create/4 (str, float, map, err)`
+  - [ ] `create/4 (str, float, map, list)`
+  - [ ] `create/4 (str, float, map, map)`
+  - [ ] `create/4 (str, obj, int, int)`
+  - [ ] `create/4 (str, obj, int, float)`
+  - [ ] `create/4 (str, obj, int, obj)`
+  - [ ] `create/4 (str, obj, int, str)`
+  - [ ] `create/4 (str, obj, int, err)`
+  - [ ] `create/4 (str, obj, int, list)`
+  - [ ] `create/4 (str, obj, int, map)`
+  - [ ] `create/4 (str, obj, float, int)`
+  - [ ] `create/4 (str, obj, float, float)`
+  - [ ] `create/4 (str, obj, float, obj)`
+  - [ ] `create/4 (str, obj, float, str)`
+  - [ ] `create/4 (str, obj, float, err)`
+  - [ ] `create/4 (str, obj, float, list)`
+  - [ ] `create/4 (str, obj, float, map)`
+  - [ ] `create/4 (str, obj, obj, int)`
+  - [ ] `create/4 (str, obj, obj, float)`
+  - [ ] `create/4 (str, obj, obj, obj)`
+  - [ ] `create/4 (str, obj, obj, str)`
+  - [ ] `create/4 (str, obj, obj, err)`
+  - [ ] `create/4 (str, obj, obj, list)`
+  - [ ] `create/4 (str, obj, obj, map)`
+  - [ ] `create/4 (str, obj, str, int)`
+  - [ ] `create/4 (str, obj, str, float)`
+  - [ ] `create/4 (str, obj, str, obj)`
+  - [ ] `create/4 (str, obj, str, str)`
+  - [ ] `create/4 (str, obj, str, err)`
+  - [ ] `create/4 (str, obj, str, list)`
+  - [ ] `create/4 (str, obj, str, map)`
+  - [ ] `create/4 (str, obj, err, int)`
+  - [ ] `create/4 (str, obj, err, float)`
+  - [ ] `create/4 (str, obj, err, obj)`
+  - [ ] `create/4 (str, obj, err, str)`
+  - [ ] `create/4 (str, obj, err, err)`
+  - [ ] `create/4 (str, obj, err, list)`
+  - [ ] `create/4 (str, obj, err, map)`
+  - [ ] `create/4 (str, obj, list, int)`
+  - [ ] `create/4 (str, obj, list, float)`
+  - [ ] `create/4 (str, obj, list, obj)`
+  - [ ] `create/4 (str, obj, list, str)`
+  - [ ] `create/4 (str, obj, list, err)`
+  - [ ] `create/4 (str, obj, list, list)`
+  - [ ] `create/4 (str, obj, list, map)`
+  - [ ] `create/4 (str, obj, map, int)`
+  - [ ] `create/4 (str, obj, map, float)`
+  - [ ] `create/4 (str, obj, map, obj)`
+  - [ ] `create/4 (str, obj, map, str)`
+  - [ ] `create/4 (str, obj, map, err)`
+  - [ ] `create/4 (str, obj, map, list)`
+  - [ ] `create/4 (str, obj, map, map)`
+  - [ ] `create/4 (str, str, int, int)`
+  - [ ] `create/4 (str, str, int, float)`
+  - [ ] `create/4 (str, str, int, obj)`
+  - [ ] `create/4 (str, str, int, str)`
+  - [ ] `create/4 (str, str, int, err)`
+  - [ ] `create/4 (str, str, int, list)`
+  - [ ] `create/4 (str, str, int, map)`
+  - [ ] `create/4 (str, str, float, int)`
+  - [ ] `create/4 (str, str, float, float)`
+  - [ ] `create/4 (str, str, float, obj)`
+  - [ ] `create/4 (str, str, float, str)`
+  - [ ] `create/4 (str, str, float, err)`
+  - [ ] `create/4 (str, str, float, list)`
+  - [ ] `create/4 (str, str, float, map)`
+  - [ ] `create/4 (str, str, obj, int)`
+  - [ ] `create/4 (str, str, obj, float)`
+  - [ ] `create/4 (str, str, obj, obj)`
+  - [ ] `create/4 (str, str, obj, str)`
+  - [ ] `create/4 (str, str, obj, err)`
+  - [ ] `create/4 (str, str, obj, list)`
+  - [ ] `create/4 (str, str, obj, map)`
+  - [ ] `create/4 (str, str, str, int)`
+  - [ ] `create/4 (str, str, str, float)`
+  - [ ] `create/4 (str, str, str, obj)`
+  - [ ] `create/4 (str, str, str, str)`
+  - [ ] `create/4 (str, str, str, err)`
+  - [ ] `create/4 (str, str, str, list)`
+  - [ ] `create/4 (str, str, str, map)`
+  - [ ] `create/4 (str, str, err, int)`
+  - [ ] `create/4 (str, str, err, float)`
+  - [ ] `create/4 (str, str, err, obj)`
+  - [ ] `create/4 (str, str, err, str)`
+  - [ ] `create/4 (str, str, err, err)`
+  - [ ] `create/4 (str, str, err, list)`
+  - [ ] `create/4 (str, str, err, map)`
+  - [ ] `create/4 (str, str, list, int)`
+  - [ ] `create/4 (str, str, list, float)`
+  - [ ] `create/4 (str, str, list, obj)`
+  - [ ] `create/4 (str, str, list, str)`
+  - [ ] `create/4 (str, str, list, err)`
+  - [ ] `create/4 (str, str, list, list)`
+  - [ ] `create/4 (str, str, list, map)`
+  - [ ] `create/4 (str, str, map, int)`
+  - [ ] `create/4 (str, str, map, float)`
+  - [ ] `create/4 (str, str, map, obj)`
+  - [ ] `create/4 (str, str, map, str)`
+  - [ ] `create/4 (str, str, map, err)`
+  - [ ] `create/4 (str, str, map, list)`
+  - [ ] `create/4 (str, str, map, map)`
+  - [ ] `create/4 (str, err, int, int)`
+  - [ ] `create/4 (str, err, int, float)`
+  - [ ] `create/4 (str, err, int, obj)`
+  - [ ] `create/4 (str, err, int, str)`
+  - [ ] `create/4 (str, err, int, err)`
+  - [ ] `create/4 (str, err, int, list)`
+  - [ ] `create/4 (str, err, int, map)`
+  - [ ] `create/4 (str, err, float, int)`
+  - [ ] `create/4 (str, err, float, float)`
+  - [ ] `create/4 (str, err, float, obj)`
+  - [ ] `create/4 (str, err, float, str)`
+  - [ ] `create/4 (str, err, float, err)`
+  - [ ] `create/4 (str, err, float, list)`
+  - [ ] `create/4 (str, err, float, map)`
+  - [ ] `create/4 (str, err, obj, int)`
+  - [ ] `create/4 (str, err, obj, float)`
+  - [ ] `create/4 (str, err, obj, obj)`
+  - [ ] `create/4 (str, err, obj, str)`
+  - [ ] `create/4 (str, err, obj, err)`
+  - [ ] `create/4 (str, err, obj, list)`
+  - [ ] `create/4 (str, err, obj, map)`
+  - [ ] `create/4 (str, err, str, int)`
+  - [ ] `create/4 (str, err, str, float)`
+  - [ ] `create/4 (str, err, str, obj)`
+  - [ ] `create/4 (str, err, str, str)`
+  - [ ] `create/4 (str, err, str, err)`
+  - [ ] `create/4 (str, err, str, list)`
+  - [ ] `create/4 (str, err, str, map)`
+  - [ ] `create/4 (str, err, err, int)`
+  - [ ] `create/4 (str, err, err, float)`
+  - [ ] `create/4 (str, err, err, obj)`
+  - [ ] `create/4 (str, err, err, str)`
+  - [ ] `create/4 (str, err, err, err)`
+  - [ ] `create/4 (str, err, err, list)`
+  - [ ] `create/4 (str, err, err, map)`
+  - [ ] `create/4 (str, err, list, int)`
+  - [ ] `create/4 (str, err, list, float)`
+  - [ ] `create/4 (str, err, list, obj)`
+  - [ ] `create/4 (str, err, list, str)`
+  - [ ] `create/4 (str, err, list, err)`
+  - [ ] `create/4 (str, err, list, list)`
+  - [ ] `create/4 (str, err, list, map)`
+  - [ ] `create/4 (str, err, map, int)`
+  - [ ] `create/4 (str, err, map, float)`
+  - [ ] `create/4 (str, err, map, obj)`
+  - [ ] `create/4 (str, err, map, str)`
+  - [ ] `create/4 (str, err, map, err)`
+  - [ ] `create/4 (str, err, map, list)`
+  - [ ] `create/4 (str, err, map, map)`
+  - [ ] `create/4 (str, list, int, int)`
+  - [ ] `create/4 (str, list, int, float)`
+  - [ ] `create/4 (str, list, int, obj)`
+  - [ ] `create/4 (str, list, int, str)`
+  - [ ] `create/4 (str, list, int, err)`
+  - [ ] `create/4 (str, list, int, list)`
+  - [ ] `create/4 (str, list, int, map)`
+  - [ ] `create/4 (str, list, float, int)`
+  - [ ] `create/4 (str, list, float, float)`
+  - [ ] `create/4 (str, list, float, obj)`
+  - [ ] `create/4 (str, list, float, str)`
+  - [ ] `create/4 (str, list, float, err)`
+  - [ ] `create/4 (str, list, float, list)`
+  - [ ] `create/4 (str, list, float, map)`
+  - [ ] `create/4 (str, list, obj, int)`
+  - [ ] `create/4 (str, list, obj, float)`
+  - [ ] `create/4 (str, list, obj, obj)`
+  - [ ] `create/4 (str, list, obj, str)`
+  - [ ] `create/4 (str, list, obj, err)`
+  - [ ] `create/4 (str, list, obj, list)`
+  - [ ] `create/4 (str, list, obj, map)`
+  - [ ] `create/4 (str, list, str, int)`
+  - [ ] `create/4 (str, list, str, float)`
+  - [ ] `create/4 (str, list, str, obj)`
+  - [ ] `create/4 (str, list, str, str)`
+  - [ ] `create/4 (str, list, str, err)`
+  - [ ] `create/4 (str, list, str, list)`
+  - [ ] `create/4 (str, list, str, map)`
+  - [ ] `create/4 (str, list, err, int)`
+  - [ ] `create/4 (str, list, err, float)`
+  - [ ] `create/4 (str, list, err, obj)`
+  - [ ] `create/4 (str, list, err, str)`
+  - [ ] `create/4 (str, list, err, err)`
+  - [ ] `create/4 (str, list, err, list)`
+  - [ ] `create/4 (str, list, err, map)`
+  - [ ] `create/4 (str, list, list, int)`
+  - [ ] `create/4 (str, list, list, float)`
+  - [ ] `create/4 (str, list, list, obj)`
+  - [ ] `create/4 (str, list, list, str)`
+  - [ ] `create/4 (str, list, list, err)`
+  - [ ] `create/4 (str, list, list, list)`
+  - [ ] `create/4 (str, list, list, map)`
+  - [ ] `create/4 (str, list, map, int)`
+  - [ ] `create/4 (str, list, map, float)`
+  - [ ] `create/4 (str, list, map, obj)`
+  - [ ] `create/4 (str, list, map, str)`
+  - [ ] `create/4 (str, list, map, err)`
+  - [ ] `create/4 (str, list, map, list)`
+  - [ ] `create/4 (str, list, map, map)`
+  - [ ] `create/4 (str, map, int, int)`
+  - [ ] `create/4 (str, map, int, float)`
+  - [ ] `create/4 (str, map, int, obj)`
+  - [ ] `create/4 (str, map, int, str)`
+  - [ ] `create/4 (str, map, int, err)`
+  - [ ] `create/4 (str, map, int, list)`
+  - [ ] `create/4 (str, map, int, map)`
+  - [ ] `create/4 (str, map, float, int)`
+  - [ ] `create/4 (str, map, float, float)`
+  - [ ] `create/4 (str, map, float, obj)`
+  - [ ] `create/4 (str, map, float, str)`
+  - [ ] `create/4 (str, map, float, err)`
+  - [ ] `create/4 (str, map, float, list)`
+  - [ ] `create/4 (str, map, float, map)`
+  - [ ] `create/4 (str, map, obj, int)`
+  - [ ] `create/4 (str, map, obj, float)`
+  - [ ] `create/4 (str, map, obj, obj)`
+  - [ ] `create/4 (str, map, obj, str)`
+  - [ ] `create/4 (str, map, obj, err)`
+  - [ ] `create/4 (str, map, obj, list)`
+  - [ ] `create/4 (str, map, obj, map)`
+  - [ ] `create/4 (str, map, str, int)`
+  - [ ] `create/4 (str, map, str, float)`
+  - [ ] `create/4 (str, map, str, obj)`
+  - [ ] `create/4 (str, map, str, str)`
+  - [ ] `create/4 (str, map, str, err)`
+  - [ ] `create/4 (str, map, str, list)`
+  - [ ] `create/4 (str, map, str, map)`
+  - [ ] `create/4 (str, map, err, int)`
+  - [ ] `create/4 (str, map, err, float)`
+  - [ ] `create/4 (str, map, err, obj)`
+  - [ ] `create/4 (str, map, err, str)`
+  - [ ] `create/4 (str, map, err, err)`
+  - [ ] `create/4 (str, map, err, list)`
+  - [ ] `create/4 (str, map, err, map)`
+  - [ ] `create/4 (str, map, list, int)`
+  - [ ] `create/4 (str, map, list, float)`
+  - [ ] `create/4 (str, map, list, obj)`
+  - [ ] `create/4 (str, map, list, str)`
+  - [ ] `create/4 (str, map, list, err)`
+  - [ ] `create/4 (str, map, list, list)`
+  - [ ] `create/4 (str, map, list, map)`
+  - [ ] `create/4 (str, map, map, int)`
+  - [ ] `create/4 (str, map, map, float)`
+  - [ ] `create/4 (str, map, map, obj)`
+  - [ ] `create/4 (str, map, map, str)`
+  - [ ] `create/4 (str, map, map, err)`
+  - [ ] `create/4 (str, map, map, list)`
+  - [ ] `create/4 (str, map, map, map)`
+  - [ ] `create/4 (err, int, int, int)`
+  - [ ] `create/4 (err, int, int, float)`
+  - [ ] `create/4 (err, int, int, obj)`
+  - [ ] `create/4 (err, int, int, str)`
+  - [ ] `create/4 (err, int, int, err)`
+  - [ ] `create/4 (err, int, int, list)`
+  - [ ] `create/4 (err, int, int, map)`
+  - [ ] `create/4 (err, int, float, int)`
+  - [ ] `create/4 (err, int, float, float)`
+  - [ ] `create/4 (err, int, float, obj)`
+  - [ ] `create/4 (err, int, float, str)`
+  - [ ] `create/4 (err, int, float, err)`
+  - [ ] `create/4 (err, int, float, list)`
+  - [ ] `create/4 (err, int, float, map)`
+  - [ ] `create/4 (err, int, obj, int)`
+  - [ ] `create/4 (err, int, obj, float)`
+  - [ ] `create/4 (err, int, obj, obj)`
+  - [ ] `create/4 (err, int, obj, str)`
+  - [ ] `create/4 (err, int, obj, err)`
+  - [ ] `create/4 (err, int, obj, list)`
+  - [ ] `create/4 (err, int, obj, map)`
+  - [ ] `create/4 (err, int, str, int)`
+  - [ ] `create/4 (err, int, str, float)`
+  - [ ] `create/4 (err, int, str, obj)`
+  - [ ] `create/4 (err, int, str, str)`
+  - [ ] `create/4 (err, int, str, err)`
+  - [ ] `create/4 (err, int, str, list)`
+  - [ ] `create/4 (err, int, str, map)`
+  - [ ] `create/4 (err, int, err, int)`
+  - [ ] `create/4 (err, int, err, float)`
+  - [ ] `create/4 (err, int, err, obj)`
+  - [ ] `create/4 (err, int, err, str)`
+  - [ ] `create/4 (err, int, err, err)`
+  - [ ] `create/4 (err, int, err, list)`
+  - [ ] `create/4 (err, int, err, map)`
+  - [ ] `create/4 (err, int, list, int)`
+  - [ ] `create/4 (err, int, list, float)`
+  - [ ] `create/4 (err, int, list, obj)`
+  - [ ] `create/4 (err, int, list, str)`
+  - [ ] `create/4 (err, int, list, err)`
+  - [ ] `create/4 (err, int, list, list)`
+  - [ ] `create/4 (err, int, list, map)`
+  - [ ] `create/4 (err, int, map, int)`
+  - [ ] `create/4 (err, int, map, float)`
+  - [ ] `create/4 (err, int, map, obj)`
+  - [ ] `create/4 (err, int, map, str)`
+  - [ ] `create/4 (err, int, map, err)`
+  - [ ] `create/4 (err, int, map, list)`
+  - [ ] `create/4 (err, int, map, map)`
+  - [ ] `create/4 (err, float, int, int)`
+  - [ ] `create/4 (err, float, int, float)`
+  - [ ] `create/4 (err, float, int, obj)`
+  - [ ] `create/4 (err, float, int, str)`
+  - [ ] `create/4 (err, float, int, err)`
+  - [ ] `create/4 (err, float, int, list)`
+  - [ ] `create/4 (err, float, int, map)`
+  - [ ] `create/4 (err, float, float, int)`
+  - [ ] `create/4 (err, float, float, float)`
+  - [ ] `create/4 (err, float, float, obj)`
+  - [ ] `create/4 (err, float, float, str)`
+  - [ ] `create/4 (err, float, float, err)`
+  - [ ] `create/4 (err, float, float, list)`
+  - [ ] `create/4 (err, float, float, map)`
+  - [ ] `create/4 (err, float, obj, int)`
+  - [ ] `create/4 (err, float, obj, float)`
+  - [ ] `create/4 (err, float, obj, obj)`
+  - [ ] `create/4 (err, float, obj, str)`
+  - [ ] `create/4 (err, float, obj, err)`
+  - [ ] `create/4 (err, float, obj, list)`
+  - [ ] `create/4 (err, float, obj, map)`
+  - [ ] `create/4 (err, float, str, int)`
+  - [ ] `create/4 (err, float, str, float)`
+  - [ ] `create/4 (err, float, str, obj)`
+  - [ ] `create/4 (err, float, str, str)`
+  - [ ] `create/4 (err, float, str, err)`
+  - [ ] `create/4 (err, float, str, list)`
+  - [ ] `create/4 (err, float, str, map)`
+  - [ ] `create/4 (err, float, err, int)`
+  - [ ] `create/4 (err, float, err, float)`
+  - [ ] `create/4 (err, float, err, obj)`
+  - [ ] `create/4 (err, float, err, str)`
+  - [ ] `create/4 (err, float, err, err)`
+  - [ ] `create/4 (err, float, err, list)`
+  - [ ] `create/4 (err, float, err, map)`
+  - [ ] `create/4 (err, float, list, int)`
+  - [ ] `create/4 (err, float, list, float)`
+  - [ ] `create/4 (err, float, list, obj)`
+  - [ ] `create/4 (err, float, list, str)`
+  - [ ] `create/4 (err, float, list, err)`
+  - [ ] `create/4 (err, float, list, list)`
+  - [ ] `create/4 (err, float, list, map)`
+  - [ ] `create/4 (err, float, map, int)`
+  - [ ] `create/4 (err, float, map, float)`
+  - [ ] `create/4 (err, float, map, obj)`
+  - [ ] `create/4 (err, float, map, str)`
+  - [ ] `create/4 (err, float, map, err)`
+  - [ ] `create/4 (err, float, map, list)`
+  - [ ] `create/4 (err, float, map, map)`
+  - [ ] `create/4 (err, obj, int, int)`
+  - [ ] `create/4 (err, obj, int, float)`
+  - [ ] `create/4 (err, obj, int, obj)`
+  - [ ] `create/4 (err, obj, int, str)`
+  - [ ] `create/4 (err, obj, int, err)`
+  - [ ] `create/4 (err, obj, int, list)`
+  - [ ] `create/4 (err, obj, int, map)`
+  - [ ] `create/4 (err, obj, float, int)`
+  - [ ] `create/4 (err, obj, float, float)`
+  - [ ] `create/4 (err, obj, float, obj)`
+  - [ ] `create/4 (err, obj, float, str)`
+  - [ ] `create/4 (err, obj, float, err)`
+  - [ ] `create/4 (err, obj, float, list)`
+  - [ ] `create/4 (err, obj, float, map)`
+  - [ ] `create/4 (err, obj, obj, int)`
+  - [ ] `create/4 (err, obj, obj, float)`
+  - [ ] `create/4 (err, obj, obj, obj)`
+  - [ ] `create/4 (err, obj, obj, str)`
+  - [ ] `create/4 (err, obj, obj, err)`
+  - [ ] `create/4 (err, obj, obj, list)`
+  - [ ] `create/4 (err, obj, obj, map)`
+  - [ ] `create/4 (err, obj, str, int)`
+  - [ ] `create/4 (err, obj, str, float)`
+  - [ ] `create/4 (err, obj, str, obj)`
+  - [ ] `create/4 (err, obj, str, str)`
+  - [ ] `create/4 (err, obj, str, err)`
+  - [ ] `create/4 (err, obj, str, list)`
+  - [ ] `create/4 (err, obj, str, map)`
+  - [ ] `create/4 (err, obj, err, int)`
+  - [ ] `create/4 (err, obj, err, float)`
+  - [ ] `create/4 (err, obj, err, obj)`
+  - [ ] `create/4 (err, obj, err, str)`
+  - [ ] `create/4 (err, obj, err, err)`
+  - [ ] `create/4 (err, obj, err, list)`
+  - [ ] `create/4 (err, obj, err, map)`
+  - [ ] `create/4 (err, obj, list, int)`
+  - [ ] `create/4 (err, obj, list, float)`
+  - [ ] `create/4 (err, obj, list, obj)`
+  - [ ] `create/4 (err, obj, list, str)`
+  - [ ] `create/4 (err, obj, list, err)`
+  - [ ] `create/4 (err, obj, list, list)`
+  - [ ] `create/4 (err, obj, list, map)`
+  - [ ] `create/4 (err, obj, map, int)`
+  - [ ] `create/4 (err, obj, map, float)`
+  - [ ] `create/4 (err, obj, map, obj)`
+  - [ ] `create/4 (err, obj, map, str)`
+  - [ ] `create/4 (err, obj, map, err)`
+  - [ ] `create/4 (err, obj, map, list)`
+  - [ ] `create/4 (err, obj, map, map)`
+  - [ ] `create/4 (err, str, int, int)`
+  - [ ] `create/4 (err, str, int, float)`
+  - [ ] `create/4 (err, str, int, obj)`
+  - [ ] `create/4 (err, str, int, str)`
+  - [ ] `create/4 (err, str, int, err)`
+  - [ ] `create/4 (err, str, int, list)`
+  - [ ] `create/4 (err, str, int, map)`
+  - [ ] `create/4 (err, str, float, int)`
+  - [ ] `create/4 (err, str, float, float)`
+  - [ ] `create/4 (err, str, float, obj)`
+  - [ ] `create/4 (err, str, float, str)`
+  - [ ] `create/4 (err, str, float, err)`
+  - [ ] `create/4 (err, str, float, list)`
+  - [ ] `create/4 (err, str, float, map)`
+  - [ ] `create/4 (err, str, obj, int)`
+  - [ ] `create/4 (err, str, obj, float)`
+  - [ ] `create/4 (err, str, obj, obj)`
+  - [ ] `create/4 (err, str, obj, str)`
+  - [ ] `create/4 (err, str, obj, err)`
+  - [ ] `create/4 (err, str, obj, list)`
+  - [ ] `create/4 (err, str, obj, map)`
+  - [ ] `create/4 (err, str, str, int)`
+  - [ ] `create/4 (err, str, str, float)`
+  - [ ] `create/4 (err, str, str, obj)`
+  - [ ] `create/4 (err, str, str, str)`
+  - [ ] `create/4 (err, str, str, err)`
+  - [ ] `create/4 (err, str, str, list)`
+  - [ ] `create/4 (err, str, str, map)`
+  - [ ] `create/4 (err, str, err, int)`
+  - [ ] `create/4 (err, str, err, float)`
+  - [ ] `create/4 (err, str, err, obj)`
+  - [ ] `create/4 (err, str, err, str)`
+  - [ ] `create/4 (err, str, err, err)`
+  - [ ] `create/4 (err, str, err, list)`
+  - [ ] `create/4 (err, str, err, map)`
+  - [ ] `create/4 (err, str, list, int)`
+  - [ ] `create/4 (err, str, list, float)`
+  - [ ] `create/4 (err, str, list, obj)`
+  - [ ] `create/4 (err, str, list, str)`
+  - [ ] `create/4 (err, str, list, err)`
+  - [ ] `create/4 (err, str, list, list)`
+  - [ ] `create/4 (err, str, list, map)`
+  - [ ] `create/4 (err, str, map, int)`
+  - [ ] `create/4 (err, str, map, float)`
+  - [ ] `create/4 (err, str, map, obj)`
+  - [ ] `create/4 (err, str, map, str)`
+  - [ ] `create/4 (err, str, map, err)`
+  - [ ] `create/4 (err, str, map, list)`
+  - [ ] `create/4 (err, str, map, map)`
+  - [ ] `create/4 (err, err, int, int)`
+  - [ ] `create/4 (err, err, int, float)`
+  - [ ] `create/4 (err, err, int, obj)`
+  - [ ] `create/4 (err, err, int, str)`
+  - [ ] `create/4 (err, err, int, err)`
+  - [ ] `create/4 (err, err, int, list)`
+  - [ ] `create/4 (err, err, int, map)`
+  - [ ] `create/4 (err, err, float, int)`
+  - [ ] `create/4 (err, err, float, float)`
+  - [ ] `create/4 (err, err, float, obj)`
+  - [ ] `create/4 (err, err, float, str)`
+  - [ ] `create/4 (err, err, float, err)`
+  - [ ] `create/4 (err, err, float, list)`
+  - [ ] `create/4 (err, err, float, map)`
+  - [ ] `create/4 (err, err, obj, int)`
+  - [ ] `create/4 (err, err, obj, float)`
+  - [ ] `create/4 (err, err, obj, obj)`
+  - [ ] `create/4 (err, err, obj, str)`
+  - [ ] `create/4 (err, err, obj, err)`
+  - [ ] `create/4 (err, err, obj, list)`
+  - [ ] `create/4 (err, err, obj, map)`
+  - [ ] `create/4 (err, err, str, int)`
+  - [ ] `create/4 (err, err, str, float)`
+  - [ ] `create/4 (err, err, str, obj)`
+  - [ ] `create/4 (err, err, str, str)`
+  - [ ] `create/4 (err, err, str, err)`
+  - [ ] `create/4 (err, err, str, list)`
+  - [ ] `create/4 (err, err, str, map)`
+  - [ ] `create/4 (err, err, err, int)`
+  - [ ] `create/4 (err, err, err, float)`
+  - [ ] `create/4 (err, err, err, obj)`
+  - [ ] `create/4 (err, err, err, str)`
+  - [ ] `create/4 (err, err, err, err)`
+  - [ ] `create/4 (err, err, err, list)`
+  - [ ] `create/4 (err, err, err, map)`
+  - [ ] `create/4 (err, err, list, int)`
+  - [ ] `create/4 (err, err, list, float)`
+  - [ ] `create/4 (err, err, list, obj)`
+  - [ ] `create/4 (err, err, list, str)`
+  - [ ] `create/4 (err, err, list, err)`
+  - [ ] `create/4 (err, err, list, list)`
+  - [ ] `create/4 (err, err, list, map)`
+  - [ ] `create/4 (err, err, map, int)`
+  - [ ] `create/4 (err, err, map, float)`
+  - [ ] `create/4 (err, err, map, obj)`
+  - [ ] `create/4 (err, err, map, str)`
+  - [ ] `create/4 (err, err, map, err)`
+  - [ ] `create/4 (err, err, map, list)`
+  - [ ] `create/4 (err, err, map, map)`
+  - [ ] `create/4 (err, list, int, int)`
+  - [ ] `create/4 (err, list, int, float)`
+  - [ ] `create/4 (err, list, int, obj)`
+  - [ ] `create/4 (err, list, int, str)`
+  - [ ] `create/4 (err, list, int, err)`
+  - [ ] `create/4 (err, list, int, list)`
+  - [ ] `create/4 (err, list, int, map)`
+  - [ ] `create/4 (err, list, float, int)`
+  - [ ] `create/4 (err, list, float, float)`
+  - [ ] `create/4 (err, list, float, obj)`
+  - [ ] `create/4 (err, list, float, str)`
+  - [ ] `create/4 (err, list, float, err)`
+  - [ ] `create/4 (err, list, float, list)`
+  - [ ] `create/4 (err, list, float, map)`
+  - [ ] `create/4 (err, list, obj, int)`
+  - [ ] `create/4 (err, list, obj, float)`
+  - [ ] `create/4 (err, list, obj, obj)`
+  - [ ] `create/4 (err, list, obj, str)`
+  - [ ] `create/4 (err, list, obj, err)`
+  - [ ] `create/4 (err, list, obj, list)`
+  - [ ] `create/4 (err, list, obj, map)`
+  - [ ] `create/4 (err, list, str, int)`
+  - [ ] `create/4 (err, list, str, float)`
+  - [ ] `create/4 (err, list, str, obj)`
+  - [ ] `create/4 (err, list, str, str)`
+  - [ ] `create/4 (err, list, str, err)`
+  - [ ] `create/4 (err, list, str, list)`
+  - [ ] `create/4 (err, list, str, map)`
+  - [ ] `create/4 (err, list, err, int)`
+  - [ ] `create/4 (err, list, err, float)`
+  - [ ] `create/4 (err, list, err, obj)`
+  - [ ] `create/4 (err, list, err, str)`
+  - [ ] `create/4 (err, list, err, err)`
+  - [ ] `create/4 (err, list, err, list)`
+  - [ ] `create/4 (err, list, err, map)`
+  - [ ] `create/4 (err, list, list, int)`
+  - [ ] `create/4 (err, list, list, float)`
+  - [ ] `create/4 (err, list, list, obj)`
+  - [ ] `create/4 (err, list, list, str)`
+  - [ ] `create/4 (err, list, list, err)`
+  - [ ] `create/4 (err, list, list, list)`
+  - [ ] `create/4 (err, list, list, map)`
+  - [ ] `create/4 (err, list, map, int)`
+  - [ ] `create/4 (err, list, map, float)`
+  - [ ] `create/4 (err, list, map, obj)`
+  - [ ] `create/4 (err, list, map, str)`
+  - [ ] `create/4 (err, list, map, err)`
+  - [ ] `create/4 (err, list, map, list)`
+  - [ ] `create/4 (err, list, map, map)`
+  - [ ] `create/4 (err, map, int, int)`
+  - [ ] `create/4 (err, map, int, float)`
+  - [ ] `create/4 (err, map, int, obj)`
+  - [ ] `create/4 (err, map, int, str)`
+  - [ ] `create/4 (err, map, int, err)`
+  - [ ] `create/4 (err, map, int, list)`
+  - [ ] `create/4 (err, map, int, map)`
+  - [ ] `create/4 (err, map, float, int)`
+  - [ ] `create/4 (err, map, float, float)`
+  - [ ] `create/4 (err, map, float, obj)`
+  - [ ] `create/4 (err, map, float, str)`
+  - [ ] `create/4 (err, map, float, err)`
+  - [ ] `create/4 (err, map, float, list)`
+  - [ ] `create/4 (err, map, float, map)`
+  - [ ] `create/4 (err, map, obj, int)`
+  - [ ] `create/4 (err, map, obj, float)`
+  - [ ] `create/4 (err, map, obj, obj)`
+  - [ ] `create/4 (err, map, obj, str)`
+  - [ ] `create/4 (err, map, obj, err)`
+  - [ ] `create/4 (err, map, obj, list)`
+  - [ ] `create/4 (err, map, obj, map)`
+  - [ ] `create/4 (err, map, str, int)`
+  - [ ] `create/4 (err, map, str, float)`
+  - [ ] `create/4 (err, map, str, obj)`
+  - [ ] `create/4 (err, map, str, str)`
+  - [ ] `create/4 (err, map, str, err)`
+  - [ ] `create/4 (err, map, str, list)`
+  - [ ] `create/4 (err, map, str, map)`
+  - [ ] `create/4 (err, map, err, int)`
+  - [ ] `create/4 (err, map, err, float)`
+  - [ ] `create/4 (err, map, err, obj)`
+  - [ ] `create/4 (err, map, err, str)`
+  - [ ] `create/4 (err, map, err, err)`
+  - [ ] `create/4 (err, map, err, list)`
+  - [ ] `create/4 (err, map, err, map)`
+  - [ ] `create/4 (err, map, list, int)`
+  - [ ] `create/4 (err, map, list, float)`
+  - [ ] `create/4 (err, map, list, obj)`
+  - [ ] `create/4 (err, map, list, str)`
+  - [ ] `create/4 (err, map, list, err)`
+  - [ ] `create/4 (err, map, list, list)`
+  - [ ] `create/4 (err, map, list, map)`
+  - [ ] `create/4 (err, map, map, int)`
+  - [ ] `create/4 (err, map, map, float)`
+  - [ ] `create/4 (err, map, map, obj)`
+  - [ ] `create/4 (err, map, map, str)`
+  - [ ] `create/4 (err, map, map, err)`
+  - [ ] `create/4 (err, map, map, list)`
+  - [ ] `create/4 (err, map, map, map)`
+  - [ ] `create/4 (list, int, int, int)`
+  - [ ] `create/4 (list, int, int, float)`
+  - [ ] `create/4 (list, int, int, obj)`
+  - [ ] `create/4 (list, int, int, str)`
+  - [ ] `create/4 (list, int, int, err)`
+  - [ ] `create/4 (list, int, int, list)`
+  - [ ] `create/4 (list, int, int, map)`
+  - [ ] `create/4 (list, int, float, int)`
+  - [ ] `create/4 (list, int, float, float)`
+  - [ ] `create/4 (list, int, float, obj)`
+  - [ ] `create/4 (list, int, float, str)`
+  - [ ] `create/4 (list, int, float, err)`
+  - [ ] `create/4 (list, int, float, list)`
+  - [ ] `create/4 (list, int, float, map)`
+  - [ ] `create/4 (list, int, obj, int)`
+  - [ ] `create/4 (list, int, obj, float)`
+  - [ ] `create/4 (list, int, obj, obj)`
+  - [ ] `create/4 (list, int, obj, str)`
+  - [ ] `create/4 (list, int, obj, err)`
+  - [ ] `create/4 (list, int, obj, list)`
+  - [ ] `create/4 (list, int, obj, map)`
+  - [ ] `create/4 (list, int, str, int)`
+  - [ ] `create/4 (list, int, str, float)`
+  - [ ] `create/4 (list, int, str, obj)`
+  - [ ] `create/4 (list, int, str, str)`
+  - [ ] `create/4 (list, int, str, err)`
+  - [ ] `create/4 (list, int, str, list)`
+  - [ ] `create/4 (list, int, str, map)`
+  - [ ] `create/4 (list, int, err, int)`
+  - [ ] `create/4 (list, int, err, float)`
+  - [ ] `create/4 (list, int, err, obj)`
+  - [ ] `create/4 (list, int, err, str)`
+  - [ ] `create/4 (list, int, err, err)`
+  - [ ] `create/4 (list, int, err, list)`
+  - [ ] `create/4 (list, int, err, map)`
+  - [ ] `create/4 (list, int, list, int)`
+  - [ ] `create/4 (list, int, list, float)`
+  - [ ] `create/4 (list, int, list, obj)`
+  - [ ] `create/4 (list, int, list, str)`
+  - [ ] `create/4 (list, int, list, err)`
+  - [ ] `create/4 (list, int, list, list)`
+  - [ ] `create/4 (list, int, list, map)`
+  - [ ] `create/4 (list, int, map, int)`
+  - [ ] `create/4 (list, int, map, float)`
+  - [ ] `create/4 (list, int, map, obj)`
+  - [ ] `create/4 (list, int, map, str)`
+  - [ ] `create/4 (list, int, map, err)`
+  - [ ] `create/4 (list, int, map, list)`
+  - [ ] `create/4 (list, int, map, map)`
+  - [ ] `create/4 (list, float, int, int)`
+  - [ ] `create/4 (list, float, int, float)`
+  - [ ] `create/4 (list, float, int, obj)`
+  - [ ] `create/4 (list, float, int, str)`
+  - [ ] `create/4 (list, float, int, err)`
+  - [ ] `create/4 (list, float, int, list)`
+  - [ ] `create/4 (list, float, int, map)`
+  - [ ] `create/4 (list, float, float, int)`
+  - [ ] `create/4 (list, float, float, float)`
+  - [ ] `create/4 (list, float, float, obj)`
+  - [ ] `create/4 (list, float, float, str)`
+  - [ ] `create/4 (list, float, float, err)`
+  - [ ] `create/4 (list, float, float, list)`
+  - [ ] `create/4 (list, float, float, map)`
+  - [ ] `create/4 (list, float, obj, int)`
+  - [ ] `create/4 (list, float, obj, float)`
+  - [ ] `create/4 (list, float, obj, obj)`
+  - [ ] `create/4 (list, float, obj, str)`
+  - [ ] `create/4 (list, float, obj, err)`
+  - [ ] `create/4 (list, float, obj, list)`
+  - [ ] `create/4 (list, float, obj, map)`
+  - [ ] `create/4 (list, float, str, int)`
+  - [ ] `create/4 (list, float, str, float)`
+  - [ ] `create/4 (list, float, str, obj)`
+  - [ ] `create/4 (list, float, str, str)`
+  - [ ] `create/4 (list, float, str, err)`
+  - [ ] `create/4 (list, float, str, list)`
+  - [ ] `create/4 (list, float, str, map)`
+  - [ ] `create/4 (list, float, err, int)`
+  - [ ] `create/4 (list, float, err, float)`
+  - [ ] `create/4 (list, float, err, obj)`
+  - [ ] `create/4 (list, float, err, str)`
+  - [ ] `create/4 (list, float, err, err)`
+  - [ ] `create/4 (list, float, err, list)`
+  - [ ] `create/4 (list, float, err, map)`
+  - [ ] `create/4 (list, float, list, int)`
+  - [ ] `create/4 (list, float, list, float)`
+  - [ ] `create/4 (list, float, list, obj)`
+  - [ ] `create/4 (list, float, list, str)`
+  - [ ] `create/4 (list, float, list, err)`
+  - [ ] `create/4 (list, float, list, list)`
+  - [ ] `create/4 (list, float, list, map)`
+  - [ ] `create/4 (list, float, map, int)`
+  - [ ] `create/4 (list, float, map, float)`
+  - [ ] `create/4 (list, float, map, obj)`
+  - [ ] `create/4 (list, float, map, str)`
+  - [ ] `create/4 (list, float, map, err)`
+  - [ ] `create/4 (list, float, map, list)`
+  - [ ] `create/4 (list, float, map, map)`
+  - [ ] `create/4 (list, obj, int, int)`
+  - [ ] `create/4 (list, obj, int, float)`
+  - [ ] `create/4 (list, obj, int, obj)`
+  - [ ] `create/4 (list, obj, int, str)`
+  - [ ] `create/4 (list, obj, int, err)`
+  - [ ] `create/4 (list, obj, int, list)`
+  - [ ] `create/4 (list, obj, int, map)`
+  - [ ] `create/4 (list, obj, float, int)`
+  - [ ] `create/4 (list, obj, float, float)`
+  - [ ] `create/4 (list, obj, float, obj)`
+  - [ ] `create/4 (list, obj, float, str)`
+  - [ ] `create/4 (list, obj, float, err)`
+  - [ ] `create/4 (list, obj, float, list)`
+  - [ ] `create/4 (list, obj, float, map)`
+  - [ ] `create/4 (list, obj, obj, int)`
+  - [ ] `create/4 (list, obj, obj, float)`
+  - [ ] `create/4 (list, obj, obj, obj)`
+  - [ ] `create/4 (list, obj, obj, str)`
+  - [ ] `create/4 (list, obj, obj, err)`
+  - [ ] `create/4 (list, obj, obj, list)`
+  - [ ] `create/4 (list, obj, obj, map)`
+  - [ ] `create/4 (list, obj, str, int)`
+  - [ ] `create/4 (list, obj, str, float)`
+  - [ ] `create/4 (list, obj, str, obj)`
+  - [ ] `create/4 (list, obj, str, str)`
+  - [ ] `create/4 (list, obj, str, err)`
+  - [ ] `create/4 (list, obj, str, list)`
+  - [ ] `create/4 (list, obj, str, map)`
+  - [ ] `create/4 (list, obj, err, int)`
+  - [ ] `create/4 (list, obj, err, float)`
+  - [ ] `create/4 (list, obj, err, obj)`
+  - [ ] `create/4 (list, obj, err, str)`
+  - [ ] `create/4 (list, obj, err, err)`
+  - [ ] `create/4 (list, obj, err, list)`
+  - [ ] `create/4 (list, obj, err, map)`
+  - [ ] `create/4 (list, obj, list, int)`
+  - [ ] `create/4 (list, obj, list, float)`
+  - [ ] `create/4 (list, obj, list, obj)`
+  - [ ] `create/4 (list, obj, list, str)`
+  - [ ] `create/4 (list, obj, list, err)`
+  - [ ] `create/4 (list, obj, list, list)`
+  - [ ] `create/4 (list, obj, list, map)`
+  - [ ] `create/4 (list, obj, map, int)`
+  - [ ] `create/4 (list, obj, map, float)`
+  - [ ] `create/4 (list, obj, map, obj)`
+  - [ ] `create/4 (list, obj, map, str)`
+  - [ ] `create/4 (list, obj, map, err)`
+  - [ ] `create/4 (list, obj, map, list)`
+  - [ ] `create/4 (list, obj, map, map)`
+  - [ ] `create/4 (list, str, int, int)`
+  - [ ] `create/4 (list, str, int, float)`
+  - [ ] `create/4 (list, str, int, obj)`
+  - [ ] `create/4 (list, str, int, str)`
+  - [ ] `create/4 (list, str, int, err)`
+  - [ ] `create/4 (list, str, int, list)`
+  - [ ] `create/4 (list, str, int, map)`
+  - [ ] `create/4 (list, str, float, int)`
+  - [ ] `create/4 (list, str, float, float)`
+  - [ ] `create/4 (list, str, float, obj)`
+  - [ ] `create/4 (list, str, float, str)`
+  - [ ] `create/4 (list, str, float, err)`
+  - [ ] `create/4 (list, str, float, list)`
+  - [ ] `create/4 (list, str, float, map)`
+  - [ ] `create/4 (list, str, obj, int)`
+  - [ ] `create/4 (list, str, obj, float)`
+  - [ ] `create/4 (list, str, obj, obj)`
+  - [ ] `create/4 (list, str, obj, str)`
+  - [ ] `create/4 (list, str, obj, err)`
+  - [ ] `create/4 (list, str, obj, list)`
+  - [ ] `create/4 (list, str, obj, map)`
+  - [ ] `create/4 (list, str, str, int)`
+  - [ ] `create/4 (list, str, str, float)`
+  - [ ] `create/4 (list, str, str, obj)`
+  - [ ] `create/4 (list, str, str, str)`
+  - [ ] `create/4 (list, str, str, err)`
+  - [ ] `create/4 (list, str, str, list)`
+  - [ ] `create/4 (list, str, str, map)`
+  - [ ] `create/4 (list, str, err, int)`
+  - [ ] `create/4 (list, str, err, float)`
+  - [ ] `create/4 (list, str, err, obj)`
+  - [ ] `create/4 (list, str, err, str)`
+  - [ ] `create/4 (list, str, err, err)`
+  - [ ] `create/4 (list, str, err, list)`
+  - [ ] `create/4 (list, str, err, map)`
+  - [ ] `create/4 (list, str, list, int)`
+  - [ ] `create/4 (list, str, list, float)`
+  - [ ] `create/4 (list, str, list, obj)`
+  - [ ] `create/4 (list, str, list, str)`
+  - [ ] `create/4 (list, str, list, err)`
+  - [ ] `create/4 (list, str, list, list)`
+  - [ ] `create/4 (list, str, list, map)`
+  - [ ] `create/4 (list, str, map, int)`
+  - [ ] `create/4 (list, str, map, float)`
+  - [ ] `create/4 (list, str, map, obj)`
+  - [ ] `create/4 (list, str, map, str)`
+  - [ ] `create/4 (list, str, map, err)`
+  - [ ] `create/4 (list, str, map, list)`
+  - [ ] `create/4 (list, str, map, map)`
+  - [ ] `create/4 (list, err, int, int)`
+  - [ ] `create/4 (list, err, int, float)`
+  - [ ] `create/4 (list, err, int, obj)`
+  - [ ] `create/4 (list, err, int, str)`
+  - [ ] `create/4 (list, err, int, err)`
+  - [ ] `create/4 (list, err, int, list)`
+  - [ ] `create/4 (list, err, int, map)`
+  - [ ] `create/4 (list, err, float, int)`
+  - [ ] `create/4 (list, err, float, float)`
+  - [ ] `create/4 (list, err, float, obj)`
+  - [ ] `create/4 (list, err, float, str)`
+  - [ ] `create/4 (list, err, float, err)`
+  - [ ] `create/4 (list, err, float, list)`
+  - [ ] `create/4 (list, err, float, map)`
+  - [ ] `create/4 (list, err, obj, int)`
+  - [ ] `create/4 (list, err, obj, float)`
+  - [ ] `create/4 (list, err, obj, obj)`
+  - [ ] `create/4 (list, err, obj, str)`
+  - [ ] `create/4 (list, err, obj, err)`
+  - [ ] `create/4 (list, err, obj, list)`
+  - [ ] `create/4 (list, err, obj, map)`
+  - [ ] `create/4 (list, err, str, int)`
+  - [ ] `create/4 (list, err, str, float)`
+  - [ ] `create/4 (list, err, str, obj)`
+  - [ ] `create/4 (list, err, str, str)`
+  - [ ] `create/4 (list, err, str, err)`
+  - [ ] `create/4 (list, err, str, list)`
+  - [ ] `create/4 (list, err, str, map)`
+  - [ ] `create/4 (list, err, err, int)`
+  - [ ] `create/4 (list, err, err, float)`
+  - [ ] `create/4 (list, err, err, obj)`
+  - [ ] `create/4 (list, err, err, str)`
+  - [ ] `create/4 (list, err, err, err)`
+  - [ ] `create/4 (list, err, err, list)`
+  - [ ] `create/4 (list, err, err, map)`
+  - [ ] `create/4 (list, err, list, int)`
+  - [ ] `create/4 (list, err, list, float)`
+  - [ ] `create/4 (list, err, list, obj)`
+  - [ ] `create/4 (list, err, list, str)`
+  - [ ] `create/4 (list, err, list, err)`
+  - [ ] `create/4 (list, err, list, list)`
+  - [ ] `create/4 (list, err, list, map)`
+  - [ ] `create/4 (list, err, map, int)`
+  - [ ] `create/4 (list, err, map, float)`
+  - [ ] `create/4 (list, err, map, obj)`
+  - [ ] `create/4 (list, err, map, str)`
+  - [ ] `create/4 (list, err, map, err)`
+  - [ ] `create/4 (list, err, map, list)`
+  - [ ] `create/4 (list, err, map, map)`
+  - [ ] `create/4 (list, list, int, int)`
+  - [ ] `create/4 (list, list, int, float)`
+  - [ ] `create/4 (list, list, int, obj)`
+  - [ ] `create/4 (list, list, int, str)`
+  - [ ] `create/4 (list, list, int, err)`
+  - [ ] `create/4 (list, list, int, list)`
+  - [ ] `create/4 (list, list, int, map)`
+  - [ ] `create/4 (list, list, float, int)`
+  - [ ] `create/4 (list, list, float, float)`
+  - [ ] `create/4 (list, list, float, obj)`
+  - [ ] `create/4 (list, list, float, str)`
+  - [ ] `create/4 (list, list, float, err)`
+  - [ ] `create/4 (list, list, float, list)`
+  - [ ] `create/4 (list, list, float, map)`
+  - [ ] `create/4 (list, list, obj, int)`
+  - [ ] `create/4 (list, list, obj, float)`
+  - [ ] `create/4 (list, list, obj, obj)`
+  - [ ] `create/4 (list, list, obj, str)`
+  - [ ] `create/4 (list, list, obj, err)`
+  - [ ] `create/4 (list, list, obj, list)`
+  - [ ] `create/4 (list, list, obj, map)`
+  - [ ] `create/4 (list, list, str, int)`
+  - [ ] `create/4 (list, list, str, float)`
+  - [ ] `create/4 (list, list, str, obj)`
+  - [ ] `create/4 (list, list, str, str)`
+  - [ ] `create/4 (list, list, str, err)`
+  - [ ] `create/4 (list, list, str, list)`
+  - [ ] `create/4 (list, list, str, map)`
+  - [ ] `create/4 (list, list, err, int)`
+  - [ ] `create/4 (list, list, err, float)`
+  - [ ] `create/4 (list, list, err, obj)`
+  - [ ] `create/4 (list, list, err, str)`
+  - [ ] `create/4 (list, list, err, err)`
+  - [ ] `create/4 (list, list, err, list)`
+  - [ ] `create/4 (list, list, err, map)`
+  - [ ] `create/4 (list, list, list, int)`
+  - [ ] `create/4 (list, list, list, float)`
+  - [ ] `create/4 (list, list, list, obj)`
+  - [ ] `create/4 (list, list, list, str)`
+  - [ ] `create/4 (list, list, list, err)`
+  - [ ] `create/4 (list, list, list, list)`
+  - [ ] `create/4 (list, list, list, map)`
+  - [ ] `create/4 (list, list, map, int)`
+  - [ ] `create/4 (list, list, map, float)`
+  - [ ] `create/4 (list, list, map, obj)`
+  - [ ] `create/4 (list, list, map, str)`
+  - [ ] `create/4 (list, list, map, err)`
+  - [ ] `create/4 (list, list, map, list)`
+  - [ ] `create/4 (list, list, map, map)`
+  - [ ] `create/4 (list, map, int, int)`
+  - [ ] `create/4 (list, map, int, float)`
+  - [ ] `create/4 (list, map, int, obj)`
+  - [ ] `create/4 (list, map, int, str)`
+  - [ ] `create/4 (list, map, int, err)`
+  - [ ] `create/4 (list, map, int, list)`
+  - [ ] `create/4 (list, map, int, map)`
+  - [ ] `create/4 (list, map, float, int)`
+  - [ ] `create/4 (list, map, float, float)`
+  - [ ] `create/4 (list, map, float, obj)`
+  - [ ] `create/4 (list, map, float, str)`
+  - [ ] `create/4 (list, map, float, err)`
+  - [ ] `create/4 (list, map, float, list)`
+  - [ ] `create/4 (list, map, float, map)`
+  - [ ] `create/4 (list, map, obj, int)`
+  - [ ] `create/4 (list, map, obj, float)`
+  - [ ] `create/4 (list, map, obj, obj)`
+  - [ ] `create/4 (list, map, obj, str)`
+  - [ ] `create/4 (list, map, obj, err)`
+  - [ ] `create/4 (list, map, obj, list)`
+  - [ ] `create/4 (list, map, obj, map)`
+  - [ ] `create/4 (list, map, str, int)`
+  - [ ] `create/4 (list, map, str, float)`
+  - [ ] `create/4 (list, map, str, obj)`
+  - [ ] `create/4 (list, map, str, str)`
+  - [ ] `create/4 (list, map, str, err)`
+  - [ ] `create/4 (list, map, str, list)`
+  - [ ] `create/4 (list, map, str, map)`
+  - [ ] `create/4 (list, map, err, int)`
+  - [ ] `create/4 (list, map, err, float)`
+  - [ ] `create/4 (list, map, err, obj)`
+  - [ ] `create/4 (list, map, err, str)`
+  - [ ] `create/4 (list, map, err, err)`
+  - [ ] `create/4 (list, map, err, list)`
+  - [ ] `create/4 (list, map, err, map)`
+  - [ ] `create/4 (list, map, list, int)`
+  - [ ] `create/4 (list, map, list, float)`
+  - [ ] `create/4 (list, map, list, obj)`
+  - [ ] `create/4 (list, map, list, str)`
+  - [ ] `create/4 (list, map, list, err)`
+  - [ ] `create/4 (list, map, list, list)`
+  - [ ] `create/4 (list, map, list, map)`
+  - [ ] `create/4 (list, map, map, int)`
+  - [ ] `create/4 (list, map, map, float)`
+  - [ ] `create/4 (list, map, map, obj)`
+  - [ ] `create/4 (list, map, map, str)`
+  - [ ] `create/4 (list, map, map, err)`
+  - [ ] `create/4 (list, map, map, list)`
+  - [ ] `create/4 (list, map, map, map)`
+  - [ ] `create/4 (map, int, int, int)`
+  - [ ] `create/4 (map, int, int, float)`
+  - [ ] `create/4 (map, int, int, obj)`
+  - [ ] `create/4 (map, int, int, str)`
+  - [ ] `create/4 (map, int, int, err)`
+  - [ ] `create/4 (map, int, int, list)`
+  - [ ] `create/4 (map, int, int, map)`
+  - [ ] `create/4 (map, int, float, int)`
+  - [ ] `create/4 (map, int, float, float)`
+  - [ ] `create/4 (map, int, float, obj)`
+  - [ ] `create/4 (map, int, float, str)`
+  - [ ] `create/4 (map, int, float, err)`
+  - [ ] `create/4 (map, int, float, list)`
+  - [ ] `create/4 (map, int, float, map)`
+  - [ ] `create/4 (map, int, obj, int)`
+  - [ ] `create/4 (map, int, obj, float)`
+  - [ ] `create/4 (map, int, obj, obj)`
+  - [ ] `create/4 (map, int, obj, str)`
+  - [ ] `create/4 (map, int, obj, err)`
+  - [ ] `create/4 (map, int, obj, list)`
+  - [ ] `create/4 (map, int, obj, map)`
+  - [ ] `create/4 (map, int, str, int)`
+  - [ ] `create/4 (map, int, str, float)`
+  - [ ] `create/4 (map, int, str, obj)`
+  - [ ] `create/4 (map, int, str, str)`
+  - [ ] `create/4 (map, int, str, err)`
+  - [ ] `create/4 (map, int, str, list)`
+  - [ ] `create/4 (map, int, str, map)`
+  - [ ] `create/4 (map, int, err, int)`
+  - [ ] `create/4 (map, int, err, float)`
+  - [ ] `create/4 (map, int, err, obj)`
+  - [ ] `create/4 (map, int, err, str)`
+  - [ ] `create/4 (map, int, err, err)`
+  - [ ] `create/4 (map, int, err, list)`
+  - [ ] `create/4 (map, int, err, map)`
+  - [ ] `create/4 (map, int, list, int)`
+  - [ ] `create/4 (map, int, list, float)`
+  - [ ] `create/4 (map, int, list, obj)`
+  - [ ] `create/4 (map, int, list, str)`
+  - [ ] `create/4 (map, int, list, err)`
+  - [ ] `create/4 (map, int, list, list)`
+  - [ ] `create/4 (map, int, list, map)`
+  - [ ] `create/4 (map, int, map, int)`
+  - [ ] `create/4 (map, int, map, float)`
+  - [ ] `create/4 (map, int, map, obj)`
+  - [ ] `create/4 (map, int, map, str)`
+  - [ ] `create/4 (map, int, map, err)`
+  - [ ] `create/4 (map, int, map, list)`
+  - [ ] `create/4 (map, int, map, map)`
+  - [ ] `create/4 (map, float, int, int)`
+  - [ ] `create/4 (map, float, int, float)`
+  - [ ] `create/4 (map, float, int, obj)`
+  - [ ] `create/4 (map, float, int, str)`
+  - [ ] `create/4 (map, float, int, err)`
+  - [ ] `create/4 (map, float, int, list)`
+  - [ ] `create/4 (map, float, int, map)`
+  - [ ] `create/4 (map, float, float, int)`
+  - [ ] `create/4 (map, float, float, float)`
+  - [ ] `create/4 (map, float, float, obj)`
+  - [ ] `create/4 (map, float, float, str)`
+  - [ ] `create/4 (map, float, float, err)`
+  - [ ] `create/4 (map, float, float, list)`
+  - [ ] `create/4 (map, float, float, map)`
+  - [ ] `create/4 (map, float, obj, int)`
+  - [ ] `create/4 (map, float, obj, float)`
+  - [ ] `create/4 (map, float, obj, obj)`
+  - [ ] `create/4 (map, float, obj, str)`
+  - [ ] `create/4 (map, float, obj, err)`
+  - [ ] `create/4 (map, float, obj, list)`
+  - [ ] `create/4 (map, float, obj, map)`
+  - [ ] `create/4 (map, float, str, int)`
+  - [ ] `create/4 (map, float, str, float)`
+  - [ ] `create/4 (map, float, str, obj)`
+  - [ ] `create/4 (map, float, str, str)`
+  - [ ] `create/4 (map, float, str, err)`
+  - [ ] `create/4 (map, float, str, list)`
+  - [ ] `create/4 (map, float, str, map)`
+  - [ ] `create/4 (map, float, err, int)`
+  - [ ] `create/4 (map, float, err, float)`
+  - [ ] `create/4 (map, float, err, obj)`
+  - [ ] `create/4 (map, float, err, str)`
+  - [ ] `create/4 (map, float, err, err)`
+  - [ ] `create/4 (map, float, err, list)`
+  - [ ] `create/4 (map, float, err, map)`
+  - [ ] `create/4 (map, float, list, int)`
+  - [ ] `create/4 (map, float, list, float)`
+  - [ ] `create/4 (map, float, list, obj)`
+  - [ ] `create/4 (map, float, list, str)`
+  - [ ] `create/4 (map, float, list, err)`
+  - [ ] `create/4 (map, float, list, list)`
+  - [ ] `create/4 (map, float, list, map)`
+  - [ ] `create/4 (map, float, map, int)`
+  - [ ] `create/4 (map, float, map, float)`
+  - [ ] `create/4 (map, float, map, obj)`
+  - [ ] `create/4 (map, float, map, str)`
+  - [ ] `create/4 (map, float, map, err)`
+  - [ ] `create/4 (map, float, map, list)`
+  - [ ] `create/4 (map, float, map, map)`
+  - [ ] `create/4 (map, obj, int, int)`
+  - [ ] `create/4 (map, obj, int, float)`
+  - [ ] `create/4 (map, obj, int, obj)`
+  - [ ] `create/4 (map, obj, int, str)`
+  - [ ] `create/4 (map, obj, int, err)`
+  - [ ] `create/4 (map, obj, int, list)`
+  - [ ] `create/4 (map, obj, int, map)`
+  - [ ] `create/4 (map, obj, float, int)`
+  - [ ] `create/4 (map, obj, float, float)`
+  - [ ] `create/4 (map, obj, float, obj)`
+  - [ ] `create/4 (map, obj, float, str)`
+  - [ ] `create/4 (map, obj, float, err)`
+  - [ ] `create/4 (map, obj, float, list)`
+  - [ ] `create/4 (map, obj, float, map)`
+  - [ ] `create/4 (map, obj, obj, int)`
+  - [ ] `create/4 (map, obj, obj, float)`
+  - [ ] `create/4 (map, obj, obj, obj)`
+  - [ ] `create/4 (map, obj, obj, str)`
+  - [ ] `create/4 (map, obj, obj, err)`
+  - [ ] `create/4 (map, obj, obj, list)`
+  - [ ] `create/4 (map, obj, obj, map)`
+  - [ ] `create/4 (map, obj, str, int)`
+  - [ ] `create/4 (map, obj, str, float)`
+  - [ ] `create/4 (map, obj, str, obj)`
+  - [ ] `create/4 (map, obj, str, str)`
+  - [ ] `create/4 (map, obj, str, err)`
+  - [ ] `create/4 (map, obj, str, list)`
+  - [ ] `create/4 (map, obj, str, map)`
+  - [ ] `create/4 (map, obj, err, int)`
+  - [ ] `create/4 (map, obj, err, float)`
+  - [ ] `create/4 (map, obj, err, obj)`
+  - [ ] `create/4 (map, obj, err, str)`
+  - [ ] `create/4 (map, obj, err, err)`
+  - [ ] `create/4 (map, obj, err, list)`
+  - [ ] `create/4 (map, obj, err, map)`
+  - [ ] `create/4 (map, obj, list, int)`
+  - [ ] `create/4 (map, obj, list, float)`
+  - [ ] `create/4 (map, obj, list, obj)`
+  - [ ] `create/4 (map, obj, list, str)`
+  - [ ] `create/4 (map, obj, list, err)`
+  - [ ] `create/4 (map, obj, list, list)`
+  - [ ] `create/4 (map, obj, list, map)`
+  - [ ] `create/4 (map, obj, map, int)`
+  - [ ] `create/4 (map, obj, map, float)`
+  - [ ] `create/4 (map, obj, map, obj)`
+  - [ ] `create/4 (map, obj, map, str)`
+  - [ ] `create/4 (map, obj, map, err)`
+  - [ ] `create/4 (map, obj, map, list)`
+  - [ ] `create/4 (map, obj, map, map)`
+  - [ ] `create/4 (map, str, int, int)`
+  - [ ] `create/4 (map, str, int, float)`
+  - [ ] `create/4 (map, str, int, obj)`
+  - [ ] `create/4 (map, str, int, str)`
+  - [ ] `create/4 (map, str, int, err)`
+  - [ ] `create/4 (map, str, int, list)`
+  - [ ] `create/4 (map, str, int, map)`
+  - [ ] `create/4 (map, str, float, int)`
+  - [ ] `create/4 (map, str, float, float)`
+  - [ ] `create/4 (map, str, float, obj)`
+  - [ ] `create/4 (map, str, float, str)`
+  - [ ] `create/4 (map, str, float, err)`
+  - [ ] `create/4 (map, str, float, list)`
+  - [ ] `create/4 (map, str, float, map)`
+  - [ ] `create/4 (map, str, obj, int)`
+  - [ ] `create/4 (map, str, obj, float)`
+  - [ ] `create/4 (map, str, obj, obj)`
+  - [ ] `create/4 (map, str, obj, str)`
+  - [ ] `create/4 (map, str, obj, err)`
+  - [ ] `create/4 (map, str, obj, list)`
+  - [ ] `create/4 (map, str, obj, map)`
+  - [ ] `create/4 (map, str, str, int)`
+  - [ ] `create/4 (map, str, str, float)`
+  - [ ] `create/4 (map, str, str, obj)`
+  - [ ] `create/4 (map, str, str, str)`
+  - [ ] `create/4 (map, str, str, err)`
+  - [ ] `create/4 (map, str, str, list)`
+  - [ ] `create/4 (map, str, str, map)`
+  - [ ] `create/4 (map, str, err, int)`
+  - [ ] `create/4 (map, str, err, float)`
+  - [ ] `create/4 (map, str, err, obj)`
+  - [ ] `create/4 (map, str, err, str)`
+  - [ ] `create/4 (map, str, err, err)`
+  - [ ] `create/4 (map, str, err, list)`
+  - [ ] `create/4 (map, str, err, map)`
+  - [ ] `create/4 (map, str, list, int)`
+  - [ ] `create/4 (map, str, list, float)`
+  - [ ] `create/4 (map, str, list, obj)`
+  - [ ] `create/4 (map, str, list, str)`
+  - [ ] `create/4 (map, str, list, err)`
+  - [ ] `create/4 (map, str, list, list)`
+  - [ ] `create/4 (map, str, list, map)`
+  - [ ] `create/4 (map, str, map, int)`
+  - [ ] `create/4 (map, str, map, float)`
+  - [ ] `create/4 (map, str, map, obj)`
+  - [ ] `create/4 (map, str, map, str)`
+  - [ ] `create/4 (map, str, map, err)`
+  - [ ] `create/4 (map, str, map, list)`
+  - [ ] `create/4 (map, str, map, map)`
+  - [ ] `create/4 (map, err, int, int)`
+  - [ ] `create/4 (map, err, int, float)`
+  - [ ] `create/4 (map, err, int, obj)`
+  - [ ] `create/4 (map, err, int, str)`
+  - [ ] `create/4 (map, err, int, err)`
+  - [ ] `create/4 (map, err, int, list)`
+  - [ ] `create/4 (map, err, int, map)`
+  - [ ] `create/4 (map, err, float, int)`
+  - [ ] `create/4 (map, err, float, float)`
+  - [ ] `create/4 (map, err, float, obj)`
+  - [ ] `create/4 (map, err, float, str)`
+  - [ ] `create/4 (map, err, float, err)`
+  - [ ] `create/4 (map, err, float, list)`
+  - [ ] `create/4 (map, err, float, map)`
+  - [ ] `create/4 (map, err, obj, int)`
+  - [ ] `create/4 (map, err, obj, float)`
+  - [ ] `create/4 (map, err, obj, obj)`
+  - [ ] `create/4 (map, err, obj, str)`
+  - [ ] `create/4 (map, err, obj, err)`
+  - [ ] `create/4 (map, err, obj, list)`
+  - [ ] `create/4 (map, err, obj, map)`
+  - [ ] `create/4 (map, err, str, int)`
+  - [ ] `create/4 (map, err, str, float)`
+  - [ ] `create/4 (map, err, str, obj)`
+  - [ ] `create/4 (map, err, str, str)`
+  - [ ] `create/4 (map, err, str, err)`
+  - [ ] `create/4 (map, err, str, list)`
+  - [ ] `create/4 (map, err, str, map)`
+  - [ ] `create/4 (map, err, err, int)`
+  - [ ] `create/4 (map, err, err, float)`
+  - [ ] `create/4 (map, err, err, obj)`
+  - [ ] `create/4 (map, err, err, str)`
+  - [ ] `create/4 (map, err, err, err)`
+  - [ ] `create/4 (map, err, err, list)`
+  - [ ] `create/4 (map, err, err, map)`
+  - [ ] `create/4 (map, err, list, int)`
+  - [ ] `create/4 (map, err, list, float)`
+  - [ ] `create/4 (map, err, list, obj)`
+  - [ ] `create/4 (map, err, list, str)`
+  - [ ] `create/4 (map, err, list, err)`
+  - [ ] `create/4 (map, err, list, list)`
+  - [ ] `create/4 (map, err, list, map)`
+  - [ ] `create/4 (map, err, map, int)`
+  - [ ] `create/4 (map, err, map, float)`
+  - [ ] `create/4 (map, err, map, obj)`
+  - [ ] `create/4 (map, err, map, str)`
+  - [ ] `create/4 (map, err, map, err)`
+  - [ ] `create/4 (map, err, map, list)`
+  - [ ] `create/4 (map, err, map, map)`
+  - [ ] `create/4 (map, list, int, int)`
+  - [ ] `create/4 (map, list, int, float)`
+  - [ ] `create/4 (map, list, int, obj)`
+  - [ ] `create/4 (map, list, int, str)`
+  - [ ] `create/4 (map, list, int, err)`
+  - [ ] `create/4 (map, list, int, list)`
+  - [ ] `create/4 (map, list, int, map)`
+  - [ ] `create/4 (map, list, float, int)`
+  - [ ] `create/4 (map, list, float, float)`
+  - [ ] `create/4 (map, list, float, obj)`
+  - [ ] `create/4 (map, list, float, str)`
+  - [ ] `create/4 (map, list, float, err)`
+  - [ ] `create/4 (map, list, float, list)`
+  - [ ] `create/4 (map, list, float, map)`
+  - [ ] `create/4 (map, list, obj, int)`
+  - [ ] `create/4 (map, list, obj, float)`
+  - [ ] `create/4 (map, list, obj, obj)`
+  - [ ] `create/4 (map, list, obj, str)`
+  - [ ] `create/4 (map, list, obj, err)`
+  - [ ] `create/4 (map, list, obj, list)`
+  - [ ] `create/4 (map, list, obj, map)`
+  - [ ] `create/4 (map, list, str, int)`
+  - [ ] `create/4 (map, list, str, float)`
+  - [ ] `create/4 (map, list, str, obj)`
+  - [ ] `create/4 (map, list, str, str)`
+  - [ ] `create/4 (map, list, str, err)`
+  - [ ] `create/4 (map, list, str, list)`
+  - [ ] `create/4 (map, list, str, map)`
+  - [ ] `create/4 (map, list, err, int)`
+  - [ ] `create/4 (map, list, err, float)`
+  - [ ] `create/4 (map, list, err, obj)`
+  - [ ] `create/4 (map, list, err, str)`
+  - [ ] `create/4 (map, list, err, err)`
+  - [ ] `create/4 (map, list, err, list)`
+  - [ ] `create/4 (map, list, err, map)`
+  - [ ] `create/4 (map, list, list, int)`
+  - [ ] `create/4 (map, list, list, float)`
+  - [ ] `create/4 (map, list, list, obj)`
+  - [ ] `create/4 (map, list, list, str)`
+  - [ ] `create/4 (map, list, list, err)`
+  - [ ] `create/4 (map, list, list, list)`
+  - [ ] `create/4 (map, list, list, map)`
+  - [ ] `create/4 (map, list, map, int)`
+  - [ ] `create/4 (map, list, map, float)`
+  - [ ] `create/4 (map, list, map, obj)`
+  - [ ] `create/4 (map, list, map, str)`
+  - [ ] `create/4 (map, list, map, err)`
+  - [ ] `create/4 (map, list, map, list)`
+  - [ ] `create/4 (map, list, map, map)`
+  - [ ] `create/4 (map, map, int, int)`
+  - [ ] `create/4 (map, map, int, float)`
+  - [ ] `create/4 (map, map, int, obj)`
+  - [ ] `create/4 (map, map, int, str)`
+  - [ ] `create/4 (map, map, int, err)`
+  - [ ] `create/4 (map, map, int, list)`
+  - [ ] `create/4 (map, map, int, map)`
+  - [ ] `create/4 (map, map, float, int)`
+  - [ ] `create/4 (map, map, float, float)`
+  - [ ] `create/4 (map, map, float, obj)`
+  - [ ] `create/4 (map, map, float, str)`
+  - [ ] `create/4 (map, map, float, err)`
+  - [ ] `create/4 (map, map, float, list)`
+  - [ ] `create/4 (map, map, float, map)`
+  - [ ] `create/4 (map, map, obj, int)`
+  - [ ] `create/4 (map, map, obj, float)`
+  - [ ] `create/4 (map, map, obj, obj)`
+  - [ ] `create/4 (map, map, obj, str)`
+  - [ ] `create/4 (map, map, obj, err)`
+  - [ ] `create/4 (map, map, obj, list)`
+  - [ ] `create/4 (map, map, obj, map)`
+  - [ ] `create/4 (map, map, str, int)`
+  - [ ] `create/4 (map, map, str, float)`
+  - [ ] `create/4 (map, map, str, obj)`
+  - [ ] `create/4 (map, map, str, str)`
+  - [ ] `create/4 (map, map, str, err)`
+  - [ ] `create/4 (map, map, str, list)`
+  - [ ] `create/4 (map, map, str, map)`
+  - [ ] `create/4 (map, map, err, int)`
+  - [ ] `create/4 (map, map, err, float)`
+  - [ ] `create/4 (map, map, err, obj)`
+  - [ ] `create/4 (map, map, err, str)`
+  - [ ] `create/4 (map, map, err, err)`
+  - [ ] `create/4 (map, map, err, list)`
+  - [ ] `create/4 (map, map, err, map)`
+  - [ ] `create/4 (map, map, list, int)`
+  - [ ] `create/4 (map, map, list, float)`
+  - [ ] `create/4 (map, map, list, obj)`
+  - [ ] `create/4 (map, map, list, str)`
+  - [ ] `create/4 (map, map, list, err)`
+  - [ ] `create/4 (map, map, list, list)`
+  - [ ] `create/4 (map, map, list, map)`
+  - [ ] `create/4 (map, map, map, int)`
+  - [ ] `create/4 (map, map, map, float)`
+  - [ ] `create/4 (map, map, map, obj)`
+  - [ ] `create/4 (map, map, map, str)`
+  - [ ] `create/4 (map, map, map, err)`
+  - [ ] `create/4 (map, map, map, list)`
+  - [ ] `create/4 (map, map, map, map)`
+- `crypt` signature `1..2 (str, str)`
+  - [ ] `crypt/1 (str)`
+- `curl` signature `1..3 (str, any, int)`
+  - [ ] `curl/2 (str, int)`
+  - [ ] `curl/2 (str, float)`
+  - [ ] `curl/2 (str, obj)`
+  - [ ] `curl/2 (str, str)`
+  - [ ] `curl/2 (str, err)`
+  - [ ] `curl/2 (str, list)`
+  - [ ] `curl/2 (str, map)`
+  - [ ] `curl/3 (str, int, int)`
+  - [ ] `curl/3 (str, float, int)`
+  - [ ] `curl/3 (str, obj, int)`
+  - [ ] `curl/3 (str, str, int)`
+  - [ ] `curl/3 (str, err, int)`
+  - [ ] `curl/3 (str, list, int)`
+  - [ ] `curl/3 (str, map, int)`
+- `decode_base64` signature `1..2 (str, any)`
+  - [ ] `decode_base64/2 (str, float)`
+  - [ ] `decode_base64/2 (str, obj)`
+  - [ ] `decode_base64/2 (str, str)`
+  - [ ] `decode_base64/2 (str, err)`
+  - [ ] `decode_base64/2 (str, list)`
+  - [ ] `decode_base64/2 (str, map)`
+- `decode_binary` signature `1..2 (str, any)`
+  - [ ] `decode_binary/2 (str, float)`
+  - [ ] `decode_binary/2 (str, obj)`
+  - [ ] `decode_binary/2 (str, str)`
+  - [ ] `decode_binary/2 (str, err)`
+  - [ ] `decode_binary/2 (str, list)`
+  - [ ] `decode_binary/2 (str, map)`
+- `delete_property` signature `2..2 (any, str)`
+  - [ ] `delete_property/2 (int, str)`
+  - [ ] `delete_property/2 (float, str)`
+  - [ ] `delete_property/2 (str, str)`
+  - [ ] `delete_property/2 (err, str)`
+  - [ ] `delete_property/2 (map, str)`
+- `delete_verb` signature `2..2 (any, any)`
+  - [ ] `delete_verb/2 (int, int)`
+  - [ ] `delete_verb/2 (int, float)`
+  - [ ] `delete_verb/2 (int, obj)`
+  - [ ] `delete_verb/2 (int, str)`
+  - [ ] `delete_verb/2 (int, err)`
+  - [ ] `delete_verb/2 (int, list)`
+  - [ ] `delete_verb/2 (int, map)`
+  - [ ] `delete_verb/2 (float, int)`
+  - [ ] `delete_verb/2 (float, float)`
+  - [ ] `delete_verb/2 (float, obj)`
+  - [ ] `delete_verb/2 (float, str)`
+  - [ ] `delete_verb/2 (float, err)`
+  - [ ] `delete_verb/2 (float, list)`
+  - [ ] `delete_verb/2 (float, map)`
+  - [ ] `delete_verb/2 (obj, int)`
+  - [ ] `delete_verb/2 (obj, float)`
+  - [ ] `delete_verb/2 (obj, obj)`
+  - [ ] `delete_verb/2 (obj, err)`
+  - [ ] `delete_verb/2 (obj, list)`
+  - [ ] `delete_verb/2 (obj, map)`
+  - [ ] `delete_verb/2 (str, int)`
+  - [ ] `delete_verb/2 (str, float)`
+  - [ ] `delete_verb/2 (str, obj)`
+  - [ ] `delete_verb/2 (str, str)`
+  - [ ] `delete_verb/2 (str, err)`
+  - [ ] `delete_verb/2 (str, list)`
+  - [ ] `delete_verb/2 (str, map)`
+  - [ ] `delete_verb/2 (err, int)`
+  - [ ] `delete_verb/2 (err, float)`
+  - [ ] `delete_verb/2 (err, obj)`
+  - [ ] `delete_verb/2 (err, str)`
+  - [ ] `delete_verb/2 (err, err)`
+  - [ ] `delete_verb/2 (err, list)`
+  - [ ] `delete_verb/2 (err, map)`
+  - [ ] `delete_verb/2 (list, int)`
+  - [ ] `delete_verb/2 (list, float)`
+  - [ ] `delete_verb/2 (list, obj)`
+  - [ ] `delete_verb/2 (list, err)`
+  - [ ] `delete_verb/2 (list, list)`
+  - [ ] `delete_verb/2 (list, map)`
+  - [ ] `delete_verb/2 (map, int)`
+  - [ ] `delete_verb/2 (map, float)`
+  - [ ] `delete_verb/2 (map, obj)`
+  - [ ] `delete_verb/2 (map, str)`
+  - [ ] `delete_verb/2 (map, err)`
+  - [ ] `delete_verb/2 (map, list)`
+  - [ ] `delete_verb/2 (map, map)`
+- `descendants` signature `1..2 (any, any)`
+  - [ ] `descendants/1 (obj)`
+  - [ ] `descendants/1 (err)`
+  - [ ] `descendants/1 (list)`
+  - [ ] `descendants/1 (map)`
+  - [ ] `descendants/2 (int, int)`
+  - [ ] `descendants/2 (int, float)`
+  - [ ] `descendants/2 (int, obj)`
+  - [ ] `descendants/2 (int, str)`
+  - [ ] `descendants/2 (int, err)`
+  - [ ] `descendants/2 (int, list)`
+  - [ ] `descendants/2 (int, map)`
+  - [ ] `descendants/2 (float, int)`
+  - [ ] `descendants/2 (float, float)`
+  - [ ] `descendants/2 (float, obj)`
+  - [ ] `descendants/2 (float, str)`
+  - [ ] `descendants/2 (float, err)`
+  - [ ] `descendants/2 (float, list)`
+  - [ ] `descendants/2 (float, map)`
+  - [ ] `descendants/2 (obj, int)`
+  - [ ] `descendants/2 (obj, float)`
+  - [ ] `descendants/2 (obj, obj)`
+  - [ ] `descendants/2 (obj, str)`
+  - [ ] `descendants/2 (obj, err)`
+  - [ ] `descendants/2 (obj, list)`
+  - [ ] `descendants/2 (obj, map)`
+  - [ ] `descendants/2 (str, int)`
+  - [ ] `descendants/2 (str, float)`
+  - [ ] `descendants/2 (str, obj)`
+  - [ ] `descendants/2 (str, str)`
+  - [ ] `descendants/2 (str, err)`
+  - [ ] `descendants/2 (str, list)`
+  - [ ] `descendants/2 (str, map)`
+  - [ ] `descendants/2 (err, int)`
+  - [ ] `descendants/2 (err, float)`
+  - [ ] `descendants/2 (err, obj)`
+  - [ ] `descendants/2 (err, str)`
+  - [ ] `descendants/2 (err, err)`
+  - [ ] `descendants/2 (err, list)`
+  - [ ] `descendants/2 (err, map)`
+  - [ ] `descendants/2 (list, int)`
+  - [ ] `descendants/2 (list, float)`
+  - [ ] `descendants/2 (list, obj)`
+  - [ ] `descendants/2 (list, str)`
+  - [ ] `descendants/2 (list, err)`
+  - [ ] `descendants/2 (list, list)`
+  - [ ] `descendants/2 (list, map)`
+  - [ ] `descendants/2 (map, int)`
+  - [ ] `descendants/2 (map, float)`
+  - [ ] `descendants/2 (map, obj)`
+  - [ ] `descendants/2 (map, str)`
+  - [ ] `descendants/2 (map, err)`
+  - [ ] `descendants/2 (map, list)`
+  - [ ] `descendants/2 (map, map)`
+- `disassemble` signature `2..2 (any, any)`
+  - [ ] `disassemble/2 (int, int)`
+  - [ ] `disassemble/2 (int, float)`
+  - [ ] `disassemble/2 (int, obj)`
+  - [ ] `disassemble/2 (int, str)`
+  - [ ] `disassemble/2 (int, err)`
+  - [ ] `disassemble/2 (int, list)`
+  - [ ] `disassemble/2 (int, map)`
+  - [ ] `disassemble/2 (float, int)`
+  - [ ] `disassemble/2 (float, float)`
+  - [ ] `disassemble/2 (float, obj)`
+  - [ ] `disassemble/2 (float, str)`
+  - [ ] `disassemble/2 (float, err)`
+  - [ ] `disassemble/2 (float, list)`
+  - [ ] `disassemble/2 (float, map)`
+  - [ ] `disassemble/2 (obj, int)`
+  - [ ] `disassemble/2 (obj, float)`
+  - [ ] `disassemble/2 (obj, obj)`
+  - [ ] `disassemble/2 (obj, str)`
+  - [ ] `disassemble/2 (obj, err)`
+  - [ ] `disassemble/2 (obj, list)`
+  - [ ] `disassemble/2 (obj, map)`
+  - [ ] `disassemble/2 (str, int)`
+  - [ ] `disassemble/2 (str, float)`
+  - [ ] `disassemble/2 (str, obj)`
+  - [ ] `disassemble/2 (str, str)`
+  - [ ] `disassemble/2 (str, err)`
+  - [ ] `disassemble/2 (str, list)`
+  - [ ] `disassemble/2 (str, map)`
+  - [ ] `disassemble/2 (err, int)`
+  - [ ] `disassemble/2 (err, float)`
+  - [ ] `disassemble/2 (err, obj)`
+  - [ ] `disassemble/2 (err, str)`
+  - [ ] `disassemble/2 (err, err)`
+  - [ ] `disassemble/2 (err, list)`
+  - [ ] `disassemble/2 (err, map)`
+  - [ ] `disassemble/2 (list, int)`
+  - [ ] `disassemble/2 (list, float)`
+  - [ ] `disassemble/2 (list, obj)`
+  - [ ] `disassemble/2 (list, err)`
+  - [ ] `disassemble/2 (list, list)`
+  - [ ] `disassemble/2 (list, map)`
+  - [ ] `disassemble/2 (map, int)`
+  - [ ] `disassemble/2 (map, float)`
+  - [ ] `disassemble/2 (map, obj)`
+  - [ ] `disassemble/2 (map, str)`
+  - [ ] `disassemble/2 (map, err)`
+  - [ ] `disassemble/2 (map, list)`
+  - [ ] `disassemble/2 (map, map)`
+- `encode_base64` signature `1..2 (str, any)`
+  - [ ] `encode_base64/2 (str, float)`
+  - [ ] `encode_base64/2 (str, obj)`
+  - [ ] `encode_base64/2 (str, str)`
+  - [ ] `encode_base64/2 (str, err)`
+  - [ ] `encode_base64/2 (str, list)`
+  - [ ] `encode_base64/2 (str, map)`
+- `encode_binary` signature `0..* ()`
+  - [ ] `encode_binary/1 (float)`
+  - [ ] `encode_binary/1 (err)`
+  - [ ] `encode_binary/1 (map)`
+- `equal` signature `2..2 (any, any)`
+  - [ ] `equal/2 (int, int)`
+  - [ ] `equal/2 (int, float)`
+  - [ ] `equal/2 (int, obj)`
+  - [ ] `equal/2 (int, str)`
+  - [ ] `equal/2 (int, err)`
+  - [ ] `equal/2 (int, list)`
+  - [ ] `equal/2 (int, map)`
+  - [ ] `equal/2 (float, int)`
+  - [ ] `equal/2 (float, float)`
+  - [ ] `equal/2 (float, obj)`
+  - [ ] `equal/2 (float, str)`
+  - [ ] `equal/2 (float, err)`
+  - [ ] `equal/2 (float, list)`
+  - [ ] `equal/2 (float, map)`
+  - [ ] `equal/2 (obj, int)`
+  - [ ] `equal/2 (obj, float)`
+  - [ ] `equal/2 (obj, obj)`
+  - [ ] `equal/2 (obj, str)`
+  - [ ] `equal/2 (obj, err)`
+  - [ ] `equal/2 (obj, list)`
+  - [ ] `equal/2 (obj, map)`
+  - [ ] `equal/2 (str, int)`
+  - [ ] `equal/2 (str, float)`
+  - [ ] `equal/2 (str, obj)`
+  - [ ] `equal/2 (str, err)`
+  - [ ] `equal/2 (str, list)`
+  - [ ] `equal/2 (str, map)`
+  - [ ] `equal/2 (err, int)`
+  - [ ] `equal/2 (err, float)`
+  - [ ] `equal/2 (err, obj)`
+  - [ ] `equal/2 (err, str)`
+  - [ ] `equal/2 (err, err)`
+  - [ ] `equal/2 (err, list)`
+  - [ ] `equal/2 (err, map)`
+  - [ ] `equal/2 (list, int)`
+  - [ ] `equal/2 (list, float)`
+  - [ ] `equal/2 (list, obj)`
+  - [ ] `equal/2 (list, str)`
+  - [ ] `equal/2 (list, err)`
+  - [ ] `equal/2 (list, map)`
+  - [ ] `equal/2 (map, int)`
+  - [ ] `equal/2 (map, float)`
+  - [ ] `equal/2 (map, obj)`
+  - [ ] `equal/2 (map, str)`
+  - [ ] `equal/2 (map, err)`
+  - [ ] `equal/2 (map, list)`
+- `eval` signature `1..* (str)`
+  - [ ] `eval/2 (str, int)`
+  - [ ] `eval/2 (str, float)`
+  - [ ] `eval/2 (str, obj)`
+  - [ ] `eval/2 (str, str)`
+  - [ ] `eval/2 (str, err)`
+  - [ ] `eval/2 (str, list)`
+  - [ ] `eval/2 (str, map)`
+- `exec` signature `1..3 (list, str, list)`
+  - [ ] `exec/3 (list, str, list)`
+- `file_count_lines` signature `1..1 (int)`
+  - [ ] `file_count_lines/1 (int)`
+- `file_flush` signature `1..1 (int)`
+  - [ ] `file_flush/1 (int)`
+- `file_grep` signature `2..3 (int, str, int)`
+  - [ ] `file_grep/2 (int, str)`
+  - [ ] `file_grep/3 (int, str, int)`
+- `file_handles` signature `0..0 ()`
+  - [ ] `file_handles/0 ()`
+- `file_last_access` signature `1..1 (any)`
+  - [ ] `file_last_access/1 (float)`
+  - [ ] `file_last_access/1 (obj)`
+  - [ ] `file_last_access/1 (err)`
+  - [ ] `file_last_access/1 (list)`
+  - [ ] `file_last_access/1 (map)`
+- `file_last_change` signature `1..1 (any)`
+  - [ ] `file_last_change/1 (float)`
+  - [ ] `file_last_change/1 (obj)`
+  - [ ] `file_last_change/1 (err)`
+  - [ ] `file_last_change/1 (list)`
+  - [ ] `file_last_change/1 (map)`
+- `file_last_modify` signature `1..1 (any)`
+  - [ ] `file_last_modify/1 (float)`
+  - [ ] `file_last_modify/1 (obj)`
+  - [ ] `file_last_modify/1 (err)`
+  - [ ] `file_last_modify/1 (list)`
+  - [ ] `file_last_modify/1 (map)`
+- `file_list` signature `1..2 (str, any)`
+  - [ ] `file_list/2 (str, float)`
+  - [ ] `file_list/2 (str, obj)`
+  - [ ] `file_list/2 (str, str)`
+  - [ ] `file_list/2 (str, err)`
+  - [ ] `file_list/2 (str, list)`
+  - [ ] `file_list/2 (str, map)`
+- `file_mode` signature `1..1 (any)`
+  - [ ] `file_mode/1 (float)`
+  - [ ] `file_mode/1 (obj)`
+  - [ ] `file_mode/1 (err)`
+  - [ ] `file_mode/1 (list)`
+  - [ ] `file_mode/1 (map)`
+- `file_size` signature `1..1 (any)`
+  - [ ] `file_size/1 (float)`
+  - [ ] `file_size/1 (obj)`
+  - [ ] `file_size/1 (err)`
+  - [ ] `file_size/1 (list)`
+  - [ ] `file_size/1 (map)`
+- `file_stat` signature `1..1 (any)`
+  - [ ] `file_stat/1 (float)`
+  - [ ] `file_stat/1 (obj)`
+  - [ ] `file_stat/1 (err)`
+  - [ ] `file_stat/1 (list)`
+  - [ ] `file_stat/1 (map)`
+- `file_type` signature `1..1 (any)`
+  - [ ] `file_type/1 (int)`
+  - [ ] `file_type/1 (float)`
+  - [ ] `file_type/1 (obj)`
+  - [ ] `file_type/1 (err)`
+  - [ ] `file_type/1 (list)`
+  - [ ] `file_type/1 (map)`
+- `floatstr` signature `2..3 (float, int, any)`
+  - [ ] `floatstr/3 (float, int, float)`
+  - [ ] `floatstr/3 (float, int, obj)`
+  - [ ] `floatstr/3 (float, int, str)`
+  - [ ] `floatstr/3 (float, int, err)`
+  - [ ] `floatstr/3 (float, int, list)`
+  - [ ] `floatstr/3 (float, int, map)`
+- `flush_input` signature `1..2 (obj, any)`
+  - [ ] `flush_input/2 (obj, int)`
+  - [ ] `flush_input/2 (obj, float)`
+  - [ ] `flush_input/2 (obj, obj)`
+  - [ ] `flush_input/2 (obj, str)`
+  - [ ] `flush_input/2 (obj, err)`
+  - [ ] `flush_input/2 (obj, list)`
+  - [ ] `flush_input/2 (obj, map)`
+- `force_input` signature `2..3 (obj, str, any)`
+  - [ ] `force_input/3 (obj, str, int)`
+  - [ ] `force_input/3 (obj, str, float)`
+  - [ ] `force_input/3 (obj, str, obj)`
+  - [ ] `force_input/3 (obj, str, str)`
+  - [ ] `force_input/3 (obj, str, err)`
+  - [ ] `force_input/3 (obj, str, list)`
+  - [ ] `force_input/3 (obj, str, map)`
+- `function_info` signature `0..1 (str)`
+  - [ ] `function_info/0 ()`
+- `generate_json` signature `1..3 (any, str, any)`
+  - [ ] `generate_json/3 (int, str, int)`
+  - [ ] `generate_json/3 (int, str, float)`
+  - [ ] `generate_json/3 (int, str, obj)`
+  - [ ] `generate_json/3 (int, str, str)`
+  - [ ] `generate_json/3 (int, str, err)`
+  - [ ] `generate_json/3 (int, str, list)`
+  - [ ] `generate_json/3 (int, str, map)`
+  - [ ] `generate_json/3 (float, str, int)`
+  - [ ] `generate_json/3 (float, str, float)`
+  - [ ] `generate_json/3 (float, str, obj)`
+  - [ ] `generate_json/3 (float, str, str)`
+  - [ ] `generate_json/3 (float, str, err)`
+  - [ ] `generate_json/3 (float, str, list)`
+  - [ ] `generate_json/3 (float, str, map)`
+  - [ ] `generate_json/3 (obj, str, int)`
+  - [ ] `generate_json/3 (obj, str, float)`
+  - [ ] `generate_json/3 (obj, str, obj)`
+  - [ ] `generate_json/3 (obj, str, str)`
+  - [ ] `generate_json/3 (obj, str, err)`
+  - [ ] `generate_json/3 (obj, str, list)`
+  - [ ] `generate_json/3 (obj, str, map)`
+  - [ ] `generate_json/3 (str, str, int)`
+  - [ ] `generate_json/3 (str, str, float)`
+  - [ ] `generate_json/3 (str, str, obj)`
+  - [ ] `generate_json/3 (str, str, str)`
+  - [ ] `generate_json/3 (str, str, err)`
+  - [ ] `generate_json/3 (str, str, list)`
+  - [ ] `generate_json/3 (str, str, map)`
+  - [ ] `generate_json/3 (err, str, int)`
+  - [ ] `generate_json/3 (err, str, float)`
+  - [ ] `generate_json/3 (err, str, obj)`
+  - [ ] `generate_json/3 (err, str, str)`
+  - [ ] `generate_json/3 (err, str, err)`
+  - [ ] `generate_json/3 (err, str, list)`
+  - [ ] `generate_json/3 (err, str, map)`
+  - [ ] `generate_json/3 (list, str, int)`
+  - [ ] `generate_json/3 (list, str, float)`
+  - [ ] `generate_json/3 (list, str, obj)`
+  - [ ] `generate_json/3 (list, str, str)`
+  - [ ] `generate_json/3 (list, str, err)`
+  - [ ] `generate_json/3 (list, str, list)`
+  - [ ] `generate_json/3 (list, str, map)`
+  - [ ] `generate_json/3 (map, str, int)`
+  - [ ] `generate_json/3 (map, str, float)`
+  - [ ] `generate_json/3 (map, str, obj)`
+  - [ ] `generate_json/3 (map, str, str)`
+  - [ ] `generate_json/3 (map, str, err)`
+  - [ ] `generate_json/3 (map, str, list)`
+  - [ ] `generate_json/3 (map, str, map)`
+- `index` signature `2..4 (str, str, any, int)`
+  - [ ] `index/3 (str, str, float)`
+  - [ ] `index/3 (str, str, obj)`
+  - [ ] `index/3 (str, str, str)`
+  - [ ] `index/3 (str, str, err)`
+  - [ ] `index/3 (str, str, list)`
+  - [ ] `index/3 (str, str, map)`
+  - [ ] `index/4 (str, str, float, int)`
+  - [ ] `index/4 (str, str, obj, int)`
+  - [ ] `index/4 (str, str, str, int)`
+  - [ ] `index/4 (str, str, err, int)`
+  - [ ] `index/4 (str, str, list, int)`
+  - [ ] `index/4 (str, str, map, int)`
+- `is_clear_property` signature `2..2 (any, str)`
+  - [ ] `is_clear_property/2 (int, str)`
+  - [ ] `is_clear_property/2 (float, str)`
+  - [ ] `is_clear_property/2 (obj, str)`
+  - [ ] `is_clear_property/2 (str, str)`
+  - [ ] `is_clear_property/2 (err, str)`
+  - [ ] `is_clear_property/2 (map, str)`
+- `is_member` signature `2..3 (any, any, int)`
+  - [ ] `is_member/2 (int, int)`
+  - [ ] `is_member/2 (int, float)`
+  - [ ] `is_member/2 (int, obj)`
+  - [ ] `is_member/2 (int, str)`
+  - [ ] `is_member/2 (int, err)`
+  - [ ] `is_member/2 (int, list)`
+  - [ ] `is_member/2 (float, int)`
+  - [ ] `is_member/2 (float, float)`
+  - [ ] `is_member/2 (float, obj)`
+  - [ ] `is_member/2 (float, str)`
+  - [ ] `is_member/2 (float, err)`
+  - [ ] `is_member/2 (float, list)`
+  - [ ] `is_member/2 (float, map)`
+  - [ ] `is_member/2 (obj, int)`
+  - [ ] `is_member/2 (obj, float)`
+  - [ ] `is_member/2 (obj, obj)`
+  - [ ] `is_member/2 (obj, str)`
+  - [ ] `is_member/2 (obj, err)`
+  - [ ] `is_member/2 (obj, list)`
+  - [ ] `is_member/2 (obj, map)`
+  - [ ] `is_member/2 (str, int)`
+  - [ ] `is_member/2 (str, float)`
+  - [ ] `is_member/2 (str, obj)`
+  - [ ] `is_member/2 (str, str)`
+  - [ ] `is_member/2 (str, err)`
+  - [ ] `is_member/2 (str, list)`
+  - [ ] `is_member/2 (err, int)`
+  - [ ] `is_member/2 (err, float)`
+  - [ ] `is_member/2 (err, obj)`
+  - [ ] `is_member/2 (err, str)`
+  - [ ] `is_member/2 (err, err)`
+  - [ ] `is_member/2 (err, list)`
+  - [ ] `is_member/2 (err, map)`
+  - [ ] `is_member/2 (list, int)`
+  - [ ] `is_member/2 (list, float)`
+  - [ ] `is_member/2 (list, obj)`
+  - [ ] `is_member/2 (list, str)`
+  - [ ] `is_member/2 (list, err)`
+  - [ ] `is_member/2 (list, list)`
+  - [ ] `is_member/2 (list, map)`
+  - [ ] `is_member/2 (map, int)`
+  - [ ] `is_member/2 (map, float)`
+  - [ ] `is_member/2 (map, obj)`
+  - [ ] `is_member/2 (map, str)`
+  - [ ] `is_member/2 (map, err)`
+  - [ ] `is_member/2 (map, list)`
+  - [ ] `is_member/2 (map, map)`
+  - [ ] `is_member/3 (int, int, int)`
+  - [ ] `is_member/3 (int, float, int)`
+  - [ ] `is_member/3 (int, obj, int)`
+  - [ ] `is_member/3 (int, str, int)`
+  - [ ] `is_member/3 (int, err, int)`
+  - [ ] `is_member/3 (int, list, int)`
+  - [ ] `is_member/3 (int, map, int)`
+  - [ ] `is_member/3 (float, int, int)`
+  - [ ] `is_member/3 (float, float, int)`
+  - [ ] `is_member/3 (float, obj, int)`
+  - [ ] `is_member/3 (float, str, int)`
+  - [ ] `is_member/3 (float, err, int)`
+  - [ ] `is_member/3 (float, list, int)`
+  - [ ] `is_member/3 (float, map, int)`
+  - [ ] `is_member/3 (obj, int, int)`
+  - [ ] `is_member/3 (obj, float, int)`
+  - [ ] `is_member/3 (obj, obj, int)`
+  - [ ] `is_member/3 (obj, str, int)`
+  - [ ] `is_member/3 (obj, err, int)`
+  - [ ] `is_member/3 (obj, list, int)`
+  - [ ] `is_member/3 (obj, map, int)`
+  - [ ] `is_member/3 (str, int, int)`
+  - [ ] `is_member/3 (str, float, int)`
+  - [ ] `is_member/3 (str, obj, int)`
+  - [ ] `is_member/3 (str, str, int)`
+  - [ ] `is_member/3 (str, err, int)`
+  - [ ] `is_member/3 (str, list, int)`
+  - [ ] `is_member/3 (str, map, int)`
+  - [ ] `is_member/3 (err, int, int)`
+  - [ ] `is_member/3 (err, float, int)`
+  - [ ] `is_member/3 (err, obj, int)`
+  - [ ] `is_member/3 (err, str, int)`
+  - [ ] `is_member/3 (err, err, int)`
+  - [ ] `is_member/3 (err, list, int)`
+  - [ ] `is_member/3 (err, map, int)`
+  - [ ] `is_member/3 (list, int, int)`
+  - [ ] `is_member/3 (list, float, int)`
+  - [ ] `is_member/3 (list, obj, int)`
+  - [ ] `is_member/3 (list, str, int)`
+  - [ ] `is_member/3 (list, err, int)`
+  - [ ] `is_member/3 (list, list, int)`
+  - [ ] `is_member/3 (list, map, int)`
+  - [ ] `is_member/3 (map, int, int)`
+  - [ ] `is_member/3 (map, float, int)`
+  - [ ] `is_member/3 (map, obj, int)`
+  - [ ] `is_member/3 (map, str, int)`
+  - [ ] `is_member/3 (map, err, int)`
+  - [ ] `is_member/3 (map, list, int)`
+  - [ ] `is_member/3 (map, map, int)`
+- `is_player` signature `1..1 (obj)`
+  - [ ] `is_player/1 (obj)`
+- `isa` signature `2..3 (any, any, int)`
+  - [ ] `isa/2 (int, int)`
+  - [ ] `isa/2 (int, float)`
+  - [ ] `isa/2 (int, obj)`
+  - [ ] `isa/2 (int, str)`
+  - [ ] `isa/2 (int, err)`
+  - [ ] `isa/2 (int, list)`
+  - [ ] `isa/2 (int, map)`
+  - [ ] `isa/2 (float, int)`
+  - [ ] `isa/2 (float, float)`
+  - [ ] `isa/2 (float, obj)`
+  - [ ] `isa/2 (float, str)`
+  - [ ] `isa/2 (float, err)`
+  - [ ] `isa/2 (float, list)`
+  - [ ] `isa/2 (float, map)`
+  - [ ] `isa/2 (obj, int)`
+  - [ ] `isa/2 (obj, float)`
+  - [ ] `isa/2 (obj, str)`
+  - [ ] `isa/2 (obj, err)`
+  - [ ] `isa/2 (obj, list)`
+  - [ ] `isa/2 (obj, map)`
+  - [ ] `isa/2 (str, int)`
+  - [ ] `isa/2 (str, float)`
+  - [ ] `isa/2 (str, obj)`
+  - [ ] `isa/2 (str, str)`
+  - [ ] `isa/2 (str, err)`
+  - [ ] `isa/2 (str, list)`
+  - [ ] `isa/2 (str, map)`
+  - [ ] `isa/2 (err, int)`
+  - [ ] `isa/2 (err, float)`
+  - [ ] `isa/2 (err, obj)`
+  - [ ] `isa/2 (err, str)`
+  - [ ] `isa/2 (err, err)`
+  - [ ] `isa/2 (err, list)`
+  - [ ] `isa/2 (err, map)`
+  - [ ] `isa/2 (list, int)`
+  - [ ] `isa/2 (list, float)`
+  - [ ] `isa/2 (list, obj)`
+  - [ ] `isa/2 (list, str)`
+  - [ ] `isa/2 (list, err)`
+  - [ ] `isa/2 (list, list)`
+  - [ ] `isa/2 (list, map)`
+  - [ ] `isa/2 (map, int)`
+  - [ ] `isa/2 (map, float)`
+  - [ ] `isa/2 (map, obj)`
+  - [ ] `isa/2 (map, str)`
+  - [ ] `isa/2 (map, err)`
+  - [ ] `isa/2 (map, list)`
+  - [ ] `isa/2 (map, map)`
+  - [ ] `isa/3 (int, int, int)`
+  - [ ] `isa/3 (int, float, int)`
+  - [ ] `isa/3 (int, obj, int)`
+  - [ ] `isa/3 (int, str, int)`
+  - [ ] `isa/3 (int, err, int)`
+  - [ ] `isa/3 (int, list, int)`
+  - [ ] `isa/3 (int, map, int)`
+  - [ ] `isa/3 (float, int, int)`
+  - [ ] `isa/3 (float, float, int)`
+  - [ ] `isa/3 (float, obj, int)`
+  - [ ] `isa/3 (float, str, int)`
+  - [ ] `isa/3 (float, err, int)`
+  - [ ] `isa/3 (float, list, int)`
+  - [ ] `isa/3 (float, map, int)`
+  - [ ] `isa/3 (obj, int, int)`
+  - [ ] `isa/3 (obj, float, int)`
+  - [ ] `isa/3 (obj, obj, int)`
+  - [ ] `isa/3 (obj, str, int)`
+  - [ ] `isa/3 (obj, err, int)`
+  - [ ] `isa/3 (obj, list, int)`
+  - [ ] `isa/3 (obj, map, int)`
+  - [ ] `isa/3 (str, int, int)`
+  - [ ] `isa/3 (str, float, int)`
+  - [ ] `isa/3 (str, obj, int)`
+  - [ ] `isa/3 (str, str, int)`
+  - [ ] `isa/3 (str, err, int)`
+  - [ ] `isa/3 (str, list, int)`
+  - [ ] `isa/3 (str, map, int)`
+  - [ ] `isa/3 (err, int, int)`
+  - [ ] `isa/3 (err, float, int)`
+  - [ ] `isa/3 (err, obj, int)`
+  - [ ] `isa/3 (err, str, int)`
+  - [ ] `isa/3 (err, err, int)`
+  - [ ] `isa/3 (err, list, int)`
+  - [ ] `isa/3 (err, map, int)`
+  - [ ] `isa/3 (list, int, int)`
+  - [ ] `isa/3 (list, float, int)`
+  - [ ] `isa/3 (list, obj, int)`
+  - [ ] `isa/3 (list, str, int)`
+  - [ ] `isa/3 (list, err, int)`
+  - [ ] `isa/3 (list, list, int)`
+  - [ ] `isa/3 (list, map, int)`
+  - [ ] `isa/3 (map, int, int)`
+  - [ ] `isa/3 (map, float, int)`
+  - [ ] `isa/3 (map, obj, int)`
+  - [ ] `isa/3 (map, str, int)`
+  - [ ] `isa/3 (map, err, int)`
+  - [ ] `isa/3 (map, list, int)`
+  - [ ] `isa/3 (map, map, int)`
+- `length` signature `1..1 (any)`
+  - [ ] `length/1 (float)`
+  - [ ] `length/1 (err)`
+- `listappend` signature `2..3 (list, any, int)`
+  - [ ] `listappend/2 (list, float)`
+  - [ ] `listappend/2 (list, obj)`
+  - [ ] `listappend/2 (list, str)`
+  - [ ] `listappend/2 (list, err)`
+  - [ ] `listappend/2 (list, map)`
+  - [ ] `listappend/3 (list, float, int)`
+  - [ ] `listappend/3 (list, obj, int)`
+  - [ ] `listappend/3 (list, str, int)`
+  - [ ] `listappend/3 (list, err, int)`
+  - [ ] `listappend/3 (list, list, int)`
+  - [ ] `listappend/3 (list, map, int)`
+- `listen` signature `2..3 (obj, any, map)`
+  - [ ] `listen/2 (obj, int)`
+  - [ ] `listen/2 (obj, float)`
+  - [ ] `listen/2 (obj, obj)`
+  - [ ] `listen/2 (obj, str)`
+  - [ ] `listen/2 (obj, err)`
+  - [ ] `listen/2 (obj, list)`
+  - [ ] `listen/2 (obj, map)`
+  - [ ] `listen/3 (obj, float, map)`
+  - [ ] `listen/3 (obj, obj, map)`
+  - [ ] `listen/3 (obj, str, map)`
+  - [ ] `listen/3 (obj, err, map)`
+  - [ ] `listen/3 (obj, map, map)`
+- `listeners` signature `0..1 (any)`
+  - [ ] `listeners/1 (int)`
+  - [ ] `listeners/1 (float)`
+  - [ ] `listeners/1 (str)`
+  - [ ] `listeners/1 (err)`
+  - [ ] `listeners/1 (list)`
+  - [ ] `listeners/1 (map)`
+- `listinsert` signature `2..3 (list, any, int)`
+  - [ ] `listinsert/2 (list, int)`
+  - [ ] `listinsert/2 (list, float)`
+  - [ ] `listinsert/2 (list, obj)`
+  - [ ] `listinsert/2 (list, str)`
+  - [ ] `listinsert/2 (list, err)`
+  - [ ] `listinsert/2 (list, map)`
+  - [ ] `listinsert/3 (list, float, int)`
+  - [ ] `listinsert/3 (list, obj, int)`
+  - [ ] `listinsert/3 (list, str, int)`
+  - [ ] `listinsert/3 (list, err, int)`
+  - [ ] `listinsert/3 (list, list, int)`
+  - [ ] `listinsert/3 (list, map, int)`
+- `listset` signature `3..3 (list, any, int)`
+  - [ ] `listset/3 (list, float, int)`
+  - [ ] `listset/3 (list, obj, int)`
+  - [ ] `listset/3 (list, str, int)`
+  - [ ] `listset/3 (list, err, int)`
+  - [ ] `listset/3 (list, map, int)`
+- `locations` signature `1..3 (obj, obj, int)`
+  - [ ] `locations/1 (obj)`
+  - [ ] `locations/2 (obj, obj)`
+  - [ ] `locations/3 (obj, obj, int)`
+- `malloc_stats` signature `0..0 ()`
+  - [ ] `malloc_stats/0 ()`
+- `mapdelete` signature `2..2 (map, any)`
+  - [ ] `mapdelete/2 (map, int)`
+  - [ ] `mapdelete/2 (map, float)`
+  - [ ] `mapdelete/2 (map, obj)`
+  - [ ] `mapdelete/2 (map, err)`
+- `maphaskey` signature `2..3 (map, any, int)`
+  - [ ] `maphaskey/3 (map, int, int)`
+  - [ ] `maphaskey/3 (map, float, int)`
+  - [ ] `maphaskey/3 (map, obj, int)`
+  - [ ] `maphaskey/3 (map, err, int)`
+  - [ ] `maphaskey/3 (map, list, int)`
+  - [ ] `maphaskey/3 (map, map, int)`
+- `mapvalues` signature `1..* (map)`
+  - [ ] `mapvalues/2 (map, int)`
+  - [ ] `mapvalues/2 (map, float)`
+  - [ ] `mapvalues/2 (map, obj)`
+  - [ ] `mapvalues/2 (map, err)`
+  - [ ] `mapvalues/2 (map, list)`
+  - [ ] `mapvalues/2 (map, map)`
+- `match` signature `2..3 (str, str, any)`
+  - [ ] `match/3 (str, str, float)`
+  - [ ] `match/3 (str, str, obj)`
+  - [ ] `match/3 (str, str, str)`
+  - [ ] `match/3 (str, str, err)`
+  - [ ] `match/3 (str, str, list)`
+  - [ ] `match/3 (str, str, map)`
+- `max` signature `1..* (numeric)`
+  - [ ] `max/1 (float)`
+  - [ ] `max/2 (int, obj)`
+  - [ ] `max/2 (int, str)`
+  - [ ] `max/2 (int, err)`
+  - [ ] `max/2 (int, list)`
+  - [ ] `max/2 (int, map)`
+  - [ ] `max/2 (float, int)`
+  - [ ] `max/2 (float, obj)`
+  - [ ] `max/2 (float, str)`
+  - [ ] `max/2 (float, err)`
+  - [ ] `max/2 (float, list)`
+  - [ ] `max/2 (float, map)`
+- `min` signature `1..* (numeric)`
+  - [ ] `min/1 (float)`
+  - [ ] `min/2 (int, obj)`
+  - [ ] `min/2 (int, str)`
+  - [ ] `min/2 (int, err)`
+  - [ ] `min/2 (int, list)`
+  - [ ] `min/2 (int, map)`
+  - [ ] `min/2 (float, int)`
+  - [ ] `min/2 (float, obj)`
+  - [ ] `min/2 (float, str)`
+  - [ ] `min/2 (float, err)`
+  - [ ] `min/2 (float, list)`
+  - [ ] `min/2 (float, map)`
+- `move` signature `2..3 (obj, obj, int)`
+  - [ ] `move/2 (obj, obj)`
+  - [ ] `move/3 (obj, obj, int)`
+- `notify` signature `2..4 (obj, str, any, any)`
+  - [ ] `notify/3 (obj, str, float)`
+  - [ ] `notify/3 (obj, str, obj)`
+  - [ ] `notify/3 (obj, str, str)`
+  - [ ] `notify/3 (obj, str, err)`
+  - [ ] `notify/3 (obj, str, list)`
+  - [ ] `notify/3 (obj, str, map)`
+  - [ ] `notify/4 (obj, str, int, float)`
+  - [ ] `notify/4 (obj, str, int, obj)`
+  - [ ] `notify/4 (obj, str, int, str)`
+  - [ ] `notify/4 (obj, str, int, err)`
+  - [ ] `notify/4 (obj, str, int, list)`
+  - [ ] `notify/4 (obj, str, int, map)`
+  - [ ] `notify/4 (obj, str, float, int)`
+  - [ ] `notify/4 (obj, str, float, float)`
+  - [ ] `notify/4 (obj, str, float, obj)`
+  - [ ] `notify/4 (obj, str, float, str)`
+  - [ ] `notify/4 (obj, str, float, err)`
+  - [ ] `notify/4 (obj, str, float, list)`
+  - [ ] `notify/4 (obj, str, float, map)`
+  - [ ] `notify/4 (obj, str, obj, int)`
+  - [ ] `notify/4 (obj, str, obj, float)`
+  - [ ] `notify/4 (obj, str, obj, obj)`
+  - [ ] `notify/4 (obj, str, obj, str)`
+  - [ ] `notify/4 (obj, str, obj, err)`
+  - [ ] `notify/4 (obj, str, obj, list)`
+  - [ ] `notify/4 (obj, str, obj, map)`
+  - [ ] `notify/4 (obj, str, str, int)`
+  - [ ] `notify/4 (obj, str, str, float)`
+  - [ ] `notify/4 (obj, str, str, obj)`
+  - [ ] `notify/4 (obj, str, str, str)`
+  - [ ] `notify/4 (obj, str, str, err)`
+  - [ ] `notify/4 (obj, str, str, list)`
+  - [ ] `notify/4 (obj, str, str, map)`
+  - [ ] `notify/4 (obj, str, err, int)`
+  - [ ] `notify/4 (obj, str, err, float)`
+  - [ ] `notify/4 (obj, str, err, obj)`
+  - [ ] `notify/4 (obj, str, err, str)`
+  - [ ] `notify/4 (obj, str, err, err)`
+  - [ ] `notify/4 (obj, str, err, list)`
+  - [ ] `notify/4 (obj, str, err, map)`
+  - [ ] `notify/4 (obj, str, list, int)`
+  - [ ] `notify/4 (obj, str, list, float)`
+  - [ ] `notify/4 (obj, str, list, obj)`
+  - [ ] `notify/4 (obj, str, list, str)`
+  - [ ] `notify/4 (obj, str, list, err)`
+  - [ ] `notify/4 (obj, str, list, list)`
+  - [ ] `notify/4 (obj, str, list, map)`
+  - [ ] `notify/4 (obj, str, map, int)`
+  - [ ] `notify/4 (obj, str, map, float)`
+  - [ ] `notify/4 (obj, str, map, obj)`
+  - [ ] `notify/4 (obj, str, map, str)`
+  - [ ] `notify/4 (obj, str, map, err)`
+  - [ ] `notify/4 (obj, str, map, list)`
+  - [ ] `notify/4 (obj, str, map, map)`
+- `object_bytes` signature `1..1 (any)`
+  - [ ] `object_bytes/1 (obj)`
+  - [ ] `object_bytes/1 (err)`
+  - [ ] `object_bytes/1 (list)`
+  - [ ] `object_bytes/1 (map)`
+- `occupants` signature `1..4 (list, any, int, int)`
+  - [ ] `occupants/2 (list, int)`
+  - [ ] `occupants/2 (list, float)`
+  - [ ] `occupants/2 (list, obj)`
+  - [ ] `occupants/2 (list, err)`
+  - [ ] `occupants/2 (list, list)`
+  - [ ] `occupants/2 (list, map)`
+  - [ ] `occupants/3 (list, int, int)`
+  - [ ] `occupants/3 (list, float, int)`
+  - [ ] `occupants/3 (list, obj, int)`
+  - [ ] `occupants/3 (list, str, int)`
+  - [ ] `occupants/3 (list, err, int)`
+  - [ ] `occupants/3 (list, list, int)`
+  - [ ] `occupants/3 (list, map, int)`
+  - [ ] `occupants/4 (list, int, int, int)`
+  - [ ] `occupants/4 (list, float, int, int)`
+  - [ ] `occupants/4 (list, obj, int, int)`
+  - [ ] `occupants/4 (list, str, int, int)`
+  - [ ] `occupants/4 (list, err, int, int)`
+  - [ ] `occupants/4 (list, list, int, int)`
+  - [ ] `occupants/4 (list, map, int, int)`
+- `open_network_connection` signature `2..3 (str, int, map)`
+  - [ ] `open_network_connection/3 (str, int, map)`
+- `owned_objects` signature `1..1 (obj)`
+  - [ ] `owned_objects/1 (obj)`
+- `parent` signature `1..1 (any)`
+  - [ ] `parent/1 (float)`
+  - [ ] `parent/1 (obj)`
+  - [ ] `parent/1 (err)`
+  - [ ] `parent/1 (list)`
+  - [ ] `parent/1 (map)`
+- `parents` signature `1..1 (any)`
+  - [ ] `parents/1 (float)`
+  - [ ] `parents/1 (obj)`
+  - [ ] `parents/1 (str)`
+  - [ ] `parents/1 (err)`
+  - [ ] `parents/1 (list)`
+  - [ ] `parents/1 (map)`
+- `pass` signature `0..* ()`
+  - [ ] `pass/0 ()`
+  - [ ] `pass/1 (int)`
+  - [ ] `pass/1 (float)`
+  - [ ] `pass/1 (obj)`
+  - [ ] `pass/1 (str)`
+  - [ ] `pass/1 (err)`
+  - [ ] `pass/1 (list)`
+  - [ ] `pass/1 (map)`
+- `properties` signature `1..1 (any)`
+  - [ ] `properties/1 (int)`
+  - [ ] `properties/1 (float)`
+  - [ ] `properties/1 (str)`
+  - [ ] `properties/1 (err)`
+  - [ ] `properties/1 (map)`
+- `property_info` signature `2..2 (any, str)`
+  - [ ] `property_info/2 (int, str)`
+  - [ ] `property_info/2 (float, str)`
+  - [ ] `property_info/2 (str, str)`
+  - [ ] `property_info/2 (err, str)`
+  - [ ] `property_info/2 (map, str)`
+- `queued_tasks` signature `0..2 (int, int)`
+  - [ ] `queued_tasks/1 (int)`
+- `raise` signature `1..3 (any, str, any)`
+  - [ ] `raise/1 (int)`
+  - [ ] `raise/1 (float)`
+  - [ ] `raise/1 (obj)`
+  - [ ] `raise/1 (str)`
+  - [ ] `raise/1 (list)`
+  - [ ] `raise/1 (map)`
+  - [ ] `raise/2 (int, str)`
+  - [ ] `raise/2 (float, str)`
+  - [ ] `raise/2 (obj, str)`
+  - [ ] `raise/2 (str, str)`
+  - [ ] `raise/2 (list, str)`
+  - [ ] `raise/2 (map, str)`
+  - [ ] `raise/3 (int, str, int)`
+  - [ ] `raise/3 (int, str, float)`
+  - [ ] `raise/3 (int, str, obj)`
+  - [ ] `raise/3 (int, str, str)`
+  - [ ] `raise/3 (int, str, err)`
+  - [ ] `raise/3 (int, str, list)`
+  - [ ] `raise/3 (int, str, map)`
+  - [ ] `raise/3 (float, str, int)`
+  - [ ] `raise/3 (float, str, float)`
+  - [ ] `raise/3 (float, str, obj)`
+  - [ ] `raise/3 (float, str, str)`
+  - [ ] `raise/3 (float, str, err)`
+  - [ ] `raise/3 (float, str, list)`
+  - [ ] `raise/3 (float, str, map)`
+  - [ ] `raise/3 (obj, str, int)`
+  - [ ] `raise/3 (obj, str, float)`
+  - [ ] `raise/3 (obj, str, obj)`
+  - [ ] `raise/3 (obj, str, str)`
+  - [ ] `raise/3 (obj, str, err)`
+  - [ ] `raise/3 (obj, str, list)`
+  - [ ] `raise/3 (obj, str, map)`
+  - [ ] `raise/3 (str, str, int)`
+  - [ ] `raise/3 (str, str, float)`
+  - [ ] `raise/3 (str, str, obj)`
+  - [ ] `raise/3 (str, str, str)`
+  - [ ] `raise/3 (str, str, err)`
+  - [ ] `raise/3 (str, str, list)`
+  - [ ] `raise/3 (str, str, map)`
+  - [ ] `raise/3 (err, str, int)`
+  - [ ] `raise/3 (err, str, float)`
+  - [ ] `raise/3 (err, str, obj)`
+  - [ ] `raise/3 (err, str, str)`
+  - [ ] `raise/3 (err, str, err)`
+  - [ ] `raise/3 (err, str, map)`
+  - [ ] `raise/3 (list, str, int)`
+  - [ ] `raise/3 (list, str, float)`
+  - [ ] `raise/3 (list, str, obj)`
+  - [ ] `raise/3 (list, str, str)`
+  - [ ] `raise/3 (list, str, err)`
+  - [ ] `raise/3 (list, str, list)`
+  - [ ] `raise/3 (list, str, map)`
+  - [ ] `raise/3 (map, str, int)`
+  - [ ] `raise/3 (map, str, float)`
+  - [ ] `raise/3 (map, str, obj)`
+  - [ ] `raise/3 (map, str, str)`
+  - [ ] `raise/3 (map, str, err)`
+  - [ ] `raise/3 (map, str, list)`
+  - [ ] `raise/3 (map, str, map)`
+- `read` signature `0..2 (obj, any)`
+  - [ ] `read/2 (obj, int)`
+  - [ ] `read/2 (obj, float)`
+  - [ ] `read/2 (obj, obj)`
+  - [ ] `read/2 (obj, str)`
+  - [ ] `read/2 (obj, err)`
+  - [ ] `read/2 (obj, list)`
+  - [ ] `read/2 (obj, map)`
+- `read_http` signature `1..2 (str, obj)`
+  - [ ] `read_http/2 (str, obj)`
+- `read_stdin` signature `0..0 ()`
+  - [ ] `read_stdin/0 ()`
+- `recreate` signature `2..3 (obj, obj, obj)`
+  - [ ] `recreate/2 (obj, obj)`
+  - [ ] `recreate/3 (obj, obj, obj)`
+- `recycle` signature `1..1 (any)`
+  - [ ] `recycle/1 (err)`
+- `renumber` signature `1..1 (obj)`
+  - [ ] `renumber/1 (obj)`
+- `respond_to` signature `2..2 (any, str)`
+  - [ ] `respond_to/2 (int, str)`
+  - [ ] `respond_to/2 (float, str)`
+  - [ ] `respond_to/2 (obj, str)`
+  - [ ] `respond_to/2 (str, str)`
+  - [ ] `respond_to/2 (err, str)`
+  - [ ] `respond_to/2 (map, str)`
+- `resume` signature `1..2 (int, any)`
+  - [ ] `resume/2 (int, int)`
+  - [ ] `resume/2 (int, float)`
+  - [ ] `resume/2 (int, obj)`
+  - [ ] `resume/2 (int, str)`
+  - [ ] `resume/2 (int, err)`
+  - [ ] `resume/2 (int, list)`
+  - [ ] `resume/2 (int, map)`
+- `reverse` signature `1..1 (any)`
+  - [ ] `reverse/1 (float)`
+  - [ ] `reverse/1 (obj)`
+  - [ ] `reverse/1 (err)`
+- `rindex` signature `2..4 (str, str, any, int)`
+  - [ ] `rindex/3 (str, str, float)`
+  - [ ] `rindex/3 (str, str, obj)`
+  - [ ] `rindex/3 (str, str, str)`
+  - [ ] `rindex/3 (str, str, err)`
+  - [ ] `rindex/3 (str, str, list)`
+  - [ ] `rindex/3 (str, str, map)`
+  - [ ] `rindex/4 (str, str, float, int)`
+  - [ ] `rindex/4 (str, str, obj, int)`
+  - [ ] `rindex/4 (str, str, str, int)`
+  - [ ] `rindex/4 (str, str, err, int)`
+  - [ ] `rindex/4 (str, str, list, int)`
+  - [ ] `rindex/4 (str, str, map, int)`
+- `rmatch` signature `2..3 (str, str, any)`
+  - [ ] `rmatch/3 (str, str, float)`
+  - [ ] `rmatch/3 (str, str, obj)`
+  - [ ] `rmatch/3 (str, str, str)`
+  - [ ] `rmatch/3 (str, str, err)`
+  - [ ] `rmatch/3 (str, str, list)`
+  - [ ] `rmatch/3 (str, str, map)`
+- `server_log` signature `1..2 (str, any)`
+  - [ ] `server_log/2 (str, float)`
+  - [ ] `server_log/2 (str, obj)`
+  - [ ] `server_log/2 (str, err)`
+  - [ ] `server_log/2 (str, list)`
+  - [ ] `server_log/2 (str, map)`
+- `server_version` signature `0..1 (any)`
+  - [ ] `server_version/1 (int)`
+  - [ ] `server_version/1 (float)`
+  - [ ] `server_version/1 (obj)`
+  - [ ] `server_version/1 (err)`
+  - [ ] `server_version/1 (list)`
+  - [ ] `server_version/1 (map)`
+- `set_connection_option` signature `3..3 (obj, str, any)`
+  - [ ] `set_connection_option/3 (obj, str, float)`
+  - [ ] `set_connection_option/3 (obj, str, obj)`
+  - [ ] `set_connection_option/3 (obj, str, str)`
+  - [ ] `set_connection_option/3 (obj, str, err)`
+  - [ ] `set_connection_option/3 (obj, str, list)`
+  - [ ] `set_connection_option/3 (obj, str, map)`
+- `set_player_flag` signature `2..2 (obj, any)`
+  - [ ] `set_player_flag/2 (obj, float)`
+  - [ ] `set_player_flag/2 (obj, obj)`
+  - [ ] `set_player_flag/2 (obj, str)`
+  - [ ] `set_player_flag/2 (obj, err)`
+  - [ ] `set_player_flag/2 (obj, list)`
+  - [ ] `set_player_flag/2 (obj, map)`
+- `set_property_info` signature `3..3 (any, str, list)`
+  - [ ] `set_property_info/3 (int, str, list)`
+  - [ ] `set_property_info/3 (float, str, list)`
+  - [ ] `set_property_info/3 (obj, str, list)`
+  - [ ] `set_property_info/3 (str, str, list)`
+  - [ ] `set_property_info/3 (err, str, list)`
+  - [ ] `set_property_info/3 (map, str, list)`
+- `set_task_local` signature `1..1 (any)`
+  - [ ] `set_task_local/1 (float)`
+  - [ ] `set_task_local/1 (obj)`
+  - [ ] `set_task_local/1 (err)`
+  - [ ] `set_task_local/1 (map)`
+- `set_thread_mode` signature `0..1 (int)`
+  - [ ] `set_thread_mode/1 (int)`
+- `set_verb_args` signature `3..3 (any, any, list)`
+  - [ ] `set_verb_args/3 (int, int, list)`
+  - [ ] `set_verb_args/3 (int, float, list)`
+  - [ ] `set_verb_args/3 (int, obj, list)`
+  - [ ] `set_verb_args/3 (int, str, list)`
+  - [ ] `set_verb_args/3 (int, err, list)`
+  - [ ] `set_verb_args/3 (int, list, list)`
+  - [ ] `set_verb_args/3 (int, map, list)`
+  - [ ] `set_verb_args/3 (float, int, list)`
+  - [ ] `set_verb_args/3 (float, float, list)`
+  - [ ] `set_verb_args/3 (float, obj, list)`
+  - [ ] `set_verb_args/3 (float, str, list)`
+  - [ ] `set_verb_args/3 (float, err, list)`
+  - [ ] `set_verb_args/3 (float, list, list)`
+  - [ ] `set_verb_args/3 (float, map, list)`
+  - [ ] `set_verb_args/3 (obj, int, list)`
+  - [ ] `set_verb_args/3 (obj, float, list)`
+  - [ ] `set_verb_args/3 (obj, obj, list)`
+  - [ ] `set_verb_args/3 (obj, err, list)`
+  - [ ] `set_verb_args/3 (obj, list, list)`
+  - [ ] `set_verb_args/3 (obj, map, list)`
+  - [ ] `set_verb_args/3 (str, int, list)`
+  - [ ] `set_verb_args/3 (str, float, list)`
+  - [ ] `set_verb_args/3 (str, obj, list)`
+  - [ ] `set_verb_args/3 (str, str, list)`
+  - [ ] `set_verb_args/3 (str, err, list)`
+  - [ ] `set_verb_args/3 (str, list, list)`
+  - [ ] `set_verb_args/3 (str, map, list)`
+  - [ ] `set_verb_args/3 (err, int, list)`
+  - [ ] `set_verb_args/3 (err, float, list)`
+  - [ ] `set_verb_args/3 (err, obj, list)`
+  - [ ] `set_verb_args/3 (err, str, list)`
+  - [ ] `set_verb_args/3 (err, err, list)`
+  - [ ] `set_verb_args/3 (err, list, list)`
+  - [ ] `set_verb_args/3 (err, map, list)`
+  - [ ] `set_verb_args/3 (list, int, list)`
+  - [ ] `set_verb_args/3 (list, float, list)`
+  - [ ] `set_verb_args/3 (list, obj, list)`
+  - [ ] `set_verb_args/3 (list, err, list)`
+  - [ ] `set_verb_args/3 (list, list, list)`
+  - [ ] `set_verb_args/3 (list, map, list)`
+  - [ ] `set_verb_args/3 (map, int, list)`
+  - [ ] `set_verb_args/3 (map, float, list)`
+  - [ ] `set_verb_args/3 (map, obj, list)`
+  - [ ] `set_verb_args/3 (map, str, list)`
+  - [ ] `set_verb_args/3 (map, err, list)`
+  - [ ] `set_verb_args/3 (map, list, list)`
+  - [ ] `set_verb_args/3 (map, map, list)`
+- `set_verb_code` signature `3..3 (any, any, list)`
+  - [ ] `set_verb_code/3 (int, int, list)`
+  - [ ] `set_verb_code/3 (int, float, list)`
+  - [ ] `set_verb_code/3 (int, obj, list)`
+  - [ ] `set_verb_code/3 (int, str, list)`
+  - [ ] `set_verb_code/3 (int, err, list)`
+  - [ ] `set_verb_code/3 (int, list, list)`
+  - [ ] `set_verb_code/3 (int, map, list)`
+  - [ ] `set_verb_code/3 (float, int, list)`
+  - [ ] `set_verb_code/3 (float, float, list)`
+  - [ ] `set_verb_code/3 (float, obj, list)`
+  - [ ] `set_verb_code/3 (float, str, list)`
+  - [ ] `set_verb_code/3 (float, err, list)`
+  - [ ] `set_verb_code/3 (float, list, list)`
+  - [ ] `set_verb_code/3 (float, map, list)`
+  - [ ] `set_verb_code/3 (obj, int, list)`
+  - [ ] `set_verb_code/3 (obj, float, list)`
+  - [ ] `set_verb_code/3 (obj, obj, list)`
+  - [ ] `set_verb_code/3 (obj, err, list)`
+  - [ ] `set_verb_code/3 (obj, list, list)`
+  - [ ] `set_verb_code/3 (obj, map, list)`
+  - [ ] `set_verb_code/3 (str, int, list)`
+  - [ ] `set_verb_code/3 (str, float, list)`
+  - [ ] `set_verb_code/3 (str, obj, list)`
+  - [ ] `set_verb_code/3 (str, str, list)`
+  - [ ] `set_verb_code/3 (str, err, list)`
+  - [ ] `set_verb_code/3 (str, list, list)`
+  - [ ] `set_verb_code/3 (str, map, list)`
+  - [ ] `set_verb_code/3 (err, int, list)`
+  - [ ] `set_verb_code/3 (err, float, list)`
+  - [ ] `set_verb_code/3 (err, obj, list)`
+  - [ ] `set_verb_code/3 (err, str, list)`
+  - [ ] `set_verb_code/3 (err, err, list)`
+  - [ ] `set_verb_code/3 (err, list, list)`
+  - [ ] `set_verb_code/3 (err, map, list)`
+  - [ ] `set_verb_code/3 (list, int, list)`
+  - [ ] `set_verb_code/3 (list, float, list)`
+  - [ ] `set_verb_code/3 (list, obj, list)`
+  - [ ] `set_verb_code/3 (list, err, list)`
+  - [ ] `set_verb_code/3 (list, list, list)`
+  - [ ] `set_verb_code/3 (list, map, list)`
+  - [ ] `set_verb_code/3 (map, int, list)`
+  - [ ] `set_verb_code/3 (map, float, list)`
+  - [ ] `set_verb_code/3 (map, obj, list)`
+  - [ ] `set_verb_code/3 (map, str, list)`
+  - [ ] `set_verb_code/3 (map, err, list)`
+  - [ ] `set_verb_code/3 (map, list, list)`
+  - [ ] `set_verb_code/3 (map, map, list)`
+- `set_verb_info` signature `3..3 (any, any, list)`
+  - [ ] `set_verb_info/3 (int, int, list)`
+  - [ ] `set_verb_info/3 (int, float, list)`
+  - [ ] `set_verb_info/3 (int, obj, list)`
+  - [ ] `set_verb_info/3 (int, str, list)`
+  - [ ] `set_verb_info/3 (int, err, list)`
+  - [ ] `set_verb_info/3 (int, list, list)`
+  - [ ] `set_verb_info/3 (int, map, list)`
+  - [ ] `set_verb_info/3 (float, int, list)`
+  - [ ] `set_verb_info/3 (float, float, list)`
+  - [ ] `set_verb_info/3 (float, obj, list)`
+  - [ ] `set_verb_info/3 (float, str, list)`
+  - [ ] `set_verb_info/3 (float, err, list)`
+  - [ ] `set_verb_info/3 (float, list, list)`
+  - [ ] `set_verb_info/3 (float, map, list)`
+  - [ ] `set_verb_info/3 (obj, int, list)`
+  - [ ] `set_verb_info/3 (obj, float, list)`
+  - [ ] `set_verb_info/3 (obj, obj, list)`
+  - [ ] `set_verb_info/3 (obj, err, list)`
+  - [ ] `set_verb_info/3 (obj, list, list)`
+  - [ ] `set_verb_info/3 (obj, map, list)`
+  - [ ] `set_verb_info/3 (str, int, list)`
+  - [ ] `set_verb_info/3 (str, float, list)`
+  - [ ] `set_verb_info/3 (str, obj, list)`
+  - [ ] `set_verb_info/3 (str, str, list)`
+  - [ ] `set_verb_info/3 (str, err, list)`
+  - [ ] `set_verb_info/3 (str, list, list)`
+  - [ ] `set_verb_info/3 (str, map, list)`
+  - [ ] `set_verb_info/3 (err, int, list)`
+  - [ ] `set_verb_info/3 (err, float, list)`
+  - [ ] `set_verb_info/3 (err, obj, list)`
+  - [ ] `set_verb_info/3 (err, str, list)`
+  - [ ] `set_verb_info/3 (err, err, list)`
+  - [ ] `set_verb_info/3 (err, list, list)`
+  - [ ] `set_verb_info/3 (err, map, list)`
+  - [ ] `set_verb_info/3 (list, int, list)`
+  - [ ] `set_verb_info/3 (list, float, list)`
+  - [ ] `set_verb_info/3 (list, obj, list)`
+  - [ ] `set_verb_info/3 (list, err, list)`
+  - [ ] `set_verb_info/3 (list, list, list)`
+  - [ ] `set_verb_info/3 (list, map, list)`
+  - [ ] `set_verb_info/3 (map, int, list)`
+  - [ ] `set_verb_info/3 (map, float, list)`
+  - [ ] `set_verb_info/3 (map, obj, list)`
+  - [ ] `set_verb_info/3 (map, str, list)`
+  - [ ] `set_verb_info/3 (map, err, list)`
+  - [ ] `set_verb_info/3 (map, list, list)`
+  - [ ] `set_verb_info/3 (map, map, list)`
+- `setadd` signature `2..2 (list, any)`
+  - [ ] `setadd/2 (list, float)`
+  - [ ] `setadd/2 (list, obj)`
+  - [ ] `setadd/2 (list, str)`
+  - [ ] `setadd/2 (list, err)`
+  - [ ] `setadd/2 (list, map)`
+- `setremove` signature `2..2 (list, any)`
+  - [ ] `setremove/2 (list, int)`
+  - [ ] `setremove/2 (list, float)`
+  - [ ] `setremove/2 (list, obj)`
+  - [ ] `setremove/2 (list, str)`
+  - [ ] `setremove/2 (list, err)`
+  - [ ] `setremove/2 (list, list)`
+  - [ ] `setremove/2 (list, map)`
+- `shutdown` signature `0..2 (str, any)`
+  - [ ] `shutdown/2 (str, float)`
+  - [ ] `shutdown/2 (str, obj)`
+  - [ ] `shutdown/2 (str, str)`
+  - [ ] `shutdown/2 (str, err)`
+  - [ ] `shutdown/2 (str, list)`
+  - [ ] `shutdown/2 (str, map)`
+- `simplex_noise` signature `1..1 (list)`
+  - [ ] `simplex_noise/1 (list)`
+- `slice` signature `1..3 (list, any, any)`
+  - [ ] `slice/1 (list)`
+  - [ ] `slice/2 (list, int)`
+  - [ ] `slice/2 (list, float)`
+  - [ ] `slice/2 (list, obj)`
+  - [ ] `slice/2 (list, str)`
+  - [ ] `slice/2 (list, err)`
+  - [ ] `slice/2 (list, list)`
+  - [ ] `slice/2 (list, map)`
+  - [ ] `slice/3 (list, int, int)`
+  - [ ] `slice/3 (list, int, float)`
+  - [ ] `slice/3 (list, int, obj)`
+  - [ ] `slice/3 (list, int, str)`
+  - [ ] `slice/3 (list, int, err)`
+  - [ ] `slice/3 (list, int, list)`
+  - [ ] `slice/3 (list, int, map)`
+  - [ ] `slice/3 (list, float, int)`
+  - [ ] `slice/3 (list, float, float)`
+  - [ ] `slice/3 (list, float, obj)`
+  - [ ] `slice/3 (list, float, str)`
+  - [ ] `slice/3 (list, float, err)`
+  - [ ] `slice/3 (list, float, list)`
+  - [ ] `slice/3 (list, float, map)`
+  - [ ] `slice/3 (list, obj, int)`
+  - [ ] `slice/3 (list, obj, float)`
+  - [ ] `slice/3 (list, obj, obj)`
+  - [ ] `slice/3 (list, obj, str)`
+  - [ ] `slice/3 (list, obj, err)`
+  - [ ] `slice/3 (list, obj, list)`
+  - [ ] `slice/3 (list, obj, map)`
+  - [ ] `slice/3 (list, str, int)`
+  - [ ] `slice/3 (list, str, float)`
+  - [ ] `slice/3 (list, str, obj)`
+  - [ ] `slice/3 (list, str, str)`
+  - [ ] `slice/3 (list, str, err)`
+  - [ ] `slice/3 (list, str, list)`
+  - [ ] `slice/3 (list, str, map)`
+  - [ ] `slice/3 (list, err, int)`
+  - [ ] `slice/3 (list, err, float)`
+  - [ ] `slice/3 (list, err, obj)`
+  - [ ] `slice/3 (list, err, str)`
+  - [ ] `slice/3 (list, err, err)`
+  - [ ] `slice/3 (list, err, list)`
+  - [ ] `slice/3 (list, err, map)`
+  - [ ] `slice/3 (list, list, int)`
+  - [ ] `slice/3 (list, list, float)`
+  - [ ] `slice/3 (list, list, obj)`
+  - [ ] `slice/3 (list, list, str)`
+  - [ ] `slice/3 (list, list, err)`
+  - [ ] `slice/3 (list, list, list)`
+  - [ ] `slice/3 (list, list, map)`
+  - [ ] `slice/3 (list, map, int)`
+  - [ ] `slice/3 (list, map, float)`
+  - [ ] `slice/3 (list, map, obj)`
+  - [ ] `slice/3 (list, map, str)`
+  - [ ] `slice/3 (list, map, err)`
+  - [ ] `slice/3 (list, map, list)`
+  - [ ] `slice/3 (list, map, map)`
+- `sort` signature `1..4 (list, list, int, int)`
+  - [ ] `sort/1 (list)`
+  - [ ] `sort/2 (list, list)`
+  - [ ] `sort/3 (list, list, int)`
+  - [ ] `sort/4 (list, list, int, int)`
+- `spellcheck` signature `1..1 (str)`
+  - [ ] `spellcheck/1 (str)`
+- `sqlite_last_insert_row_id` signature `1..1 (int)`
+  - [ ] `sqlite_last_insert_row_id/1 (int)`
+- `sqlite_limit` signature `3..3 (int, any, int)`
+  - [ ] `sqlite_limit/3 (int, int, int)`
+  - [ ] `sqlite_limit/3 (int, float, int)`
+  - [ ] `sqlite_limit/3 (int, obj, int)`
+  - [ ] `sqlite_limit/3 (int, str, int)`
+  - [ ] `sqlite_limit/3 (int, err, int)`
+  - [ ] `sqlite_limit/3 (int, list, int)`
+  - [ ] `sqlite_limit/3 (int, map, int)`
+- `sqlite_open` signature `1..2 (str, int)`
+  - [ ] `sqlite_open/2 (str, int)`
+- `sqlite_query` signature `2..3 (int, str, any)`
+  - [ ] `sqlite_query/3 (int, str, int)`
+  - [ ] `sqlite_query/3 (int, str, float)`
+  - [ ] `sqlite_query/3 (int, str, obj)`
+  - [ ] `sqlite_query/3 (int, str, str)`
+  - [ ] `sqlite_query/3 (int, str, err)`
+  - [ ] `sqlite_query/3 (int, str, list)`
+  - [ ] `sqlite_query/3 (int, str, map)`
+- `string_hash` signature `1..3 (str, str, any)`
+  - [ ] `string_hash/3 (str, str, float)`
+  - [ ] `string_hash/3 (str, str, obj)`
+  - [ ] `string_hash/3 (str, str, str)`
+  - [ ] `string_hash/3 (str, str, err)`
+  - [ ] `string_hash/3 (str, str, list)`
+  - [ ] `string_hash/3 (str, str, map)`
+- `string_hmac` signature `2..4 (str, str, str, any)`
+  - [ ] `string_hmac/4 (str, str, str, float)`
+  - [ ] `string_hmac/4 (str, str, str, obj)`
+  - [ ] `string_hmac/4 (str, str, str, str)`
+  - [ ] `string_hmac/4 (str, str, str, err)`
+  - [ ] `string_hmac/4 (str, str, str, list)`
+  - [ ] `string_hmac/4 (str, str, str, map)`
+- `strsub` signature `3..4 (str, str, str, any)`
+  - [ ] `strsub/4 (str, str, str, float)`
+  - [ ] `strsub/4 (str, str, str, obj)`
+  - [ ] `strsub/4 (str, str, str, str)`
+  - [ ] `strsub/4 (str, str, str, err)`
+  - [ ] `strsub/4 (str, str, str, list)`
+  - [ ] `strsub/4 (str, str, str, map)`
+- `strtr` signature `3..4 (str, str, str, any)`
+  - [ ] `strtr/4 (str, str, str, float)`
+  - [ ] `strtr/4 (str, str, str, obj)`
+  - [ ] `strtr/4 (str, str, str, str)`
+  - [ ] `strtr/4 (str, str, str, err)`
+  - [ ] `strtr/4 (str, str, str, list)`
+  - [ ] `strtr/4 (str, str, str, map)`
+- `task_stack` signature `1..3 (int, any, any)`
+  - [ ] `task_stack/2 (int, int)`
+  - [ ] `task_stack/2 (int, float)`
+  - [ ] `task_stack/2 (int, obj)`
+  - [ ] `task_stack/2 (int, str)`
+  - [ ] `task_stack/2 (int, err)`
+  - [ ] `task_stack/2 (int, list)`
+  - [ ] `task_stack/2 (int, map)`
+  - [ ] `task_stack/3 (int, int, int)`
+  - [ ] `task_stack/3 (int, int, float)`
+  - [ ] `task_stack/3 (int, int, obj)`
+  - [ ] `task_stack/3 (int, int, str)`
+  - [ ] `task_stack/3 (int, int, err)`
+  - [ ] `task_stack/3 (int, int, list)`
+  - [ ] `task_stack/3 (int, int, map)`
+  - [ ] `task_stack/3 (int, float, int)`
+  - [ ] `task_stack/3 (int, float, float)`
+  - [ ] `task_stack/3 (int, float, obj)`
+  - [ ] `task_stack/3 (int, float, str)`
+  - [ ] `task_stack/3 (int, float, err)`
+  - [ ] `task_stack/3 (int, float, list)`
+  - [ ] `task_stack/3 (int, float, map)`
+  - [ ] `task_stack/3 (int, obj, int)`
+  - [ ] `task_stack/3 (int, obj, float)`
+  - [ ] `task_stack/3 (int, obj, obj)`
+  - [ ] `task_stack/3 (int, obj, str)`
+  - [ ] `task_stack/3 (int, obj, err)`
+  - [ ] `task_stack/3 (int, obj, list)`
+  - [ ] `task_stack/3 (int, obj, map)`
+  - [ ] `task_stack/3 (int, str, int)`
+  - [ ] `task_stack/3 (int, str, float)`
+  - [ ] `task_stack/3 (int, str, obj)`
+  - [ ] `task_stack/3 (int, str, str)`
+  - [ ] `task_stack/3 (int, str, err)`
+  - [ ] `task_stack/3 (int, str, list)`
+  - [ ] `task_stack/3 (int, str, map)`
+  - [ ] `task_stack/3 (int, err, int)`
+  - [ ] `task_stack/3 (int, err, float)`
+  - [ ] `task_stack/3 (int, err, obj)`
+  - [ ] `task_stack/3 (int, err, str)`
+  - [ ] `task_stack/3 (int, err, err)`
+  - [ ] `task_stack/3 (int, err, list)`
+  - [ ] `task_stack/3 (int, err, map)`
+  - [ ] `task_stack/3 (int, list, int)`
+  - [ ] `task_stack/3 (int, list, float)`
+  - [ ] `task_stack/3 (int, list, obj)`
+  - [ ] `task_stack/3 (int, list, str)`
+  - [ ] `task_stack/3 (int, list, err)`
+  - [ ] `task_stack/3 (int, list, list)`
+  - [ ] `task_stack/3 (int, list, map)`
+  - [ ] `task_stack/3 (int, map, int)`
+  - [ ] `task_stack/3 (int, map, float)`
+  - [ ] `task_stack/3 (int, map, obj)`
+  - [ ] `task_stack/3 (int, map, str)`
+  - [ ] `task_stack/3 (int, map, err)`
+  - [ ] `task_stack/3 (int, map, list)`
+  - [ ] `task_stack/3 (int, map, map)`
+- `thread_pool` signature `2..3 (str, str, int)`
+  - [ ] `thread_pool/3 (str, str, int)`
+- `threads` signature `0..0 ()`
+  - [ ] `threads/0 ()`
+- `unlisten` signature `1..2 (any, any)`
+  - [ ] `unlisten/1 (float)`
+  - [ ] `unlisten/1 (obj)`
+  - [ ] `unlisten/1 (str)`
+  - [ ] `unlisten/1 (err)`
+  - [ ] `unlisten/1 (map)`
+  - [ ] `unlisten/2 (int, int)`
+  - [ ] `unlisten/2 (int, float)`
+  - [ ] `unlisten/2 (int, obj)`
+  - [ ] `unlisten/2 (int, str)`
+  - [ ] `unlisten/2 (int, err)`
+  - [ ] `unlisten/2 (int, list)`
+  - [ ] `unlisten/2 (int, map)`
+  - [ ] `unlisten/2 (float, int)`
+  - [ ] `unlisten/2 (float, float)`
+  - [ ] `unlisten/2 (float, obj)`
+  - [ ] `unlisten/2 (float, str)`
+  - [ ] `unlisten/2 (float, err)`
+  - [ ] `unlisten/2 (float, list)`
+  - [ ] `unlisten/2 (float, map)`
+  - [ ] `unlisten/2 (obj, int)`
+  - [ ] `unlisten/2 (obj, float)`
+  - [ ] `unlisten/2 (obj, obj)`
+  - [ ] `unlisten/2 (obj, str)`
+  - [ ] `unlisten/2 (obj, err)`
+  - [ ] `unlisten/2 (obj, list)`
+  - [ ] `unlisten/2 (obj, map)`
+  - [ ] `unlisten/2 (str, int)`
+  - [ ] `unlisten/2 (str, float)`
+  - [ ] `unlisten/2 (str, obj)`
+  - [ ] `unlisten/2 (str, str)`
+  - [ ] `unlisten/2 (str, err)`
+  - [ ] `unlisten/2 (str, list)`
+  - [ ] `unlisten/2 (str, map)`
+  - [ ] `unlisten/2 (err, int)`
+  - [ ] `unlisten/2 (err, float)`
+  - [ ] `unlisten/2 (err, obj)`
+  - [ ] `unlisten/2 (err, str)`
+  - [ ] `unlisten/2 (err, err)`
+  - [ ] `unlisten/2 (err, list)`
+  - [ ] `unlisten/2 (err, map)`
+  - [ ] `unlisten/2 (list, int)`
+  - [ ] `unlisten/2 (list, float)`
+  - [ ] `unlisten/2 (list, obj)`
+  - [ ] `unlisten/2 (list, str)`
+  - [ ] `unlisten/2 (list, err)`
+  - [ ] `unlisten/2 (list, list)`
+  - [ ] `unlisten/2 (list, map)`
+  - [ ] `unlisten/2 (map, int)`
+  - [ ] `unlisten/2 (map, float)`
+  - [ ] `unlisten/2 (map, obj)`
+  - [ ] `unlisten/2 (map, str)`
+  - [ ] `unlisten/2 (map, err)`
+  - [ ] `unlisten/2 (map, list)`
+  - [ ] `unlisten/2 (map, map)`
+- `valid` signature `1..1 (any)`
+  - [ ] `valid/1 (int)`
+  - [ ] `valid/1 (float)`
+  - [ ] `valid/1 (str)`
+  - [ ] `valid/1 (err)`
+  - [ ] `valid/1 (map)`
+- `value_bytes` signature `1..1 (any)`
+  - [ ] `value_bytes/1 (float)`
+  - [ ] `value_bytes/1 (obj)`
+  - [ ] `value_bytes/1 (err)`
+  - [ ] `value_bytes/1 (map)`
+- `value_hash` signature `1..3 (any, str, any)`
+  - [ ] `value_hash/1 (int)`
+  - [ ] `value_hash/1 (float)`
+  - [ ] `value_hash/1 (obj)`
+  - [ ] `value_hash/1 (str)`
+  - [ ] `value_hash/1 (err)`
+  - [ ] `value_hash/1 (list)`
+  - [ ] `value_hash/1 (map)`
+  - [ ] `value_hash/2 (int, str)`
+  - [ ] `value_hash/2 (float, str)`
+  - [ ] `value_hash/2 (obj, str)`
+  - [ ] `value_hash/2 (err, str)`
+  - [ ] `value_hash/3 (int, str, int)`
+  - [ ] `value_hash/3 (int, str, float)`
+  - [ ] `value_hash/3 (int, str, obj)`
+  - [ ] `value_hash/3 (int, str, str)`
+  - [ ] `value_hash/3 (int, str, err)`
+  - [ ] `value_hash/3 (int, str, list)`
+  - [ ] `value_hash/3 (int, str, map)`
+  - [ ] `value_hash/3 (float, str, int)`
+  - [ ] `value_hash/3 (float, str, float)`
+  - [ ] `value_hash/3 (float, str, obj)`
+  - [ ] `value_hash/3 (float, str, str)`
+  - [ ] `value_hash/3 (float, str, err)`
+  - [ ] `value_hash/3 (float, str, list)`
+  - [ ] `value_hash/3 (float, str, map)`
+  - [ ] `value_hash/3 (obj, str, int)`
+  - [ ] `value_hash/3 (obj, str, float)`
+  - [ ] `value_hash/3 (obj, str, obj)`
+  - [ ] `value_hash/3 (obj, str, str)`
+  - [ ] `value_hash/3 (obj, str, err)`
+  - [ ] `value_hash/3 (obj, str, list)`
+  - [ ] `value_hash/3 (obj, str, map)`
+  - [ ] `value_hash/3 (str, str, int)`
+  - [ ] `value_hash/3 (str, str, float)`
+  - [ ] `value_hash/3 (str, str, obj)`
+  - [ ] `value_hash/3 (str, str, str)`
+  - [ ] `value_hash/3 (str, str, err)`
+  - [ ] `value_hash/3 (str, str, list)`
+  - [ ] `value_hash/3 (str, str, map)`
+  - [ ] `value_hash/3 (err, str, int)`
+  - [ ] `value_hash/3 (err, str, float)`
+  - [ ] `value_hash/3 (err, str, obj)`
+  - [ ] `value_hash/3 (err, str, str)`
+  - [ ] `value_hash/3 (err, str, err)`
+  - [ ] `value_hash/3 (err, str, list)`
+  - [ ] `value_hash/3 (err, str, map)`
+  - [ ] `value_hash/3 (list, str, int)`
+  - [ ] `value_hash/3 (list, str, float)`
+  - [ ] `value_hash/3 (list, str, obj)`
+  - [ ] `value_hash/3 (list, str, str)`
+  - [ ] `value_hash/3 (list, str, err)`
+  - [ ] `value_hash/3 (list, str, list)`
+  - [ ] `value_hash/3 (list, str, map)`
+  - [ ] `value_hash/3 (map, str, float)`
+  - [ ] `value_hash/3 (map, str, obj)`
+  - [ ] `value_hash/3 (map, str, str)`
+  - [ ] `value_hash/3 (map, str, err)`
+  - [ ] `value_hash/3 (map, str, list)`
+  - [ ] `value_hash/3 (map, str, map)`
+- `value_hmac` signature `2..4 (any, str, str, any)`
+  - [ ] `value_hmac/2 (int, str)`
+  - [ ] `value_hmac/2 (float, str)`
+  - [ ] `value_hmac/2 (obj, str)`
+  - [ ] `value_hmac/2 (err, str)`
+  - [ ] `value_hmac/2 (list, str)`
+  - [ ] `value_hmac/2 (map, str)`
+  - [ ] `value_hmac/3 (int, str, str)`
+  - [ ] `value_hmac/3 (float, str, str)`
+  - [ ] `value_hmac/3 (obj, str, str)`
+  - [ ] `value_hmac/3 (err, str, str)`
+  - [ ] `value_hmac/3 (list, str, str)`
+  - [ ] `value_hmac/3 (map, str, str)`
+  - [ ] `value_hmac/4 (int, str, str, int)`
+  - [ ] `value_hmac/4 (int, str, str, float)`
+  - [ ] `value_hmac/4 (int, str, str, obj)`
+  - [ ] `value_hmac/4 (int, str, str, str)`
+  - [ ] `value_hmac/4 (int, str, str, err)`
+  - [ ] `value_hmac/4 (int, str, str, list)`
+  - [ ] `value_hmac/4 (int, str, str, map)`
+  - [ ] `value_hmac/4 (float, str, str, int)`
+  - [ ] `value_hmac/4 (float, str, str, float)`
+  - [ ] `value_hmac/4 (float, str, str, obj)`
+  - [ ] `value_hmac/4 (float, str, str, str)`
+  - [ ] `value_hmac/4 (float, str, str, err)`
+  - [ ] `value_hmac/4 (float, str, str, list)`
+  - [ ] `value_hmac/4 (float, str, str, map)`
+  - [ ] `value_hmac/4 (obj, str, str, int)`
+  - [ ] `value_hmac/4 (obj, str, str, float)`
+  - [ ] `value_hmac/4 (obj, str, str, obj)`
+  - [ ] `value_hmac/4 (obj, str, str, str)`
+  - [ ] `value_hmac/4 (obj, str, str, err)`
+  - [ ] `value_hmac/4 (obj, str, str, list)`
+  - [ ] `value_hmac/4 (obj, str, str, map)`
+  - [ ] `value_hmac/4 (str, str, str, float)`
+  - [ ] `value_hmac/4 (str, str, str, obj)`
+  - [ ] `value_hmac/4 (str, str, str, str)`
+  - [ ] `value_hmac/4 (str, str, str, err)`
+  - [ ] `value_hmac/4 (str, str, str, list)`
+  - [ ] `value_hmac/4 (str, str, str, map)`
+  - [ ] `value_hmac/4 (err, str, str, int)`
+  - [ ] `value_hmac/4 (err, str, str, float)`
+  - [ ] `value_hmac/4 (err, str, str, obj)`
+  - [ ] `value_hmac/4 (err, str, str, str)`
+  - [ ] `value_hmac/4 (err, str, str, err)`
+  - [ ] `value_hmac/4 (err, str, str, list)`
+  - [ ] `value_hmac/4 (err, str, str, map)`
+  - [ ] `value_hmac/4 (list, str, str, int)`
+  - [ ] `value_hmac/4 (list, str, str, float)`
+  - [ ] `value_hmac/4 (list, str, str, obj)`
+  - [ ] `value_hmac/4 (list, str, str, str)`
+  - [ ] `value_hmac/4 (list, str, str, err)`
+  - [ ] `value_hmac/4 (list, str, str, list)`
+  - [ ] `value_hmac/4 (list, str, str, map)`
+  - [ ] `value_hmac/4 (map, str, str, int)`
+  - [ ] `value_hmac/4 (map, str, str, float)`
+  - [ ] `value_hmac/4 (map, str, str, obj)`
+  - [ ] `value_hmac/4 (map, str, str, str)`
+  - [ ] `value_hmac/4 (map, str, str, err)`
+  - [ ] `value_hmac/4 (map, str, str, list)`
+  - [ ] `value_hmac/4 (map, str, str, map)`
+- `verb_args` signature `2..2 (any, any)`
+  - [ ] `verb_args/2 (int, int)`
+  - [ ] `verb_args/2 (int, float)`
+  - [ ] `verb_args/2 (int, obj)`
+  - [ ] `verb_args/2 (int, str)`
+  - [ ] `verb_args/2 (int, err)`
+  - [ ] `verb_args/2 (int, list)`
+  - [ ] `verb_args/2 (int, map)`
+  - [ ] `verb_args/2 (float, int)`
+  - [ ] `verb_args/2 (float, float)`
+  - [ ] `verb_args/2 (float, obj)`
+  - [ ] `verb_args/2 (float, str)`
+  - [ ] `verb_args/2 (float, err)`
+  - [ ] `verb_args/2 (float, list)`
+  - [ ] `verb_args/2 (float, map)`
+  - [ ] `verb_args/2 (obj, int)`
+  - [ ] `verb_args/2 (obj, float)`
+  - [ ] `verb_args/2 (obj, obj)`
+  - [ ] `verb_args/2 (obj, err)`
+  - [ ] `verb_args/2 (obj, list)`
+  - [ ] `verb_args/2 (obj, map)`
+  - [ ] `verb_args/2 (str, int)`
+  - [ ] `verb_args/2 (str, float)`
+  - [ ] `verb_args/2 (str, obj)`
+  - [ ] `verb_args/2 (str, str)`
+  - [ ] `verb_args/2 (str, err)`
+  - [ ] `verb_args/2 (str, list)`
+  - [ ] `verb_args/2 (str, map)`
+  - [ ] `verb_args/2 (err, int)`
+  - [ ] `verb_args/2 (err, float)`
+  - [ ] `verb_args/2 (err, obj)`
+  - [ ] `verb_args/2 (err, str)`
+  - [ ] `verb_args/2 (err, err)`
+  - [ ] `verb_args/2 (err, list)`
+  - [ ] `verb_args/2 (err, map)`
+  - [ ] `verb_args/2 (list, int)`
+  - [ ] `verb_args/2 (list, float)`
+  - [ ] `verb_args/2 (list, obj)`
+  - [ ] `verb_args/2 (list, err)`
+  - [ ] `verb_args/2 (list, list)`
+  - [ ] `verb_args/2 (list, map)`
+  - [ ] `verb_args/2 (map, int)`
+  - [ ] `verb_args/2 (map, float)`
+  - [ ] `verb_args/2 (map, obj)`
+  - [ ] `verb_args/2 (map, str)`
+  - [ ] `verb_args/2 (map, err)`
+  - [ ] `verb_args/2 (map, list)`
+  - [ ] `verb_args/2 (map, map)`
+- `verb_code` signature `2..4 (any, any, any, any)`
+  - [ ] `verb_code/2 (int, int)`
+  - [ ] `verb_code/2 (int, float)`
+  - [ ] `verb_code/2 (int, obj)`
+  - [ ] `verb_code/2 (int, str)`
+  - [ ] `verb_code/2 (int, err)`
+  - [ ] `verb_code/2 (int, list)`
+  - [ ] `verb_code/2 (int, map)`
+  - [ ] `verb_code/2 (float, int)`
+  - [ ] `verb_code/2 (float, float)`
+  - [ ] `verb_code/2 (float, obj)`
+  - [ ] `verb_code/2 (float, str)`
+  - [ ] `verb_code/2 (float, err)`
+  - [ ] `verb_code/2 (float, list)`
+  - [ ] `verb_code/2 (float, map)`
+  - [ ] `verb_code/2 (obj, int)`
+  - [ ] `verb_code/2 (obj, float)`
+  - [ ] `verb_code/2 (obj, obj)`
+  - [ ] `verb_code/2 (obj, err)`
+  - [ ] `verb_code/2 (obj, list)`
+  - [ ] `verb_code/2 (obj, map)`
+  - [ ] `verb_code/2 (str, int)`
+  - [ ] `verb_code/2 (str, float)`
+  - [ ] `verb_code/2 (str, obj)`
+  - [ ] `verb_code/2 (str, str)`
+  - [ ] `verb_code/2 (str, err)`
+  - [ ] `verb_code/2 (str, list)`
+  - [ ] `verb_code/2 (str, map)`
+  - [ ] `verb_code/2 (err, int)`
+  - [ ] `verb_code/2 (err, float)`
+  - [ ] `verb_code/2 (err, obj)`
+  - [ ] `verb_code/2 (err, str)`
+  - [ ] `verb_code/2 (err, err)`
+  - [ ] `verb_code/2 (err, list)`
+  - [ ] `verb_code/2 (err, map)`
+  - [ ] `verb_code/2 (list, int)`
+  - [ ] `verb_code/2 (list, float)`
+  - [ ] `verb_code/2 (list, obj)`
+  - [ ] `verb_code/2 (list, err)`
+  - [ ] `verb_code/2 (list, list)`
+  - [ ] `verb_code/2 (list, map)`
+  - [ ] `verb_code/2 (map, int)`
+  - [ ] `verb_code/2 (map, float)`
+  - [ ] `verb_code/2 (map, obj)`
+  - [ ] `verb_code/2 (map, str)`
+  - [ ] `verb_code/2 (map, err)`
+  - [ ] `verb_code/2 (map, list)`
+  - [ ] `verb_code/2 (map, map)`
+  - [ ] `verb_code/3 (int, int, int)`
+  - [ ] `verb_code/3 (int, int, float)`
+  - [ ] `verb_code/3 (int, int, obj)`
+  - [ ] `verb_code/3 (int, int, str)`
+  - [ ] `verb_code/3 (int, int, err)`
+  - [ ] `verb_code/3 (int, int, list)`
+  - [ ] `verb_code/3 (int, int, map)`
+  - [ ] `verb_code/3 (int, float, int)`
+  - [ ] `verb_code/3 (int, float, float)`
+  - [ ] `verb_code/3 (int, float, obj)`
+  - [ ] `verb_code/3 (int, float, str)`
+  - [ ] `verb_code/3 (int, float, err)`
+  - [ ] `verb_code/3 (int, float, list)`
+  - [ ] `verb_code/3 (int, float, map)`
+  - [ ] `verb_code/3 (int, obj, int)`
+  - [ ] `verb_code/3 (int, obj, float)`
+  - [ ] `verb_code/3 (int, obj, obj)`
+  - [ ] `verb_code/3 (int, obj, str)`
+  - [ ] `verb_code/3 (int, obj, err)`
+  - [ ] `verb_code/3 (int, obj, list)`
+  - [ ] `verb_code/3 (int, obj, map)`
+  - [ ] `verb_code/3 (int, str, int)`
+  - [ ] `verb_code/3 (int, str, float)`
+  - [ ] `verb_code/3 (int, str, obj)`
+  - [ ] `verb_code/3 (int, str, str)`
+  - [ ] `verb_code/3 (int, str, err)`
+  - [ ] `verb_code/3 (int, str, list)`
+  - [ ] `verb_code/3 (int, str, map)`
+  - [ ] `verb_code/3 (int, err, int)`
+  - [ ] `verb_code/3 (int, err, float)`
+  - [ ] `verb_code/3 (int, err, obj)`
+  - [ ] `verb_code/3 (int, err, str)`
+  - [ ] `verb_code/3 (int, err, err)`
+  - [ ] `verb_code/3 (int, err, list)`
+  - [ ] `verb_code/3 (int, err, map)`
+  - [ ] `verb_code/3 (int, list, int)`
+  - [ ] `verb_code/3 (int, list, float)`
+  - [ ] `verb_code/3 (int, list, obj)`
+  - [ ] `verb_code/3 (int, list, str)`
+  - [ ] `verb_code/3 (int, list, err)`
+  - [ ] `verb_code/3 (int, list, list)`
+  - [ ] `verb_code/3 (int, list, map)`
+  - [ ] `verb_code/3 (int, map, int)`
+  - [ ] `verb_code/3 (int, map, float)`
+  - [ ] `verb_code/3 (int, map, obj)`
+  - [ ] `verb_code/3 (int, map, str)`
+  - [ ] `verb_code/3 (int, map, err)`
+  - [ ] `verb_code/3 (int, map, list)`
+  - [ ] `verb_code/3 (int, map, map)`
+  - [ ] `verb_code/3 (float, int, int)`
+  - [ ] `verb_code/3 (float, int, float)`
+  - [ ] `verb_code/3 (float, int, obj)`
+  - [ ] `verb_code/3 (float, int, str)`
+  - [ ] `verb_code/3 (float, int, err)`
+  - [ ] `verb_code/3 (float, int, list)`
+  - [ ] `verb_code/3 (float, int, map)`
+  - [ ] `verb_code/3 (float, float, int)`
+  - [ ] `verb_code/3 (float, float, float)`
+  - [ ] `verb_code/3 (float, float, obj)`
+  - [ ] `verb_code/3 (float, float, str)`
+  - [ ] `verb_code/3 (float, float, err)`
+  - [ ] `verb_code/3 (float, float, list)`
+  - [ ] `verb_code/3 (float, float, map)`
+  - [ ] `verb_code/3 (float, obj, int)`
+  - [ ] `verb_code/3 (float, obj, float)`
+  - [ ] `verb_code/3 (float, obj, obj)`
+  - [ ] `verb_code/3 (float, obj, str)`
+  - [ ] `verb_code/3 (float, obj, err)`
+  - [ ] `verb_code/3 (float, obj, list)`
+  - [ ] `verb_code/3 (float, obj, map)`
+  - [ ] `verb_code/3 (float, str, int)`
+  - [ ] `verb_code/3 (float, str, float)`
+  - [ ] `verb_code/3 (float, str, obj)`
+  - [ ] `verb_code/3 (float, str, str)`
+  - [ ] `verb_code/3 (float, str, err)`
+  - [ ] `verb_code/3 (float, str, list)`
+  - [ ] `verb_code/3 (float, str, map)`
+  - [ ] `verb_code/3 (float, err, int)`
+  - [ ] `verb_code/3 (float, err, float)`
+  - [ ] `verb_code/3 (float, err, obj)`
+  - [ ] `verb_code/3 (float, err, str)`
+  - [ ] `verb_code/3 (float, err, err)`
+  - [ ] `verb_code/3 (float, err, list)`
+  - [ ] `verb_code/3 (float, err, map)`
+  - [ ] `verb_code/3 (float, list, int)`
+  - [ ] `verb_code/3 (float, list, float)`
+  - [ ] `verb_code/3 (float, list, obj)`
+  - [ ] `verb_code/3 (float, list, str)`
+  - [ ] `verb_code/3 (float, list, err)`
+  - [ ] `verb_code/3 (float, list, list)`
+  - [ ] `verb_code/3 (float, list, map)`
+  - [ ] `verb_code/3 (float, map, int)`
+  - [ ] `verb_code/3 (float, map, float)`
+  - [ ] `verb_code/3 (float, map, obj)`
+  - [ ] `verb_code/3 (float, map, str)`
+  - [ ] `verb_code/3 (float, map, err)`
+  - [ ] `verb_code/3 (float, map, list)`
+  - [ ] `verb_code/3 (float, map, map)`
+  - [ ] `verb_code/3 (obj, int, int)`
+  - [ ] `verb_code/3 (obj, int, float)`
+  - [ ] `verb_code/3 (obj, int, obj)`
+  - [ ] `verb_code/3 (obj, int, str)`
+  - [ ] `verb_code/3 (obj, int, err)`
+  - [ ] `verb_code/3 (obj, int, list)`
+  - [ ] `verb_code/3 (obj, int, map)`
+  - [ ] `verb_code/3 (obj, float, int)`
+  - [ ] `verb_code/3 (obj, float, float)`
+  - [ ] `verb_code/3 (obj, float, obj)`
+  - [ ] `verb_code/3 (obj, float, str)`
+  - [ ] `verb_code/3 (obj, float, err)`
+  - [ ] `verb_code/3 (obj, float, list)`
+  - [ ] `verb_code/3 (obj, float, map)`
+  - [ ] `verb_code/3 (obj, obj, int)`
+  - [ ] `verb_code/3 (obj, obj, float)`
+  - [ ] `verb_code/3 (obj, obj, obj)`
+  - [ ] `verb_code/3 (obj, obj, str)`
+  - [ ] `verb_code/3 (obj, obj, err)`
+  - [ ] `verb_code/3 (obj, obj, list)`
+  - [ ] `verb_code/3 (obj, obj, map)`
+  - [ ] `verb_code/3 (obj, str, int)`
+  - [ ] `verb_code/3 (obj, str, float)`
+  - [ ] `verb_code/3 (obj, str, obj)`
+  - [ ] `verb_code/3 (obj, str, str)`
+  - [ ] `verb_code/3 (obj, str, err)`
+  - [ ] `verb_code/3 (obj, str, list)`
+  - [ ] `verb_code/3 (obj, str, map)`
+  - [ ] `verb_code/3 (obj, err, int)`
+  - [ ] `verb_code/3 (obj, err, float)`
+  - [ ] `verb_code/3 (obj, err, obj)`
+  - [ ] `verb_code/3 (obj, err, str)`
+  - [ ] `verb_code/3 (obj, err, err)`
+  - [ ] `verb_code/3 (obj, err, list)`
+  - [ ] `verb_code/3 (obj, err, map)`
+  - [ ] `verb_code/3 (obj, list, int)`
+  - [ ] `verb_code/3 (obj, list, float)`
+  - [ ] `verb_code/3 (obj, list, obj)`
+  - [ ] `verb_code/3 (obj, list, str)`
+  - [ ] `verb_code/3 (obj, list, err)`
+  - [ ] `verb_code/3 (obj, list, list)`
+  - [ ] `verb_code/3 (obj, list, map)`
+  - [ ] `verb_code/3 (obj, map, int)`
+  - [ ] `verb_code/3 (obj, map, float)`
+  - [ ] `verb_code/3 (obj, map, obj)`
+  - [ ] `verb_code/3 (obj, map, str)`
+  - [ ] `verb_code/3 (obj, map, err)`
+  - [ ] `verb_code/3 (obj, map, list)`
+  - [ ] `verb_code/3 (obj, map, map)`
+  - [ ] `verb_code/3 (str, int, int)`
+  - [ ] `verb_code/3 (str, int, float)`
+  - [ ] `verb_code/3 (str, int, obj)`
+  - [ ] `verb_code/3 (str, int, str)`
+  - [ ] `verb_code/3 (str, int, err)`
+  - [ ] `verb_code/3 (str, int, list)`
+  - [ ] `verb_code/3 (str, int, map)`
+  - [ ] `verb_code/3 (str, float, int)`
+  - [ ] `verb_code/3 (str, float, float)`
+  - [ ] `verb_code/3 (str, float, obj)`
+  - [ ] `verb_code/3 (str, float, str)`
+  - [ ] `verb_code/3 (str, float, err)`
+  - [ ] `verb_code/3 (str, float, list)`
+  - [ ] `verb_code/3 (str, float, map)`
+  - [ ] `verb_code/3 (str, obj, int)`
+  - [ ] `verb_code/3 (str, obj, float)`
+  - [ ] `verb_code/3 (str, obj, obj)`
+  - [ ] `verb_code/3 (str, obj, str)`
+  - [ ] `verb_code/3 (str, obj, err)`
+  - [ ] `verb_code/3 (str, obj, list)`
+  - [ ] `verb_code/3 (str, obj, map)`
+  - [ ] `verb_code/3 (str, str, int)`
+  - [ ] `verb_code/3 (str, str, float)`
+  - [ ] `verb_code/3 (str, str, obj)`
+  - [ ] `verb_code/3 (str, str, str)`
+  - [ ] `verb_code/3 (str, str, err)`
+  - [ ] `verb_code/3 (str, str, list)`
+  - [ ] `verb_code/3 (str, str, map)`
+  - [ ] `verb_code/3 (str, err, int)`
+  - [ ] `verb_code/3 (str, err, float)`
+  - [ ] `verb_code/3 (str, err, obj)`
+  - [ ] `verb_code/3 (str, err, str)`
+  - [ ] `verb_code/3 (str, err, err)`
+  - [ ] `verb_code/3 (str, err, list)`
+  - [ ] `verb_code/3 (str, err, map)`
+  - [ ] `verb_code/3 (str, list, int)`
+  - [ ] `verb_code/3 (str, list, float)`
+  - [ ] `verb_code/3 (str, list, obj)`
+  - [ ] `verb_code/3 (str, list, str)`
+  - [ ] `verb_code/3 (str, list, err)`
+  - [ ] `verb_code/3 (str, list, list)`
+  - [ ] `verb_code/3 (str, list, map)`
+  - [ ] `verb_code/3 (str, map, int)`
+  - [ ] `verb_code/3 (str, map, float)`
+  - [ ] `verb_code/3 (str, map, obj)`
+  - [ ] `verb_code/3 (str, map, str)`
+  - [ ] `verb_code/3 (str, map, err)`
+  - [ ] `verb_code/3 (str, map, list)`
+  - [ ] `verb_code/3 (str, map, map)`
+  - [ ] `verb_code/3 (err, int, int)`
+  - [ ] `verb_code/3 (err, int, float)`
+  - [ ] `verb_code/3 (err, int, obj)`
+  - [ ] `verb_code/3 (err, int, str)`
+  - [ ] `verb_code/3 (err, int, err)`
+  - [ ] `verb_code/3 (err, int, list)`
+  - [ ] `verb_code/3 (err, int, map)`
+  - [ ] `verb_code/3 (err, float, int)`
+  - [ ] `verb_code/3 (err, float, float)`
+  - [ ] `verb_code/3 (err, float, obj)`
+  - [ ] `verb_code/3 (err, float, str)`
+  - [ ] `verb_code/3 (err, float, err)`
+  - [ ] `verb_code/3 (err, float, list)`
+  - [ ] `verb_code/3 (err, float, map)`
+  - [ ] `verb_code/3 (err, obj, int)`
+  - [ ] `verb_code/3 (err, obj, float)`
+  - [ ] `verb_code/3 (err, obj, obj)`
+  - [ ] `verb_code/3 (err, obj, str)`
+  - [ ] `verb_code/3 (err, obj, err)`
+  - [ ] `verb_code/3 (err, obj, list)`
+  - [ ] `verb_code/3 (err, obj, map)`
+  - [ ] `verb_code/3 (err, str, int)`
+  - [ ] `verb_code/3 (err, str, float)`
+  - [ ] `verb_code/3 (err, str, obj)`
+  - [ ] `verb_code/3 (err, str, str)`
+  - [ ] `verb_code/3 (err, str, err)`
+  - [ ] `verb_code/3 (err, str, list)`
+  - [ ] `verb_code/3 (err, str, map)`
+  - [ ] `verb_code/3 (err, err, int)`
+  - [ ] `verb_code/3 (err, err, float)`
+  - [ ] `verb_code/3 (err, err, obj)`
+  - [ ] `verb_code/3 (err, err, str)`
+  - [ ] `verb_code/3 (err, err, err)`
+  - [ ] `verb_code/3 (err, err, list)`
+  - [ ] `verb_code/3 (err, err, map)`
+  - [ ] `verb_code/3 (err, list, int)`
+  - [ ] `verb_code/3 (err, list, float)`
+  - [ ] `verb_code/3 (err, list, obj)`
+  - [ ] `verb_code/3 (err, list, str)`
+  - [ ] `verb_code/3 (err, list, err)`
+  - [ ] `verb_code/3 (err, list, list)`
+  - [ ] `verb_code/3 (err, list, map)`
+  - [ ] `verb_code/3 (err, map, int)`
+  - [ ] `verb_code/3 (err, map, float)`
+  - [ ] `verb_code/3 (err, map, obj)`
+  - [ ] `verb_code/3 (err, map, str)`
+  - [ ] `verb_code/3 (err, map, err)`
+  - [ ] `verb_code/3 (err, map, list)`
+  - [ ] `verb_code/3 (err, map, map)`
+  - [ ] `verb_code/3 (list, int, int)`
+  - [ ] `verb_code/3 (list, int, float)`
+  - [ ] `verb_code/3 (list, int, obj)`
+  - [ ] `verb_code/3 (list, int, str)`
+  - [ ] `verb_code/3 (list, int, err)`
+  - [ ] `verb_code/3 (list, int, list)`
+  - [ ] `verb_code/3 (list, int, map)`
+  - [ ] `verb_code/3 (list, float, int)`
+  - [ ] `verb_code/3 (list, float, float)`
+  - [ ] `verb_code/3 (list, float, obj)`
+  - [ ] `verb_code/3 (list, float, str)`
+  - [ ] `verb_code/3 (list, float, err)`
+  - [ ] `verb_code/3 (list, float, list)`
+  - [ ] `verb_code/3 (list, float, map)`
+  - [ ] `verb_code/3 (list, obj, int)`
+  - [ ] `verb_code/3 (list, obj, float)`
+  - [ ] `verb_code/3 (list, obj, obj)`
+  - [ ] `verb_code/3 (list, obj, str)`
+  - [ ] `verb_code/3 (list, obj, err)`
+  - [ ] `verb_code/3 (list, obj, list)`
+  - [ ] `verb_code/3 (list, obj, map)`
+  - [ ] `verb_code/3 (list, str, int)`
+  - [ ] `verb_code/3 (list, str, float)`
+  - [ ] `verb_code/3 (list, str, obj)`
+  - [ ] `verb_code/3 (list, str, str)`
+  - [ ] `verb_code/3 (list, str, err)`
+  - [ ] `verb_code/3 (list, str, list)`
+  - [ ] `verb_code/3 (list, str, map)`
+  - [ ] `verb_code/3 (list, err, int)`
+  - [ ] `verb_code/3 (list, err, float)`
+  - [ ] `verb_code/3 (list, err, obj)`
+  - [ ] `verb_code/3 (list, err, str)`
+  - [ ] `verb_code/3 (list, err, err)`
+  - [ ] `verb_code/3 (list, err, list)`
+  - [ ] `verb_code/3 (list, err, map)`
+  - [ ] `verb_code/3 (list, list, int)`
+  - [ ] `verb_code/3 (list, list, float)`
+  - [ ] `verb_code/3 (list, list, obj)`
+  - [ ] `verb_code/3 (list, list, str)`
+  - [ ] `verb_code/3 (list, list, err)`
+  - [ ] `verb_code/3 (list, list, list)`
+  - [ ] `verb_code/3 (list, list, map)`
+  - [ ] `verb_code/3 (list, map, int)`
+  - [ ] `verb_code/3 (list, map, float)`
+  - [ ] `verb_code/3 (list, map, obj)`
+  - [ ] `verb_code/3 (list, map, str)`
+  - [ ] `verb_code/3 (list, map, err)`
+  - [ ] `verb_code/3 (list, map, list)`
+  - [ ] `verb_code/3 (list, map, map)`
+  - [ ] `verb_code/3 (map, int, int)`
+  - [ ] `verb_code/3 (map, int, float)`
+  - [ ] `verb_code/3 (map, int, obj)`
+  - [ ] `verb_code/3 (map, int, str)`
+  - [ ] `verb_code/3 (map, int, err)`
+  - [ ] `verb_code/3 (map, int, list)`
+  - [ ] `verb_code/3 (map, int, map)`
+  - [ ] `verb_code/3 (map, float, int)`
+  - [ ] `verb_code/3 (map, float, float)`
+  - [ ] `verb_code/3 (map, float, obj)`
+  - [ ] `verb_code/3 (map, float, str)`
+  - [ ] `verb_code/3 (map, float, err)`
+  - [ ] `verb_code/3 (map, float, list)`
+  - [ ] `verb_code/3 (map, float, map)`
+  - [ ] `verb_code/3 (map, obj, int)`
+  - [ ] `verb_code/3 (map, obj, float)`
+  - [ ] `verb_code/3 (map, obj, obj)`
+  - [ ] `verb_code/3 (map, obj, str)`
+  - [ ] `verb_code/3 (map, obj, err)`
+  - [ ] `verb_code/3 (map, obj, list)`
+  - [ ] `verb_code/3 (map, obj, map)`
+  - [ ] `verb_code/3 (map, str, int)`
+  - [ ] `verb_code/3 (map, str, float)`
+  - [ ] `verb_code/3 (map, str, obj)`
+  - [ ] `verb_code/3 (map, str, str)`
+  - [ ] `verb_code/3 (map, str, err)`
+  - [ ] `verb_code/3 (map, str, list)`
+  - [ ] `verb_code/3 (map, str, map)`
+  - [ ] `verb_code/3 (map, err, int)`
+  - [ ] `verb_code/3 (map, err, float)`
+  - [ ] `verb_code/3 (map, err, obj)`
+  - [ ] `verb_code/3 (map, err, str)`
+  - [ ] `verb_code/3 (map, err, err)`
+  - [ ] `verb_code/3 (map, err, list)`
+  - [ ] `verb_code/3 (map, err, map)`
+  - [ ] `verb_code/3 (map, list, int)`
+  - [ ] `verb_code/3 (map, list, float)`
+  - [ ] `verb_code/3 (map, list, obj)`
+  - [ ] `verb_code/3 (map, list, str)`
+  - [ ] `verb_code/3 (map, list, err)`
+  - [ ] `verb_code/3 (map, list, list)`
+  - [ ] `verb_code/3 (map, list, map)`
+  - [ ] `verb_code/3 (map, map, int)`
+  - [ ] `verb_code/3 (map, map, float)`
+  - [ ] `verb_code/3 (map, map, obj)`
+  - [ ] `verb_code/3 (map, map, str)`
+  - [ ] `verb_code/3 (map, map, err)`
+  - [ ] `verb_code/3 (map, map, list)`
+  - [ ] `verb_code/3 (map, map, map)`
+  - [ ] `verb_code/4 (int, int, int, int)`
+  - [ ] `verb_code/4 (int, int, int, float)`
+  - [ ] `verb_code/4 (int, int, int, obj)`
+  - [ ] `verb_code/4 (int, int, int, str)`
+  - [ ] `verb_code/4 (int, int, int, err)`
+  - [ ] `verb_code/4 (int, int, int, list)`
+  - [ ] `verb_code/4 (int, int, int, map)`
+  - [ ] `verb_code/4 (int, int, float, int)`
+  - [ ] `verb_code/4 (int, int, float, float)`
+  - [ ] `verb_code/4 (int, int, float, obj)`
+  - [ ] `verb_code/4 (int, int, float, str)`
+  - [ ] `verb_code/4 (int, int, float, err)`
+  - [ ] `verb_code/4 (int, int, float, list)`
+  - [ ] `verb_code/4 (int, int, float, map)`
+  - [ ] `verb_code/4 (int, int, obj, int)`
+  - [ ] `verb_code/4 (int, int, obj, float)`
+  - [ ] `verb_code/4 (int, int, obj, obj)`
+  - [ ] `verb_code/4 (int, int, obj, str)`
+  - [ ] `verb_code/4 (int, int, obj, err)`
+  - [ ] `verb_code/4 (int, int, obj, list)`
+  - [ ] `verb_code/4 (int, int, obj, map)`
+  - [ ] `verb_code/4 (int, int, str, int)`
+  - [ ] `verb_code/4 (int, int, str, float)`
+  - [ ] `verb_code/4 (int, int, str, obj)`
+  - [ ] `verb_code/4 (int, int, str, str)`
+  - [ ] `verb_code/4 (int, int, str, err)`
+  - [ ] `verb_code/4 (int, int, str, list)`
+  - [ ] `verb_code/4 (int, int, str, map)`
+  - [ ] `verb_code/4 (int, int, err, int)`
+  - [ ] `verb_code/4 (int, int, err, float)`
+  - [ ] `verb_code/4 (int, int, err, obj)`
+  - [ ] `verb_code/4 (int, int, err, str)`
+  - [ ] `verb_code/4 (int, int, err, err)`
+  - [ ] `verb_code/4 (int, int, err, list)`
+  - [ ] `verb_code/4 (int, int, err, map)`
+  - [ ] `verb_code/4 (int, int, list, int)`
+  - [ ] `verb_code/4 (int, int, list, float)`
+  - [ ] `verb_code/4 (int, int, list, obj)`
+  - [ ] `verb_code/4 (int, int, list, str)`
+  - [ ] `verb_code/4 (int, int, list, err)`
+  - [ ] `verb_code/4 (int, int, list, list)`
+  - [ ] `verb_code/4 (int, int, list, map)`
+  - [ ] `verb_code/4 (int, int, map, int)`
+  - [ ] `verb_code/4 (int, int, map, float)`
+  - [ ] `verb_code/4 (int, int, map, obj)`
+  - [ ] `verb_code/4 (int, int, map, str)`
+  - [ ] `verb_code/4 (int, int, map, err)`
+  - [ ] `verb_code/4 (int, int, map, list)`
+  - [ ] `verb_code/4 (int, int, map, map)`
+  - [ ] `verb_code/4 (int, float, int, int)`
+  - [ ] `verb_code/4 (int, float, int, float)`
+  - [ ] `verb_code/4 (int, float, int, obj)`
+  - [ ] `verb_code/4 (int, float, int, str)`
+  - [ ] `verb_code/4 (int, float, int, err)`
+  - [ ] `verb_code/4 (int, float, int, list)`
+  - [ ] `verb_code/4 (int, float, int, map)`
+  - [ ] `verb_code/4 (int, float, float, int)`
+  - [ ] `verb_code/4 (int, float, float, float)`
+  - [ ] `verb_code/4 (int, float, float, obj)`
+  - [ ] `verb_code/4 (int, float, float, str)`
+  - [ ] `verb_code/4 (int, float, float, err)`
+  - [ ] `verb_code/4 (int, float, float, list)`
+  - [ ] `verb_code/4 (int, float, float, map)`
+  - [ ] `verb_code/4 (int, float, obj, int)`
+  - [ ] `verb_code/4 (int, float, obj, float)`
+  - [ ] `verb_code/4 (int, float, obj, obj)`
+  - [ ] `verb_code/4 (int, float, obj, str)`
+  - [ ] `verb_code/4 (int, float, obj, err)`
+  - [ ] `verb_code/4 (int, float, obj, list)`
+  - [ ] `verb_code/4 (int, float, obj, map)`
+  - [ ] `verb_code/4 (int, float, str, int)`
+  - [ ] `verb_code/4 (int, float, str, float)`
+  - [ ] `verb_code/4 (int, float, str, obj)`
+  - [ ] `verb_code/4 (int, float, str, str)`
+  - [ ] `verb_code/4 (int, float, str, err)`
+  - [ ] `verb_code/4 (int, float, str, list)`
+  - [ ] `verb_code/4 (int, float, str, map)`
+  - [ ] `verb_code/4 (int, float, err, int)`
+  - [ ] `verb_code/4 (int, float, err, float)`
+  - [ ] `verb_code/4 (int, float, err, obj)`
+  - [ ] `verb_code/4 (int, float, err, str)`
+  - [ ] `verb_code/4 (int, float, err, err)`
+  - [ ] `verb_code/4 (int, float, err, list)`
+  - [ ] `verb_code/4 (int, float, err, map)`
+  - [ ] `verb_code/4 (int, float, list, int)`
+  - [ ] `verb_code/4 (int, float, list, float)`
+  - [ ] `verb_code/4 (int, float, list, obj)`
+  - [ ] `verb_code/4 (int, float, list, str)`
+  - [ ] `verb_code/4 (int, float, list, err)`
+  - [ ] `verb_code/4 (int, float, list, list)`
+  - [ ] `verb_code/4 (int, float, list, map)`
+  - [ ] `verb_code/4 (int, float, map, int)`
+  - [ ] `verb_code/4 (int, float, map, float)`
+  - [ ] `verb_code/4 (int, float, map, obj)`
+  - [ ] `verb_code/4 (int, float, map, str)`
+  - [ ] `verb_code/4 (int, float, map, err)`
+  - [ ] `verb_code/4 (int, float, map, list)`
+  - [ ] `verb_code/4 (int, float, map, map)`
+  - [ ] `verb_code/4 (int, obj, int, int)`
+  - [ ] `verb_code/4 (int, obj, int, float)`
+  - [ ] `verb_code/4 (int, obj, int, obj)`
+  - [ ] `verb_code/4 (int, obj, int, str)`
+  - [ ] `verb_code/4 (int, obj, int, err)`
+  - [ ] `verb_code/4 (int, obj, int, list)`
+  - [ ] `verb_code/4 (int, obj, int, map)`
+  - [ ] `verb_code/4 (int, obj, float, int)`
+  - [ ] `verb_code/4 (int, obj, float, float)`
+  - [ ] `verb_code/4 (int, obj, float, obj)`
+  - [ ] `verb_code/4 (int, obj, float, str)`
+  - [ ] `verb_code/4 (int, obj, float, err)`
+  - [ ] `verb_code/4 (int, obj, float, list)`
+  - [ ] `verb_code/4 (int, obj, float, map)`
+  - [ ] `verb_code/4 (int, obj, obj, int)`
+  - [ ] `verb_code/4 (int, obj, obj, float)`
+  - [ ] `verb_code/4 (int, obj, obj, obj)`
+  - [ ] `verb_code/4 (int, obj, obj, str)`
+  - [ ] `verb_code/4 (int, obj, obj, err)`
+  - [ ] `verb_code/4 (int, obj, obj, list)`
+  - [ ] `verb_code/4 (int, obj, obj, map)`
+  - [ ] `verb_code/4 (int, obj, str, int)`
+  - [ ] `verb_code/4 (int, obj, str, float)`
+  - [ ] `verb_code/4 (int, obj, str, obj)`
+  - [ ] `verb_code/4 (int, obj, str, str)`
+  - [ ] `verb_code/4 (int, obj, str, err)`
+  - [ ] `verb_code/4 (int, obj, str, list)`
+  - [ ] `verb_code/4 (int, obj, str, map)`
+  - [ ] `verb_code/4 (int, obj, err, int)`
+  - [ ] `verb_code/4 (int, obj, err, float)`
+  - [ ] `verb_code/4 (int, obj, err, obj)`
+  - [ ] `verb_code/4 (int, obj, err, str)`
+  - [ ] `verb_code/4 (int, obj, err, err)`
+  - [ ] `verb_code/4 (int, obj, err, list)`
+  - [ ] `verb_code/4 (int, obj, err, map)`
+  - [ ] `verb_code/4 (int, obj, list, int)`
+  - [ ] `verb_code/4 (int, obj, list, float)`
+  - [ ] `verb_code/4 (int, obj, list, obj)`
+  - [ ] `verb_code/4 (int, obj, list, str)`
+  - [ ] `verb_code/4 (int, obj, list, err)`
+  - [ ] `verb_code/4 (int, obj, list, list)`
+  - [ ] `verb_code/4 (int, obj, list, map)`
+  - [ ] `verb_code/4 (int, obj, map, int)`
+  - [ ] `verb_code/4 (int, obj, map, float)`
+  - [ ] `verb_code/4 (int, obj, map, obj)`
+  - [ ] `verb_code/4 (int, obj, map, str)`
+  - [ ] `verb_code/4 (int, obj, map, err)`
+  - [ ] `verb_code/4 (int, obj, map, list)`
+  - [ ] `verb_code/4 (int, obj, map, map)`
+  - [ ] `verb_code/4 (int, str, int, int)`
+  - [ ] `verb_code/4 (int, str, int, float)`
+  - [ ] `verb_code/4 (int, str, int, obj)`
+  - [ ] `verb_code/4 (int, str, int, str)`
+  - [ ] `verb_code/4 (int, str, int, err)`
+  - [ ] `verb_code/4 (int, str, int, list)`
+  - [ ] `verb_code/4 (int, str, int, map)`
+  - [ ] `verb_code/4 (int, str, float, int)`
+  - [ ] `verb_code/4 (int, str, float, float)`
+  - [ ] `verb_code/4 (int, str, float, obj)`
+  - [ ] `verb_code/4 (int, str, float, str)`
+  - [ ] `verb_code/4 (int, str, float, err)`
+  - [ ] `verb_code/4 (int, str, float, list)`
+  - [ ] `verb_code/4 (int, str, float, map)`
+  - [ ] `verb_code/4 (int, str, obj, int)`
+  - [ ] `verb_code/4 (int, str, obj, float)`
+  - [ ] `verb_code/4 (int, str, obj, obj)`
+  - [ ] `verb_code/4 (int, str, obj, str)`
+  - [ ] `verb_code/4 (int, str, obj, err)`
+  - [ ] `verb_code/4 (int, str, obj, list)`
+  - [ ] `verb_code/4 (int, str, obj, map)`
+  - [ ] `verb_code/4 (int, str, str, int)`
+  - [ ] `verb_code/4 (int, str, str, float)`
+  - [ ] `verb_code/4 (int, str, str, obj)`
+  - [ ] `verb_code/4 (int, str, str, str)`
+  - [ ] `verb_code/4 (int, str, str, err)`
+  - [ ] `verb_code/4 (int, str, str, list)`
+  - [ ] `verb_code/4 (int, str, str, map)`
+  - [ ] `verb_code/4 (int, str, err, int)`
+  - [ ] `verb_code/4 (int, str, err, float)`
+  - [ ] `verb_code/4 (int, str, err, obj)`
+  - [ ] `verb_code/4 (int, str, err, str)`
+  - [ ] `verb_code/4 (int, str, err, err)`
+  - [ ] `verb_code/4 (int, str, err, list)`
+  - [ ] `verb_code/4 (int, str, err, map)`
+  - [ ] `verb_code/4 (int, str, list, int)`
+  - [ ] `verb_code/4 (int, str, list, float)`
+  - [ ] `verb_code/4 (int, str, list, obj)`
+  - [ ] `verb_code/4 (int, str, list, str)`
+  - [ ] `verb_code/4 (int, str, list, err)`
+  - [ ] `verb_code/4 (int, str, list, list)`
+  - [ ] `verb_code/4 (int, str, list, map)`
+  - [ ] `verb_code/4 (int, str, map, int)`
+  - [ ] `verb_code/4 (int, str, map, float)`
+  - [ ] `verb_code/4 (int, str, map, obj)`
+  - [ ] `verb_code/4 (int, str, map, str)`
+  - [ ] `verb_code/4 (int, str, map, err)`
+  - [ ] `verb_code/4 (int, str, map, list)`
+  - [ ] `verb_code/4 (int, str, map, map)`
+  - [ ] `verb_code/4 (int, err, int, int)`
+  - [ ] `verb_code/4 (int, err, int, float)`
+  - [ ] `verb_code/4 (int, err, int, obj)`
+  - [ ] `verb_code/4 (int, err, int, str)`
+  - [ ] `verb_code/4 (int, err, int, err)`
+  - [ ] `verb_code/4 (int, err, int, list)`
+  - [ ] `verb_code/4 (int, err, int, map)`
+  - [ ] `verb_code/4 (int, err, float, int)`
+  - [ ] `verb_code/4 (int, err, float, float)`
+  - [ ] `verb_code/4 (int, err, float, obj)`
+  - [ ] `verb_code/4 (int, err, float, str)`
+  - [ ] `verb_code/4 (int, err, float, err)`
+  - [ ] `verb_code/4 (int, err, float, list)`
+  - [ ] `verb_code/4 (int, err, float, map)`
+  - [ ] `verb_code/4 (int, err, obj, int)`
+  - [ ] `verb_code/4 (int, err, obj, float)`
+  - [ ] `verb_code/4 (int, err, obj, obj)`
+  - [ ] `verb_code/4 (int, err, obj, str)`
+  - [ ] `verb_code/4 (int, err, obj, err)`
+  - [ ] `verb_code/4 (int, err, obj, list)`
+  - [ ] `verb_code/4 (int, err, obj, map)`
+  - [ ] `verb_code/4 (int, err, str, int)`
+  - [ ] `verb_code/4 (int, err, str, float)`
+  - [ ] `verb_code/4 (int, err, str, obj)`
+  - [ ] `verb_code/4 (int, err, str, str)`
+  - [ ] `verb_code/4 (int, err, str, err)`
+  - [ ] `verb_code/4 (int, err, str, list)`
+  - [ ] `verb_code/4 (int, err, str, map)`
+  - [ ] `verb_code/4 (int, err, err, int)`
+  - [ ] `verb_code/4 (int, err, err, float)`
+  - [ ] `verb_code/4 (int, err, err, obj)`
+  - [ ] `verb_code/4 (int, err, err, str)`
+  - [ ] `verb_code/4 (int, err, err, err)`
+  - [ ] `verb_code/4 (int, err, err, list)`
+  - [ ] `verb_code/4 (int, err, err, map)`
+  - [ ] `verb_code/4 (int, err, list, int)`
+  - [ ] `verb_code/4 (int, err, list, float)`
+  - [ ] `verb_code/4 (int, err, list, obj)`
+  - [ ] `verb_code/4 (int, err, list, str)`
+  - [ ] `verb_code/4 (int, err, list, err)`
+  - [ ] `verb_code/4 (int, err, list, list)`
+  - [ ] `verb_code/4 (int, err, list, map)`
+  - [ ] `verb_code/4 (int, err, map, int)`
+  - [ ] `verb_code/4 (int, err, map, float)`
+  - [ ] `verb_code/4 (int, err, map, obj)`
+  - [ ] `verb_code/4 (int, err, map, str)`
+  - [ ] `verb_code/4 (int, err, map, err)`
+  - [ ] `verb_code/4 (int, err, map, list)`
+  - [ ] `verb_code/4 (int, err, map, map)`
+  - [ ] `verb_code/4 (int, list, int, int)`
+  - [ ] `verb_code/4 (int, list, int, float)`
+  - [ ] `verb_code/4 (int, list, int, obj)`
+  - [ ] `verb_code/4 (int, list, int, str)`
+  - [ ] `verb_code/4 (int, list, int, err)`
+  - [ ] `verb_code/4 (int, list, int, list)`
+  - [ ] `verb_code/4 (int, list, int, map)`
+  - [ ] `verb_code/4 (int, list, float, int)`
+  - [ ] `verb_code/4 (int, list, float, float)`
+  - [ ] `verb_code/4 (int, list, float, obj)`
+  - [ ] `verb_code/4 (int, list, float, str)`
+  - [ ] `verb_code/4 (int, list, float, err)`
+  - [ ] `verb_code/4 (int, list, float, list)`
+  - [ ] `verb_code/4 (int, list, float, map)`
+  - [ ] `verb_code/4 (int, list, obj, int)`
+  - [ ] `verb_code/4 (int, list, obj, float)`
+  - [ ] `verb_code/4 (int, list, obj, obj)`
+  - [ ] `verb_code/4 (int, list, obj, str)`
+  - [ ] `verb_code/4 (int, list, obj, err)`
+  - [ ] `verb_code/4 (int, list, obj, list)`
+  - [ ] `verb_code/4 (int, list, obj, map)`
+  - [ ] `verb_code/4 (int, list, str, int)`
+  - [ ] `verb_code/4 (int, list, str, float)`
+  - [ ] `verb_code/4 (int, list, str, obj)`
+  - [ ] `verb_code/4 (int, list, str, str)`
+  - [ ] `verb_code/4 (int, list, str, err)`
+  - [ ] `verb_code/4 (int, list, str, list)`
+  - [ ] `verb_code/4 (int, list, str, map)`
+  - [ ] `verb_code/4 (int, list, err, int)`
+  - [ ] `verb_code/4 (int, list, err, float)`
+  - [ ] `verb_code/4 (int, list, err, obj)`
+  - [ ] `verb_code/4 (int, list, err, str)`
+  - [ ] `verb_code/4 (int, list, err, err)`
+  - [ ] `verb_code/4 (int, list, err, list)`
+  - [ ] `verb_code/4 (int, list, err, map)`
+  - [ ] `verb_code/4 (int, list, list, int)`
+  - [ ] `verb_code/4 (int, list, list, float)`
+  - [ ] `verb_code/4 (int, list, list, obj)`
+  - [ ] `verb_code/4 (int, list, list, str)`
+  - [ ] `verb_code/4 (int, list, list, err)`
+  - [ ] `verb_code/4 (int, list, list, list)`
+  - [ ] `verb_code/4 (int, list, list, map)`
+  - [ ] `verb_code/4 (int, list, map, int)`
+  - [ ] `verb_code/4 (int, list, map, float)`
+  - [ ] `verb_code/4 (int, list, map, obj)`
+  - [ ] `verb_code/4 (int, list, map, str)`
+  - [ ] `verb_code/4 (int, list, map, err)`
+  - [ ] `verb_code/4 (int, list, map, list)`
+  - [ ] `verb_code/4 (int, list, map, map)`
+  - [ ] `verb_code/4 (int, map, int, int)`
+  - [ ] `verb_code/4 (int, map, int, float)`
+  - [ ] `verb_code/4 (int, map, int, obj)`
+  - [ ] `verb_code/4 (int, map, int, str)`
+  - [ ] `verb_code/4 (int, map, int, err)`
+  - [ ] `verb_code/4 (int, map, int, list)`
+  - [ ] `verb_code/4 (int, map, int, map)`
+  - [ ] `verb_code/4 (int, map, float, int)`
+  - [ ] `verb_code/4 (int, map, float, float)`
+  - [ ] `verb_code/4 (int, map, float, obj)`
+  - [ ] `verb_code/4 (int, map, float, str)`
+  - [ ] `verb_code/4 (int, map, float, err)`
+  - [ ] `verb_code/4 (int, map, float, list)`
+  - [ ] `verb_code/4 (int, map, float, map)`
+  - [ ] `verb_code/4 (int, map, obj, int)`
+  - [ ] `verb_code/4 (int, map, obj, float)`
+  - [ ] `verb_code/4 (int, map, obj, obj)`
+  - [ ] `verb_code/4 (int, map, obj, str)`
+  - [ ] `verb_code/4 (int, map, obj, err)`
+  - [ ] `verb_code/4 (int, map, obj, list)`
+  - [ ] `verb_code/4 (int, map, obj, map)`
+  - [ ] `verb_code/4 (int, map, str, int)`
+  - [ ] `verb_code/4 (int, map, str, float)`
+  - [ ] `verb_code/4 (int, map, str, obj)`
+  - [ ] `verb_code/4 (int, map, str, str)`
+  - [ ] `verb_code/4 (int, map, str, err)`
+  - [ ] `verb_code/4 (int, map, str, list)`
+  - [ ] `verb_code/4 (int, map, str, map)`
+  - [ ] `verb_code/4 (int, map, err, int)`
+  - [ ] `verb_code/4 (int, map, err, float)`
+  - [ ] `verb_code/4 (int, map, err, obj)`
+  - [ ] `verb_code/4 (int, map, err, str)`
+  - [ ] `verb_code/4 (int, map, err, err)`
+  - [ ] `verb_code/4 (int, map, err, list)`
+  - [ ] `verb_code/4 (int, map, err, map)`
+  - [ ] `verb_code/4 (int, map, list, int)`
+  - [ ] `verb_code/4 (int, map, list, float)`
+  - [ ] `verb_code/4 (int, map, list, obj)`
+  - [ ] `verb_code/4 (int, map, list, str)`
+  - [ ] `verb_code/4 (int, map, list, err)`
+  - [ ] `verb_code/4 (int, map, list, list)`
+  - [ ] `verb_code/4 (int, map, list, map)`
+  - [ ] `verb_code/4 (int, map, map, int)`
+  - [ ] `verb_code/4 (int, map, map, float)`
+  - [ ] `verb_code/4 (int, map, map, obj)`
+  - [ ] `verb_code/4 (int, map, map, str)`
+  - [ ] `verb_code/4 (int, map, map, err)`
+  - [ ] `verb_code/4 (int, map, map, list)`
+  - [ ] `verb_code/4 (int, map, map, map)`
+  - [ ] `verb_code/4 (float, int, int, int)`
+  - [ ] `verb_code/4 (float, int, int, float)`
+  - [ ] `verb_code/4 (float, int, int, obj)`
+  - [ ] `verb_code/4 (float, int, int, str)`
+  - [ ] `verb_code/4 (float, int, int, err)`
+  - [ ] `verb_code/4 (float, int, int, list)`
+  - [ ] `verb_code/4 (float, int, int, map)`
+  - [ ] `verb_code/4 (float, int, float, int)`
+  - [ ] `verb_code/4 (float, int, float, float)`
+  - [ ] `verb_code/4 (float, int, float, obj)`
+  - [ ] `verb_code/4 (float, int, float, str)`
+  - [ ] `verb_code/4 (float, int, float, err)`
+  - [ ] `verb_code/4 (float, int, float, list)`
+  - [ ] `verb_code/4 (float, int, float, map)`
+  - [ ] `verb_code/4 (float, int, obj, int)`
+  - [ ] `verb_code/4 (float, int, obj, float)`
+  - [ ] `verb_code/4 (float, int, obj, obj)`
+  - [ ] `verb_code/4 (float, int, obj, str)`
+  - [ ] `verb_code/4 (float, int, obj, err)`
+  - [ ] `verb_code/4 (float, int, obj, list)`
+  - [ ] `verb_code/4 (float, int, obj, map)`
+  - [ ] `verb_code/4 (float, int, str, int)`
+  - [ ] `verb_code/4 (float, int, str, float)`
+  - [ ] `verb_code/4 (float, int, str, obj)`
+  - [ ] `verb_code/4 (float, int, str, str)`
+  - [ ] `verb_code/4 (float, int, str, err)`
+  - [ ] `verb_code/4 (float, int, str, list)`
+  - [ ] `verb_code/4 (float, int, str, map)`
+  - [ ] `verb_code/4 (float, int, err, int)`
+  - [ ] `verb_code/4 (float, int, err, float)`
+  - [ ] `verb_code/4 (float, int, err, obj)`
+  - [ ] `verb_code/4 (float, int, err, str)`
+  - [ ] `verb_code/4 (float, int, err, err)`
+  - [ ] `verb_code/4 (float, int, err, list)`
+  - [ ] `verb_code/4 (float, int, err, map)`
+  - [ ] `verb_code/4 (float, int, list, int)`
+  - [ ] `verb_code/4 (float, int, list, float)`
+  - [ ] `verb_code/4 (float, int, list, obj)`
+  - [ ] `verb_code/4 (float, int, list, str)`
+  - [ ] `verb_code/4 (float, int, list, err)`
+  - [ ] `verb_code/4 (float, int, list, list)`
+  - [ ] `verb_code/4 (float, int, list, map)`
+  - [ ] `verb_code/4 (float, int, map, int)`
+  - [ ] `verb_code/4 (float, int, map, float)`
+  - [ ] `verb_code/4 (float, int, map, obj)`
+  - [ ] `verb_code/4 (float, int, map, str)`
+  - [ ] `verb_code/4 (float, int, map, err)`
+  - [ ] `verb_code/4 (float, int, map, list)`
+  - [ ] `verb_code/4 (float, int, map, map)`
+  - [ ] `verb_code/4 (float, float, int, int)`
+  - [ ] `verb_code/4 (float, float, int, float)`
+  - [ ] `verb_code/4 (float, float, int, obj)`
+  - [ ] `verb_code/4 (float, float, int, str)`
+  - [ ] `verb_code/4 (float, float, int, err)`
+  - [ ] `verb_code/4 (float, float, int, list)`
+  - [ ] `verb_code/4 (float, float, int, map)`
+  - [ ] `verb_code/4 (float, float, float, int)`
+  - [ ] `verb_code/4 (float, float, float, float)`
+  - [ ] `verb_code/4 (float, float, float, obj)`
+  - [ ] `verb_code/4 (float, float, float, str)`
+  - [ ] `verb_code/4 (float, float, float, err)`
+  - [ ] `verb_code/4 (float, float, float, list)`
+  - [ ] `verb_code/4 (float, float, float, map)`
+  - [ ] `verb_code/4 (float, float, obj, int)`
+  - [ ] `verb_code/4 (float, float, obj, float)`
+  - [ ] `verb_code/4 (float, float, obj, obj)`
+  - [ ] `verb_code/4 (float, float, obj, str)`
+  - [ ] `verb_code/4 (float, float, obj, err)`
+  - [ ] `verb_code/4 (float, float, obj, list)`
+  - [ ] `verb_code/4 (float, float, obj, map)`
+  - [ ] `verb_code/4 (float, float, str, int)`
+  - [ ] `verb_code/4 (float, float, str, float)`
+  - [ ] `verb_code/4 (float, float, str, obj)`
+  - [ ] `verb_code/4 (float, float, str, str)`
+  - [ ] `verb_code/4 (float, float, str, err)`
+  - [ ] `verb_code/4 (float, float, str, list)`
+  - [ ] `verb_code/4 (float, float, str, map)`
+  - [ ] `verb_code/4 (float, float, err, int)`
+  - [ ] `verb_code/4 (float, float, err, float)`
+  - [ ] `verb_code/4 (float, float, err, obj)`
+  - [ ] `verb_code/4 (float, float, err, str)`
+  - [ ] `verb_code/4 (float, float, err, err)`
+  - [ ] `verb_code/4 (float, float, err, list)`
+  - [ ] `verb_code/4 (float, float, err, map)`
+  - [ ] `verb_code/4 (float, float, list, int)`
+  - [ ] `verb_code/4 (float, float, list, float)`
+  - [ ] `verb_code/4 (float, float, list, obj)`
+  - [ ] `verb_code/4 (float, float, list, str)`
+  - [ ] `verb_code/4 (float, float, list, err)`
+  - [ ] `verb_code/4 (float, float, list, list)`
+  - [ ] `verb_code/4 (float, float, list, map)`
+  - [ ] `verb_code/4 (float, float, map, int)`
+  - [ ] `verb_code/4 (float, float, map, float)`
+  - [ ] `verb_code/4 (float, float, map, obj)`
+  - [ ] `verb_code/4 (float, float, map, str)`
+  - [ ] `verb_code/4 (float, float, map, err)`
+  - [ ] `verb_code/4 (float, float, map, list)`
+  - [ ] `verb_code/4 (float, float, map, map)`
+  - [ ] `verb_code/4 (float, obj, int, int)`
+  - [ ] `verb_code/4 (float, obj, int, float)`
+  - [ ] `verb_code/4 (float, obj, int, obj)`
+  - [ ] `verb_code/4 (float, obj, int, str)`
+  - [ ] `verb_code/4 (float, obj, int, err)`
+  - [ ] `verb_code/4 (float, obj, int, list)`
+  - [ ] `verb_code/4 (float, obj, int, map)`
+  - [ ] `verb_code/4 (float, obj, float, int)`
+  - [ ] `verb_code/4 (float, obj, float, float)`
+  - [ ] `verb_code/4 (float, obj, float, obj)`
+  - [ ] `verb_code/4 (float, obj, float, str)`
+  - [ ] `verb_code/4 (float, obj, float, err)`
+  - [ ] `verb_code/4 (float, obj, float, list)`
+  - [ ] `verb_code/4 (float, obj, float, map)`
+  - [ ] `verb_code/4 (float, obj, obj, int)`
+  - [ ] `verb_code/4 (float, obj, obj, float)`
+  - [ ] `verb_code/4 (float, obj, obj, obj)`
+  - [ ] `verb_code/4 (float, obj, obj, str)`
+  - [ ] `verb_code/4 (float, obj, obj, err)`
+  - [ ] `verb_code/4 (float, obj, obj, list)`
+  - [ ] `verb_code/4 (float, obj, obj, map)`
+  - [ ] `verb_code/4 (float, obj, str, int)`
+  - [ ] `verb_code/4 (float, obj, str, float)`
+  - [ ] `verb_code/4 (float, obj, str, obj)`
+  - [ ] `verb_code/4 (float, obj, str, str)`
+  - [ ] `verb_code/4 (float, obj, str, err)`
+  - [ ] `verb_code/4 (float, obj, str, list)`
+  - [ ] `verb_code/4 (float, obj, str, map)`
+  - [ ] `verb_code/4 (float, obj, err, int)`
+  - [ ] `verb_code/4 (float, obj, err, float)`
+  - [ ] `verb_code/4 (float, obj, err, obj)`
+  - [ ] `verb_code/4 (float, obj, err, str)`
+  - [ ] `verb_code/4 (float, obj, err, err)`
+  - [ ] `verb_code/4 (float, obj, err, list)`
+  - [ ] `verb_code/4 (float, obj, err, map)`
+  - [ ] `verb_code/4 (float, obj, list, int)`
+  - [ ] `verb_code/4 (float, obj, list, float)`
+  - [ ] `verb_code/4 (float, obj, list, obj)`
+  - [ ] `verb_code/4 (float, obj, list, str)`
+  - [ ] `verb_code/4 (float, obj, list, err)`
+  - [ ] `verb_code/4 (float, obj, list, list)`
+  - [ ] `verb_code/4 (float, obj, list, map)`
+  - [ ] `verb_code/4 (float, obj, map, int)`
+  - [ ] `verb_code/4 (float, obj, map, float)`
+  - [ ] `verb_code/4 (float, obj, map, obj)`
+  - [ ] `verb_code/4 (float, obj, map, str)`
+  - [ ] `verb_code/4 (float, obj, map, err)`
+  - [ ] `verb_code/4 (float, obj, map, list)`
+  - [ ] `verb_code/4 (float, obj, map, map)`
+  - [ ] `verb_code/4 (float, str, int, int)`
+  - [ ] `verb_code/4 (float, str, int, float)`
+  - [ ] `verb_code/4 (float, str, int, obj)`
+  - [ ] `verb_code/4 (float, str, int, str)`
+  - [ ] `verb_code/4 (float, str, int, err)`
+  - [ ] `verb_code/4 (float, str, int, list)`
+  - [ ] `verb_code/4 (float, str, int, map)`
+  - [ ] `verb_code/4 (float, str, float, int)`
+  - [ ] `verb_code/4 (float, str, float, float)`
+  - [ ] `verb_code/4 (float, str, float, obj)`
+  - [ ] `verb_code/4 (float, str, float, str)`
+  - [ ] `verb_code/4 (float, str, float, err)`
+  - [ ] `verb_code/4 (float, str, float, list)`
+  - [ ] `verb_code/4 (float, str, float, map)`
+  - [ ] `verb_code/4 (float, str, obj, int)`
+  - [ ] `verb_code/4 (float, str, obj, float)`
+  - [ ] `verb_code/4 (float, str, obj, obj)`
+  - [ ] `verb_code/4 (float, str, obj, str)`
+  - [ ] `verb_code/4 (float, str, obj, err)`
+  - [ ] `verb_code/4 (float, str, obj, list)`
+  - [ ] `verb_code/4 (float, str, obj, map)`
+  - [ ] `verb_code/4 (float, str, str, int)`
+  - [ ] `verb_code/4 (float, str, str, float)`
+  - [ ] `verb_code/4 (float, str, str, obj)`
+  - [ ] `verb_code/4 (float, str, str, str)`
+  - [ ] `verb_code/4 (float, str, str, err)`
+  - [ ] `verb_code/4 (float, str, str, list)`
+  - [ ] `verb_code/4 (float, str, str, map)`
+  - [ ] `verb_code/4 (float, str, err, int)`
+  - [ ] `verb_code/4 (float, str, err, float)`
+  - [ ] `verb_code/4 (float, str, err, obj)`
+  - [ ] `verb_code/4 (float, str, err, str)`
+  - [ ] `verb_code/4 (float, str, err, err)`
+  - [ ] `verb_code/4 (float, str, err, list)`
+  - [ ] `verb_code/4 (float, str, err, map)`
+  - [ ] `verb_code/4 (float, str, list, int)`
+  - [ ] `verb_code/4 (float, str, list, float)`
+  - [ ] `verb_code/4 (float, str, list, obj)`
+  - [ ] `verb_code/4 (float, str, list, str)`
+  - [ ] `verb_code/4 (float, str, list, err)`
+  - [ ] `verb_code/4 (float, str, list, list)`
+  - [ ] `verb_code/4 (float, str, list, map)`
+  - [ ] `verb_code/4 (float, str, map, int)`
+  - [ ] `verb_code/4 (float, str, map, float)`
+  - [ ] `verb_code/4 (float, str, map, obj)`
+  - [ ] `verb_code/4 (float, str, map, str)`
+  - [ ] `verb_code/4 (float, str, map, err)`
+  - [ ] `verb_code/4 (float, str, map, list)`
+  - [ ] `verb_code/4 (float, str, map, map)`
+  - [ ] `verb_code/4 (float, err, int, int)`
+  - [ ] `verb_code/4 (float, err, int, float)`
+  - [ ] `verb_code/4 (float, err, int, obj)`
+  - [ ] `verb_code/4 (float, err, int, str)`
+  - [ ] `verb_code/4 (float, err, int, err)`
+  - [ ] `verb_code/4 (float, err, int, list)`
+  - [ ] `verb_code/4 (float, err, int, map)`
+  - [ ] `verb_code/4 (float, err, float, int)`
+  - [ ] `verb_code/4 (float, err, float, float)`
+  - [ ] `verb_code/4 (float, err, float, obj)`
+  - [ ] `verb_code/4 (float, err, float, str)`
+  - [ ] `verb_code/4 (float, err, float, err)`
+  - [ ] `verb_code/4 (float, err, float, list)`
+  - [ ] `verb_code/4 (float, err, float, map)`
+  - [ ] `verb_code/4 (float, err, obj, int)`
+  - [ ] `verb_code/4 (float, err, obj, float)`
+  - [ ] `verb_code/4 (float, err, obj, obj)`
+  - [ ] `verb_code/4 (float, err, obj, str)`
+  - [ ] `verb_code/4 (float, err, obj, err)`
+  - [ ] `verb_code/4 (float, err, obj, list)`
+  - [ ] `verb_code/4 (float, err, obj, map)`
+  - [ ] `verb_code/4 (float, err, str, int)`
+  - [ ] `verb_code/4 (float, err, str, float)`
+  - [ ] `verb_code/4 (float, err, str, obj)`
+  - [ ] `verb_code/4 (float, err, str, str)`
+  - [ ] `verb_code/4 (float, err, str, err)`
+  - [ ] `verb_code/4 (float, err, str, list)`
+  - [ ] `verb_code/4 (float, err, str, map)`
+  - [ ] `verb_code/4 (float, err, err, int)`
+  - [ ] `verb_code/4 (float, err, err, float)`
+  - [ ] `verb_code/4 (float, err, err, obj)`
+  - [ ] `verb_code/4 (float, err, err, str)`
+  - [ ] `verb_code/4 (float, err, err, err)`
+  - [ ] `verb_code/4 (float, err, err, list)`
+  - [ ] `verb_code/4 (float, err, err, map)`
+  - [ ] `verb_code/4 (float, err, list, int)`
+  - [ ] `verb_code/4 (float, err, list, float)`
+  - [ ] `verb_code/4 (float, err, list, obj)`
+  - [ ] `verb_code/4 (float, err, list, str)`
+  - [ ] `verb_code/4 (float, err, list, err)`
+  - [ ] `verb_code/4 (float, err, list, list)`
+  - [ ] `verb_code/4 (float, err, list, map)`
+  - [ ] `verb_code/4 (float, err, map, int)`
+  - [ ] `verb_code/4 (float, err, map, float)`
+  - [ ] `verb_code/4 (float, err, map, obj)`
+  - [ ] `verb_code/4 (float, err, map, str)`
+  - [ ] `verb_code/4 (float, err, map, err)`
+  - [ ] `verb_code/4 (float, err, map, list)`
+  - [ ] `verb_code/4 (float, err, map, map)`
+  - [ ] `verb_code/4 (float, list, int, int)`
+  - [ ] `verb_code/4 (float, list, int, float)`
+  - [ ] `verb_code/4 (float, list, int, obj)`
+  - [ ] `verb_code/4 (float, list, int, str)`
+  - [ ] `verb_code/4 (float, list, int, err)`
+  - [ ] `verb_code/4 (float, list, int, list)`
+  - [ ] `verb_code/4 (float, list, int, map)`
+  - [ ] `verb_code/4 (float, list, float, int)`
+  - [ ] `verb_code/4 (float, list, float, float)`
+  - [ ] `verb_code/4 (float, list, float, obj)`
+  - [ ] `verb_code/4 (float, list, float, str)`
+  - [ ] `verb_code/4 (float, list, float, err)`
+  - [ ] `verb_code/4 (float, list, float, list)`
+  - [ ] `verb_code/4 (float, list, float, map)`
+  - [ ] `verb_code/4 (float, list, obj, int)`
+  - [ ] `verb_code/4 (float, list, obj, float)`
+  - [ ] `verb_code/4 (float, list, obj, obj)`
+  - [ ] `verb_code/4 (float, list, obj, str)`
+  - [ ] `verb_code/4 (float, list, obj, err)`
+  - [ ] `verb_code/4 (float, list, obj, list)`
+  - [ ] `verb_code/4 (float, list, obj, map)`
+  - [ ] `verb_code/4 (float, list, str, int)`
+  - [ ] `verb_code/4 (float, list, str, float)`
+  - [ ] `verb_code/4 (float, list, str, obj)`
+  - [ ] `verb_code/4 (float, list, str, str)`
+  - [ ] `verb_code/4 (float, list, str, err)`
+  - [ ] `verb_code/4 (float, list, str, list)`
+  - [ ] `verb_code/4 (float, list, str, map)`
+  - [ ] `verb_code/4 (float, list, err, int)`
+  - [ ] `verb_code/4 (float, list, err, float)`
+  - [ ] `verb_code/4 (float, list, err, obj)`
+  - [ ] `verb_code/4 (float, list, err, str)`
+  - [ ] `verb_code/4 (float, list, err, err)`
+  - [ ] `verb_code/4 (float, list, err, list)`
+  - [ ] `verb_code/4 (float, list, err, map)`
+  - [ ] `verb_code/4 (float, list, list, int)`
+  - [ ] `verb_code/4 (float, list, list, float)`
+  - [ ] `verb_code/4 (float, list, list, obj)`
+  - [ ] `verb_code/4 (float, list, list, str)`
+  - [ ] `verb_code/4 (float, list, list, err)`
+  - [ ] `verb_code/4 (float, list, list, list)`
+  - [ ] `verb_code/4 (float, list, list, map)`
+  - [ ] `verb_code/4 (float, list, map, int)`
+  - [ ] `verb_code/4 (float, list, map, float)`
+  - [ ] `verb_code/4 (float, list, map, obj)`
+  - [ ] `verb_code/4 (float, list, map, str)`
+  - [ ] `verb_code/4 (float, list, map, err)`
+  - [ ] `verb_code/4 (float, list, map, list)`
+  - [ ] `verb_code/4 (float, list, map, map)`
+  - [ ] `verb_code/4 (float, map, int, int)`
+  - [ ] `verb_code/4 (float, map, int, float)`
+  - [ ] `verb_code/4 (float, map, int, obj)`
+  - [ ] `verb_code/4 (float, map, int, str)`
+  - [ ] `verb_code/4 (float, map, int, err)`
+  - [ ] `verb_code/4 (float, map, int, list)`
+  - [ ] `verb_code/4 (float, map, int, map)`
+  - [ ] `verb_code/4 (float, map, float, int)`
+  - [ ] `verb_code/4 (float, map, float, float)`
+  - [ ] `verb_code/4 (float, map, float, obj)`
+  - [ ] `verb_code/4 (float, map, float, str)`
+  - [ ] `verb_code/4 (float, map, float, err)`
+  - [ ] `verb_code/4 (float, map, float, list)`
+  - [ ] `verb_code/4 (float, map, float, map)`
+  - [ ] `verb_code/4 (float, map, obj, int)`
+  - [ ] `verb_code/4 (float, map, obj, float)`
+  - [ ] `verb_code/4 (float, map, obj, obj)`
+  - [ ] `verb_code/4 (float, map, obj, str)`
+  - [ ] `verb_code/4 (float, map, obj, err)`
+  - [ ] `verb_code/4 (float, map, obj, list)`
+  - [ ] `verb_code/4 (float, map, obj, map)`
+  - [ ] `verb_code/4 (float, map, str, int)`
+  - [ ] `verb_code/4 (float, map, str, float)`
+  - [ ] `verb_code/4 (float, map, str, obj)`
+  - [ ] `verb_code/4 (float, map, str, str)`
+  - [ ] `verb_code/4 (float, map, str, err)`
+  - [ ] `verb_code/4 (float, map, str, list)`
+  - [ ] `verb_code/4 (float, map, str, map)`
+  - [ ] `verb_code/4 (float, map, err, int)`
+  - [ ] `verb_code/4 (float, map, err, float)`
+  - [ ] `verb_code/4 (float, map, err, obj)`
+  - [ ] `verb_code/4 (float, map, err, str)`
+  - [ ] `verb_code/4 (float, map, err, err)`
+  - [ ] `verb_code/4 (float, map, err, list)`
+  - [ ] `verb_code/4 (float, map, err, map)`
+  - [ ] `verb_code/4 (float, map, list, int)`
+  - [ ] `verb_code/4 (float, map, list, float)`
+  - [ ] `verb_code/4 (float, map, list, obj)`
+  - [ ] `verb_code/4 (float, map, list, str)`
+  - [ ] `verb_code/4 (float, map, list, err)`
+  - [ ] `verb_code/4 (float, map, list, list)`
+  - [ ] `verb_code/4 (float, map, list, map)`
+  - [ ] `verb_code/4 (float, map, map, int)`
+  - [ ] `verb_code/4 (float, map, map, float)`
+  - [ ] `verb_code/4 (float, map, map, obj)`
+  - [ ] `verb_code/4 (float, map, map, str)`
+  - [ ] `verb_code/4 (float, map, map, err)`
+  - [ ] `verb_code/4 (float, map, map, list)`
+  - [ ] `verb_code/4 (float, map, map, map)`
+  - [ ] `verb_code/4 (obj, int, int, int)`
+  - [ ] `verb_code/4 (obj, int, int, float)`
+  - [ ] `verb_code/4 (obj, int, int, obj)`
+  - [ ] `verb_code/4 (obj, int, int, str)`
+  - [ ] `verb_code/4 (obj, int, int, err)`
+  - [ ] `verb_code/4 (obj, int, int, list)`
+  - [ ] `verb_code/4 (obj, int, int, map)`
+  - [ ] `verb_code/4 (obj, int, float, int)`
+  - [ ] `verb_code/4 (obj, int, float, float)`
+  - [ ] `verb_code/4 (obj, int, float, obj)`
+  - [ ] `verb_code/4 (obj, int, float, str)`
+  - [ ] `verb_code/4 (obj, int, float, err)`
+  - [ ] `verb_code/4 (obj, int, float, list)`
+  - [ ] `verb_code/4 (obj, int, float, map)`
+  - [ ] `verb_code/4 (obj, int, obj, int)`
+  - [ ] `verb_code/4 (obj, int, obj, float)`
+  - [ ] `verb_code/4 (obj, int, obj, obj)`
+  - [ ] `verb_code/4 (obj, int, obj, str)`
+  - [ ] `verb_code/4 (obj, int, obj, err)`
+  - [ ] `verb_code/4 (obj, int, obj, list)`
+  - [ ] `verb_code/4 (obj, int, obj, map)`
+  - [ ] `verb_code/4 (obj, int, str, int)`
+  - [ ] `verb_code/4 (obj, int, str, float)`
+  - [ ] `verb_code/4 (obj, int, str, obj)`
+  - [ ] `verb_code/4 (obj, int, str, str)`
+  - [ ] `verb_code/4 (obj, int, str, err)`
+  - [ ] `verb_code/4 (obj, int, str, list)`
+  - [ ] `verb_code/4 (obj, int, str, map)`
+  - [ ] `verb_code/4 (obj, int, err, int)`
+  - [ ] `verb_code/4 (obj, int, err, float)`
+  - [ ] `verb_code/4 (obj, int, err, obj)`
+  - [ ] `verb_code/4 (obj, int, err, str)`
+  - [ ] `verb_code/4 (obj, int, err, err)`
+  - [ ] `verb_code/4 (obj, int, err, list)`
+  - [ ] `verb_code/4 (obj, int, err, map)`
+  - [ ] `verb_code/4 (obj, int, list, int)`
+  - [ ] `verb_code/4 (obj, int, list, float)`
+  - [ ] `verb_code/4 (obj, int, list, obj)`
+  - [ ] `verb_code/4 (obj, int, list, str)`
+  - [ ] `verb_code/4 (obj, int, list, err)`
+  - [ ] `verb_code/4 (obj, int, list, list)`
+  - [ ] `verb_code/4 (obj, int, list, map)`
+  - [ ] `verb_code/4 (obj, int, map, int)`
+  - [ ] `verb_code/4 (obj, int, map, float)`
+  - [ ] `verb_code/4 (obj, int, map, obj)`
+  - [ ] `verb_code/4 (obj, int, map, str)`
+  - [ ] `verb_code/4 (obj, int, map, err)`
+  - [ ] `verb_code/4 (obj, int, map, list)`
+  - [ ] `verb_code/4 (obj, int, map, map)`
+  - [ ] `verb_code/4 (obj, float, int, int)`
+  - [ ] `verb_code/4 (obj, float, int, float)`
+  - [ ] `verb_code/4 (obj, float, int, obj)`
+  - [ ] `verb_code/4 (obj, float, int, str)`
+  - [ ] `verb_code/4 (obj, float, int, err)`
+  - [ ] `verb_code/4 (obj, float, int, list)`
+  - [ ] `verb_code/4 (obj, float, int, map)`
+  - [ ] `verb_code/4 (obj, float, float, int)`
+  - [ ] `verb_code/4 (obj, float, float, float)`
+  - [ ] `verb_code/4 (obj, float, float, obj)`
+  - [ ] `verb_code/4 (obj, float, float, str)`
+  - [ ] `verb_code/4 (obj, float, float, err)`
+  - [ ] `verb_code/4 (obj, float, float, list)`
+  - [ ] `verb_code/4 (obj, float, float, map)`
+  - [ ] `verb_code/4 (obj, float, obj, int)`
+  - [ ] `verb_code/4 (obj, float, obj, float)`
+  - [ ] `verb_code/4 (obj, float, obj, obj)`
+  - [ ] `verb_code/4 (obj, float, obj, str)`
+  - [ ] `verb_code/4 (obj, float, obj, err)`
+  - [ ] `verb_code/4 (obj, float, obj, list)`
+  - [ ] `verb_code/4 (obj, float, obj, map)`
+  - [ ] `verb_code/4 (obj, float, str, int)`
+  - [ ] `verb_code/4 (obj, float, str, float)`
+  - [ ] `verb_code/4 (obj, float, str, obj)`
+  - [ ] `verb_code/4 (obj, float, str, str)`
+  - [ ] `verb_code/4 (obj, float, str, err)`
+  - [ ] `verb_code/4 (obj, float, str, list)`
+  - [ ] `verb_code/4 (obj, float, str, map)`
+  - [ ] `verb_code/4 (obj, float, err, int)`
+  - [ ] `verb_code/4 (obj, float, err, float)`
+  - [ ] `verb_code/4 (obj, float, err, obj)`
+  - [ ] `verb_code/4 (obj, float, err, str)`
+  - [ ] `verb_code/4 (obj, float, err, err)`
+  - [ ] `verb_code/4 (obj, float, err, list)`
+  - [ ] `verb_code/4 (obj, float, err, map)`
+  - [ ] `verb_code/4 (obj, float, list, int)`
+  - [ ] `verb_code/4 (obj, float, list, float)`
+  - [ ] `verb_code/4 (obj, float, list, obj)`
+  - [ ] `verb_code/4 (obj, float, list, str)`
+  - [ ] `verb_code/4 (obj, float, list, err)`
+  - [ ] `verb_code/4 (obj, float, list, list)`
+  - [ ] `verb_code/4 (obj, float, list, map)`
+  - [ ] `verb_code/4 (obj, float, map, int)`
+  - [ ] `verb_code/4 (obj, float, map, float)`
+  - [ ] `verb_code/4 (obj, float, map, obj)`
+  - [ ] `verb_code/4 (obj, float, map, str)`
+  - [ ] `verb_code/4 (obj, float, map, err)`
+  - [ ] `verb_code/4 (obj, float, map, list)`
+  - [ ] `verb_code/4 (obj, float, map, map)`
+  - [ ] `verb_code/4 (obj, obj, int, int)`
+  - [ ] `verb_code/4 (obj, obj, int, float)`
+  - [ ] `verb_code/4 (obj, obj, int, obj)`
+  - [ ] `verb_code/4 (obj, obj, int, str)`
+  - [ ] `verb_code/4 (obj, obj, int, err)`
+  - [ ] `verb_code/4 (obj, obj, int, list)`
+  - [ ] `verb_code/4 (obj, obj, int, map)`
+  - [ ] `verb_code/4 (obj, obj, float, int)`
+  - [ ] `verb_code/4 (obj, obj, float, float)`
+  - [ ] `verb_code/4 (obj, obj, float, obj)`
+  - [ ] `verb_code/4 (obj, obj, float, str)`
+  - [ ] `verb_code/4 (obj, obj, float, err)`
+  - [ ] `verb_code/4 (obj, obj, float, list)`
+  - [ ] `verb_code/4 (obj, obj, float, map)`
+  - [ ] `verb_code/4 (obj, obj, obj, int)`
+  - [ ] `verb_code/4 (obj, obj, obj, float)`
+  - [ ] `verb_code/4 (obj, obj, obj, obj)`
+  - [ ] `verb_code/4 (obj, obj, obj, str)`
+  - [ ] `verb_code/4 (obj, obj, obj, err)`
+  - [ ] `verb_code/4 (obj, obj, obj, list)`
+  - [ ] `verb_code/4 (obj, obj, obj, map)`
+  - [ ] `verb_code/4 (obj, obj, str, int)`
+  - [ ] `verb_code/4 (obj, obj, str, float)`
+  - [ ] `verb_code/4 (obj, obj, str, obj)`
+  - [ ] `verb_code/4 (obj, obj, str, str)`
+  - [ ] `verb_code/4 (obj, obj, str, err)`
+  - [ ] `verb_code/4 (obj, obj, str, list)`
+  - [ ] `verb_code/4 (obj, obj, str, map)`
+  - [ ] `verb_code/4 (obj, obj, err, int)`
+  - [ ] `verb_code/4 (obj, obj, err, float)`
+  - [ ] `verb_code/4 (obj, obj, err, obj)`
+  - [ ] `verb_code/4 (obj, obj, err, str)`
+  - [ ] `verb_code/4 (obj, obj, err, err)`
+  - [ ] `verb_code/4 (obj, obj, err, list)`
+  - [ ] `verb_code/4 (obj, obj, err, map)`
+  - [ ] `verb_code/4 (obj, obj, list, int)`
+  - [ ] `verb_code/4 (obj, obj, list, float)`
+  - [ ] `verb_code/4 (obj, obj, list, obj)`
+  - [ ] `verb_code/4 (obj, obj, list, str)`
+  - [ ] `verb_code/4 (obj, obj, list, err)`
+  - [ ] `verb_code/4 (obj, obj, list, list)`
+  - [ ] `verb_code/4 (obj, obj, list, map)`
+  - [ ] `verb_code/4 (obj, obj, map, int)`
+  - [ ] `verb_code/4 (obj, obj, map, float)`
+  - [ ] `verb_code/4 (obj, obj, map, obj)`
+  - [ ] `verb_code/4 (obj, obj, map, str)`
+  - [ ] `verb_code/4 (obj, obj, map, err)`
+  - [ ] `verb_code/4 (obj, obj, map, list)`
+  - [ ] `verb_code/4 (obj, obj, map, map)`
+  - [ ] `verb_code/4 (obj, str, int, int)`
+  - [ ] `verb_code/4 (obj, str, int, float)`
+  - [ ] `verb_code/4 (obj, str, int, obj)`
+  - [ ] `verb_code/4 (obj, str, int, str)`
+  - [ ] `verb_code/4 (obj, str, int, err)`
+  - [ ] `verb_code/4 (obj, str, int, list)`
+  - [ ] `verb_code/4 (obj, str, int, map)`
+  - [ ] `verb_code/4 (obj, str, float, int)`
+  - [ ] `verb_code/4 (obj, str, float, float)`
+  - [ ] `verb_code/4 (obj, str, float, obj)`
+  - [ ] `verb_code/4 (obj, str, float, str)`
+  - [ ] `verb_code/4 (obj, str, float, err)`
+  - [ ] `verb_code/4 (obj, str, float, list)`
+  - [ ] `verb_code/4 (obj, str, float, map)`
+  - [ ] `verb_code/4 (obj, str, obj, int)`
+  - [ ] `verb_code/4 (obj, str, obj, float)`
+  - [ ] `verb_code/4 (obj, str, obj, obj)`
+  - [ ] `verb_code/4 (obj, str, obj, str)`
+  - [ ] `verb_code/4 (obj, str, obj, err)`
+  - [ ] `verb_code/4 (obj, str, obj, list)`
+  - [ ] `verb_code/4 (obj, str, obj, map)`
+  - [ ] `verb_code/4 (obj, str, str, int)`
+  - [ ] `verb_code/4 (obj, str, str, float)`
+  - [ ] `verb_code/4 (obj, str, str, obj)`
+  - [ ] `verb_code/4 (obj, str, str, str)`
+  - [ ] `verb_code/4 (obj, str, str, err)`
+  - [ ] `verb_code/4 (obj, str, str, list)`
+  - [ ] `verb_code/4 (obj, str, str, map)`
+  - [ ] `verb_code/4 (obj, str, err, int)`
+  - [ ] `verb_code/4 (obj, str, err, float)`
+  - [ ] `verb_code/4 (obj, str, err, obj)`
+  - [ ] `verb_code/4 (obj, str, err, str)`
+  - [ ] `verb_code/4 (obj, str, err, err)`
+  - [ ] `verb_code/4 (obj, str, err, list)`
+  - [ ] `verb_code/4 (obj, str, err, map)`
+  - [ ] `verb_code/4 (obj, str, list, int)`
+  - [ ] `verb_code/4 (obj, str, list, float)`
+  - [ ] `verb_code/4 (obj, str, list, obj)`
+  - [ ] `verb_code/4 (obj, str, list, str)`
+  - [ ] `verb_code/4 (obj, str, list, err)`
+  - [ ] `verb_code/4 (obj, str, list, list)`
+  - [ ] `verb_code/4 (obj, str, list, map)`
+  - [ ] `verb_code/4 (obj, str, map, int)`
+  - [ ] `verb_code/4 (obj, str, map, float)`
+  - [ ] `verb_code/4 (obj, str, map, obj)`
+  - [ ] `verb_code/4 (obj, str, map, str)`
+  - [ ] `verb_code/4 (obj, str, map, err)`
+  - [ ] `verb_code/4 (obj, str, map, list)`
+  - [ ] `verb_code/4 (obj, str, map, map)`
+  - [ ] `verb_code/4 (obj, err, int, int)`
+  - [ ] `verb_code/4 (obj, err, int, float)`
+  - [ ] `verb_code/4 (obj, err, int, obj)`
+  - [ ] `verb_code/4 (obj, err, int, str)`
+  - [ ] `verb_code/4 (obj, err, int, err)`
+  - [ ] `verb_code/4 (obj, err, int, list)`
+  - [ ] `verb_code/4 (obj, err, int, map)`
+  - [ ] `verb_code/4 (obj, err, float, int)`
+  - [ ] `verb_code/4 (obj, err, float, float)`
+  - [ ] `verb_code/4 (obj, err, float, obj)`
+  - [ ] `verb_code/4 (obj, err, float, str)`
+  - [ ] `verb_code/4 (obj, err, float, err)`
+  - [ ] `verb_code/4 (obj, err, float, list)`
+  - [ ] `verb_code/4 (obj, err, float, map)`
+  - [ ] `verb_code/4 (obj, err, obj, int)`
+  - [ ] `verb_code/4 (obj, err, obj, float)`
+  - [ ] `verb_code/4 (obj, err, obj, obj)`
+  - [ ] `verb_code/4 (obj, err, obj, str)`
+  - [ ] `verb_code/4 (obj, err, obj, err)`
+  - [ ] `verb_code/4 (obj, err, obj, list)`
+  - [ ] `verb_code/4 (obj, err, obj, map)`
+  - [ ] `verb_code/4 (obj, err, str, int)`
+  - [ ] `verb_code/4 (obj, err, str, float)`
+  - [ ] `verb_code/4 (obj, err, str, obj)`
+  - [ ] `verb_code/4 (obj, err, str, str)`
+  - [ ] `verb_code/4 (obj, err, str, err)`
+  - [ ] `verb_code/4 (obj, err, str, list)`
+  - [ ] `verb_code/4 (obj, err, str, map)`
+  - [ ] `verb_code/4 (obj, err, err, int)`
+  - [ ] `verb_code/4 (obj, err, err, float)`
+  - [ ] `verb_code/4 (obj, err, err, obj)`
+  - [ ] `verb_code/4 (obj, err, err, str)`
+  - [ ] `verb_code/4 (obj, err, err, err)`
+  - [ ] `verb_code/4 (obj, err, err, list)`
+  - [ ] `verb_code/4 (obj, err, err, map)`
+  - [ ] `verb_code/4 (obj, err, list, int)`
+  - [ ] `verb_code/4 (obj, err, list, float)`
+  - [ ] `verb_code/4 (obj, err, list, obj)`
+  - [ ] `verb_code/4 (obj, err, list, str)`
+  - [ ] `verb_code/4 (obj, err, list, err)`
+  - [ ] `verb_code/4 (obj, err, list, list)`
+  - [ ] `verb_code/4 (obj, err, list, map)`
+  - [ ] `verb_code/4 (obj, err, map, int)`
+  - [ ] `verb_code/4 (obj, err, map, float)`
+  - [ ] `verb_code/4 (obj, err, map, obj)`
+  - [ ] `verb_code/4 (obj, err, map, str)`
+  - [ ] `verb_code/4 (obj, err, map, err)`
+  - [ ] `verb_code/4 (obj, err, map, list)`
+  - [ ] `verb_code/4 (obj, err, map, map)`
+  - [ ] `verb_code/4 (obj, list, int, int)`
+  - [ ] `verb_code/4 (obj, list, int, float)`
+  - [ ] `verb_code/4 (obj, list, int, obj)`
+  - [ ] `verb_code/4 (obj, list, int, str)`
+  - [ ] `verb_code/4 (obj, list, int, err)`
+  - [ ] `verb_code/4 (obj, list, int, list)`
+  - [ ] `verb_code/4 (obj, list, int, map)`
+  - [ ] `verb_code/4 (obj, list, float, int)`
+  - [ ] `verb_code/4 (obj, list, float, float)`
+  - [ ] `verb_code/4 (obj, list, float, obj)`
+  - [ ] `verb_code/4 (obj, list, float, str)`
+  - [ ] `verb_code/4 (obj, list, float, err)`
+  - [ ] `verb_code/4 (obj, list, float, list)`
+  - [ ] `verb_code/4 (obj, list, float, map)`
+  - [ ] `verb_code/4 (obj, list, obj, int)`
+  - [ ] `verb_code/4 (obj, list, obj, float)`
+  - [ ] `verb_code/4 (obj, list, obj, obj)`
+  - [ ] `verb_code/4 (obj, list, obj, str)`
+  - [ ] `verb_code/4 (obj, list, obj, err)`
+  - [ ] `verb_code/4 (obj, list, obj, list)`
+  - [ ] `verb_code/4 (obj, list, obj, map)`
+  - [ ] `verb_code/4 (obj, list, str, int)`
+  - [ ] `verb_code/4 (obj, list, str, float)`
+  - [ ] `verb_code/4 (obj, list, str, obj)`
+  - [ ] `verb_code/4 (obj, list, str, str)`
+  - [ ] `verb_code/4 (obj, list, str, err)`
+  - [ ] `verb_code/4 (obj, list, str, list)`
+  - [ ] `verb_code/4 (obj, list, str, map)`
+  - [ ] `verb_code/4 (obj, list, err, int)`
+  - [ ] `verb_code/4 (obj, list, err, float)`
+  - [ ] `verb_code/4 (obj, list, err, obj)`
+  - [ ] `verb_code/4 (obj, list, err, str)`
+  - [ ] `verb_code/4 (obj, list, err, err)`
+  - [ ] `verb_code/4 (obj, list, err, list)`
+  - [ ] `verb_code/4 (obj, list, err, map)`
+  - [ ] `verb_code/4 (obj, list, list, int)`
+  - [ ] `verb_code/4 (obj, list, list, float)`
+  - [ ] `verb_code/4 (obj, list, list, obj)`
+  - [ ] `verb_code/4 (obj, list, list, str)`
+  - [ ] `verb_code/4 (obj, list, list, err)`
+  - [ ] `verb_code/4 (obj, list, list, list)`
+  - [ ] `verb_code/4 (obj, list, list, map)`
+  - [ ] `verb_code/4 (obj, list, map, int)`
+  - [ ] `verb_code/4 (obj, list, map, float)`
+  - [ ] `verb_code/4 (obj, list, map, obj)`
+  - [ ] `verb_code/4 (obj, list, map, str)`
+  - [ ] `verb_code/4 (obj, list, map, err)`
+  - [ ] `verb_code/4 (obj, list, map, list)`
+  - [ ] `verb_code/4 (obj, list, map, map)`
+  - [ ] `verb_code/4 (obj, map, int, int)`
+  - [ ] `verb_code/4 (obj, map, int, float)`
+  - [ ] `verb_code/4 (obj, map, int, obj)`
+  - [ ] `verb_code/4 (obj, map, int, str)`
+  - [ ] `verb_code/4 (obj, map, int, err)`
+  - [ ] `verb_code/4 (obj, map, int, list)`
+  - [ ] `verb_code/4 (obj, map, int, map)`
+  - [ ] `verb_code/4 (obj, map, float, int)`
+  - [ ] `verb_code/4 (obj, map, float, float)`
+  - [ ] `verb_code/4 (obj, map, float, obj)`
+  - [ ] `verb_code/4 (obj, map, float, str)`
+  - [ ] `verb_code/4 (obj, map, float, err)`
+  - [ ] `verb_code/4 (obj, map, float, list)`
+  - [ ] `verb_code/4 (obj, map, float, map)`
+  - [ ] `verb_code/4 (obj, map, obj, int)`
+  - [ ] `verb_code/4 (obj, map, obj, float)`
+  - [ ] `verb_code/4 (obj, map, obj, obj)`
+  - [ ] `verb_code/4 (obj, map, obj, str)`
+  - [ ] `verb_code/4 (obj, map, obj, err)`
+  - [ ] `verb_code/4 (obj, map, obj, list)`
+  - [ ] `verb_code/4 (obj, map, obj, map)`
+  - [ ] `verb_code/4 (obj, map, str, int)`
+  - [ ] `verb_code/4 (obj, map, str, float)`
+  - [ ] `verb_code/4 (obj, map, str, obj)`
+  - [ ] `verb_code/4 (obj, map, str, str)`
+  - [ ] `verb_code/4 (obj, map, str, err)`
+  - [ ] `verb_code/4 (obj, map, str, list)`
+  - [ ] `verb_code/4 (obj, map, str, map)`
+  - [ ] `verb_code/4 (obj, map, err, int)`
+  - [ ] `verb_code/4 (obj, map, err, float)`
+  - [ ] `verb_code/4 (obj, map, err, obj)`
+  - [ ] `verb_code/4 (obj, map, err, str)`
+  - [ ] `verb_code/4 (obj, map, err, err)`
+  - [ ] `verb_code/4 (obj, map, err, list)`
+  - [ ] `verb_code/4 (obj, map, err, map)`
+  - [ ] `verb_code/4 (obj, map, list, int)`
+  - [ ] `verb_code/4 (obj, map, list, float)`
+  - [ ] `verb_code/4 (obj, map, list, obj)`
+  - [ ] `verb_code/4 (obj, map, list, str)`
+  - [ ] `verb_code/4 (obj, map, list, err)`
+  - [ ] `verb_code/4 (obj, map, list, list)`
+  - [ ] `verb_code/4 (obj, map, list, map)`
+  - [ ] `verb_code/4 (obj, map, map, int)`
+  - [ ] `verb_code/4 (obj, map, map, float)`
+  - [ ] `verb_code/4 (obj, map, map, obj)`
+  - [ ] `verb_code/4 (obj, map, map, str)`
+  - [ ] `verb_code/4 (obj, map, map, err)`
+  - [ ] `verb_code/4 (obj, map, map, list)`
+  - [ ] `verb_code/4 (obj, map, map, map)`
+  - [ ] `verb_code/4 (str, int, int, int)`
+  - [ ] `verb_code/4 (str, int, int, float)`
+  - [ ] `verb_code/4 (str, int, int, obj)`
+  - [ ] `verb_code/4 (str, int, int, str)`
+  - [ ] `verb_code/4 (str, int, int, err)`
+  - [ ] `verb_code/4 (str, int, int, list)`
+  - [ ] `verb_code/4 (str, int, int, map)`
+  - [ ] `verb_code/4 (str, int, float, int)`
+  - [ ] `verb_code/4 (str, int, float, float)`
+  - [ ] `verb_code/4 (str, int, float, obj)`
+  - [ ] `verb_code/4 (str, int, float, str)`
+  - [ ] `verb_code/4 (str, int, float, err)`
+  - [ ] `verb_code/4 (str, int, float, list)`
+  - [ ] `verb_code/4 (str, int, float, map)`
+  - [ ] `verb_code/4 (str, int, obj, int)`
+  - [ ] `verb_code/4 (str, int, obj, float)`
+  - [ ] `verb_code/4 (str, int, obj, obj)`
+  - [ ] `verb_code/4 (str, int, obj, str)`
+  - [ ] `verb_code/4 (str, int, obj, err)`
+  - [ ] `verb_code/4 (str, int, obj, list)`
+  - [ ] `verb_code/4 (str, int, obj, map)`
+  - [ ] `verb_code/4 (str, int, str, int)`
+  - [ ] `verb_code/4 (str, int, str, float)`
+  - [ ] `verb_code/4 (str, int, str, obj)`
+  - [ ] `verb_code/4 (str, int, str, str)`
+  - [ ] `verb_code/4 (str, int, str, err)`
+  - [ ] `verb_code/4 (str, int, str, list)`
+  - [ ] `verb_code/4 (str, int, str, map)`
+  - [ ] `verb_code/4 (str, int, err, int)`
+  - [ ] `verb_code/4 (str, int, err, float)`
+  - [ ] `verb_code/4 (str, int, err, obj)`
+  - [ ] `verb_code/4 (str, int, err, str)`
+  - [ ] `verb_code/4 (str, int, err, err)`
+  - [ ] `verb_code/4 (str, int, err, list)`
+  - [ ] `verb_code/4 (str, int, err, map)`
+  - [ ] `verb_code/4 (str, int, list, int)`
+  - [ ] `verb_code/4 (str, int, list, float)`
+  - [ ] `verb_code/4 (str, int, list, obj)`
+  - [ ] `verb_code/4 (str, int, list, str)`
+  - [ ] `verb_code/4 (str, int, list, err)`
+  - [ ] `verb_code/4 (str, int, list, list)`
+  - [ ] `verb_code/4 (str, int, list, map)`
+  - [ ] `verb_code/4 (str, int, map, int)`
+  - [ ] `verb_code/4 (str, int, map, float)`
+  - [ ] `verb_code/4 (str, int, map, obj)`
+  - [ ] `verb_code/4 (str, int, map, str)`
+  - [ ] `verb_code/4 (str, int, map, err)`
+  - [ ] `verb_code/4 (str, int, map, list)`
+  - [ ] `verb_code/4 (str, int, map, map)`
+  - [ ] `verb_code/4 (str, float, int, int)`
+  - [ ] `verb_code/4 (str, float, int, float)`
+  - [ ] `verb_code/4 (str, float, int, obj)`
+  - [ ] `verb_code/4 (str, float, int, str)`
+  - [ ] `verb_code/4 (str, float, int, err)`
+  - [ ] `verb_code/4 (str, float, int, list)`
+  - [ ] `verb_code/4 (str, float, int, map)`
+  - [ ] `verb_code/4 (str, float, float, int)`
+  - [ ] `verb_code/4 (str, float, float, float)`
+  - [ ] `verb_code/4 (str, float, float, obj)`
+  - [ ] `verb_code/4 (str, float, float, str)`
+  - [ ] `verb_code/4 (str, float, float, err)`
+  - [ ] `verb_code/4 (str, float, float, list)`
+  - [ ] `verb_code/4 (str, float, float, map)`
+  - [ ] `verb_code/4 (str, float, obj, int)`
+  - [ ] `verb_code/4 (str, float, obj, float)`
+  - [ ] `verb_code/4 (str, float, obj, obj)`
+  - [ ] `verb_code/4 (str, float, obj, str)`
+  - [ ] `verb_code/4 (str, float, obj, err)`
+  - [ ] `verb_code/4 (str, float, obj, list)`
+  - [ ] `verb_code/4 (str, float, obj, map)`
+  - [ ] `verb_code/4 (str, float, str, int)`
+  - [ ] `verb_code/4 (str, float, str, float)`
+  - [ ] `verb_code/4 (str, float, str, obj)`
+  - [ ] `verb_code/4 (str, float, str, str)`
+  - [ ] `verb_code/4 (str, float, str, err)`
+  - [ ] `verb_code/4 (str, float, str, list)`
+  - [ ] `verb_code/4 (str, float, str, map)`
+  - [ ] `verb_code/4 (str, float, err, int)`
+  - [ ] `verb_code/4 (str, float, err, float)`
+  - [ ] `verb_code/4 (str, float, err, obj)`
+  - [ ] `verb_code/4 (str, float, err, str)`
+  - [ ] `verb_code/4 (str, float, err, err)`
+  - [ ] `verb_code/4 (str, float, err, list)`
+  - [ ] `verb_code/4 (str, float, err, map)`
+  - [ ] `verb_code/4 (str, float, list, int)`
+  - [ ] `verb_code/4 (str, float, list, float)`
+  - [ ] `verb_code/4 (str, float, list, obj)`
+  - [ ] `verb_code/4 (str, float, list, str)`
+  - [ ] `verb_code/4 (str, float, list, err)`
+  - [ ] `verb_code/4 (str, float, list, list)`
+  - [ ] `verb_code/4 (str, float, list, map)`
+  - [ ] `verb_code/4 (str, float, map, int)`
+  - [ ] `verb_code/4 (str, float, map, float)`
+  - [ ] `verb_code/4 (str, float, map, obj)`
+  - [ ] `verb_code/4 (str, float, map, str)`
+  - [ ] `verb_code/4 (str, float, map, err)`
+  - [ ] `verb_code/4 (str, float, map, list)`
+  - [ ] `verb_code/4 (str, float, map, map)`
+  - [ ] `verb_code/4 (str, obj, int, int)`
+  - [ ] `verb_code/4 (str, obj, int, float)`
+  - [ ] `verb_code/4 (str, obj, int, obj)`
+  - [ ] `verb_code/4 (str, obj, int, str)`
+  - [ ] `verb_code/4 (str, obj, int, err)`
+  - [ ] `verb_code/4 (str, obj, int, list)`
+  - [ ] `verb_code/4 (str, obj, int, map)`
+  - [ ] `verb_code/4 (str, obj, float, int)`
+  - [ ] `verb_code/4 (str, obj, float, float)`
+  - [ ] `verb_code/4 (str, obj, float, obj)`
+  - [ ] `verb_code/4 (str, obj, float, str)`
+  - [ ] `verb_code/4 (str, obj, float, err)`
+  - [ ] `verb_code/4 (str, obj, float, list)`
+  - [ ] `verb_code/4 (str, obj, float, map)`
+  - [ ] `verb_code/4 (str, obj, obj, int)`
+  - [ ] `verb_code/4 (str, obj, obj, float)`
+  - [ ] `verb_code/4 (str, obj, obj, obj)`
+  - [ ] `verb_code/4 (str, obj, obj, str)`
+  - [ ] `verb_code/4 (str, obj, obj, err)`
+  - [ ] `verb_code/4 (str, obj, obj, list)`
+  - [ ] `verb_code/4 (str, obj, obj, map)`
+  - [ ] `verb_code/4 (str, obj, str, int)`
+  - [ ] `verb_code/4 (str, obj, str, float)`
+  - [ ] `verb_code/4 (str, obj, str, obj)`
+  - [ ] `verb_code/4 (str, obj, str, str)`
+  - [ ] `verb_code/4 (str, obj, str, err)`
+  - [ ] `verb_code/4 (str, obj, str, list)`
+  - [ ] `verb_code/4 (str, obj, str, map)`
+  - [ ] `verb_code/4 (str, obj, err, int)`
+  - [ ] `verb_code/4 (str, obj, err, float)`
+  - [ ] `verb_code/4 (str, obj, err, obj)`
+  - [ ] `verb_code/4 (str, obj, err, str)`
+  - [ ] `verb_code/4 (str, obj, err, err)`
+  - [ ] `verb_code/4 (str, obj, err, list)`
+  - [ ] `verb_code/4 (str, obj, err, map)`
+  - [ ] `verb_code/4 (str, obj, list, int)`
+  - [ ] `verb_code/4 (str, obj, list, float)`
+  - [ ] `verb_code/4 (str, obj, list, obj)`
+  - [ ] `verb_code/4 (str, obj, list, str)`
+  - [ ] `verb_code/4 (str, obj, list, err)`
+  - [ ] `verb_code/4 (str, obj, list, list)`
+  - [ ] `verb_code/4 (str, obj, list, map)`
+  - [ ] `verb_code/4 (str, obj, map, int)`
+  - [ ] `verb_code/4 (str, obj, map, float)`
+  - [ ] `verb_code/4 (str, obj, map, obj)`
+  - [ ] `verb_code/4 (str, obj, map, str)`
+  - [ ] `verb_code/4 (str, obj, map, err)`
+  - [ ] `verb_code/4 (str, obj, map, list)`
+  - [ ] `verb_code/4 (str, obj, map, map)`
+  - [ ] `verb_code/4 (str, str, int, int)`
+  - [ ] `verb_code/4 (str, str, int, float)`
+  - [ ] `verb_code/4 (str, str, int, obj)`
+  - [ ] `verb_code/4 (str, str, int, str)`
+  - [ ] `verb_code/4 (str, str, int, err)`
+  - [ ] `verb_code/4 (str, str, int, list)`
+  - [ ] `verb_code/4 (str, str, int, map)`
+  - [ ] `verb_code/4 (str, str, float, int)`
+  - [ ] `verb_code/4 (str, str, float, float)`
+  - [ ] `verb_code/4 (str, str, float, obj)`
+  - [ ] `verb_code/4 (str, str, float, str)`
+  - [ ] `verb_code/4 (str, str, float, err)`
+  - [ ] `verb_code/4 (str, str, float, list)`
+  - [ ] `verb_code/4 (str, str, float, map)`
+  - [ ] `verb_code/4 (str, str, obj, int)`
+  - [ ] `verb_code/4 (str, str, obj, float)`
+  - [ ] `verb_code/4 (str, str, obj, obj)`
+  - [ ] `verb_code/4 (str, str, obj, str)`
+  - [ ] `verb_code/4 (str, str, obj, err)`
+  - [ ] `verb_code/4 (str, str, obj, list)`
+  - [ ] `verb_code/4 (str, str, obj, map)`
+  - [ ] `verb_code/4 (str, str, str, int)`
+  - [ ] `verb_code/4 (str, str, str, float)`
+  - [ ] `verb_code/4 (str, str, str, obj)`
+  - [ ] `verb_code/4 (str, str, str, str)`
+  - [ ] `verb_code/4 (str, str, str, err)`
+  - [ ] `verb_code/4 (str, str, str, list)`
+  - [ ] `verb_code/4 (str, str, str, map)`
+  - [ ] `verb_code/4 (str, str, err, int)`
+  - [ ] `verb_code/4 (str, str, err, float)`
+  - [ ] `verb_code/4 (str, str, err, obj)`
+  - [ ] `verb_code/4 (str, str, err, str)`
+  - [ ] `verb_code/4 (str, str, err, err)`
+  - [ ] `verb_code/4 (str, str, err, list)`
+  - [ ] `verb_code/4 (str, str, err, map)`
+  - [ ] `verb_code/4 (str, str, list, int)`
+  - [ ] `verb_code/4 (str, str, list, float)`
+  - [ ] `verb_code/4 (str, str, list, obj)`
+  - [ ] `verb_code/4 (str, str, list, str)`
+  - [ ] `verb_code/4 (str, str, list, err)`
+  - [ ] `verb_code/4 (str, str, list, list)`
+  - [ ] `verb_code/4 (str, str, list, map)`
+  - [ ] `verb_code/4 (str, str, map, int)`
+  - [ ] `verb_code/4 (str, str, map, float)`
+  - [ ] `verb_code/4 (str, str, map, obj)`
+  - [ ] `verb_code/4 (str, str, map, str)`
+  - [ ] `verb_code/4 (str, str, map, err)`
+  - [ ] `verb_code/4 (str, str, map, list)`
+  - [ ] `verb_code/4 (str, str, map, map)`
+  - [ ] `verb_code/4 (str, err, int, int)`
+  - [ ] `verb_code/4 (str, err, int, float)`
+  - [ ] `verb_code/4 (str, err, int, obj)`
+  - [ ] `verb_code/4 (str, err, int, str)`
+  - [ ] `verb_code/4 (str, err, int, err)`
+  - [ ] `verb_code/4 (str, err, int, list)`
+  - [ ] `verb_code/4 (str, err, int, map)`
+  - [ ] `verb_code/4 (str, err, float, int)`
+  - [ ] `verb_code/4 (str, err, float, float)`
+  - [ ] `verb_code/4 (str, err, float, obj)`
+  - [ ] `verb_code/4 (str, err, float, str)`
+  - [ ] `verb_code/4 (str, err, float, err)`
+  - [ ] `verb_code/4 (str, err, float, list)`
+  - [ ] `verb_code/4 (str, err, float, map)`
+  - [ ] `verb_code/4 (str, err, obj, int)`
+  - [ ] `verb_code/4 (str, err, obj, float)`
+  - [ ] `verb_code/4 (str, err, obj, obj)`
+  - [ ] `verb_code/4 (str, err, obj, str)`
+  - [ ] `verb_code/4 (str, err, obj, err)`
+  - [ ] `verb_code/4 (str, err, obj, list)`
+  - [ ] `verb_code/4 (str, err, obj, map)`
+  - [ ] `verb_code/4 (str, err, str, int)`
+  - [ ] `verb_code/4 (str, err, str, float)`
+  - [ ] `verb_code/4 (str, err, str, obj)`
+  - [ ] `verb_code/4 (str, err, str, str)`
+  - [ ] `verb_code/4 (str, err, str, err)`
+  - [ ] `verb_code/4 (str, err, str, list)`
+  - [ ] `verb_code/4 (str, err, str, map)`
+  - [ ] `verb_code/4 (str, err, err, int)`
+  - [ ] `verb_code/4 (str, err, err, float)`
+  - [ ] `verb_code/4 (str, err, err, obj)`
+  - [ ] `verb_code/4 (str, err, err, str)`
+  - [ ] `verb_code/4 (str, err, err, err)`
+  - [ ] `verb_code/4 (str, err, err, list)`
+  - [ ] `verb_code/4 (str, err, err, map)`
+  - [ ] `verb_code/4 (str, err, list, int)`
+  - [ ] `verb_code/4 (str, err, list, float)`
+  - [ ] `verb_code/4 (str, err, list, obj)`
+  - [ ] `verb_code/4 (str, err, list, str)`
+  - [ ] `verb_code/4 (str, err, list, err)`
+  - [ ] `verb_code/4 (str, err, list, list)`
+  - [ ] `verb_code/4 (str, err, list, map)`
+  - [ ] `verb_code/4 (str, err, map, int)`
+  - [ ] `verb_code/4 (str, err, map, float)`
+  - [ ] `verb_code/4 (str, err, map, obj)`
+  - [ ] `verb_code/4 (str, err, map, str)`
+  - [ ] `verb_code/4 (str, err, map, err)`
+  - [ ] `verb_code/4 (str, err, map, list)`
+  - [ ] `verb_code/4 (str, err, map, map)`
+  - [ ] `verb_code/4 (str, list, int, int)`
+  - [ ] `verb_code/4 (str, list, int, float)`
+  - [ ] `verb_code/4 (str, list, int, obj)`
+  - [ ] `verb_code/4 (str, list, int, str)`
+  - [ ] `verb_code/4 (str, list, int, err)`
+  - [ ] `verb_code/4 (str, list, int, list)`
+  - [ ] `verb_code/4 (str, list, int, map)`
+  - [ ] `verb_code/4 (str, list, float, int)`
+  - [ ] `verb_code/4 (str, list, float, float)`
+  - [ ] `verb_code/4 (str, list, float, obj)`
+  - [ ] `verb_code/4 (str, list, float, str)`
+  - [ ] `verb_code/4 (str, list, float, err)`
+  - [ ] `verb_code/4 (str, list, float, list)`
+  - [ ] `verb_code/4 (str, list, float, map)`
+  - [ ] `verb_code/4 (str, list, obj, int)`
+  - [ ] `verb_code/4 (str, list, obj, float)`
+  - [ ] `verb_code/4 (str, list, obj, obj)`
+  - [ ] `verb_code/4 (str, list, obj, str)`
+  - [ ] `verb_code/4 (str, list, obj, err)`
+  - [ ] `verb_code/4 (str, list, obj, list)`
+  - [ ] `verb_code/4 (str, list, obj, map)`
+  - [ ] `verb_code/4 (str, list, str, int)`
+  - [ ] `verb_code/4 (str, list, str, float)`
+  - [ ] `verb_code/4 (str, list, str, obj)`
+  - [ ] `verb_code/4 (str, list, str, str)`
+  - [ ] `verb_code/4 (str, list, str, err)`
+  - [ ] `verb_code/4 (str, list, str, list)`
+  - [ ] `verb_code/4 (str, list, str, map)`
+  - [ ] `verb_code/4 (str, list, err, int)`
+  - [ ] `verb_code/4 (str, list, err, float)`
+  - [ ] `verb_code/4 (str, list, err, obj)`
+  - [ ] `verb_code/4 (str, list, err, str)`
+  - [ ] `verb_code/4 (str, list, err, err)`
+  - [ ] `verb_code/4 (str, list, err, list)`
+  - [ ] `verb_code/4 (str, list, err, map)`
+  - [ ] `verb_code/4 (str, list, list, int)`
+  - [ ] `verb_code/4 (str, list, list, float)`
+  - [ ] `verb_code/4 (str, list, list, obj)`
+  - [ ] `verb_code/4 (str, list, list, str)`
+  - [ ] `verb_code/4 (str, list, list, err)`
+  - [ ] `verb_code/4 (str, list, list, list)`
+  - [ ] `verb_code/4 (str, list, list, map)`
+  - [ ] `verb_code/4 (str, list, map, int)`
+  - [ ] `verb_code/4 (str, list, map, float)`
+  - [ ] `verb_code/4 (str, list, map, obj)`
+  - [ ] `verb_code/4 (str, list, map, str)`
+  - [ ] `verb_code/4 (str, list, map, err)`
+  - [ ] `verb_code/4 (str, list, map, list)`
+  - [ ] `verb_code/4 (str, list, map, map)`
+  - [ ] `verb_code/4 (str, map, int, int)`
+  - [ ] `verb_code/4 (str, map, int, float)`
+  - [ ] `verb_code/4 (str, map, int, obj)`
+  - [ ] `verb_code/4 (str, map, int, str)`
+  - [ ] `verb_code/4 (str, map, int, err)`
+  - [ ] `verb_code/4 (str, map, int, list)`
+  - [ ] `verb_code/4 (str, map, int, map)`
+  - [ ] `verb_code/4 (str, map, float, int)`
+  - [ ] `verb_code/4 (str, map, float, float)`
+  - [ ] `verb_code/4 (str, map, float, obj)`
+  - [ ] `verb_code/4 (str, map, float, str)`
+  - [ ] `verb_code/4 (str, map, float, err)`
+  - [ ] `verb_code/4 (str, map, float, list)`
+  - [ ] `verb_code/4 (str, map, float, map)`
+  - [ ] `verb_code/4 (str, map, obj, int)`
+  - [ ] `verb_code/4 (str, map, obj, float)`
+  - [ ] `verb_code/4 (str, map, obj, obj)`
+  - [ ] `verb_code/4 (str, map, obj, str)`
+  - [ ] `verb_code/4 (str, map, obj, err)`
+  - [ ] `verb_code/4 (str, map, obj, list)`
+  - [ ] `verb_code/4 (str, map, obj, map)`
+  - [ ] `verb_code/4 (str, map, str, int)`
+  - [ ] `verb_code/4 (str, map, str, float)`
+  - [ ] `verb_code/4 (str, map, str, obj)`
+  - [ ] `verb_code/4 (str, map, str, str)`
+  - [ ] `verb_code/4 (str, map, str, err)`
+  - [ ] `verb_code/4 (str, map, str, list)`
+  - [ ] `verb_code/4 (str, map, str, map)`
+  - [ ] `verb_code/4 (str, map, err, int)`
+  - [ ] `verb_code/4 (str, map, err, float)`
+  - [ ] `verb_code/4 (str, map, err, obj)`
+  - [ ] `verb_code/4 (str, map, err, str)`
+  - [ ] `verb_code/4 (str, map, err, err)`
+  - [ ] `verb_code/4 (str, map, err, list)`
+  - [ ] `verb_code/4 (str, map, err, map)`
+  - [ ] `verb_code/4 (str, map, list, int)`
+  - [ ] `verb_code/4 (str, map, list, float)`
+  - [ ] `verb_code/4 (str, map, list, obj)`
+  - [ ] `verb_code/4 (str, map, list, str)`
+  - [ ] `verb_code/4 (str, map, list, err)`
+  - [ ] `verb_code/4 (str, map, list, list)`
+  - [ ] `verb_code/4 (str, map, list, map)`
+  - [ ] `verb_code/4 (str, map, map, int)`
+  - [ ] `verb_code/4 (str, map, map, float)`
+  - [ ] `verb_code/4 (str, map, map, obj)`
+  - [ ] `verb_code/4 (str, map, map, str)`
+  - [ ] `verb_code/4 (str, map, map, err)`
+  - [ ] `verb_code/4 (str, map, map, list)`
+  - [ ] `verb_code/4 (str, map, map, map)`
+  - [ ] `verb_code/4 (err, int, int, int)`
+  - [ ] `verb_code/4 (err, int, int, float)`
+  - [ ] `verb_code/4 (err, int, int, obj)`
+  - [ ] `verb_code/4 (err, int, int, str)`
+  - [ ] `verb_code/4 (err, int, int, err)`
+  - [ ] `verb_code/4 (err, int, int, list)`
+  - [ ] `verb_code/4 (err, int, int, map)`
+  - [ ] `verb_code/4 (err, int, float, int)`
+  - [ ] `verb_code/4 (err, int, float, float)`
+  - [ ] `verb_code/4 (err, int, float, obj)`
+  - [ ] `verb_code/4 (err, int, float, str)`
+  - [ ] `verb_code/4 (err, int, float, err)`
+  - [ ] `verb_code/4 (err, int, float, list)`
+  - [ ] `verb_code/4 (err, int, float, map)`
+  - [ ] `verb_code/4 (err, int, obj, int)`
+  - [ ] `verb_code/4 (err, int, obj, float)`
+  - [ ] `verb_code/4 (err, int, obj, obj)`
+  - [ ] `verb_code/4 (err, int, obj, str)`
+  - [ ] `verb_code/4 (err, int, obj, err)`
+  - [ ] `verb_code/4 (err, int, obj, list)`
+  - [ ] `verb_code/4 (err, int, obj, map)`
+  - [ ] `verb_code/4 (err, int, str, int)`
+  - [ ] `verb_code/4 (err, int, str, float)`
+  - [ ] `verb_code/4 (err, int, str, obj)`
+  - [ ] `verb_code/4 (err, int, str, str)`
+  - [ ] `verb_code/4 (err, int, str, err)`
+  - [ ] `verb_code/4 (err, int, str, list)`
+  - [ ] `verb_code/4 (err, int, str, map)`
+  - [ ] `verb_code/4 (err, int, err, int)`
+  - [ ] `verb_code/4 (err, int, err, float)`
+  - [ ] `verb_code/4 (err, int, err, obj)`
+  - [ ] `verb_code/4 (err, int, err, str)`
+  - [ ] `verb_code/4 (err, int, err, err)`
+  - [ ] `verb_code/4 (err, int, err, list)`
+  - [ ] `verb_code/4 (err, int, err, map)`
+  - [ ] `verb_code/4 (err, int, list, int)`
+  - [ ] `verb_code/4 (err, int, list, float)`
+  - [ ] `verb_code/4 (err, int, list, obj)`
+  - [ ] `verb_code/4 (err, int, list, str)`
+  - [ ] `verb_code/4 (err, int, list, err)`
+  - [ ] `verb_code/4 (err, int, list, list)`
+  - [ ] `verb_code/4 (err, int, list, map)`
+  - [ ] `verb_code/4 (err, int, map, int)`
+  - [ ] `verb_code/4 (err, int, map, float)`
+  - [ ] `verb_code/4 (err, int, map, obj)`
+  - [ ] `verb_code/4 (err, int, map, str)`
+  - [ ] `verb_code/4 (err, int, map, err)`
+  - [ ] `verb_code/4 (err, int, map, list)`
+  - [ ] `verb_code/4 (err, int, map, map)`
+  - [ ] `verb_code/4 (err, float, int, int)`
+  - [ ] `verb_code/4 (err, float, int, float)`
+  - [ ] `verb_code/4 (err, float, int, obj)`
+  - [ ] `verb_code/4 (err, float, int, str)`
+  - [ ] `verb_code/4 (err, float, int, err)`
+  - [ ] `verb_code/4 (err, float, int, list)`
+  - [ ] `verb_code/4 (err, float, int, map)`
+  - [ ] `verb_code/4 (err, float, float, int)`
+  - [ ] `verb_code/4 (err, float, float, float)`
+  - [ ] `verb_code/4 (err, float, float, obj)`
+  - [ ] `verb_code/4 (err, float, float, str)`
+  - [ ] `verb_code/4 (err, float, float, err)`
+  - [ ] `verb_code/4 (err, float, float, list)`
+  - [ ] `verb_code/4 (err, float, float, map)`
+  - [ ] `verb_code/4 (err, float, obj, int)`
+  - [ ] `verb_code/4 (err, float, obj, float)`
+  - [ ] `verb_code/4 (err, float, obj, obj)`
+  - [ ] `verb_code/4 (err, float, obj, str)`
+  - [ ] `verb_code/4 (err, float, obj, err)`
+  - [ ] `verb_code/4 (err, float, obj, list)`
+  - [ ] `verb_code/4 (err, float, obj, map)`
+  - [ ] `verb_code/4 (err, float, str, int)`
+  - [ ] `verb_code/4 (err, float, str, float)`
+  - [ ] `verb_code/4 (err, float, str, obj)`
+  - [ ] `verb_code/4 (err, float, str, str)`
+  - [ ] `verb_code/4 (err, float, str, err)`
+  - [ ] `verb_code/4 (err, float, str, list)`
+  - [ ] `verb_code/4 (err, float, str, map)`
+  - [ ] `verb_code/4 (err, float, err, int)`
+  - [ ] `verb_code/4 (err, float, err, float)`
+  - [ ] `verb_code/4 (err, float, err, obj)`
+  - [ ] `verb_code/4 (err, float, err, str)`
+  - [ ] `verb_code/4 (err, float, err, err)`
+  - [ ] `verb_code/4 (err, float, err, list)`
+  - [ ] `verb_code/4 (err, float, err, map)`
+  - [ ] `verb_code/4 (err, float, list, int)`
+  - [ ] `verb_code/4 (err, float, list, float)`
+  - [ ] `verb_code/4 (err, float, list, obj)`
+  - [ ] `verb_code/4 (err, float, list, str)`
+  - [ ] `verb_code/4 (err, float, list, err)`
+  - [ ] `verb_code/4 (err, float, list, list)`
+  - [ ] `verb_code/4 (err, float, list, map)`
+  - [ ] `verb_code/4 (err, float, map, int)`
+  - [ ] `verb_code/4 (err, float, map, float)`
+  - [ ] `verb_code/4 (err, float, map, obj)`
+  - [ ] `verb_code/4 (err, float, map, str)`
+  - [ ] `verb_code/4 (err, float, map, err)`
+  - [ ] `verb_code/4 (err, float, map, list)`
+  - [ ] `verb_code/4 (err, float, map, map)`
+  - [ ] `verb_code/4 (err, obj, int, int)`
+  - [ ] `verb_code/4 (err, obj, int, float)`
+  - [ ] `verb_code/4 (err, obj, int, obj)`
+  - [ ] `verb_code/4 (err, obj, int, str)`
+  - [ ] `verb_code/4 (err, obj, int, err)`
+  - [ ] `verb_code/4 (err, obj, int, list)`
+  - [ ] `verb_code/4 (err, obj, int, map)`
+  - [ ] `verb_code/4 (err, obj, float, int)`
+  - [ ] `verb_code/4 (err, obj, float, float)`
+  - [ ] `verb_code/4 (err, obj, float, obj)`
+  - [ ] `verb_code/4 (err, obj, float, str)`
+  - [ ] `verb_code/4 (err, obj, float, err)`
+  - [ ] `verb_code/4 (err, obj, float, list)`
+  - [ ] `verb_code/4 (err, obj, float, map)`
+  - [ ] `verb_code/4 (err, obj, obj, int)`
+  - [ ] `verb_code/4 (err, obj, obj, float)`
+  - [ ] `verb_code/4 (err, obj, obj, obj)`
+  - [ ] `verb_code/4 (err, obj, obj, str)`
+  - [ ] `verb_code/4 (err, obj, obj, err)`
+  - [ ] `verb_code/4 (err, obj, obj, list)`
+  - [ ] `verb_code/4 (err, obj, obj, map)`
+  - [ ] `verb_code/4 (err, obj, str, int)`
+  - [ ] `verb_code/4 (err, obj, str, float)`
+  - [ ] `verb_code/4 (err, obj, str, obj)`
+  - [ ] `verb_code/4 (err, obj, str, str)`
+  - [ ] `verb_code/4 (err, obj, str, err)`
+  - [ ] `verb_code/4 (err, obj, str, list)`
+  - [ ] `verb_code/4 (err, obj, str, map)`
+  - [ ] `verb_code/4 (err, obj, err, int)`
+  - [ ] `verb_code/4 (err, obj, err, float)`
+  - [ ] `verb_code/4 (err, obj, err, obj)`
+  - [ ] `verb_code/4 (err, obj, err, str)`
+  - [ ] `verb_code/4 (err, obj, err, err)`
+  - [ ] `verb_code/4 (err, obj, err, list)`
+  - [ ] `verb_code/4 (err, obj, err, map)`
+  - [ ] `verb_code/4 (err, obj, list, int)`
+  - [ ] `verb_code/4 (err, obj, list, float)`
+  - [ ] `verb_code/4 (err, obj, list, obj)`
+  - [ ] `verb_code/4 (err, obj, list, str)`
+  - [ ] `verb_code/4 (err, obj, list, err)`
+  - [ ] `verb_code/4 (err, obj, list, list)`
+  - [ ] `verb_code/4 (err, obj, list, map)`
+  - [ ] `verb_code/4 (err, obj, map, int)`
+  - [ ] `verb_code/4 (err, obj, map, float)`
+  - [ ] `verb_code/4 (err, obj, map, obj)`
+  - [ ] `verb_code/4 (err, obj, map, str)`
+  - [ ] `verb_code/4 (err, obj, map, err)`
+  - [ ] `verb_code/4 (err, obj, map, list)`
+  - [ ] `verb_code/4 (err, obj, map, map)`
+  - [ ] `verb_code/4 (err, str, int, int)`
+  - [ ] `verb_code/4 (err, str, int, float)`
+  - [ ] `verb_code/4 (err, str, int, obj)`
+  - [ ] `verb_code/4 (err, str, int, str)`
+  - [ ] `verb_code/4 (err, str, int, err)`
+  - [ ] `verb_code/4 (err, str, int, list)`
+  - [ ] `verb_code/4 (err, str, int, map)`
+  - [ ] `verb_code/4 (err, str, float, int)`
+  - [ ] `verb_code/4 (err, str, float, float)`
+  - [ ] `verb_code/4 (err, str, float, obj)`
+  - [ ] `verb_code/4 (err, str, float, str)`
+  - [ ] `verb_code/4 (err, str, float, err)`
+  - [ ] `verb_code/4 (err, str, float, list)`
+  - [ ] `verb_code/4 (err, str, float, map)`
+  - [ ] `verb_code/4 (err, str, obj, int)`
+  - [ ] `verb_code/4 (err, str, obj, float)`
+  - [ ] `verb_code/4 (err, str, obj, obj)`
+  - [ ] `verb_code/4 (err, str, obj, str)`
+  - [ ] `verb_code/4 (err, str, obj, err)`
+  - [ ] `verb_code/4 (err, str, obj, list)`
+  - [ ] `verb_code/4 (err, str, obj, map)`
+  - [ ] `verb_code/4 (err, str, str, int)`
+  - [ ] `verb_code/4 (err, str, str, float)`
+  - [ ] `verb_code/4 (err, str, str, obj)`
+  - [ ] `verb_code/4 (err, str, str, str)`
+  - [ ] `verb_code/4 (err, str, str, err)`
+  - [ ] `verb_code/4 (err, str, str, list)`
+  - [ ] `verb_code/4 (err, str, str, map)`
+  - [ ] `verb_code/4 (err, str, err, int)`
+  - [ ] `verb_code/4 (err, str, err, float)`
+  - [ ] `verb_code/4 (err, str, err, obj)`
+  - [ ] `verb_code/4 (err, str, err, str)`
+  - [ ] `verb_code/4 (err, str, err, err)`
+  - [ ] `verb_code/4 (err, str, err, list)`
+  - [ ] `verb_code/4 (err, str, err, map)`
+  - [ ] `verb_code/4 (err, str, list, int)`
+  - [ ] `verb_code/4 (err, str, list, float)`
+  - [ ] `verb_code/4 (err, str, list, obj)`
+  - [ ] `verb_code/4 (err, str, list, str)`
+  - [ ] `verb_code/4 (err, str, list, err)`
+  - [ ] `verb_code/4 (err, str, list, list)`
+  - [ ] `verb_code/4 (err, str, list, map)`
+  - [ ] `verb_code/4 (err, str, map, int)`
+  - [ ] `verb_code/4 (err, str, map, float)`
+  - [ ] `verb_code/4 (err, str, map, obj)`
+  - [ ] `verb_code/4 (err, str, map, str)`
+  - [ ] `verb_code/4 (err, str, map, err)`
+  - [ ] `verb_code/4 (err, str, map, list)`
+  - [ ] `verb_code/4 (err, str, map, map)`
+  - [ ] `verb_code/4 (err, err, int, int)`
+  - [ ] `verb_code/4 (err, err, int, float)`
+  - [ ] `verb_code/4 (err, err, int, obj)`
+  - [ ] `verb_code/4 (err, err, int, str)`
+  - [ ] `verb_code/4 (err, err, int, err)`
+  - [ ] `verb_code/4 (err, err, int, list)`
+  - [ ] `verb_code/4 (err, err, int, map)`
+  - [ ] `verb_code/4 (err, err, float, int)`
+  - [ ] `verb_code/4 (err, err, float, float)`
+  - [ ] `verb_code/4 (err, err, float, obj)`
+  - [ ] `verb_code/4 (err, err, float, str)`
+  - [ ] `verb_code/4 (err, err, float, err)`
+  - [ ] `verb_code/4 (err, err, float, list)`
+  - [ ] `verb_code/4 (err, err, float, map)`
+  - [ ] `verb_code/4 (err, err, obj, int)`
+  - [ ] `verb_code/4 (err, err, obj, float)`
+  - [ ] `verb_code/4 (err, err, obj, obj)`
+  - [ ] `verb_code/4 (err, err, obj, str)`
+  - [ ] `verb_code/4 (err, err, obj, err)`
+  - [ ] `verb_code/4 (err, err, obj, list)`
+  - [ ] `verb_code/4 (err, err, obj, map)`
+  - [ ] `verb_code/4 (err, err, str, int)`
+  - [ ] `verb_code/4 (err, err, str, float)`
+  - [ ] `verb_code/4 (err, err, str, obj)`
+  - [ ] `verb_code/4 (err, err, str, str)`
+  - [ ] `verb_code/4 (err, err, str, err)`
+  - [ ] `verb_code/4 (err, err, str, list)`
+  - [ ] `verb_code/4 (err, err, str, map)`
+  - [ ] `verb_code/4 (err, err, err, int)`
+  - [ ] `verb_code/4 (err, err, err, float)`
+  - [ ] `verb_code/4 (err, err, err, obj)`
+  - [ ] `verb_code/4 (err, err, err, str)`
+  - [ ] `verb_code/4 (err, err, err, err)`
+  - [ ] `verb_code/4 (err, err, err, list)`
+  - [ ] `verb_code/4 (err, err, err, map)`
+  - [ ] `verb_code/4 (err, err, list, int)`
+  - [ ] `verb_code/4 (err, err, list, float)`
+  - [ ] `verb_code/4 (err, err, list, obj)`
+  - [ ] `verb_code/4 (err, err, list, str)`
+  - [ ] `verb_code/4 (err, err, list, err)`
+  - [ ] `verb_code/4 (err, err, list, list)`
+  - [ ] `verb_code/4 (err, err, list, map)`
+  - [ ] `verb_code/4 (err, err, map, int)`
+  - [ ] `verb_code/4 (err, err, map, float)`
+  - [ ] `verb_code/4 (err, err, map, obj)`
+  - [ ] `verb_code/4 (err, err, map, str)`
+  - [ ] `verb_code/4 (err, err, map, err)`
+  - [ ] `verb_code/4 (err, err, map, list)`
+  - [ ] `verb_code/4 (err, err, map, map)`
+  - [ ] `verb_code/4 (err, list, int, int)`
+  - [ ] `verb_code/4 (err, list, int, float)`
+  - [ ] `verb_code/4 (err, list, int, obj)`
+  - [ ] `verb_code/4 (err, list, int, str)`
+  - [ ] `verb_code/4 (err, list, int, err)`
+  - [ ] `verb_code/4 (err, list, int, list)`
+  - [ ] `verb_code/4 (err, list, int, map)`
+  - [ ] `verb_code/4 (err, list, float, int)`
+  - [ ] `verb_code/4 (err, list, float, float)`
+  - [ ] `verb_code/4 (err, list, float, obj)`
+  - [ ] `verb_code/4 (err, list, float, str)`
+  - [ ] `verb_code/4 (err, list, float, err)`
+  - [ ] `verb_code/4 (err, list, float, list)`
+  - [ ] `verb_code/4 (err, list, float, map)`
+  - [ ] `verb_code/4 (err, list, obj, int)`
+  - [ ] `verb_code/4 (err, list, obj, float)`
+  - [ ] `verb_code/4 (err, list, obj, obj)`
+  - [ ] `verb_code/4 (err, list, obj, str)`
+  - [ ] `verb_code/4 (err, list, obj, err)`
+  - [ ] `verb_code/4 (err, list, obj, list)`
+  - [ ] `verb_code/4 (err, list, obj, map)`
+  - [ ] `verb_code/4 (err, list, str, int)`
+  - [ ] `verb_code/4 (err, list, str, float)`
+  - [ ] `verb_code/4 (err, list, str, obj)`
+  - [ ] `verb_code/4 (err, list, str, str)`
+  - [ ] `verb_code/4 (err, list, str, err)`
+  - [ ] `verb_code/4 (err, list, str, list)`
+  - [ ] `verb_code/4 (err, list, str, map)`
+  - [ ] `verb_code/4 (err, list, err, int)`
+  - [ ] `verb_code/4 (err, list, err, float)`
+  - [ ] `verb_code/4 (err, list, err, obj)`
+  - [ ] `verb_code/4 (err, list, err, str)`
+  - [ ] `verb_code/4 (err, list, err, err)`
+  - [ ] `verb_code/4 (err, list, err, list)`
+  - [ ] `verb_code/4 (err, list, err, map)`
+  - [ ] `verb_code/4 (err, list, list, int)`
+  - [ ] `verb_code/4 (err, list, list, float)`
+  - [ ] `verb_code/4 (err, list, list, obj)`
+  - [ ] `verb_code/4 (err, list, list, str)`
+  - [ ] `verb_code/4 (err, list, list, err)`
+  - [ ] `verb_code/4 (err, list, list, list)`
+  - [ ] `verb_code/4 (err, list, list, map)`
+  - [ ] `verb_code/4 (err, list, map, int)`
+  - [ ] `verb_code/4 (err, list, map, float)`
+  - [ ] `verb_code/4 (err, list, map, obj)`
+  - [ ] `verb_code/4 (err, list, map, str)`
+  - [ ] `verb_code/4 (err, list, map, err)`
+  - [ ] `verb_code/4 (err, list, map, list)`
+  - [ ] `verb_code/4 (err, list, map, map)`
+  - [ ] `verb_code/4 (err, map, int, int)`
+  - [ ] `verb_code/4 (err, map, int, float)`
+  - [ ] `verb_code/4 (err, map, int, obj)`
+  - [ ] `verb_code/4 (err, map, int, str)`
+  - [ ] `verb_code/4 (err, map, int, err)`
+  - [ ] `verb_code/4 (err, map, int, list)`
+  - [ ] `verb_code/4 (err, map, int, map)`
+  - [ ] `verb_code/4 (err, map, float, int)`
+  - [ ] `verb_code/4 (err, map, float, float)`
+  - [ ] `verb_code/4 (err, map, float, obj)`
+  - [ ] `verb_code/4 (err, map, float, str)`
+  - [ ] `verb_code/4 (err, map, float, err)`
+  - [ ] `verb_code/4 (err, map, float, list)`
+  - [ ] `verb_code/4 (err, map, float, map)`
+  - [ ] `verb_code/4 (err, map, obj, int)`
+  - [ ] `verb_code/4 (err, map, obj, float)`
+  - [ ] `verb_code/4 (err, map, obj, obj)`
+  - [ ] `verb_code/4 (err, map, obj, str)`
+  - [ ] `verb_code/4 (err, map, obj, err)`
+  - [ ] `verb_code/4 (err, map, obj, list)`
+  - [ ] `verb_code/4 (err, map, obj, map)`
+  - [ ] `verb_code/4 (err, map, str, int)`
+  - [ ] `verb_code/4 (err, map, str, float)`
+  - [ ] `verb_code/4 (err, map, str, obj)`
+  - [ ] `verb_code/4 (err, map, str, str)`
+  - [ ] `verb_code/4 (err, map, str, err)`
+  - [ ] `verb_code/4 (err, map, str, list)`
+  - [ ] `verb_code/4 (err, map, str, map)`
+  - [ ] `verb_code/4 (err, map, err, int)`
+  - [ ] `verb_code/4 (err, map, err, float)`
+  - [ ] `verb_code/4 (err, map, err, obj)`
+  - [ ] `verb_code/4 (err, map, err, str)`
+  - [ ] `verb_code/4 (err, map, err, err)`
+  - [ ] `verb_code/4 (err, map, err, list)`
+  - [ ] `verb_code/4 (err, map, err, map)`
+  - [ ] `verb_code/4 (err, map, list, int)`
+  - [ ] `verb_code/4 (err, map, list, float)`
+  - [ ] `verb_code/4 (err, map, list, obj)`
+  - [ ] `verb_code/4 (err, map, list, str)`
+  - [ ] `verb_code/4 (err, map, list, err)`
+  - [ ] `verb_code/4 (err, map, list, list)`
+  - [ ] `verb_code/4 (err, map, list, map)`
+  - [ ] `verb_code/4 (err, map, map, int)`
+  - [ ] `verb_code/4 (err, map, map, float)`
+  - [ ] `verb_code/4 (err, map, map, obj)`
+  - [ ] `verb_code/4 (err, map, map, str)`
+  - [ ] `verb_code/4 (err, map, map, err)`
+  - [ ] `verb_code/4 (err, map, map, list)`
+  - [ ] `verb_code/4 (err, map, map, map)`
+  - [ ] `verb_code/4 (list, int, int, int)`
+  - [ ] `verb_code/4 (list, int, int, float)`
+  - [ ] `verb_code/4 (list, int, int, obj)`
+  - [ ] `verb_code/4 (list, int, int, str)`
+  - [ ] `verb_code/4 (list, int, int, err)`
+  - [ ] `verb_code/4 (list, int, int, list)`
+  - [ ] `verb_code/4 (list, int, int, map)`
+  - [ ] `verb_code/4 (list, int, float, int)`
+  - [ ] `verb_code/4 (list, int, float, float)`
+  - [ ] `verb_code/4 (list, int, float, obj)`
+  - [ ] `verb_code/4 (list, int, float, str)`
+  - [ ] `verb_code/4 (list, int, float, err)`
+  - [ ] `verb_code/4 (list, int, float, list)`
+  - [ ] `verb_code/4 (list, int, float, map)`
+  - [ ] `verb_code/4 (list, int, obj, int)`
+  - [ ] `verb_code/4 (list, int, obj, float)`
+  - [ ] `verb_code/4 (list, int, obj, obj)`
+  - [ ] `verb_code/4 (list, int, obj, str)`
+  - [ ] `verb_code/4 (list, int, obj, err)`
+  - [ ] `verb_code/4 (list, int, obj, list)`
+  - [ ] `verb_code/4 (list, int, obj, map)`
+  - [ ] `verb_code/4 (list, int, str, int)`
+  - [ ] `verb_code/4 (list, int, str, float)`
+  - [ ] `verb_code/4 (list, int, str, obj)`
+  - [ ] `verb_code/4 (list, int, str, str)`
+  - [ ] `verb_code/4 (list, int, str, err)`
+  - [ ] `verb_code/4 (list, int, str, list)`
+  - [ ] `verb_code/4 (list, int, str, map)`
+  - [ ] `verb_code/4 (list, int, err, int)`
+  - [ ] `verb_code/4 (list, int, err, float)`
+  - [ ] `verb_code/4 (list, int, err, obj)`
+  - [ ] `verb_code/4 (list, int, err, str)`
+  - [ ] `verb_code/4 (list, int, err, err)`
+  - [ ] `verb_code/4 (list, int, err, list)`
+  - [ ] `verb_code/4 (list, int, err, map)`
+  - [ ] `verb_code/4 (list, int, list, int)`
+  - [ ] `verb_code/4 (list, int, list, float)`
+  - [ ] `verb_code/4 (list, int, list, obj)`
+  - [ ] `verb_code/4 (list, int, list, str)`
+  - [ ] `verb_code/4 (list, int, list, err)`
+  - [ ] `verb_code/4 (list, int, list, list)`
+  - [ ] `verb_code/4 (list, int, list, map)`
+  - [ ] `verb_code/4 (list, int, map, int)`
+  - [ ] `verb_code/4 (list, int, map, float)`
+  - [ ] `verb_code/4 (list, int, map, obj)`
+  - [ ] `verb_code/4 (list, int, map, str)`
+  - [ ] `verb_code/4 (list, int, map, err)`
+  - [ ] `verb_code/4 (list, int, map, list)`
+  - [ ] `verb_code/4 (list, int, map, map)`
+  - [ ] `verb_code/4 (list, float, int, int)`
+  - [ ] `verb_code/4 (list, float, int, float)`
+  - [ ] `verb_code/4 (list, float, int, obj)`
+  - [ ] `verb_code/4 (list, float, int, str)`
+  - [ ] `verb_code/4 (list, float, int, err)`
+  - [ ] `verb_code/4 (list, float, int, list)`
+  - [ ] `verb_code/4 (list, float, int, map)`
+  - [ ] `verb_code/4 (list, float, float, int)`
+  - [ ] `verb_code/4 (list, float, float, float)`
+  - [ ] `verb_code/4 (list, float, float, obj)`
+  - [ ] `verb_code/4 (list, float, float, str)`
+  - [ ] `verb_code/4 (list, float, float, err)`
+  - [ ] `verb_code/4 (list, float, float, list)`
+  - [ ] `verb_code/4 (list, float, float, map)`
+  - [ ] `verb_code/4 (list, float, obj, int)`
+  - [ ] `verb_code/4 (list, float, obj, float)`
+  - [ ] `verb_code/4 (list, float, obj, obj)`
+  - [ ] `verb_code/4 (list, float, obj, str)`
+  - [ ] `verb_code/4 (list, float, obj, err)`
+  - [ ] `verb_code/4 (list, float, obj, list)`
+  - [ ] `verb_code/4 (list, float, obj, map)`
+  - [ ] `verb_code/4 (list, float, str, int)`
+  - [ ] `verb_code/4 (list, float, str, float)`
+  - [ ] `verb_code/4 (list, float, str, obj)`
+  - [ ] `verb_code/4 (list, float, str, str)`
+  - [ ] `verb_code/4 (list, float, str, err)`
+  - [ ] `verb_code/4 (list, float, str, list)`
+  - [ ] `verb_code/4 (list, float, str, map)`
+  - [ ] `verb_code/4 (list, float, err, int)`
+  - [ ] `verb_code/4 (list, float, err, float)`
+  - [ ] `verb_code/4 (list, float, err, obj)`
+  - [ ] `verb_code/4 (list, float, err, str)`
+  - [ ] `verb_code/4 (list, float, err, err)`
+  - [ ] `verb_code/4 (list, float, err, list)`
+  - [ ] `verb_code/4 (list, float, err, map)`
+  - [ ] `verb_code/4 (list, float, list, int)`
+  - [ ] `verb_code/4 (list, float, list, float)`
+  - [ ] `verb_code/4 (list, float, list, obj)`
+  - [ ] `verb_code/4 (list, float, list, str)`
+  - [ ] `verb_code/4 (list, float, list, err)`
+  - [ ] `verb_code/4 (list, float, list, list)`
+  - [ ] `verb_code/4 (list, float, list, map)`
+  - [ ] `verb_code/4 (list, float, map, int)`
+  - [ ] `verb_code/4 (list, float, map, float)`
+  - [ ] `verb_code/4 (list, float, map, obj)`
+  - [ ] `verb_code/4 (list, float, map, str)`
+  - [ ] `verb_code/4 (list, float, map, err)`
+  - [ ] `verb_code/4 (list, float, map, list)`
+  - [ ] `verb_code/4 (list, float, map, map)`
+  - [ ] `verb_code/4 (list, obj, int, int)`
+  - [ ] `verb_code/4 (list, obj, int, float)`
+  - [ ] `verb_code/4 (list, obj, int, obj)`
+  - [ ] `verb_code/4 (list, obj, int, str)`
+  - [ ] `verb_code/4 (list, obj, int, err)`
+  - [ ] `verb_code/4 (list, obj, int, list)`
+  - [ ] `verb_code/4 (list, obj, int, map)`
+  - [ ] `verb_code/4 (list, obj, float, int)`
+  - [ ] `verb_code/4 (list, obj, float, float)`
+  - [ ] `verb_code/4 (list, obj, float, obj)`
+  - [ ] `verb_code/4 (list, obj, float, str)`
+  - [ ] `verb_code/4 (list, obj, float, err)`
+  - [ ] `verb_code/4 (list, obj, float, list)`
+  - [ ] `verb_code/4 (list, obj, float, map)`
+  - [ ] `verb_code/4 (list, obj, obj, int)`
+  - [ ] `verb_code/4 (list, obj, obj, float)`
+  - [ ] `verb_code/4 (list, obj, obj, obj)`
+  - [ ] `verb_code/4 (list, obj, obj, str)`
+  - [ ] `verb_code/4 (list, obj, obj, err)`
+  - [ ] `verb_code/4 (list, obj, obj, list)`
+  - [ ] `verb_code/4 (list, obj, obj, map)`
+  - [ ] `verb_code/4 (list, obj, str, int)`
+  - [ ] `verb_code/4 (list, obj, str, float)`
+  - [ ] `verb_code/4 (list, obj, str, obj)`
+  - [ ] `verb_code/4 (list, obj, str, str)`
+  - [ ] `verb_code/4 (list, obj, str, err)`
+  - [ ] `verb_code/4 (list, obj, str, list)`
+  - [ ] `verb_code/4 (list, obj, str, map)`
+  - [ ] `verb_code/4 (list, obj, err, int)`
+  - [ ] `verb_code/4 (list, obj, err, float)`
+  - [ ] `verb_code/4 (list, obj, err, obj)`
+  - [ ] `verb_code/4 (list, obj, err, str)`
+  - [ ] `verb_code/4 (list, obj, err, err)`
+  - [ ] `verb_code/4 (list, obj, err, list)`
+  - [ ] `verb_code/4 (list, obj, err, map)`
+  - [ ] `verb_code/4 (list, obj, list, int)`
+  - [ ] `verb_code/4 (list, obj, list, float)`
+  - [ ] `verb_code/4 (list, obj, list, obj)`
+  - [ ] `verb_code/4 (list, obj, list, str)`
+  - [ ] `verb_code/4 (list, obj, list, err)`
+  - [ ] `verb_code/4 (list, obj, list, list)`
+  - [ ] `verb_code/4 (list, obj, list, map)`
+  - [ ] `verb_code/4 (list, obj, map, int)`
+  - [ ] `verb_code/4 (list, obj, map, float)`
+  - [ ] `verb_code/4 (list, obj, map, obj)`
+  - [ ] `verb_code/4 (list, obj, map, str)`
+  - [ ] `verb_code/4 (list, obj, map, err)`
+  - [ ] `verb_code/4 (list, obj, map, list)`
+  - [ ] `verb_code/4 (list, obj, map, map)`
+  - [ ] `verb_code/4 (list, str, int, int)`
+  - [ ] `verb_code/4 (list, str, int, float)`
+  - [ ] `verb_code/4 (list, str, int, obj)`
+  - [ ] `verb_code/4 (list, str, int, str)`
+  - [ ] `verb_code/4 (list, str, int, err)`
+  - [ ] `verb_code/4 (list, str, int, list)`
+  - [ ] `verb_code/4 (list, str, int, map)`
+  - [ ] `verb_code/4 (list, str, float, int)`
+  - [ ] `verb_code/4 (list, str, float, float)`
+  - [ ] `verb_code/4 (list, str, float, obj)`
+  - [ ] `verb_code/4 (list, str, float, str)`
+  - [ ] `verb_code/4 (list, str, float, err)`
+  - [ ] `verb_code/4 (list, str, float, list)`
+  - [ ] `verb_code/4 (list, str, float, map)`
+  - [ ] `verb_code/4 (list, str, obj, int)`
+  - [ ] `verb_code/4 (list, str, obj, float)`
+  - [ ] `verb_code/4 (list, str, obj, obj)`
+  - [ ] `verb_code/4 (list, str, obj, str)`
+  - [ ] `verb_code/4 (list, str, obj, err)`
+  - [ ] `verb_code/4 (list, str, obj, list)`
+  - [ ] `verb_code/4 (list, str, obj, map)`
+  - [ ] `verb_code/4 (list, str, str, int)`
+  - [ ] `verb_code/4 (list, str, str, float)`
+  - [ ] `verb_code/4 (list, str, str, obj)`
+  - [ ] `verb_code/4 (list, str, str, str)`
+  - [ ] `verb_code/4 (list, str, str, err)`
+  - [ ] `verb_code/4 (list, str, str, list)`
+  - [ ] `verb_code/4 (list, str, str, map)`
+  - [ ] `verb_code/4 (list, str, err, int)`
+  - [ ] `verb_code/4 (list, str, err, float)`
+  - [ ] `verb_code/4 (list, str, err, obj)`
+  - [ ] `verb_code/4 (list, str, err, str)`
+  - [ ] `verb_code/4 (list, str, err, err)`
+  - [ ] `verb_code/4 (list, str, err, list)`
+  - [ ] `verb_code/4 (list, str, err, map)`
+  - [ ] `verb_code/4 (list, str, list, int)`
+  - [ ] `verb_code/4 (list, str, list, float)`
+  - [ ] `verb_code/4 (list, str, list, obj)`
+  - [ ] `verb_code/4 (list, str, list, str)`
+  - [ ] `verb_code/4 (list, str, list, err)`
+  - [ ] `verb_code/4 (list, str, list, list)`
+  - [ ] `verb_code/4 (list, str, list, map)`
+  - [ ] `verb_code/4 (list, str, map, int)`
+  - [ ] `verb_code/4 (list, str, map, float)`
+  - [ ] `verb_code/4 (list, str, map, obj)`
+  - [ ] `verb_code/4 (list, str, map, str)`
+  - [ ] `verb_code/4 (list, str, map, err)`
+  - [ ] `verb_code/4 (list, str, map, list)`
+  - [ ] `verb_code/4 (list, str, map, map)`
+  - [ ] `verb_code/4 (list, err, int, int)`
+  - [ ] `verb_code/4 (list, err, int, float)`
+  - [ ] `verb_code/4 (list, err, int, obj)`
+  - [ ] `verb_code/4 (list, err, int, str)`
+  - [ ] `verb_code/4 (list, err, int, err)`
+  - [ ] `verb_code/4 (list, err, int, list)`
+  - [ ] `verb_code/4 (list, err, int, map)`
+  - [ ] `verb_code/4 (list, err, float, int)`
+  - [ ] `verb_code/4 (list, err, float, float)`
+  - [ ] `verb_code/4 (list, err, float, obj)`
+  - [ ] `verb_code/4 (list, err, float, str)`
+  - [ ] `verb_code/4 (list, err, float, err)`
+  - [ ] `verb_code/4 (list, err, float, list)`
+  - [ ] `verb_code/4 (list, err, float, map)`
+  - [ ] `verb_code/4 (list, err, obj, int)`
+  - [ ] `verb_code/4 (list, err, obj, float)`
+  - [ ] `verb_code/4 (list, err, obj, obj)`
+  - [ ] `verb_code/4 (list, err, obj, str)`
+  - [ ] `verb_code/4 (list, err, obj, err)`
+  - [ ] `verb_code/4 (list, err, obj, list)`
+  - [ ] `verb_code/4 (list, err, obj, map)`
+  - [ ] `verb_code/4 (list, err, str, int)`
+  - [ ] `verb_code/4 (list, err, str, float)`
+  - [ ] `verb_code/4 (list, err, str, obj)`
+  - [ ] `verb_code/4 (list, err, str, str)`
+  - [ ] `verb_code/4 (list, err, str, err)`
+  - [ ] `verb_code/4 (list, err, str, list)`
+  - [ ] `verb_code/4 (list, err, str, map)`
+  - [ ] `verb_code/4 (list, err, err, int)`
+  - [ ] `verb_code/4 (list, err, err, float)`
+  - [ ] `verb_code/4 (list, err, err, obj)`
+  - [ ] `verb_code/4 (list, err, err, str)`
+  - [ ] `verb_code/4 (list, err, err, err)`
+  - [ ] `verb_code/4 (list, err, err, list)`
+  - [ ] `verb_code/4 (list, err, err, map)`
+  - [ ] `verb_code/4 (list, err, list, int)`
+  - [ ] `verb_code/4 (list, err, list, float)`
+  - [ ] `verb_code/4 (list, err, list, obj)`
+  - [ ] `verb_code/4 (list, err, list, str)`
+  - [ ] `verb_code/4 (list, err, list, err)`
+  - [ ] `verb_code/4 (list, err, list, list)`
+  - [ ] `verb_code/4 (list, err, list, map)`
+  - [ ] `verb_code/4 (list, err, map, int)`
+  - [ ] `verb_code/4 (list, err, map, float)`
+  - [ ] `verb_code/4 (list, err, map, obj)`
+  - [ ] `verb_code/4 (list, err, map, str)`
+  - [ ] `verb_code/4 (list, err, map, err)`
+  - [ ] `verb_code/4 (list, err, map, list)`
+  - [ ] `verb_code/4 (list, err, map, map)`
+  - [ ] `verb_code/4 (list, list, int, int)`
+  - [ ] `verb_code/4 (list, list, int, float)`
+  - [ ] `verb_code/4 (list, list, int, obj)`
+  - [ ] `verb_code/4 (list, list, int, str)`
+  - [ ] `verb_code/4 (list, list, int, err)`
+  - [ ] `verb_code/4 (list, list, int, list)`
+  - [ ] `verb_code/4 (list, list, int, map)`
+  - [ ] `verb_code/4 (list, list, float, int)`
+  - [ ] `verb_code/4 (list, list, float, float)`
+  - [ ] `verb_code/4 (list, list, float, obj)`
+  - [ ] `verb_code/4 (list, list, float, str)`
+  - [ ] `verb_code/4 (list, list, float, err)`
+  - [ ] `verb_code/4 (list, list, float, list)`
+  - [ ] `verb_code/4 (list, list, float, map)`
+  - [ ] `verb_code/4 (list, list, obj, int)`
+  - [ ] `verb_code/4 (list, list, obj, float)`
+  - [ ] `verb_code/4 (list, list, obj, obj)`
+  - [ ] `verb_code/4 (list, list, obj, str)`
+  - [ ] `verb_code/4 (list, list, obj, err)`
+  - [ ] `verb_code/4 (list, list, obj, list)`
+  - [ ] `verb_code/4 (list, list, obj, map)`
+  - [ ] `verb_code/4 (list, list, str, int)`
+  - [ ] `verb_code/4 (list, list, str, float)`
+  - [ ] `verb_code/4 (list, list, str, obj)`
+  - [ ] `verb_code/4 (list, list, str, str)`
+  - [ ] `verb_code/4 (list, list, str, err)`
+  - [ ] `verb_code/4 (list, list, str, list)`
+  - [ ] `verb_code/4 (list, list, str, map)`
+  - [ ] `verb_code/4 (list, list, err, int)`
+  - [ ] `verb_code/4 (list, list, err, float)`
+  - [ ] `verb_code/4 (list, list, err, obj)`
+  - [ ] `verb_code/4 (list, list, err, str)`
+  - [ ] `verb_code/4 (list, list, err, err)`
+  - [ ] `verb_code/4 (list, list, err, list)`
+  - [ ] `verb_code/4 (list, list, err, map)`
+  - [ ] `verb_code/4 (list, list, list, int)`
+  - [ ] `verb_code/4 (list, list, list, float)`
+  - [ ] `verb_code/4 (list, list, list, obj)`
+  - [ ] `verb_code/4 (list, list, list, str)`
+  - [ ] `verb_code/4 (list, list, list, err)`
+  - [ ] `verb_code/4 (list, list, list, list)`
+  - [ ] `verb_code/4 (list, list, list, map)`
+  - [ ] `verb_code/4 (list, list, map, int)`
+  - [ ] `verb_code/4 (list, list, map, float)`
+  - [ ] `verb_code/4 (list, list, map, obj)`
+  - [ ] `verb_code/4 (list, list, map, str)`
+  - [ ] `verb_code/4 (list, list, map, err)`
+  - [ ] `verb_code/4 (list, list, map, list)`
+  - [ ] `verb_code/4 (list, list, map, map)`
+  - [ ] `verb_code/4 (list, map, int, int)`
+  - [ ] `verb_code/4 (list, map, int, float)`
+  - [ ] `verb_code/4 (list, map, int, obj)`
+  - [ ] `verb_code/4 (list, map, int, str)`
+  - [ ] `verb_code/4 (list, map, int, err)`
+  - [ ] `verb_code/4 (list, map, int, list)`
+  - [ ] `verb_code/4 (list, map, int, map)`
+  - [ ] `verb_code/4 (list, map, float, int)`
+  - [ ] `verb_code/4 (list, map, float, float)`
+  - [ ] `verb_code/4 (list, map, float, obj)`
+  - [ ] `verb_code/4 (list, map, float, str)`
+  - [ ] `verb_code/4 (list, map, float, err)`
+  - [ ] `verb_code/4 (list, map, float, list)`
+  - [ ] `verb_code/4 (list, map, float, map)`
+  - [ ] `verb_code/4 (list, map, obj, int)`
+  - [ ] `verb_code/4 (list, map, obj, float)`
+  - [ ] `verb_code/4 (list, map, obj, obj)`
+  - [ ] `verb_code/4 (list, map, obj, str)`
+  - [ ] `verb_code/4 (list, map, obj, err)`
+  - [ ] `verb_code/4 (list, map, obj, list)`
+  - [ ] `verb_code/4 (list, map, obj, map)`
+  - [ ] `verb_code/4 (list, map, str, int)`
+  - [ ] `verb_code/4 (list, map, str, float)`
+  - [ ] `verb_code/4 (list, map, str, obj)`
+  - [ ] `verb_code/4 (list, map, str, str)`
+  - [ ] `verb_code/4 (list, map, str, err)`
+  - [ ] `verb_code/4 (list, map, str, list)`
+  - [ ] `verb_code/4 (list, map, str, map)`
+  - [ ] `verb_code/4 (list, map, err, int)`
+  - [ ] `verb_code/4 (list, map, err, float)`
+  - [ ] `verb_code/4 (list, map, err, obj)`
+  - [ ] `verb_code/4 (list, map, err, str)`
+  - [ ] `verb_code/4 (list, map, err, err)`
+  - [ ] `verb_code/4 (list, map, err, list)`
+  - [ ] `verb_code/4 (list, map, err, map)`
+  - [ ] `verb_code/4 (list, map, list, int)`
+  - [ ] `verb_code/4 (list, map, list, float)`
+  - [ ] `verb_code/4 (list, map, list, obj)`
+  - [ ] `verb_code/4 (list, map, list, str)`
+  - [ ] `verb_code/4 (list, map, list, err)`
+  - [ ] `verb_code/4 (list, map, list, list)`
+  - [ ] `verb_code/4 (list, map, list, map)`
+  - [ ] `verb_code/4 (list, map, map, int)`
+  - [ ] `verb_code/4 (list, map, map, float)`
+  - [ ] `verb_code/4 (list, map, map, obj)`
+  - [ ] `verb_code/4 (list, map, map, str)`
+  - [ ] `verb_code/4 (list, map, map, err)`
+  - [ ] `verb_code/4 (list, map, map, list)`
+  - [ ] `verb_code/4 (list, map, map, map)`
+  - [ ] `verb_code/4 (map, int, int, int)`
+  - [ ] `verb_code/4 (map, int, int, float)`
+  - [ ] `verb_code/4 (map, int, int, obj)`
+  - [ ] `verb_code/4 (map, int, int, str)`
+  - [ ] `verb_code/4 (map, int, int, err)`
+  - [ ] `verb_code/4 (map, int, int, list)`
+  - [ ] `verb_code/4 (map, int, int, map)`
+  - [ ] `verb_code/4 (map, int, float, int)`
+  - [ ] `verb_code/4 (map, int, float, float)`
+  - [ ] `verb_code/4 (map, int, float, obj)`
+  - [ ] `verb_code/4 (map, int, float, str)`
+  - [ ] `verb_code/4 (map, int, float, err)`
+  - [ ] `verb_code/4 (map, int, float, list)`
+  - [ ] `verb_code/4 (map, int, float, map)`
+  - [ ] `verb_code/4 (map, int, obj, int)`
+  - [ ] `verb_code/4 (map, int, obj, float)`
+  - [ ] `verb_code/4 (map, int, obj, obj)`
+  - [ ] `verb_code/4 (map, int, obj, str)`
+  - [ ] `verb_code/4 (map, int, obj, err)`
+  - [ ] `verb_code/4 (map, int, obj, list)`
+  - [ ] `verb_code/4 (map, int, obj, map)`
+  - [ ] `verb_code/4 (map, int, str, int)`
+  - [ ] `verb_code/4 (map, int, str, float)`
+  - [ ] `verb_code/4 (map, int, str, obj)`
+  - [ ] `verb_code/4 (map, int, str, str)`
+  - [ ] `verb_code/4 (map, int, str, err)`
+  - [ ] `verb_code/4 (map, int, str, list)`
+  - [ ] `verb_code/4 (map, int, str, map)`
+  - [ ] `verb_code/4 (map, int, err, int)`
+  - [ ] `verb_code/4 (map, int, err, float)`
+  - [ ] `verb_code/4 (map, int, err, obj)`
+  - [ ] `verb_code/4 (map, int, err, str)`
+  - [ ] `verb_code/4 (map, int, err, err)`
+  - [ ] `verb_code/4 (map, int, err, list)`
+  - [ ] `verb_code/4 (map, int, err, map)`
+  - [ ] `verb_code/4 (map, int, list, int)`
+  - [ ] `verb_code/4 (map, int, list, float)`
+  - [ ] `verb_code/4 (map, int, list, obj)`
+  - [ ] `verb_code/4 (map, int, list, str)`
+  - [ ] `verb_code/4 (map, int, list, err)`
+  - [ ] `verb_code/4 (map, int, list, list)`
+  - [ ] `verb_code/4 (map, int, list, map)`
+  - [ ] `verb_code/4 (map, int, map, int)`
+  - [ ] `verb_code/4 (map, int, map, float)`
+  - [ ] `verb_code/4 (map, int, map, obj)`
+  - [ ] `verb_code/4 (map, int, map, str)`
+  - [ ] `verb_code/4 (map, int, map, err)`
+  - [ ] `verb_code/4 (map, int, map, list)`
+  - [ ] `verb_code/4 (map, int, map, map)`
+  - [ ] `verb_code/4 (map, float, int, int)`
+  - [ ] `verb_code/4 (map, float, int, float)`
+  - [ ] `verb_code/4 (map, float, int, obj)`
+  - [ ] `verb_code/4 (map, float, int, str)`
+  - [ ] `verb_code/4 (map, float, int, err)`
+  - [ ] `verb_code/4 (map, float, int, list)`
+  - [ ] `verb_code/4 (map, float, int, map)`
+  - [ ] `verb_code/4 (map, float, float, int)`
+  - [ ] `verb_code/4 (map, float, float, float)`
+  - [ ] `verb_code/4 (map, float, float, obj)`
+  - [ ] `verb_code/4 (map, float, float, str)`
+  - [ ] `verb_code/4 (map, float, float, err)`
+  - [ ] `verb_code/4 (map, float, float, list)`
+  - [ ] `verb_code/4 (map, float, float, map)`
+  - [ ] `verb_code/4 (map, float, obj, int)`
+  - [ ] `verb_code/4 (map, float, obj, float)`
+  - [ ] `verb_code/4 (map, float, obj, obj)`
+  - [ ] `verb_code/4 (map, float, obj, str)`
+  - [ ] `verb_code/4 (map, float, obj, err)`
+  - [ ] `verb_code/4 (map, float, obj, list)`
+  - [ ] `verb_code/4 (map, float, obj, map)`
+  - [ ] `verb_code/4 (map, float, str, int)`
+  - [ ] `verb_code/4 (map, float, str, float)`
+  - [ ] `verb_code/4 (map, float, str, obj)`
+  - [ ] `verb_code/4 (map, float, str, str)`
+  - [ ] `verb_code/4 (map, float, str, err)`
+  - [ ] `verb_code/4 (map, float, str, list)`
+  - [ ] `verb_code/4 (map, float, str, map)`
+  - [ ] `verb_code/4 (map, float, err, int)`
+  - [ ] `verb_code/4 (map, float, err, float)`
+  - [ ] `verb_code/4 (map, float, err, obj)`
+  - [ ] `verb_code/4 (map, float, err, str)`
+  - [ ] `verb_code/4 (map, float, err, err)`
+  - [ ] `verb_code/4 (map, float, err, list)`
+  - [ ] `verb_code/4 (map, float, err, map)`
+  - [ ] `verb_code/4 (map, float, list, int)`
+  - [ ] `verb_code/4 (map, float, list, float)`
+  - [ ] `verb_code/4 (map, float, list, obj)`
+  - [ ] `verb_code/4 (map, float, list, str)`
+  - [ ] `verb_code/4 (map, float, list, err)`
+  - [ ] `verb_code/4 (map, float, list, list)`
+  - [ ] `verb_code/4 (map, float, list, map)`
+  - [ ] `verb_code/4 (map, float, map, int)`
+  - [ ] `verb_code/4 (map, float, map, float)`
+  - [ ] `verb_code/4 (map, float, map, obj)`
+  - [ ] `verb_code/4 (map, float, map, str)`
+  - [ ] `verb_code/4 (map, float, map, err)`
+  - [ ] `verb_code/4 (map, float, map, list)`
+  - [ ] `verb_code/4 (map, float, map, map)`
+  - [ ] `verb_code/4 (map, obj, int, int)`
+  - [ ] `verb_code/4 (map, obj, int, float)`
+  - [ ] `verb_code/4 (map, obj, int, obj)`
+  - [ ] `verb_code/4 (map, obj, int, str)`
+  - [ ] `verb_code/4 (map, obj, int, err)`
+  - [ ] `verb_code/4 (map, obj, int, list)`
+  - [ ] `verb_code/4 (map, obj, int, map)`
+  - [ ] `verb_code/4 (map, obj, float, int)`
+  - [ ] `verb_code/4 (map, obj, float, float)`
+  - [ ] `verb_code/4 (map, obj, float, obj)`
+  - [ ] `verb_code/4 (map, obj, float, str)`
+  - [ ] `verb_code/4 (map, obj, float, err)`
+  - [ ] `verb_code/4 (map, obj, float, list)`
+  - [ ] `verb_code/4 (map, obj, float, map)`
+  - [ ] `verb_code/4 (map, obj, obj, int)`
+  - [ ] `verb_code/4 (map, obj, obj, float)`
+  - [ ] `verb_code/4 (map, obj, obj, obj)`
+  - [ ] `verb_code/4 (map, obj, obj, str)`
+  - [ ] `verb_code/4 (map, obj, obj, err)`
+  - [ ] `verb_code/4 (map, obj, obj, list)`
+  - [ ] `verb_code/4 (map, obj, obj, map)`
+  - [ ] `verb_code/4 (map, obj, str, int)`
+  - [ ] `verb_code/4 (map, obj, str, float)`
+  - [ ] `verb_code/4 (map, obj, str, obj)`
+  - [ ] `verb_code/4 (map, obj, str, str)`
+  - [ ] `verb_code/4 (map, obj, str, err)`
+  - [ ] `verb_code/4 (map, obj, str, list)`
+  - [ ] `verb_code/4 (map, obj, str, map)`
+  - [ ] `verb_code/4 (map, obj, err, int)`
+  - [ ] `verb_code/4 (map, obj, err, float)`
+  - [ ] `verb_code/4 (map, obj, err, obj)`
+  - [ ] `verb_code/4 (map, obj, err, str)`
+  - [ ] `verb_code/4 (map, obj, err, err)`
+  - [ ] `verb_code/4 (map, obj, err, list)`
+  - [ ] `verb_code/4 (map, obj, err, map)`
+  - [ ] `verb_code/4 (map, obj, list, int)`
+  - [ ] `verb_code/4 (map, obj, list, float)`
+  - [ ] `verb_code/4 (map, obj, list, obj)`
+  - [ ] `verb_code/4 (map, obj, list, str)`
+  - [ ] `verb_code/4 (map, obj, list, err)`
+  - [ ] `verb_code/4 (map, obj, list, list)`
+  - [ ] `verb_code/4 (map, obj, list, map)`
+  - [ ] `verb_code/4 (map, obj, map, int)`
+  - [ ] `verb_code/4 (map, obj, map, float)`
+  - [ ] `verb_code/4 (map, obj, map, obj)`
+  - [ ] `verb_code/4 (map, obj, map, str)`
+  - [ ] `verb_code/4 (map, obj, map, err)`
+  - [ ] `verb_code/4 (map, obj, map, list)`
+  - [ ] `verb_code/4 (map, obj, map, map)`
+  - [ ] `verb_code/4 (map, str, int, int)`
+  - [ ] `verb_code/4 (map, str, int, float)`
+  - [ ] `verb_code/4 (map, str, int, obj)`
+  - [ ] `verb_code/4 (map, str, int, str)`
+  - [ ] `verb_code/4 (map, str, int, err)`
+  - [ ] `verb_code/4 (map, str, int, list)`
+  - [ ] `verb_code/4 (map, str, int, map)`
+  - [ ] `verb_code/4 (map, str, float, int)`
+  - [ ] `verb_code/4 (map, str, float, float)`
+  - [ ] `verb_code/4 (map, str, float, obj)`
+  - [ ] `verb_code/4 (map, str, float, str)`
+  - [ ] `verb_code/4 (map, str, float, err)`
+  - [ ] `verb_code/4 (map, str, float, list)`
+  - [ ] `verb_code/4 (map, str, float, map)`
+  - [ ] `verb_code/4 (map, str, obj, int)`
+  - [ ] `verb_code/4 (map, str, obj, float)`
+  - [ ] `verb_code/4 (map, str, obj, obj)`
+  - [ ] `verb_code/4 (map, str, obj, str)`
+  - [ ] `verb_code/4 (map, str, obj, err)`
+  - [ ] `verb_code/4 (map, str, obj, list)`
+  - [ ] `verb_code/4 (map, str, obj, map)`
+  - [ ] `verb_code/4 (map, str, str, int)`
+  - [ ] `verb_code/4 (map, str, str, float)`
+  - [ ] `verb_code/4 (map, str, str, obj)`
+  - [ ] `verb_code/4 (map, str, str, str)`
+  - [ ] `verb_code/4 (map, str, str, err)`
+  - [ ] `verb_code/4 (map, str, str, list)`
+  - [ ] `verb_code/4 (map, str, str, map)`
+  - [ ] `verb_code/4 (map, str, err, int)`
+  - [ ] `verb_code/4 (map, str, err, float)`
+  - [ ] `verb_code/4 (map, str, err, obj)`
+  - [ ] `verb_code/4 (map, str, err, str)`
+  - [ ] `verb_code/4 (map, str, err, err)`
+  - [ ] `verb_code/4 (map, str, err, list)`
+  - [ ] `verb_code/4 (map, str, err, map)`
+  - [ ] `verb_code/4 (map, str, list, int)`
+  - [ ] `verb_code/4 (map, str, list, float)`
+  - [ ] `verb_code/4 (map, str, list, obj)`
+  - [ ] `verb_code/4 (map, str, list, str)`
+  - [ ] `verb_code/4 (map, str, list, err)`
+  - [ ] `verb_code/4 (map, str, list, list)`
+  - [ ] `verb_code/4 (map, str, list, map)`
+  - [ ] `verb_code/4 (map, str, map, int)`
+  - [ ] `verb_code/4 (map, str, map, float)`
+  - [ ] `verb_code/4 (map, str, map, obj)`
+  - [ ] `verb_code/4 (map, str, map, str)`
+  - [ ] `verb_code/4 (map, str, map, err)`
+  - [ ] `verb_code/4 (map, str, map, list)`
+  - [ ] `verb_code/4 (map, str, map, map)`
+  - [ ] `verb_code/4 (map, err, int, int)`
+  - [ ] `verb_code/4 (map, err, int, float)`
+  - [ ] `verb_code/4 (map, err, int, obj)`
+  - [ ] `verb_code/4 (map, err, int, str)`
+  - [ ] `verb_code/4 (map, err, int, err)`
+  - [ ] `verb_code/4 (map, err, int, list)`
+  - [ ] `verb_code/4 (map, err, int, map)`
+  - [ ] `verb_code/4 (map, err, float, int)`
+  - [ ] `verb_code/4 (map, err, float, float)`
+  - [ ] `verb_code/4 (map, err, float, obj)`
+  - [ ] `verb_code/4 (map, err, float, str)`
+  - [ ] `verb_code/4 (map, err, float, err)`
+  - [ ] `verb_code/4 (map, err, float, list)`
+  - [ ] `verb_code/4 (map, err, float, map)`
+  - [ ] `verb_code/4 (map, err, obj, int)`
+  - [ ] `verb_code/4 (map, err, obj, float)`
+  - [ ] `verb_code/4 (map, err, obj, obj)`
+  - [ ] `verb_code/4 (map, err, obj, str)`
+  - [ ] `verb_code/4 (map, err, obj, err)`
+  - [ ] `verb_code/4 (map, err, obj, list)`
+  - [ ] `verb_code/4 (map, err, obj, map)`
+  - [ ] `verb_code/4 (map, err, str, int)`
+  - [ ] `verb_code/4 (map, err, str, float)`
+  - [ ] `verb_code/4 (map, err, str, obj)`
+  - [ ] `verb_code/4 (map, err, str, str)`
+  - [ ] `verb_code/4 (map, err, str, err)`
+  - [ ] `verb_code/4 (map, err, str, list)`
+  - [ ] `verb_code/4 (map, err, str, map)`
+  - [ ] `verb_code/4 (map, err, err, int)`
+  - [ ] `verb_code/4 (map, err, err, float)`
+  - [ ] `verb_code/4 (map, err, err, obj)`
+  - [ ] `verb_code/4 (map, err, err, str)`
+  - [ ] `verb_code/4 (map, err, err, err)`
+  - [ ] `verb_code/4 (map, err, err, list)`
+  - [ ] `verb_code/4 (map, err, err, map)`
+  - [ ] `verb_code/4 (map, err, list, int)`
+  - [ ] `verb_code/4 (map, err, list, float)`
+  - [ ] `verb_code/4 (map, err, list, obj)`
+  - [ ] `verb_code/4 (map, err, list, str)`
+  - [ ] `verb_code/4 (map, err, list, err)`
+  - [ ] `verb_code/4 (map, err, list, list)`
+  - [ ] `verb_code/4 (map, err, list, map)`
+  - [ ] `verb_code/4 (map, err, map, int)`
+  - [ ] `verb_code/4 (map, err, map, float)`
+  - [ ] `verb_code/4 (map, err, map, obj)`
+  - [ ] `verb_code/4 (map, err, map, str)`
+  - [ ] `verb_code/4 (map, err, map, err)`
+  - [ ] `verb_code/4 (map, err, map, list)`
+  - [ ] `verb_code/4 (map, err, map, map)`
+  - [ ] `verb_code/4 (map, list, int, int)`
+  - [ ] `verb_code/4 (map, list, int, float)`
+  - [ ] `verb_code/4 (map, list, int, obj)`
+  - [ ] `verb_code/4 (map, list, int, str)`
+  - [ ] `verb_code/4 (map, list, int, err)`
+  - [ ] `verb_code/4 (map, list, int, list)`
+  - [ ] `verb_code/4 (map, list, int, map)`
+  - [ ] `verb_code/4 (map, list, float, int)`
+  - [ ] `verb_code/4 (map, list, float, float)`
+  - [ ] `verb_code/4 (map, list, float, obj)`
+  - [ ] `verb_code/4 (map, list, float, str)`
+  - [ ] `verb_code/4 (map, list, float, err)`
+  - [ ] `verb_code/4 (map, list, float, list)`
+  - [ ] `verb_code/4 (map, list, float, map)`
+  - [ ] `verb_code/4 (map, list, obj, int)`
+  - [ ] `verb_code/4 (map, list, obj, float)`
+  - [ ] `verb_code/4 (map, list, obj, obj)`
+  - [ ] `verb_code/4 (map, list, obj, str)`
+  - [ ] `verb_code/4 (map, list, obj, err)`
+  - [ ] `verb_code/4 (map, list, obj, list)`
+  - [ ] `verb_code/4 (map, list, obj, map)`
+  - [ ] `verb_code/4 (map, list, str, int)`
+  - [ ] `verb_code/4 (map, list, str, float)`
+  - [ ] `verb_code/4 (map, list, str, obj)`
+  - [ ] `verb_code/4 (map, list, str, str)`
+  - [ ] `verb_code/4 (map, list, str, err)`
+  - [ ] `verb_code/4 (map, list, str, list)`
+  - [ ] `verb_code/4 (map, list, str, map)`
+  - [ ] `verb_code/4 (map, list, err, int)`
+  - [ ] `verb_code/4 (map, list, err, float)`
+  - [ ] `verb_code/4 (map, list, err, obj)`
+  - [ ] `verb_code/4 (map, list, err, str)`
+  - [ ] `verb_code/4 (map, list, err, err)`
+  - [ ] `verb_code/4 (map, list, err, list)`
+  - [ ] `verb_code/4 (map, list, err, map)`
+  - [ ] `verb_code/4 (map, list, list, int)`
+  - [ ] `verb_code/4 (map, list, list, float)`
+  - [ ] `verb_code/4 (map, list, list, obj)`
+  - [ ] `verb_code/4 (map, list, list, str)`
+  - [ ] `verb_code/4 (map, list, list, err)`
+  - [ ] `verb_code/4 (map, list, list, list)`
+  - [ ] `verb_code/4 (map, list, list, map)`
+  - [ ] `verb_code/4 (map, list, map, int)`
+  - [ ] `verb_code/4 (map, list, map, float)`
+  - [ ] `verb_code/4 (map, list, map, obj)`
+  - [ ] `verb_code/4 (map, list, map, str)`
+  - [ ] `verb_code/4 (map, list, map, err)`
+  - [ ] `verb_code/4 (map, list, map, list)`
+  - [ ] `verb_code/4 (map, list, map, map)`
+  - [ ] `verb_code/4 (map, map, int, int)`
+  - [ ] `verb_code/4 (map, map, int, float)`
+  - [ ] `verb_code/4 (map, map, int, obj)`
+  - [ ] `verb_code/4 (map, map, int, str)`
+  - [ ] `verb_code/4 (map, map, int, err)`
+  - [ ] `verb_code/4 (map, map, int, list)`
+  - [ ] `verb_code/4 (map, map, int, map)`
+  - [ ] `verb_code/4 (map, map, float, int)`
+  - [ ] `verb_code/4 (map, map, float, float)`
+  - [ ] `verb_code/4 (map, map, float, obj)`
+  - [ ] `verb_code/4 (map, map, float, str)`
+  - [ ] `verb_code/4 (map, map, float, err)`
+  - [ ] `verb_code/4 (map, map, float, list)`
+  - [ ] `verb_code/4 (map, map, float, map)`
+  - [ ] `verb_code/4 (map, map, obj, int)`
+  - [ ] `verb_code/4 (map, map, obj, float)`
+  - [ ] `verb_code/4 (map, map, obj, obj)`
+  - [ ] `verb_code/4 (map, map, obj, str)`
+  - [ ] `verb_code/4 (map, map, obj, err)`
+  - [ ] `verb_code/4 (map, map, obj, list)`
+  - [ ] `verb_code/4 (map, map, obj, map)`
+  - [ ] `verb_code/4 (map, map, str, int)`
+  - [ ] `verb_code/4 (map, map, str, float)`
+  - [ ] `verb_code/4 (map, map, str, obj)`
+  - [ ] `verb_code/4 (map, map, str, str)`
+  - [ ] `verb_code/4 (map, map, str, err)`
+  - [ ] `verb_code/4 (map, map, str, list)`
+  - [ ] `verb_code/4 (map, map, str, map)`
+  - [ ] `verb_code/4 (map, map, err, int)`
+  - [ ] `verb_code/4 (map, map, err, float)`
+  - [ ] `verb_code/4 (map, map, err, obj)`
+  - [ ] `verb_code/4 (map, map, err, str)`
+  - [ ] `verb_code/4 (map, map, err, err)`
+  - [ ] `verb_code/4 (map, map, err, list)`
+  - [ ] `verb_code/4 (map, map, err, map)`
+  - [ ] `verb_code/4 (map, map, list, int)`
+  - [ ] `verb_code/4 (map, map, list, float)`
+  - [ ] `verb_code/4 (map, map, list, obj)`
+  - [ ] `verb_code/4 (map, map, list, str)`
+  - [ ] `verb_code/4 (map, map, list, err)`
+  - [ ] `verb_code/4 (map, map, list, list)`
+  - [ ] `verb_code/4 (map, map, list, map)`
+  - [ ] `verb_code/4 (map, map, map, int)`
+  - [ ] `verb_code/4 (map, map, map, float)`
+  - [ ] `verb_code/4 (map, map, map, obj)`
+  - [ ] `verb_code/4 (map, map, map, str)`
+  - [ ] `verb_code/4 (map, map, map, err)`
+  - [ ] `verb_code/4 (map, map, map, list)`
+  - [ ] `verb_code/4 (map, map, map, map)`
+- `verb_info` signature `2..2 (any, any)`
+  - [ ] `verb_info/2 (int, int)`
+  - [ ] `verb_info/2 (int, float)`
+  - [ ] `verb_info/2 (int, obj)`
+  - [ ] `verb_info/2 (int, str)`
+  - [ ] `verb_info/2 (int, err)`
+  - [ ] `verb_info/2 (int, list)`
+  - [ ] `verb_info/2 (int, map)`
+  - [ ] `verb_info/2 (float, int)`
+  - [ ] `verb_info/2 (float, float)`
+  - [ ] `verb_info/2 (float, obj)`
+  - [ ] `verb_info/2 (float, str)`
+  - [ ] `verb_info/2 (float, err)`
+  - [ ] `verb_info/2 (float, list)`
+  - [ ] `verb_info/2 (float, map)`
+  - [ ] `verb_info/2 (obj, int)`
+  - [ ] `verb_info/2 (obj, float)`
+  - [ ] `verb_info/2 (obj, obj)`
+  - [ ] `verb_info/2 (obj, err)`
+  - [ ] `verb_info/2 (obj, list)`
+  - [ ] `verb_info/2 (obj, map)`
+  - [ ] `verb_info/2 (str, int)`
+  - [ ] `verb_info/2 (str, float)`
+  - [ ] `verb_info/2 (str, obj)`
+  - [ ] `verb_info/2 (str, str)`
+  - [ ] `verb_info/2 (str, err)`
+  - [ ] `verb_info/2 (str, list)`
+  - [ ] `verb_info/2 (str, map)`
+  - [ ] `verb_info/2 (err, int)`
+  - [ ] `verb_info/2 (err, float)`
+  - [ ] `verb_info/2 (err, obj)`
+  - [ ] `verb_info/2 (err, str)`
+  - [ ] `verb_info/2 (err, err)`
+  - [ ] `verb_info/2 (err, list)`
+  - [ ] `verb_info/2 (err, map)`
+  - [ ] `verb_info/2 (list, int)`
+  - [ ] `verb_info/2 (list, float)`
+  - [ ] `verb_info/2 (list, obj)`
+  - [ ] `verb_info/2 (list, err)`
+  - [ ] `verb_info/2 (list, list)`
+  - [ ] `verb_info/2 (list, map)`
+  - [ ] `verb_info/2 (map, int)`
+  - [ ] `verb_info/2 (map, float)`
+  - [ ] `verb_info/2 (map, obj)`
+  - [ ] `verb_info/2 (map, str)`
+  - [ ] `verb_info/2 (map, err)`
+  - [ ] `verb_info/2 (map, list)`
+  - [ ] `verb_info/2 (map, map)`
+- `verbs` signature `1..1 (any)`
+  - [ ] `verbs/1 (int)`
+  - [ ] `verbs/1 (float)`
+  - [ ] `verbs/1 (obj)`
+  - [ ] `verbs/1 (str)`
+  - [ ] `verbs/1 (err)`
+  - [ ] `verbs/1 (map)`
+- `waif_stats` signature `0..0 ()`
+  - [ ] `waif_stats/0 ()`
+- `yin` signature `0..3 (numeric, int, int)`
+  - [ ] `yin/1 (int)`
+  - [ ] `yin/1 (float)`
+  - [ ] `yin/2 (int, int)`
+  - [ ] `yin/2 (float, int)`
+  - [ ] `yin/3 (float, int, int)`
+
+## Full Builtin Checklist
+
+### `abs`
+
+- signature: `1..1 (numeric)`
+- source: `numbers.cc`
+- [x] `abs/1 (int)` covered by `builtins/math.yaml`, `builtins/math.yaml`, `builtins/math.yaml`
+- [x] `abs/1 (float)` covered by `builtins/math.yaml`, `builtins/math.yaml`, `builtins/math.yaml`
+
+### `acos`
+
+- signature: `1..1 (float)`
+- source: `numbers.cc`
+- [x] `acos/1 (float)` covered by `builtins/math.yaml`, `builtins/math.yaml`, `builtins/math.yaml` and 1 more
+
+### `acosh`
+
+- signature: `1..1 (float)`
+- source: `numbers.cc`
+- [x] `acosh/1 (float)` covered by `builtins/math.yaml`, `builtins/math.yaml`, `builtins/math.yaml`
+
+### `add_property`
+
+- signature: `4..4 (any, str, any, list)`
+- source: `property.cc`
+- [ ] `add_property/4 (int, str, int, list)`
+- [ ] `add_property/4 (int, str, float, list)`
+- [ ] `add_property/4 (int, str, obj, list)`
+- [ ] `add_property/4 (int, str, str, list)`
+- [ ] `add_property/4 (int, str, err, list)`
+- [ ] `add_property/4 (int, str, list, list)`
+- [ ] `add_property/4 (int, str, map, list)`
+- [ ] `add_property/4 (float, str, int, list)`
+- [ ] `add_property/4 (float, str, float, list)`
+- [ ] `add_property/4 (float, str, obj, list)`
+- [ ] `add_property/4 (float, str, str, list)`
+- [ ] `add_property/4 (float, str, err, list)`
+- [ ] `add_property/4 (float, str, list, list)`
+- [ ] `add_property/4 (float, str, map, list)`
+- [x] `add_property/4 (obj, str, int, list)` covered by `audit/task_scheduling_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml` and 3 more
+- [ ] `add_property/4 (obj, str, float, list)`
+- [x] `add_property/4 (obj, str, obj, list)` covered by `builtins/http.yaml`, `builtins/http.yaml`, `builtins/http.yaml` and 2 more
+- [x] `add_property/4 (obj, str, str, list)` covered by `audit/command_parser_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml` and 1 more
+- [ ] `add_property/4 (obj, str, err, list)`
+- [x] `add_property/4 (obj, str, list, list)` covered by `audit/command_parser_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 14 more
+- [ ] `add_property/4 (obj, str, map, list)`
+- [ ] `add_property/4 (str, str, int, list)`
+- [ ] `add_property/4 (str, str, float, list)`
+- [ ] `add_property/4 (str, str, obj, list)`
+- [ ] `add_property/4 (str, str, str, list)`
+- [ ] `add_property/4 (str, str, err, list)`
+- [ ] `add_property/4 (str, str, list, list)`
+- [ ] `add_property/4 (str, str, map, list)`
+- [ ] `add_property/4 (err, str, int, list)`
+- [ ] `add_property/4 (err, str, float, list)`
+- [ ] `add_property/4 (err, str, obj, list)`
+- [ ] `add_property/4 (err, str, str, list)`
+- [ ] `add_property/4 (err, str, err, list)`
+- [ ] `add_property/4 (err, str, list, list)`
+- [ ] `add_property/4 (err, str, map, list)`
+- [x] `add_property/4 (list, str, int, list)` covered by `builtins/properties.yaml`, `builtins/properties.yaml`, `builtins/properties.yaml` and 55 more
+- [ ] `add_property/4 (list, str, float, list)`
+- [ ] `add_property/4 (list, str, obj, list)`
+- [x] `add_property/4 (list, str, str, list)` covered by `builtins/properties.yaml`, `builtins/properties.yaml`, `builtins/properties.yaml` and 18 more
+- [ ] `add_property/4 (list, str, err, list)`
+- [ ] `add_property/4 (list, str, list, list)`
+- [ ] `add_property/4 (list, str, map, list)`
+- [ ] `add_property/4 (map, str, int, list)`
+- [ ] `add_property/4 (map, str, float, list)`
+- [ ] `add_property/4 (map, str, obj, list)`
+- [ ] `add_property/4 (map, str, str, list)`
+- [ ] `add_property/4 (map, str, err, list)`
+- [ ] `add_property/4 (map, str, list, list)`
+- [ ] `add_property/4 (map, str, map, list)`
+- [?] `add_property/4` unknown argument types covered by `audit/gap_followups_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml` and 251 more
+
+### `add_verb`
+
+- signature: `3..3 (any, list, list)`
+- source: `verbs.cc`
+- [ ] `add_verb/3 (int, list, list)`
+- [ ] `add_verb/3 (float, list, list)`
+- [x] `add_verb/3 (obj, list, list)` covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 24 more
+- [ ] `add_verb/3 (str, list, list)`
+- [ ] `add_verb/3 (err, list, list)`
+- [x] `add_verb/3 (list, list, list)` covered by `builtins/eval.yaml`, `builtins/recycle.yaml`, `builtins/recycle.yaml` and 50 more
+- [ ] `add_verb/3 (map, list, list)`
+- [?] `add_verb/3` unknown argument types covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml` and 306 more
+
+### `all_members`
+
+- signature: `2..2 (any, list)`
+- source: `list.cc`
+- [ ] `all_members/2 (int, list)`
+- [ ] `all_members/2 (float, list)`
+- [ ] `all_members/2 (obj, list)`
+- [ ] `all_members/2 (str, list)`
+- [ ] `all_members/2 (err, list)`
+- [ ] `all_members/2 (list, list)`
+- [ ] `all_members/2 (map, list)`
+
+### `ancestors`
+
+- signature: `1..2 (any, any)`
+- source: `objects.cc`
+- [x] `ancestors/1 (int)` covered by `server/stress_objects.yaml`
+- [x] `ancestors/1 (float)` covered by `server/stress_objects.yaml`
+- [ ] `ancestors/1 (obj)`
+- [x] `ancestors/1 (str)` covered by `server/stress_objects.yaml`
+- [ ] `ancestors/1 (err)`
+- [ ] `ancestors/1 (list)`
+- [ ] `ancestors/1 (map)`
+- [ ] `ancestors/2 (int, int)`
+- [ ] `ancestors/2 (int, float)`
+- [ ] `ancestors/2 (int, obj)`
+- [ ] `ancestors/2 (int, str)`
+- [ ] `ancestors/2 (int, err)`
+- [ ] `ancestors/2 (int, list)`
+- [ ] `ancestors/2 (int, map)`
+- [ ] `ancestors/2 (float, int)`
+- [ ] `ancestors/2 (float, float)`
+- [ ] `ancestors/2 (float, obj)`
+- [ ] `ancestors/2 (float, str)`
+- [ ] `ancestors/2 (float, err)`
+- [ ] `ancestors/2 (float, list)`
+- [ ] `ancestors/2 (float, map)`
+- [ ] `ancestors/2 (obj, int)`
+- [ ] `ancestors/2 (obj, float)`
+- [ ] `ancestors/2 (obj, obj)`
+- [ ] `ancestors/2 (obj, str)`
+- [ ] `ancestors/2 (obj, err)`
+- [ ] `ancestors/2 (obj, list)`
+- [ ] `ancestors/2 (obj, map)`
+- [ ] `ancestors/2 (str, int)`
+- [ ] `ancestors/2 (str, float)`
+- [ ] `ancestors/2 (str, obj)`
+- [ ] `ancestors/2 (str, str)`
+- [ ] `ancestors/2 (str, err)`
+- [ ] `ancestors/2 (str, list)`
+- [ ] `ancestors/2 (str, map)`
+- [ ] `ancestors/2 (err, int)`
+- [ ] `ancestors/2 (err, float)`
+- [ ] `ancestors/2 (err, obj)`
+- [ ] `ancestors/2 (err, str)`
+- [ ] `ancestors/2 (err, err)`
+- [ ] `ancestors/2 (err, list)`
+- [ ] `ancestors/2 (err, map)`
+- [ ] `ancestors/2 (list, int)`
+- [ ] `ancestors/2 (list, float)`
+- [ ] `ancestors/2 (list, obj)`
+- [ ] `ancestors/2 (list, str)`
+- [ ] `ancestors/2 (list, err)`
+- [ ] `ancestors/2 (list, list)`
+- [ ] `ancestors/2 (list, map)`
+- [ ] `ancestors/2 (map, int)`
+- [ ] `ancestors/2 (map, float)`
+- [ ] `ancestors/2 (map, obj)`
+- [ ] `ancestors/2 (map, str)`
+- [ ] `ancestors/2 (map, err)`
+- [ ] `ancestors/2 (map, list)`
+- [ ] `ancestors/2 (map, map)`
+- [?] `ancestors/1` unknown argument types covered by `builtins/objects.yaml`, `builtins/objects.yaml`, `builtins/objects.yaml` and 15 more
+- [?] `ancestors/2` unknown argument types covered by `builtins/objects.yaml`, `builtins/objects.yaml`, `server/stress_objects.yaml` and 3 more
+
+### `anon`
+
+- signature: `0..2 (list, any)`
+- source: `objects.cc`
+- [ ] `anon/0 ()`
+- [ ] `anon/1 (list)`
+- [ ] `anon/2 (list, int)`
+- [ ] `anon/2 (list, float)`
+- [ ] `anon/2 (list, obj)`
+- [ ] `anon/2 (list, str)`
+- [ ] `anon/2 (list, err)`
+- [ ] `anon/2 (list, list)`
+- [ ] `anon/2 (list, map)`
+
+### `argon2`
+
+- signature: `2..5 (str, str, int, int, int)`
+- source: `argon2.cc`
+- [x] `argon2/2 (str, str)` covered by `builtins/argon2.yaml`
+- [ ] `argon2/3 (str, str, int)`
+- [ ] `argon2/4 (str, str, int, int)`
+- [x] `argon2/5 (str, str, int, int, int)` covered by `builtins/argon2.yaml`
+
+### `argon2_verify`
+
+- signature: `2..2 (str, str)`
+- source: `argon2.cc`
+- [x] `argon2_verify/2 (str, str)` covered by `builtins/argon2.yaml`, `builtins/argon2.yaml`, `builtins/argon2.yaml`
+
+### `asin`
+
+- signature: `1..1 (float)`
+- source: `numbers.cc`
+- [x] `asin/1 (float)` covered by `builtins/math.yaml`, `builtins/math.yaml`, `builtins/math.yaml` and 1 more
+
+### `asinh`
+
+- signature: `1..1 (float)`
+- source: `numbers.cc`
+- [x] `asinh/1 (float)` covered by `builtins/math.yaml`, `builtins/math.yaml`, `builtins/math.yaml`
+
+### `atan`
+
+- signature: `1..2 (float, float)`
+- source: `numbers.cc`
+- [x] `atan/1 (float)` covered by `builtins/math.yaml`, `builtins/math.yaml`, `generated_builtins/atan.yaml`
+- [x] `atan/2 (float, float)` covered by `builtins/math.yaml`, `builtins/math.yaml`
+
+### `atan2`
+
+- signature: `2..2 (float, float)`
+- source: `numbers.cc`
+- [x] `atan2/2 (float, float)` covered by `builtins/math.yaml`, `builtins/math.yaml`, `builtins/math.yaml` and 1 more
+
+### `atanh`
+
+- signature: `1..1 (float)`
+- source: `numbers.cc`
+- [x] `atanh/1 (float)` covered by `builtins/math.yaml`, `builtins/math.yaml`, `builtins/math.yaml` and 1 more
+
+### `background_test`
+
+- signature: `0..2 (str, int)`
+- source: `background.cc`
+- [ ] `background_test/0 ()`
+- [ ] `background_test/1 (str)`
+- [ ] `background_test/2 (str, int)`
+
+### `binary_hash`
+
+- signature: `1..3 (str, str, any)`
+- source: `crypto.cc`
+- [x] `binary_hash/1 (str)` covered by `builtins/algorithms.yaml`
+- [x] `binary_hash/2 (str, str)` covered by `builtins/algorithms.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml` and 8 more
+- [x] `binary_hash/3 (str, str, int)` covered by `builtins/algorithms.yaml`
+- [ ] `binary_hash/3 (str, str, float)`
+- [ ] `binary_hash/3 (str, str, obj)`
+- [ ] `binary_hash/3 (str, str, str)`
+- [ ] `binary_hash/3 (str, str, err)`
+- [ ] `binary_hash/3 (str, str, list)`
+- [ ] `binary_hash/3 (str, str, map)`
+
+### `binary_hmac`
+
+- signature: `2..4 (str, str, str, any)`
+- source: `crypto.cc`
+- [x] `binary_hmac/2 (str, str)` covered by `builtins/algorithms.yaml`, `builtins/algorithms.yaml`
+- [x] `binary_hmac/3 (str, str, str)` covered by `builtins/algorithms.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml` and 8 more
+- [x] `binary_hmac/4 (str, str, str, int)` covered by `builtins/algorithms.yaml`
+- [ ] `binary_hmac/4 (str, str, str, float)`
+- [ ] `binary_hmac/4 (str, str, str, obj)`
+- [ ] `binary_hmac/4 (str, str, str, str)`
+- [ ] `binary_hmac/4 (str, str, str, err)`
+- [ ] `binary_hmac/4 (str, str, str, list)`
+- [ ] `binary_hmac/4 (str, str, str, map)`
+
+### `boot_player`
+
+- signature: `1..1 (obj)`
+- source: `server.cc`
+- [x] `boot_player/1 (obj)` covered by `builtins/server_admin.yaml`, `generated_builtins/boot_player.yaml`
+- [?] `boot_player/1` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 12 more
+- [?] `boot_player/2` unknown argument types covered by `builtins/server_admin.yaml`
+
+### `buffered_output_length`
+
+- signature: `0..1 (obj)`
+- source: `server.cc`
+- [x] `buffered_output_length/0 ()` covered by `builtins/server_admin.yaml`
+- [x] `buffered_output_length/1 (obj)` covered by `builtins/server_admin.yaml`
+
+### `call_function`
+
+- signature: `1..* (str)`
+- source: `execute.cc`
+- [x] `call_function/1 (str)` covered by `builtins/task_management.yaml`, `builtins/task_management.yaml`, `builtins/task_management.yaml`
+- [x] `call_function/2 (str, int)` covered by `builtins/task_management.yaml`, `builtins/task_management.yaml`
+- [ ] `call_function/2 (str, float)`
+- [ ] `call_function/2 (str, obj)`
+- [x] `call_function/2 (str, str)` covered by `builtins/task_management.yaml`, `builtins/task_management.yaml`
+- [ ] `call_function/2 (str, err)`
+- [x] `call_function/2 (str, list)` covered by `builtins/task_management.yaml`, `builtins/task_management.yaml`
+- [ ] `call_function/2 (str, map)`
+
+### `caller_perms`
+
+- signature: `0..0 ()`
+- source: `execute.cc`
+- [x] `caller_perms/0 ()` covered by `builtins/caller_perms.yaml`
+
+### `callers`
+
+- signature: `0..1 (any)`
+- source: `execute.cc`
+- [x] `callers/0 ()` covered by `builtins/task_management.yaml`
+- [x] `callers/1 (int)` covered by `builtins/task_management.yaml`, `builtins/task_management.yaml`
+- [ ] `callers/1 (float)`
+- [ ] `callers/1 (obj)`
+- [ ] `callers/1 (str)`
+- [ ] `callers/1 (err)`
+- [ ] `callers/1 (list)`
+- [ ] `callers/1 (map)`
+
+### `cbrt`
+
+- signature: `1..1 (float)`
+- source: `numbers.cc`
+- [x] `cbrt/1 (float)` covered by `builtins/math.yaml`, `builtins/math.yaml`, `builtins/math.yaml` and 1 more
+
+### `ceil`
+
+- signature: `1..1 (float)`
+- source: `numbers.cc`
+- [x] `ceil/1 (float)` covered by `builtins/math.yaml`, `builtins/math.yaml`, `builtins/math.yaml` and 1 more
+
+### `children`
+
+- signature: `1..1 (any)`
+- source: `objects.cc`
+- [ ] `children/1 (int)`
+- [ ] `children/1 (float)`
+- [x] `children/1 (obj)` covered by `basic/object.yaml`
+- [ ] `children/1 (str)`
+- [ ] `children/1 (err)`
+- [ ] `children/1 (list)`
+- [ ] `children/1 (map)`
+- [?] `children/1` unknown argument types covered by `builtins/create.yaml`, `builtins/objects.yaml`, `builtins/objects.yaml` and 41 more
+
+### `chparent`
+
+- signature: `2..2 (any, obj)`
+- source: `objects.cc`
+- [ ] `chparent/2 (int, obj)`
+- [ ] `chparent/2 (float, obj)`
+- [ ] `chparent/2 (obj, obj)`
+- [ ] `chparent/2 (str, obj)`
+- [ ] `chparent/2 (err, obj)`
+- [ ] `chparent/2 (list, obj)`
+- [ ] `chparent/2 (map, obj)`
+- [?] `chparent/2` unknown argument types covered by `builtins/properties.yaml`, `builtins/properties.yaml`, `server/stress_objects.yaml` and 75 more
+- [?] `chparent/3` unknown argument types covered by `server/stress_objects.yaml`
+
+### `chparents`
+
+- signature: `2..2 (any, list)`
+- source: `objects.cc`
+- [ ] `chparents/2 (int, list)`
+- [ ] `chparents/2 (float, list)`
+- [ ] `chparents/2 (obj, list)`
+- [ ] `chparents/2 (str, list)`
+- [ ] `chparents/2 (err, list)`
+- [x] `chparents/2 (list, list)` covered by `builtins/properties.yaml`
+- [ ] `chparents/2 (map, list)`
+- [?] `chparents/1` unknown argument types covered by `server/stress_objects.yaml`
+- [?] `chparents/2` unknown argument types covered by `server/stress_objects.yaml`, `builtins/objects.yaml`, `builtins/objects.yaml` and 38 more
+
+### `chr`
+
+- signature: `0..* ()`
+- source: `list.cc`
+- [x] `chr/0 ()` covered by `builtins/chr.yaml`
+- [x] `chr/1 (int)` covered by `builtins/chr.yaml`, `builtins/chr.yaml`, `builtins/chr.yaml` and 5 more
+- [ ] `chr/1 (float)`
+- [ ] `chr/1 (obj)`
+- [x] `chr/1 (str)` covered by `builtins/chr.yaml`
+- [ ] `chr/1 (err)`
+- [x] `chr/1 (list)` covered by `builtins/chr.yaml`
+- [ ] `chr/1 (map)`
+
+### `clear_property`
+
+- signature: `2..2 (any, str)`
+- source: `property.cc`
+- [ ] `clear_property/2 (int, str)`
+- [ ] `clear_property/2 (float, str)`
+- [ ] `clear_property/2 (obj, str)`
+- [ ] `clear_property/2 (str, str)`
+- [ ] `clear_property/2 (err, str)`
+- [x] `clear_property/2 (list, str)` covered by `builtins/properties.yaml`, `builtins/properties.yaml`, `builtins/properties.yaml` and 7 more
+- [ ] `clear_property/2 (map, str)`
+- [?] `clear_property/2` unknown argument types covered by `builtins/objects.yaml`, `builtins/objects.yaml`, `builtins/objects.yaml` and 1 more
+
+### `connected_players`
+
+- signature: `0..1 (any)`
+- source: `server.cc`
+- [x] `connected_players/0 ()` covered by `builtins/server_admin.yaml`, `builtins/server_admin.yaml`, `builtins/server_admin.yaml`
+- [x] `connected_players/1 (int)` covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 8 more
+- [ ] `connected_players/1 (float)`
+- [ ] `connected_players/1 (obj)`
+- [ ] `connected_players/1 (str)`
+- [ ] `connected_players/1 (err)`
+- [ ] `connected_players/1 (list)`
+- [ ] `connected_players/1 (map)`
+
+### `connected_seconds`
+
+- signature: `1..1 (obj)`
+- source: `server.cc`
+- [x] `connected_seconds/1 (obj)` covered by `builtins/server_admin.yaml`
+- [?] `connected_seconds/1` unknown argument types covered by `builtins/server_admin.yaml`
+
+### `connection_info`
+
+- signature: `1..1 (obj)`
+- source: `server.cc`
+- [x] `connection_info/1 (obj)` covered by `builtins/server_admin.yaml`
+- [?] `connection_info/1` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `builtins/server_admin.yaml`, `builtins/server_admin.yaml` and 4 more
+
+### `connection_name`
+
+- signature: `1..2 (obj, int)`
+- source: `server.cc`
+- [x] `connection_name/1 (obj)` covered by `builtins/server_admin.yaml`
+- [ ] `connection_name/2 (obj, int)`
+- [?] `connection_name/2` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`
+
+### `connection_name_lookup`
+
+- signature: `1..2 (obj, any)`
+- source: `server.cc`
+- [x] `connection_name_lookup/1 (obj)` covered by `builtins/server_admin.yaml`
+- [ ] `connection_name_lookup/2 (obj, int)`
+- [ ] `connection_name_lookup/2 (obj, float)`
+- [ ] `connection_name_lookup/2 (obj, obj)`
+- [ ] `connection_name_lookup/2 (obj, str)`
+- [ ] `connection_name_lookup/2 (obj, err)`
+- [ ] `connection_name_lookup/2 (obj, list)`
+- [ ] `connection_name_lookup/2 (obj, map)`
+
+### `connection_options`
+
+- signature: `1..2 (obj, str)`
+- source: `server.cc`
+- [x] `connection_options/1 (obj)` covered by `builtins/server_admin.yaml`
+- [ ] `connection_options/2 (obj, str)`
+- [?] `connection_options/2` unknown argument types covered by `audit/gap_followups_toast_oracle.yaml`, `audit/gap_followups_toast_oracle.yaml`, `audit/gap_followups_toast_oracle.yaml` and 6 more
+
+### `cos`
+
+- signature: `1..1 (float)`
+- source: `numbers.cc`
+- [x] `cos/1 (float)` covered by `builtins/math.yaml`, `builtins/math.yaml`, `builtins/math.yaml`
+- [?] `cos/1` unknown argument types covered by `builtins/math.yaml`
+
+### `cosh`
+
+- signature: `1..1 (float)`
+- source: `numbers.cc`
+- [x] `cosh/1 (float)` covered by `builtins/math.yaml`, `builtins/math.yaml`
+
+### `create`
+
+- signature: `1..4 (any, any, any, any)`
+- source: `objects.cc`
+- [x] `create/1 (int)` covered by `builtins/create.yaml`, `builtins/objects.yaml`, `builtins/objects.yaml`
+- [ ] `create/1 (float)`
+- [x] `create/1 (obj)` covered by `basic/object.yaml`, `basic/object.yaml`, `basic/object.yaml` and 5 more
+- [x] `create/1 (str)` covered by `builtins/objects.yaml`
+- [ ] `create/1 (err)`
+- [x] `create/1 (list)` covered by `audit/verb_dispatch_toast_oracle.yaml`, `audit/verb_dispatch_toast_oracle.yaml`, `builtins/create.yaml` and 101 more
+- [ ] `create/1 (map)`
+- [x] `create/2 (int, int)` covered by `builtins/objects.yaml`
+- [ ] `create/2 (int, float)`
+- [ ] `create/2 (int, obj)`
+- [ ] `create/2 (int, str)`
+- [ ] `create/2 (int, err)`
+- [ ] `create/2 (int, list)`
+- [ ] `create/2 (int, map)`
+- [ ] `create/2 (float, int)`
+- [ ] `create/2 (float, float)`
+- [ ] `create/2 (float, obj)`
+- [ ] `create/2 (float, str)`
+- [ ] `create/2 (float, err)`
+- [ ] `create/2 (float, list)`
+- [ ] `create/2 (float, map)`
+- [ ] `create/2 (obj, int)`
+- [ ] `create/2 (obj, float)`
+- [ ] `create/2 (obj, obj)`
+- [ ] `create/2 (obj, str)`
+- [ ] `create/2 (obj, err)`
+- [ ] `create/2 (obj, list)`
+- [ ] `create/2 (obj, map)`
+- [ ] `create/2 (str, int)`
+- [ ] `create/2 (str, float)`
+- [ ] `create/2 (str, obj)`
+- [ ] `create/2 (str, str)`
+- [ ] `create/2 (str, err)`
+- [ ] `create/2 (str, list)`
+- [ ] `create/2 (str, map)`
+- [ ] `create/2 (err, int)`
+- [ ] `create/2 (err, float)`
+- [ ] `create/2 (err, obj)`
+- [ ] `create/2 (err, str)`
+- [ ] `create/2 (err, err)`
+- [ ] `create/2 (err, list)`
+- [ ] `create/2 (err, map)`
+- [x] `create/2 (list, int)` covered by `builtins/create.yaml`, `builtins/create.yaml`, `builtins/create.yaml` and 3 more
+- [ ] `create/2 (list, float)`
+- [ ] `create/2 (list, obj)`
+- [ ] `create/2 (list, str)`
+- [ ] `create/2 (list, err)`
+- [ ] `create/2 (list, list)`
+- [ ] `create/2 (list, map)`
+- [ ] `create/2 (map, int)`
+- [ ] `create/2 (map, float)`
+- [ ] `create/2 (map, obj)`
+- [ ] `create/2 (map, str)`
+- [ ] `create/2 (map, err)`
+- [ ] `create/2 (map, list)`
+- [ ] `create/2 (map, map)`
+- [ ] `create/3 (int, int, int)`
+- [ ] `create/3 (int, int, float)`
+- [ ] `create/3 (int, int, obj)`
+- [ ] `create/3 (int, int, str)`
+- [ ] `create/3 (int, int, err)`
+- [ ] `create/3 (int, int, list)`
+- [ ] `create/3 (int, int, map)`
+- [ ] `create/3 (int, float, int)`
+- [ ] `create/3 (int, float, float)`
+- [ ] `create/3 (int, float, obj)`
+- [ ] `create/3 (int, float, str)`
+- [ ] `create/3 (int, float, err)`
+- [ ] `create/3 (int, float, list)`
+- [ ] `create/3 (int, float, map)`
+- [ ] `create/3 (int, obj, int)`
+- [ ] `create/3 (int, obj, float)`
+- [ ] `create/3 (int, obj, obj)`
+- [ ] `create/3 (int, obj, str)`
+- [ ] `create/3 (int, obj, err)`
+- [ ] `create/3 (int, obj, list)`
+- [ ] `create/3 (int, obj, map)`
+- [ ] `create/3 (int, str, int)`
+- [ ] `create/3 (int, str, float)`
+- [ ] `create/3 (int, str, obj)`
+- [ ] `create/3 (int, str, str)`
+- [ ] `create/3 (int, str, err)`
+- [ ] `create/3 (int, str, list)`
+- [ ] `create/3 (int, str, map)`
+- [ ] `create/3 (int, err, int)`
+- [ ] `create/3 (int, err, float)`
+- [ ] `create/3 (int, err, obj)`
+- [ ] `create/3 (int, err, str)`
+- [ ] `create/3 (int, err, err)`
+- [ ] `create/3 (int, err, list)`
+- [ ] `create/3 (int, err, map)`
+- [ ] `create/3 (int, list, int)`
+- [ ] `create/3 (int, list, float)`
+- [ ] `create/3 (int, list, obj)`
+- [ ] `create/3 (int, list, str)`
+- [ ] `create/3 (int, list, err)`
+- [ ] `create/3 (int, list, list)`
+- [ ] `create/3 (int, list, map)`
+- [ ] `create/3 (int, map, int)`
+- [ ] `create/3 (int, map, float)`
+- [ ] `create/3 (int, map, obj)`
+- [ ] `create/3 (int, map, str)`
+- [ ] `create/3 (int, map, err)`
+- [ ] `create/3 (int, map, list)`
+- [ ] `create/3 (int, map, map)`
+- [ ] `create/3 (float, int, int)`
+- [ ] `create/3 (float, int, float)`
+- [ ] `create/3 (float, int, obj)`
+- [ ] `create/3 (float, int, str)`
+- [ ] `create/3 (float, int, err)`
+- [ ] `create/3 (float, int, list)`
+- [ ] `create/3 (float, int, map)`
+- [ ] `create/3 (float, float, int)`
+- [ ] `create/3 (float, float, float)`
+- [ ] `create/3 (float, float, obj)`
+- [ ] `create/3 (float, float, str)`
+- [ ] `create/3 (float, float, err)`
+- [ ] `create/3 (float, float, list)`
+- [ ] `create/3 (float, float, map)`
+- [ ] `create/3 (float, obj, int)`
+- [ ] `create/3 (float, obj, float)`
+- [ ] `create/3 (float, obj, obj)`
+- [ ] `create/3 (float, obj, str)`
+- [ ] `create/3 (float, obj, err)`
+- [ ] `create/3 (float, obj, list)`
+- [ ] `create/3 (float, obj, map)`
+- [ ] `create/3 (float, str, int)`
+- [ ] `create/3 (float, str, float)`
+- [ ] `create/3 (float, str, obj)`
+- [ ] `create/3 (float, str, str)`
+- [ ] `create/3 (float, str, err)`
+- [ ] `create/3 (float, str, list)`
+- [ ] `create/3 (float, str, map)`
+- [ ] `create/3 (float, err, int)`
+- [ ] `create/3 (float, err, float)`
+- [ ] `create/3 (float, err, obj)`
+- [ ] `create/3 (float, err, str)`
+- [ ] `create/3 (float, err, err)`
+- [ ] `create/3 (float, err, list)`
+- [ ] `create/3 (float, err, map)`
+- [ ] `create/3 (float, list, int)`
+- [ ] `create/3 (float, list, float)`
+- [ ] `create/3 (float, list, obj)`
+- [ ] `create/3 (float, list, str)`
+- [ ] `create/3 (float, list, err)`
+- [ ] `create/3 (float, list, list)`
+- [ ] `create/3 (float, list, map)`
+- [ ] `create/3 (float, map, int)`
+- [ ] `create/3 (float, map, float)`
+- [ ] `create/3 (float, map, obj)`
+- [ ] `create/3 (float, map, str)`
+- [ ] `create/3 (float, map, err)`
+- [ ] `create/3 (float, map, list)`
+- [ ] `create/3 (float, map, map)`
+- [ ] `create/3 (obj, int, int)`
+- [ ] `create/3 (obj, int, float)`
+- [ ] `create/3 (obj, int, obj)`
+- [ ] `create/3 (obj, int, str)`
+- [ ] `create/3 (obj, int, err)`
+- [ ] `create/3 (obj, int, list)`
+- [ ] `create/3 (obj, int, map)`
+- [ ] `create/3 (obj, float, int)`
+- [ ] `create/3 (obj, float, float)`
+- [ ] `create/3 (obj, float, obj)`
+- [ ] `create/3 (obj, float, str)`
+- [ ] `create/3 (obj, float, err)`
+- [ ] `create/3 (obj, float, list)`
+- [ ] `create/3 (obj, float, map)`
+- [ ] `create/3 (obj, obj, int)`
+- [ ] `create/3 (obj, obj, float)`
+- [ ] `create/3 (obj, obj, obj)`
+- [ ] `create/3 (obj, obj, str)`
+- [ ] `create/3 (obj, obj, err)`
+- [ ] `create/3 (obj, obj, list)`
+- [ ] `create/3 (obj, obj, map)`
+- [ ] `create/3 (obj, str, int)`
+- [ ] `create/3 (obj, str, float)`
+- [ ] `create/3 (obj, str, obj)`
+- [ ] `create/3 (obj, str, str)`
+- [ ] `create/3 (obj, str, err)`
+- [ ] `create/3 (obj, str, list)`
+- [ ] `create/3 (obj, str, map)`
+- [ ] `create/3 (obj, err, int)`
+- [ ] `create/3 (obj, err, float)`
+- [ ] `create/3 (obj, err, obj)`
+- [ ] `create/3 (obj, err, str)`
+- [ ] `create/3 (obj, err, err)`
+- [ ] `create/3 (obj, err, list)`
+- [ ] `create/3 (obj, err, map)`
+- [ ] `create/3 (obj, list, int)`
+- [ ] `create/3 (obj, list, float)`
+- [ ] `create/3 (obj, list, obj)`
+- [ ] `create/3 (obj, list, str)`
+- [ ] `create/3 (obj, list, err)`
+- [ ] `create/3 (obj, list, list)`
+- [ ] `create/3 (obj, list, map)`
+- [ ] `create/3 (obj, map, int)`
+- [ ] `create/3 (obj, map, float)`
+- [ ] `create/3 (obj, map, obj)`
+- [ ] `create/3 (obj, map, str)`
+- [ ] `create/3 (obj, map, err)`
+- [ ] `create/3 (obj, map, list)`
+- [ ] `create/3 (obj, map, map)`
+- [ ] `create/3 (str, int, int)`
+- [ ] `create/3 (str, int, float)`
+- [ ] `create/3 (str, int, obj)`
+- [ ] `create/3 (str, int, str)`
+- [ ] `create/3 (str, int, err)`
+- [ ] `create/3 (str, int, list)`
+- [ ] `create/3 (str, int, map)`
+- [ ] `create/3 (str, float, int)`
+- [ ] `create/3 (str, float, float)`
+- [ ] `create/3 (str, float, obj)`
+- [ ] `create/3 (str, float, str)`
+- [ ] `create/3 (str, float, err)`
+- [ ] `create/3 (str, float, list)`
+- [ ] `create/3 (str, float, map)`
+- [ ] `create/3 (str, obj, int)`
+- [ ] `create/3 (str, obj, float)`
+- [ ] `create/3 (str, obj, obj)`
+- [ ] `create/3 (str, obj, str)`
+- [ ] `create/3 (str, obj, err)`
+- [ ] `create/3 (str, obj, list)`
+- [ ] `create/3 (str, obj, map)`
+- [ ] `create/3 (str, str, int)`
+- [ ] `create/3 (str, str, float)`
+- [ ] `create/3 (str, str, obj)`
+- [ ] `create/3 (str, str, str)`
+- [ ] `create/3 (str, str, err)`
+- [ ] `create/3 (str, str, list)`
+- [ ] `create/3 (str, str, map)`
+- [ ] `create/3 (str, err, int)`
+- [ ] `create/3 (str, err, float)`
+- [ ] `create/3 (str, err, obj)`
+- [ ] `create/3 (str, err, str)`
+- [ ] `create/3 (str, err, err)`
+- [ ] `create/3 (str, err, list)`
+- [ ] `create/3 (str, err, map)`
+- [ ] `create/3 (str, list, int)`
+- [ ] `create/3 (str, list, float)`
+- [ ] `create/3 (str, list, obj)`
+- [ ] `create/3 (str, list, str)`
+- [ ] `create/3 (str, list, err)`
+- [ ] `create/3 (str, list, list)`
+- [ ] `create/3 (str, list, map)`
+- [ ] `create/3 (str, map, int)`
+- [ ] `create/3 (str, map, float)`
+- [ ] `create/3 (str, map, obj)`
+- [ ] `create/3 (str, map, str)`
+- [ ] `create/3 (str, map, err)`
+- [ ] `create/3 (str, map, list)`
+- [ ] `create/3 (str, map, map)`
+- [ ] `create/3 (err, int, int)`
+- [ ] `create/3 (err, int, float)`
+- [ ] `create/3 (err, int, obj)`
+- [ ] `create/3 (err, int, str)`
+- [ ] `create/3 (err, int, err)`
+- [ ] `create/3 (err, int, list)`
+- [ ] `create/3 (err, int, map)`
+- [ ] `create/3 (err, float, int)`
+- [ ] `create/3 (err, float, float)`
+- [ ] `create/3 (err, float, obj)`
+- [ ] `create/3 (err, float, str)`
+- [ ] `create/3 (err, float, err)`
+- [ ] `create/3 (err, float, list)`
+- [ ] `create/3 (err, float, map)`
+- [ ] `create/3 (err, obj, int)`
+- [ ] `create/3 (err, obj, float)`
+- [ ] `create/3 (err, obj, obj)`
+- [ ] `create/3 (err, obj, str)`
+- [ ] `create/3 (err, obj, err)`
+- [ ] `create/3 (err, obj, list)`
+- [ ] `create/3 (err, obj, map)`
+- [ ] `create/3 (err, str, int)`
+- [ ] `create/3 (err, str, float)`
+- [ ] `create/3 (err, str, obj)`
+- [ ] `create/3 (err, str, str)`
+- [ ] `create/3 (err, str, err)`
+- [ ] `create/3 (err, str, list)`
+- [ ] `create/3 (err, str, map)`
+- [ ] `create/3 (err, err, int)`
+- [ ] `create/3 (err, err, float)`
+- [ ] `create/3 (err, err, obj)`
+- [ ] `create/3 (err, err, str)`
+- [ ] `create/3 (err, err, err)`
+- [ ] `create/3 (err, err, list)`
+- [ ] `create/3 (err, err, map)`
+- [ ] `create/3 (err, list, int)`
+- [ ] `create/3 (err, list, float)`
+- [ ] `create/3 (err, list, obj)`
+- [ ] `create/3 (err, list, str)`
+- [ ] `create/3 (err, list, err)`
+- [ ] `create/3 (err, list, list)`
+- [ ] `create/3 (err, list, map)`
+- [ ] `create/3 (err, map, int)`
+- [ ] `create/3 (err, map, float)`
+- [ ] `create/3 (err, map, obj)`
+- [ ] `create/3 (err, map, str)`
+- [ ] `create/3 (err, map, err)`
+- [ ] `create/3 (err, map, list)`
+- [ ] `create/3 (err, map, map)`
+- [ ] `create/3 (list, int, int)`
+- [ ] `create/3 (list, int, float)`
+- [ ] `create/3 (list, int, obj)`
+- [ ] `create/3 (list, int, str)`
+- [ ] `create/3 (list, int, err)`
+- [ ] `create/3 (list, int, list)`
+- [ ] `create/3 (list, int, map)`
+- [ ] `create/3 (list, float, int)`
+- [ ] `create/3 (list, float, float)`
+- [ ] `create/3 (list, float, obj)`
+- [ ] `create/3 (list, float, str)`
+- [ ] `create/3 (list, float, err)`
+- [ ] `create/3 (list, float, list)`
+- [ ] `create/3 (list, float, map)`
+- [ ] `create/3 (list, obj, int)`
+- [ ] `create/3 (list, obj, float)`
+- [ ] `create/3 (list, obj, obj)`
+- [ ] `create/3 (list, obj, str)`
+- [ ] `create/3 (list, obj, err)`
+- [ ] `create/3 (list, obj, list)`
+- [ ] `create/3 (list, obj, map)`
+- [ ] `create/3 (list, str, int)`
+- [ ] `create/3 (list, str, float)`
+- [ ] `create/3 (list, str, obj)`
+- [ ] `create/3 (list, str, str)`
+- [ ] `create/3 (list, str, err)`
+- [ ] `create/3 (list, str, list)`
+- [ ] `create/3 (list, str, map)`
+- [ ] `create/3 (list, err, int)`
+- [ ] `create/3 (list, err, float)`
+- [ ] `create/3 (list, err, obj)`
+- [ ] `create/3 (list, err, str)`
+- [ ] `create/3 (list, err, err)`
+- [ ] `create/3 (list, err, list)`
+- [ ] `create/3 (list, err, map)`
+- [ ] `create/3 (list, list, int)`
+- [ ] `create/3 (list, list, float)`
+- [ ] `create/3 (list, list, obj)`
+- [ ] `create/3 (list, list, str)`
+- [ ] `create/3 (list, list, err)`
+- [ ] `create/3 (list, list, list)`
+- [ ] `create/3 (list, list, map)`
+- [ ] `create/3 (list, map, int)`
+- [ ] `create/3 (list, map, float)`
+- [ ] `create/3 (list, map, obj)`
+- [ ] `create/3 (list, map, str)`
+- [ ] `create/3 (list, map, err)`
+- [ ] `create/3 (list, map, list)`
+- [ ] `create/3 (list, map, map)`
+- [ ] `create/3 (map, int, int)`
+- [ ] `create/3 (map, int, float)`
+- [ ] `create/3 (map, int, obj)`
+- [ ] `create/3 (map, int, str)`
+- [ ] `create/3 (map, int, err)`
+- [ ] `create/3 (map, int, list)`
+- [ ] `create/3 (map, int, map)`
+- [ ] `create/3 (map, float, int)`
+- [ ] `create/3 (map, float, float)`
+- [ ] `create/3 (map, float, obj)`
+- [ ] `create/3 (map, float, str)`
+- [ ] `create/3 (map, float, err)`
+- [ ] `create/3 (map, float, list)`
+- [ ] `create/3 (map, float, map)`
+- [ ] `create/3 (map, obj, int)`
+- [ ] `create/3 (map, obj, float)`
+- [ ] `create/3 (map, obj, obj)`
+- [ ] `create/3 (map, obj, str)`
+- [ ] `create/3 (map, obj, err)`
+- [ ] `create/3 (map, obj, list)`
+- [ ] `create/3 (map, obj, map)`
+- [ ] `create/3 (map, str, int)`
+- [ ] `create/3 (map, str, float)`
+- [ ] `create/3 (map, str, obj)`
+- [ ] `create/3 (map, str, str)`
+- [ ] `create/3 (map, str, err)`
+- [ ] `create/3 (map, str, list)`
+- [ ] `create/3 (map, str, map)`
+- [ ] `create/3 (map, err, int)`
+- [ ] `create/3 (map, err, float)`
+- [ ] `create/3 (map, err, obj)`
+- [ ] `create/3 (map, err, str)`
+- [ ] `create/3 (map, err, err)`
+- [ ] `create/3 (map, err, list)`
+- [ ] `create/3 (map, err, map)`
+- [ ] `create/3 (map, list, int)`
+- [ ] `create/3 (map, list, float)`
+- [ ] `create/3 (map, list, obj)`
+- [ ] `create/3 (map, list, str)`
+- [ ] `create/3 (map, list, err)`
+- [ ] `create/3 (map, list, list)`
+- [ ] `create/3 (map, list, map)`
+- [ ] `create/3 (map, map, int)`
+- [ ] `create/3 (map, map, float)`
+- [ ] `create/3 (map, map, obj)`
+- [ ] `create/3 (map, map, str)`
+- [ ] `create/3 (map, map, err)`
+- [ ] `create/3 (map, map, list)`
+- [ ] `create/3 (map, map, map)`
+- [ ] `create/4 (int, int, int, int)`
+- [ ] `create/4 (int, int, int, float)`
+- [ ] `create/4 (int, int, int, obj)`
+- [ ] `create/4 (int, int, int, str)`
+- [ ] `create/4 (int, int, int, err)`
+- [ ] `create/4 (int, int, int, list)`
+- [ ] `create/4 (int, int, int, map)`
+- [ ] `create/4 (int, int, float, int)`
+- [ ] `create/4 (int, int, float, float)`
+- [ ] `create/4 (int, int, float, obj)`
+- [ ] `create/4 (int, int, float, str)`
+- [ ] `create/4 (int, int, float, err)`
+- [ ] `create/4 (int, int, float, list)`
+- [ ] `create/4 (int, int, float, map)`
+- [ ] `create/4 (int, int, obj, int)`
+- [ ] `create/4 (int, int, obj, float)`
+- [ ] `create/4 (int, int, obj, obj)`
+- [ ] `create/4 (int, int, obj, str)`
+- [ ] `create/4 (int, int, obj, err)`
+- [ ] `create/4 (int, int, obj, list)`
+- [ ] `create/4 (int, int, obj, map)`
+- [ ] `create/4 (int, int, str, int)`
+- [ ] `create/4 (int, int, str, float)`
+- [ ] `create/4 (int, int, str, obj)`
+- [ ] `create/4 (int, int, str, str)`
+- [ ] `create/4 (int, int, str, err)`
+- [ ] `create/4 (int, int, str, list)`
+- [ ] `create/4 (int, int, str, map)`
+- [ ] `create/4 (int, int, err, int)`
+- [ ] `create/4 (int, int, err, float)`
+- [ ] `create/4 (int, int, err, obj)`
+- [ ] `create/4 (int, int, err, str)`
+- [ ] `create/4 (int, int, err, err)`
+- [ ] `create/4 (int, int, err, list)`
+- [ ] `create/4 (int, int, err, map)`
+- [ ] `create/4 (int, int, list, int)`
+- [ ] `create/4 (int, int, list, float)`
+- [ ] `create/4 (int, int, list, obj)`
+- [ ] `create/4 (int, int, list, str)`
+- [ ] `create/4 (int, int, list, err)`
+- [ ] `create/4 (int, int, list, list)`
+- [ ] `create/4 (int, int, list, map)`
+- [ ] `create/4 (int, int, map, int)`
+- [ ] `create/4 (int, int, map, float)`
+- [ ] `create/4 (int, int, map, obj)`
+- [ ] `create/4 (int, int, map, str)`
+- [ ] `create/4 (int, int, map, err)`
+- [ ] `create/4 (int, int, map, list)`
+- [ ] `create/4 (int, int, map, map)`
+- [ ] `create/4 (int, float, int, int)`
+- [ ] `create/4 (int, float, int, float)`
+- [ ] `create/4 (int, float, int, obj)`
+- [ ] `create/4 (int, float, int, str)`
+- [ ] `create/4 (int, float, int, err)`
+- [ ] `create/4 (int, float, int, list)`
+- [ ] `create/4 (int, float, int, map)`
+- [ ] `create/4 (int, float, float, int)`
+- [ ] `create/4 (int, float, float, float)`
+- [ ] `create/4 (int, float, float, obj)`
+- [ ] `create/4 (int, float, float, str)`
+- [ ] `create/4 (int, float, float, err)`
+- [ ] `create/4 (int, float, float, list)`
+- [ ] `create/4 (int, float, float, map)`
+- [ ] `create/4 (int, float, obj, int)`
+- [ ] `create/4 (int, float, obj, float)`
+- [ ] `create/4 (int, float, obj, obj)`
+- [ ] `create/4 (int, float, obj, str)`
+- [ ] `create/4 (int, float, obj, err)`
+- [ ] `create/4 (int, float, obj, list)`
+- [ ] `create/4 (int, float, obj, map)`
+- [ ] `create/4 (int, float, str, int)`
+- [ ] `create/4 (int, float, str, float)`
+- [ ] `create/4 (int, float, str, obj)`
+- [ ] `create/4 (int, float, str, str)`
+- [ ] `create/4 (int, float, str, err)`
+- [ ] `create/4 (int, float, str, list)`
+- [ ] `create/4 (int, float, str, map)`
+- [ ] `create/4 (int, float, err, int)`
+- [ ] `create/4 (int, float, err, float)`
+- [ ] `create/4 (int, float, err, obj)`
+- [ ] `create/4 (int, float, err, str)`
+- [ ] `create/4 (int, float, err, err)`
+- [ ] `create/4 (int, float, err, list)`
+- [ ] `create/4 (int, float, err, map)`
+- [ ] `create/4 (int, float, list, int)`
+- [ ] `create/4 (int, float, list, float)`
+- [ ] `create/4 (int, float, list, obj)`
+- [ ] `create/4 (int, float, list, str)`
+- [ ] `create/4 (int, float, list, err)`
+- [ ] `create/4 (int, float, list, list)`
+- [ ] `create/4 (int, float, list, map)`
+- [ ] `create/4 (int, float, map, int)`
+- [ ] `create/4 (int, float, map, float)`
+- [ ] `create/4 (int, float, map, obj)`
+- [ ] `create/4 (int, float, map, str)`
+- [ ] `create/4 (int, float, map, err)`
+- [ ] `create/4 (int, float, map, list)`
+- [ ] `create/4 (int, float, map, map)`
+- [ ] `create/4 (int, obj, int, int)`
+- [ ] `create/4 (int, obj, int, float)`
+- [ ] `create/4 (int, obj, int, obj)`
+- [ ] `create/4 (int, obj, int, str)`
+- [ ] `create/4 (int, obj, int, err)`
+- [ ] `create/4 (int, obj, int, list)`
+- [ ] `create/4 (int, obj, int, map)`
+- [ ] `create/4 (int, obj, float, int)`
+- [ ] `create/4 (int, obj, float, float)`
+- [ ] `create/4 (int, obj, float, obj)`
+- [ ] `create/4 (int, obj, float, str)`
+- [ ] `create/4 (int, obj, float, err)`
+- [ ] `create/4 (int, obj, float, list)`
+- [ ] `create/4 (int, obj, float, map)`
+- [ ] `create/4 (int, obj, obj, int)`
+- [ ] `create/4 (int, obj, obj, float)`
+- [ ] `create/4 (int, obj, obj, obj)`
+- [ ] `create/4 (int, obj, obj, str)`
+- [ ] `create/4 (int, obj, obj, err)`
+- [ ] `create/4 (int, obj, obj, list)`
+- [ ] `create/4 (int, obj, obj, map)`
+- [ ] `create/4 (int, obj, str, int)`
+- [ ] `create/4 (int, obj, str, float)`
+- [ ] `create/4 (int, obj, str, obj)`
+- [ ] `create/4 (int, obj, str, str)`
+- [ ] `create/4 (int, obj, str, err)`
+- [ ] `create/4 (int, obj, str, list)`
+- [ ] `create/4 (int, obj, str, map)`
+- [ ] `create/4 (int, obj, err, int)`
+- [ ] `create/4 (int, obj, err, float)`
+- [ ] `create/4 (int, obj, err, obj)`
+- [ ] `create/4 (int, obj, err, str)`
+- [ ] `create/4 (int, obj, err, err)`
+- [ ] `create/4 (int, obj, err, list)`
+- [ ] `create/4 (int, obj, err, map)`
+- [ ] `create/4 (int, obj, list, int)`
+- [ ] `create/4 (int, obj, list, float)`
+- [ ] `create/4 (int, obj, list, obj)`
+- [ ] `create/4 (int, obj, list, str)`
+- [ ] `create/4 (int, obj, list, err)`
+- [ ] `create/4 (int, obj, list, list)`
+- [ ] `create/4 (int, obj, list, map)`
+- [ ] `create/4 (int, obj, map, int)`
+- [ ] `create/4 (int, obj, map, float)`
+- [ ] `create/4 (int, obj, map, obj)`
+- [ ] `create/4 (int, obj, map, str)`
+- [ ] `create/4 (int, obj, map, err)`
+- [ ] `create/4 (int, obj, map, list)`
+- [ ] `create/4 (int, obj, map, map)`
+- [ ] `create/4 (int, str, int, int)`
+- [ ] `create/4 (int, str, int, float)`
+- [ ] `create/4 (int, str, int, obj)`
+- [ ] `create/4 (int, str, int, str)`
+- [ ] `create/4 (int, str, int, err)`
+- [ ] `create/4 (int, str, int, list)`
+- [ ] `create/4 (int, str, int, map)`
+- [ ] `create/4 (int, str, float, int)`
+- [ ] `create/4 (int, str, float, float)`
+- [ ] `create/4 (int, str, float, obj)`
+- [ ] `create/4 (int, str, float, str)`
+- [ ] `create/4 (int, str, float, err)`
+- [ ] `create/4 (int, str, float, list)`
+- [ ] `create/4 (int, str, float, map)`
+- [ ] `create/4 (int, str, obj, int)`
+- [ ] `create/4 (int, str, obj, float)`
+- [ ] `create/4 (int, str, obj, obj)`
+- [ ] `create/4 (int, str, obj, str)`
+- [ ] `create/4 (int, str, obj, err)`
+- [ ] `create/4 (int, str, obj, list)`
+- [ ] `create/4 (int, str, obj, map)`
+- [ ] `create/4 (int, str, str, int)`
+- [ ] `create/4 (int, str, str, float)`
+- [ ] `create/4 (int, str, str, obj)`
+- [ ] `create/4 (int, str, str, str)`
+- [ ] `create/4 (int, str, str, err)`
+- [ ] `create/4 (int, str, str, list)`
+- [ ] `create/4 (int, str, str, map)`
+- [ ] `create/4 (int, str, err, int)`
+- [ ] `create/4 (int, str, err, float)`
+- [ ] `create/4 (int, str, err, obj)`
+- [ ] `create/4 (int, str, err, str)`
+- [ ] `create/4 (int, str, err, err)`
+- [ ] `create/4 (int, str, err, list)`
+- [ ] `create/4 (int, str, err, map)`
+- [ ] `create/4 (int, str, list, int)`
+- [ ] `create/4 (int, str, list, float)`
+- [ ] `create/4 (int, str, list, obj)`
+- [ ] `create/4 (int, str, list, str)`
+- [ ] `create/4 (int, str, list, err)`
+- [ ] `create/4 (int, str, list, list)`
+- [ ] `create/4 (int, str, list, map)`
+- [ ] `create/4 (int, str, map, int)`
+- [ ] `create/4 (int, str, map, float)`
+- [ ] `create/4 (int, str, map, obj)`
+- [ ] `create/4 (int, str, map, str)`
+- [ ] `create/4 (int, str, map, err)`
+- [ ] `create/4 (int, str, map, list)`
+- [ ] `create/4 (int, str, map, map)`
+- [ ] `create/4 (int, err, int, int)`
+- [ ] `create/4 (int, err, int, float)`
+- [ ] `create/4 (int, err, int, obj)`
+- [ ] `create/4 (int, err, int, str)`
+- [ ] `create/4 (int, err, int, err)`
+- [ ] `create/4 (int, err, int, list)`
+- [ ] `create/4 (int, err, int, map)`
+- [ ] `create/4 (int, err, float, int)`
+- [ ] `create/4 (int, err, float, float)`
+- [ ] `create/4 (int, err, float, obj)`
+- [ ] `create/4 (int, err, float, str)`
+- [ ] `create/4 (int, err, float, err)`
+- [ ] `create/4 (int, err, float, list)`
+- [ ] `create/4 (int, err, float, map)`
+- [ ] `create/4 (int, err, obj, int)`
+- [ ] `create/4 (int, err, obj, float)`
+- [ ] `create/4 (int, err, obj, obj)`
+- [ ] `create/4 (int, err, obj, str)`
+- [ ] `create/4 (int, err, obj, err)`
+- [ ] `create/4 (int, err, obj, list)`
+- [ ] `create/4 (int, err, obj, map)`
+- [ ] `create/4 (int, err, str, int)`
+- [ ] `create/4 (int, err, str, float)`
+- [ ] `create/4 (int, err, str, obj)`
+- [ ] `create/4 (int, err, str, str)`
+- [ ] `create/4 (int, err, str, err)`
+- [ ] `create/4 (int, err, str, list)`
+- [ ] `create/4 (int, err, str, map)`
+- [ ] `create/4 (int, err, err, int)`
+- [ ] `create/4 (int, err, err, float)`
+- [ ] `create/4 (int, err, err, obj)`
+- [ ] `create/4 (int, err, err, str)`
+- [ ] `create/4 (int, err, err, err)`
+- [ ] `create/4 (int, err, err, list)`
+- [ ] `create/4 (int, err, err, map)`
+- [ ] `create/4 (int, err, list, int)`
+- [ ] `create/4 (int, err, list, float)`
+- [ ] `create/4 (int, err, list, obj)`
+- [ ] `create/4 (int, err, list, str)`
+- [ ] `create/4 (int, err, list, err)`
+- [ ] `create/4 (int, err, list, list)`
+- [ ] `create/4 (int, err, list, map)`
+- [ ] `create/4 (int, err, map, int)`
+- [ ] `create/4 (int, err, map, float)`
+- [ ] `create/4 (int, err, map, obj)`
+- [ ] `create/4 (int, err, map, str)`
+- [ ] `create/4 (int, err, map, err)`
+- [ ] `create/4 (int, err, map, list)`
+- [ ] `create/4 (int, err, map, map)`
+- [ ] `create/4 (int, list, int, int)`
+- [ ] `create/4 (int, list, int, float)`
+- [ ] `create/4 (int, list, int, obj)`
+- [ ] `create/4 (int, list, int, str)`
+- [ ] `create/4 (int, list, int, err)`
+- [ ] `create/4 (int, list, int, list)`
+- [ ] `create/4 (int, list, int, map)`
+- [ ] `create/4 (int, list, float, int)`
+- [ ] `create/4 (int, list, float, float)`
+- [ ] `create/4 (int, list, float, obj)`
+- [ ] `create/4 (int, list, float, str)`
+- [ ] `create/4 (int, list, float, err)`
+- [ ] `create/4 (int, list, float, list)`
+- [ ] `create/4 (int, list, float, map)`
+- [ ] `create/4 (int, list, obj, int)`
+- [ ] `create/4 (int, list, obj, float)`
+- [ ] `create/4 (int, list, obj, obj)`
+- [ ] `create/4 (int, list, obj, str)`
+- [ ] `create/4 (int, list, obj, err)`
+- [ ] `create/4 (int, list, obj, list)`
+- [ ] `create/4 (int, list, obj, map)`
+- [ ] `create/4 (int, list, str, int)`
+- [ ] `create/4 (int, list, str, float)`
+- [ ] `create/4 (int, list, str, obj)`
+- [ ] `create/4 (int, list, str, str)`
+- [ ] `create/4 (int, list, str, err)`
+- [ ] `create/4 (int, list, str, list)`
+- [ ] `create/4 (int, list, str, map)`
+- [ ] `create/4 (int, list, err, int)`
+- [ ] `create/4 (int, list, err, float)`
+- [ ] `create/4 (int, list, err, obj)`
+- [ ] `create/4 (int, list, err, str)`
+- [ ] `create/4 (int, list, err, err)`
+- [ ] `create/4 (int, list, err, list)`
+- [ ] `create/4 (int, list, err, map)`
+- [ ] `create/4 (int, list, list, int)`
+- [ ] `create/4 (int, list, list, float)`
+- [ ] `create/4 (int, list, list, obj)`
+- [ ] `create/4 (int, list, list, str)`
+- [ ] `create/4 (int, list, list, err)`
+- [ ] `create/4 (int, list, list, list)`
+- [ ] `create/4 (int, list, list, map)`
+- [ ] `create/4 (int, list, map, int)`
+- [ ] `create/4 (int, list, map, float)`
+- [ ] `create/4 (int, list, map, obj)`
+- [ ] `create/4 (int, list, map, str)`
+- [ ] `create/4 (int, list, map, err)`
+- [ ] `create/4 (int, list, map, list)`
+- [ ] `create/4 (int, list, map, map)`
+- [ ] `create/4 (int, map, int, int)`
+- [ ] `create/4 (int, map, int, float)`
+- [ ] `create/4 (int, map, int, obj)`
+- [ ] `create/4 (int, map, int, str)`
+- [ ] `create/4 (int, map, int, err)`
+- [ ] `create/4 (int, map, int, list)`
+- [ ] `create/4 (int, map, int, map)`
+- [ ] `create/4 (int, map, float, int)`
+- [ ] `create/4 (int, map, float, float)`
+- [ ] `create/4 (int, map, float, obj)`
+- [ ] `create/4 (int, map, float, str)`
+- [ ] `create/4 (int, map, float, err)`
+- [ ] `create/4 (int, map, float, list)`
+- [ ] `create/4 (int, map, float, map)`
+- [ ] `create/4 (int, map, obj, int)`
+- [ ] `create/4 (int, map, obj, float)`
+- [ ] `create/4 (int, map, obj, obj)`
+- [ ] `create/4 (int, map, obj, str)`
+- [ ] `create/4 (int, map, obj, err)`
+- [ ] `create/4 (int, map, obj, list)`
+- [ ] `create/4 (int, map, obj, map)`
+- [ ] `create/4 (int, map, str, int)`
+- [ ] `create/4 (int, map, str, float)`
+- [ ] `create/4 (int, map, str, obj)`
+- [ ] `create/4 (int, map, str, str)`
+- [ ] `create/4 (int, map, str, err)`
+- [ ] `create/4 (int, map, str, list)`
+- [ ] `create/4 (int, map, str, map)`
+- [ ] `create/4 (int, map, err, int)`
+- [ ] `create/4 (int, map, err, float)`
+- [ ] `create/4 (int, map, err, obj)`
+- [ ] `create/4 (int, map, err, str)`
+- [ ] `create/4 (int, map, err, err)`
+- [ ] `create/4 (int, map, err, list)`
+- [ ] `create/4 (int, map, err, map)`
+- [ ] `create/4 (int, map, list, int)`
+- [ ] `create/4 (int, map, list, float)`
+- [ ] `create/4 (int, map, list, obj)`
+- [ ] `create/4 (int, map, list, str)`
+- [ ] `create/4 (int, map, list, err)`
+- [ ] `create/4 (int, map, list, list)`
+- [ ] `create/4 (int, map, list, map)`
+- [ ] `create/4 (int, map, map, int)`
+- [ ] `create/4 (int, map, map, float)`
+- [ ] `create/4 (int, map, map, obj)`
+- [ ] `create/4 (int, map, map, str)`
+- [ ] `create/4 (int, map, map, err)`
+- [ ] `create/4 (int, map, map, list)`
+- [ ] `create/4 (int, map, map, map)`
+- [ ] `create/4 (float, int, int, int)`
+- [ ] `create/4 (float, int, int, float)`
+- [ ] `create/4 (float, int, int, obj)`
+- [ ] `create/4 (float, int, int, str)`
+- [ ] `create/4 (float, int, int, err)`
+- [ ] `create/4 (float, int, int, list)`
+- [ ] `create/4 (float, int, int, map)`
+- [ ] `create/4 (float, int, float, int)`
+- [ ] `create/4 (float, int, float, float)`
+- [ ] `create/4 (float, int, float, obj)`
+- [ ] `create/4 (float, int, float, str)`
+- [ ] `create/4 (float, int, float, err)`
+- [ ] `create/4 (float, int, float, list)`
+- [ ] `create/4 (float, int, float, map)`
+- [ ] `create/4 (float, int, obj, int)`
+- [ ] `create/4 (float, int, obj, float)`
+- [ ] `create/4 (float, int, obj, obj)`
+- [ ] `create/4 (float, int, obj, str)`
+- [ ] `create/4 (float, int, obj, err)`
+- [ ] `create/4 (float, int, obj, list)`
+- [ ] `create/4 (float, int, obj, map)`
+- [ ] `create/4 (float, int, str, int)`
+- [ ] `create/4 (float, int, str, float)`
+- [ ] `create/4 (float, int, str, obj)`
+- [ ] `create/4 (float, int, str, str)`
+- [ ] `create/4 (float, int, str, err)`
+- [ ] `create/4 (float, int, str, list)`
+- [ ] `create/4 (float, int, str, map)`
+- [ ] `create/4 (float, int, err, int)`
+- [ ] `create/4 (float, int, err, float)`
+- [ ] `create/4 (float, int, err, obj)`
+- [ ] `create/4 (float, int, err, str)`
+- [ ] `create/4 (float, int, err, err)`
+- [ ] `create/4 (float, int, err, list)`
+- [ ] `create/4 (float, int, err, map)`
+- [ ] `create/4 (float, int, list, int)`
+- [ ] `create/4 (float, int, list, float)`
+- [ ] `create/4 (float, int, list, obj)`
+- [ ] `create/4 (float, int, list, str)`
+- [ ] `create/4 (float, int, list, err)`
+- [ ] `create/4 (float, int, list, list)`
+- [ ] `create/4 (float, int, list, map)`
+- [ ] `create/4 (float, int, map, int)`
+- [ ] `create/4 (float, int, map, float)`
+- [ ] `create/4 (float, int, map, obj)`
+- [ ] `create/4 (float, int, map, str)`
+- [ ] `create/4 (float, int, map, err)`
+- [ ] `create/4 (float, int, map, list)`
+- [ ] `create/4 (float, int, map, map)`
+- [ ] `create/4 (float, float, int, int)`
+- [ ] `create/4 (float, float, int, float)`
+- [ ] `create/4 (float, float, int, obj)`
+- [ ] `create/4 (float, float, int, str)`
+- [ ] `create/4 (float, float, int, err)`
+- [ ] `create/4 (float, float, int, list)`
+- [ ] `create/4 (float, float, int, map)`
+- [ ] `create/4 (float, float, float, int)`
+- [ ] `create/4 (float, float, float, float)`
+- [ ] `create/4 (float, float, float, obj)`
+- [ ] `create/4 (float, float, float, str)`
+- [ ] `create/4 (float, float, float, err)`
+- [ ] `create/4 (float, float, float, list)`
+- [ ] `create/4 (float, float, float, map)`
+- [ ] `create/4 (float, float, obj, int)`
+- [ ] `create/4 (float, float, obj, float)`
+- [ ] `create/4 (float, float, obj, obj)`
+- [ ] `create/4 (float, float, obj, str)`
+- [ ] `create/4 (float, float, obj, err)`
+- [ ] `create/4 (float, float, obj, list)`
+- [ ] `create/4 (float, float, obj, map)`
+- [ ] `create/4 (float, float, str, int)`
+- [ ] `create/4 (float, float, str, float)`
+- [ ] `create/4 (float, float, str, obj)`
+- [ ] `create/4 (float, float, str, str)`
+- [ ] `create/4 (float, float, str, err)`
+- [ ] `create/4 (float, float, str, list)`
+- [ ] `create/4 (float, float, str, map)`
+- [ ] `create/4 (float, float, err, int)`
+- [ ] `create/4 (float, float, err, float)`
+- [ ] `create/4 (float, float, err, obj)`
+- [ ] `create/4 (float, float, err, str)`
+- [ ] `create/4 (float, float, err, err)`
+- [ ] `create/4 (float, float, err, list)`
+- [ ] `create/4 (float, float, err, map)`
+- [ ] `create/4 (float, float, list, int)`
+- [ ] `create/4 (float, float, list, float)`
+- [ ] `create/4 (float, float, list, obj)`
+- [ ] `create/4 (float, float, list, str)`
+- [ ] `create/4 (float, float, list, err)`
+- [ ] `create/4 (float, float, list, list)`
+- [ ] `create/4 (float, float, list, map)`
+- [ ] `create/4 (float, float, map, int)`
+- [ ] `create/4 (float, float, map, float)`
+- [ ] `create/4 (float, float, map, obj)`
+- [ ] `create/4 (float, float, map, str)`
+- [ ] `create/4 (float, float, map, err)`
+- [ ] `create/4 (float, float, map, list)`
+- [ ] `create/4 (float, float, map, map)`
+- [ ] `create/4 (float, obj, int, int)`
+- [ ] `create/4 (float, obj, int, float)`
+- [ ] `create/4 (float, obj, int, obj)`
+- [ ] `create/4 (float, obj, int, str)`
+- [ ] `create/4 (float, obj, int, err)`
+- [ ] `create/4 (float, obj, int, list)`
+- [ ] `create/4 (float, obj, int, map)`
+- [ ] `create/4 (float, obj, float, int)`
+- [ ] `create/4 (float, obj, float, float)`
+- [ ] `create/4 (float, obj, float, obj)`
+- [ ] `create/4 (float, obj, float, str)`
+- [ ] `create/4 (float, obj, float, err)`
+- [ ] `create/4 (float, obj, float, list)`
+- [ ] `create/4 (float, obj, float, map)`
+- [ ] `create/4 (float, obj, obj, int)`
+- [ ] `create/4 (float, obj, obj, float)`
+- [ ] `create/4 (float, obj, obj, obj)`
+- [ ] `create/4 (float, obj, obj, str)`
+- [ ] `create/4 (float, obj, obj, err)`
+- [ ] `create/4 (float, obj, obj, list)`
+- [ ] `create/4 (float, obj, obj, map)`
+- [ ] `create/4 (float, obj, str, int)`
+- [ ] `create/4 (float, obj, str, float)`
+- [ ] `create/4 (float, obj, str, obj)`
+- [ ] `create/4 (float, obj, str, str)`
+- [ ] `create/4 (float, obj, str, err)`
+- [ ] `create/4 (float, obj, str, list)`
+- [ ] `create/4 (float, obj, str, map)`
+- [ ] `create/4 (float, obj, err, int)`
+- [ ] `create/4 (float, obj, err, float)`
+- [ ] `create/4 (float, obj, err, obj)`
+- [ ] `create/4 (float, obj, err, str)`
+- [ ] `create/4 (float, obj, err, err)`
+- [ ] `create/4 (float, obj, err, list)`
+- [ ] `create/4 (float, obj, err, map)`
+- [ ] `create/4 (float, obj, list, int)`
+- [ ] `create/4 (float, obj, list, float)`
+- [ ] `create/4 (float, obj, list, obj)`
+- [ ] `create/4 (float, obj, list, str)`
+- [ ] `create/4 (float, obj, list, err)`
+- [ ] `create/4 (float, obj, list, list)`
+- [ ] `create/4 (float, obj, list, map)`
+- [ ] `create/4 (float, obj, map, int)`
+- [ ] `create/4 (float, obj, map, float)`
+- [ ] `create/4 (float, obj, map, obj)`
+- [ ] `create/4 (float, obj, map, str)`
+- [ ] `create/4 (float, obj, map, err)`
+- [ ] `create/4 (float, obj, map, list)`
+- [ ] `create/4 (float, obj, map, map)`
+- [ ] `create/4 (float, str, int, int)`
+- [ ] `create/4 (float, str, int, float)`
+- [ ] `create/4 (float, str, int, obj)`
+- [ ] `create/4 (float, str, int, str)`
+- [ ] `create/4 (float, str, int, err)`
+- [ ] `create/4 (float, str, int, list)`
+- [ ] `create/4 (float, str, int, map)`
+- [ ] `create/4 (float, str, float, int)`
+- [ ] `create/4 (float, str, float, float)`
+- [ ] `create/4 (float, str, float, obj)`
+- [ ] `create/4 (float, str, float, str)`
+- [ ] `create/4 (float, str, float, err)`
+- [ ] `create/4 (float, str, float, list)`
+- [ ] `create/4 (float, str, float, map)`
+- [ ] `create/4 (float, str, obj, int)`
+- [ ] `create/4 (float, str, obj, float)`
+- [ ] `create/4 (float, str, obj, obj)`
+- [ ] `create/4 (float, str, obj, str)`
+- [ ] `create/4 (float, str, obj, err)`
+- [ ] `create/4 (float, str, obj, list)`
+- [ ] `create/4 (float, str, obj, map)`
+- [ ] `create/4 (float, str, str, int)`
+- [ ] `create/4 (float, str, str, float)`
+- [ ] `create/4 (float, str, str, obj)`
+- [ ] `create/4 (float, str, str, str)`
+- [ ] `create/4 (float, str, str, err)`
+- [ ] `create/4 (float, str, str, list)`
+- [ ] `create/4 (float, str, str, map)`
+- [ ] `create/4 (float, str, err, int)`
+- [ ] `create/4 (float, str, err, float)`
+- [ ] `create/4 (float, str, err, obj)`
+- [ ] `create/4 (float, str, err, str)`
+- [ ] `create/4 (float, str, err, err)`
+- [ ] `create/4 (float, str, err, list)`
+- [ ] `create/4 (float, str, err, map)`
+- [ ] `create/4 (float, str, list, int)`
+- [ ] `create/4 (float, str, list, float)`
+- [ ] `create/4 (float, str, list, obj)`
+- [ ] `create/4 (float, str, list, str)`
+- [ ] `create/4 (float, str, list, err)`
+- [ ] `create/4 (float, str, list, list)`
+- [ ] `create/4 (float, str, list, map)`
+- [ ] `create/4 (float, str, map, int)`
+- [ ] `create/4 (float, str, map, float)`
+- [ ] `create/4 (float, str, map, obj)`
+- [ ] `create/4 (float, str, map, str)`
+- [ ] `create/4 (float, str, map, err)`
+- [ ] `create/4 (float, str, map, list)`
+- [ ] `create/4 (float, str, map, map)`
+- [ ] `create/4 (float, err, int, int)`
+- [ ] `create/4 (float, err, int, float)`
+- [ ] `create/4 (float, err, int, obj)`
+- [ ] `create/4 (float, err, int, str)`
+- [ ] `create/4 (float, err, int, err)`
+- [ ] `create/4 (float, err, int, list)`
+- [ ] `create/4 (float, err, int, map)`
+- [ ] `create/4 (float, err, float, int)`
+- [ ] `create/4 (float, err, float, float)`
+- [ ] `create/4 (float, err, float, obj)`
+- [ ] `create/4 (float, err, float, str)`
+- [ ] `create/4 (float, err, float, err)`
+- [ ] `create/4 (float, err, float, list)`
+- [ ] `create/4 (float, err, float, map)`
+- [ ] `create/4 (float, err, obj, int)`
+- [ ] `create/4 (float, err, obj, float)`
+- [ ] `create/4 (float, err, obj, obj)`
+- [ ] `create/4 (float, err, obj, str)`
+- [ ] `create/4 (float, err, obj, err)`
+- [ ] `create/4 (float, err, obj, list)`
+- [ ] `create/4 (float, err, obj, map)`
+- [ ] `create/4 (float, err, str, int)`
+- [ ] `create/4 (float, err, str, float)`
+- [ ] `create/4 (float, err, str, obj)`
+- [ ] `create/4 (float, err, str, str)`
+- [ ] `create/4 (float, err, str, err)`
+- [ ] `create/4 (float, err, str, list)`
+- [ ] `create/4 (float, err, str, map)`
+- [ ] `create/4 (float, err, err, int)`
+- [ ] `create/4 (float, err, err, float)`
+- [ ] `create/4 (float, err, err, obj)`
+- [ ] `create/4 (float, err, err, str)`
+- [ ] `create/4 (float, err, err, err)`
+- [ ] `create/4 (float, err, err, list)`
+- [ ] `create/4 (float, err, err, map)`
+- [ ] `create/4 (float, err, list, int)`
+- [ ] `create/4 (float, err, list, float)`
+- [ ] `create/4 (float, err, list, obj)`
+- [ ] `create/4 (float, err, list, str)`
+- [ ] `create/4 (float, err, list, err)`
+- [ ] `create/4 (float, err, list, list)`
+- [ ] `create/4 (float, err, list, map)`
+- [ ] `create/4 (float, err, map, int)`
+- [ ] `create/4 (float, err, map, float)`
+- [ ] `create/4 (float, err, map, obj)`
+- [ ] `create/4 (float, err, map, str)`
+- [ ] `create/4 (float, err, map, err)`
+- [ ] `create/4 (float, err, map, list)`
+- [ ] `create/4 (float, err, map, map)`
+- [ ] `create/4 (float, list, int, int)`
+- [ ] `create/4 (float, list, int, float)`
+- [ ] `create/4 (float, list, int, obj)`
+- [ ] `create/4 (float, list, int, str)`
+- [ ] `create/4 (float, list, int, err)`
+- [ ] `create/4 (float, list, int, list)`
+- [ ] `create/4 (float, list, int, map)`
+- [ ] `create/4 (float, list, float, int)`
+- [ ] `create/4 (float, list, float, float)`
+- [ ] `create/4 (float, list, float, obj)`
+- [ ] `create/4 (float, list, float, str)`
+- [ ] `create/4 (float, list, float, err)`
+- [ ] `create/4 (float, list, float, list)`
+- [ ] `create/4 (float, list, float, map)`
+- [ ] `create/4 (float, list, obj, int)`
+- [ ] `create/4 (float, list, obj, float)`
+- [ ] `create/4 (float, list, obj, obj)`
+- [ ] `create/4 (float, list, obj, str)`
+- [ ] `create/4 (float, list, obj, err)`
+- [ ] `create/4 (float, list, obj, list)`
+- [ ] `create/4 (float, list, obj, map)`
+- [ ] `create/4 (float, list, str, int)`
+- [ ] `create/4 (float, list, str, float)`
+- [ ] `create/4 (float, list, str, obj)`
+- [ ] `create/4 (float, list, str, str)`
+- [ ] `create/4 (float, list, str, err)`
+- [ ] `create/4 (float, list, str, list)`
+- [ ] `create/4 (float, list, str, map)`
+- [ ] `create/4 (float, list, err, int)`
+- [ ] `create/4 (float, list, err, float)`
+- [ ] `create/4 (float, list, err, obj)`
+- [ ] `create/4 (float, list, err, str)`
+- [ ] `create/4 (float, list, err, err)`
+- [ ] `create/4 (float, list, err, list)`
+- [ ] `create/4 (float, list, err, map)`
+- [ ] `create/4 (float, list, list, int)`
+- [ ] `create/4 (float, list, list, float)`
+- [ ] `create/4 (float, list, list, obj)`
+- [ ] `create/4 (float, list, list, str)`
+- [ ] `create/4 (float, list, list, err)`
+- [ ] `create/4 (float, list, list, list)`
+- [ ] `create/4 (float, list, list, map)`
+- [ ] `create/4 (float, list, map, int)`
+- [ ] `create/4 (float, list, map, float)`
+- [ ] `create/4 (float, list, map, obj)`
+- [ ] `create/4 (float, list, map, str)`
+- [ ] `create/4 (float, list, map, err)`
+- [ ] `create/4 (float, list, map, list)`
+- [ ] `create/4 (float, list, map, map)`
+- [ ] `create/4 (float, map, int, int)`
+- [ ] `create/4 (float, map, int, float)`
+- [ ] `create/4 (float, map, int, obj)`
+- [ ] `create/4 (float, map, int, str)`
+- [ ] `create/4 (float, map, int, err)`
+- [ ] `create/4 (float, map, int, list)`
+- [ ] `create/4 (float, map, int, map)`
+- [ ] `create/4 (float, map, float, int)`
+- [ ] `create/4 (float, map, float, float)`
+- [ ] `create/4 (float, map, float, obj)`
+- [ ] `create/4 (float, map, float, str)`
+- [ ] `create/4 (float, map, float, err)`
+- [ ] `create/4 (float, map, float, list)`
+- [ ] `create/4 (float, map, float, map)`
+- [ ] `create/4 (float, map, obj, int)`
+- [ ] `create/4 (float, map, obj, float)`
+- [ ] `create/4 (float, map, obj, obj)`
+- [ ] `create/4 (float, map, obj, str)`
+- [ ] `create/4 (float, map, obj, err)`
+- [ ] `create/4 (float, map, obj, list)`
+- [ ] `create/4 (float, map, obj, map)`
+- [ ] `create/4 (float, map, str, int)`
+- [ ] `create/4 (float, map, str, float)`
+- [ ] `create/4 (float, map, str, obj)`
+- [ ] `create/4 (float, map, str, str)`
+- [ ] `create/4 (float, map, str, err)`
+- [ ] `create/4 (float, map, str, list)`
+- [ ] `create/4 (float, map, str, map)`
+- [ ] `create/4 (float, map, err, int)`
+- [ ] `create/4 (float, map, err, float)`
+- [ ] `create/4 (float, map, err, obj)`
+- [ ] `create/4 (float, map, err, str)`
+- [ ] `create/4 (float, map, err, err)`
+- [ ] `create/4 (float, map, err, list)`
+- [ ] `create/4 (float, map, err, map)`
+- [ ] `create/4 (float, map, list, int)`
+- [ ] `create/4 (float, map, list, float)`
+- [ ] `create/4 (float, map, list, obj)`
+- [ ] `create/4 (float, map, list, str)`
+- [ ] `create/4 (float, map, list, err)`
+- [ ] `create/4 (float, map, list, list)`
+- [ ] `create/4 (float, map, list, map)`
+- [ ] `create/4 (float, map, map, int)`
+- [ ] `create/4 (float, map, map, float)`
+- [ ] `create/4 (float, map, map, obj)`
+- [ ] `create/4 (float, map, map, str)`
+- [ ] `create/4 (float, map, map, err)`
+- [ ] `create/4 (float, map, map, list)`
+- [ ] `create/4 (float, map, map, map)`
+- [ ] `create/4 (obj, int, int, int)`
+- [ ] `create/4 (obj, int, int, float)`
+- [ ] `create/4 (obj, int, int, obj)`
+- [ ] `create/4 (obj, int, int, str)`
+- [ ] `create/4 (obj, int, int, err)`
+- [ ] `create/4 (obj, int, int, list)`
+- [ ] `create/4 (obj, int, int, map)`
+- [ ] `create/4 (obj, int, float, int)`
+- [ ] `create/4 (obj, int, float, float)`
+- [ ] `create/4 (obj, int, float, obj)`
+- [ ] `create/4 (obj, int, float, str)`
+- [ ] `create/4 (obj, int, float, err)`
+- [ ] `create/4 (obj, int, float, list)`
+- [ ] `create/4 (obj, int, float, map)`
+- [ ] `create/4 (obj, int, obj, int)`
+- [ ] `create/4 (obj, int, obj, float)`
+- [ ] `create/4 (obj, int, obj, obj)`
+- [ ] `create/4 (obj, int, obj, str)`
+- [ ] `create/4 (obj, int, obj, err)`
+- [ ] `create/4 (obj, int, obj, list)`
+- [ ] `create/4 (obj, int, obj, map)`
+- [ ] `create/4 (obj, int, str, int)`
+- [ ] `create/4 (obj, int, str, float)`
+- [ ] `create/4 (obj, int, str, obj)`
+- [ ] `create/4 (obj, int, str, str)`
+- [ ] `create/4 (obj, int, str, err)`
+- [ ] `create/4 (obj, int, str, list)`
+- [ ] `create/4 (obj, int, str, map)`
+- [ ] `create/4 (obj, int, err, int)`
+- [ ] `create/4 (obj, int, err, float)`
+- [ ] `create/4 (obj, int, err, obj)`
+- [ ] `create/4 (obj, int, err, str)`
+- [ ] `create/4 (obj, int, err, err)`
+- [ ] `create/4 (obj, int, err, list)`
+- [ ] `create/4 (obj, int, err, map)`
+- [ ] `create/4 (obj, int, list, int)`
+- [ ] `create/4 (obj, int, list, float)`
+- [ ] `create/4 (obj, int, list, obj)`
+- [ ] `create/4 (obj, int, list, str)`
+- [ ] `create/4 (obj, int, list, err)`
+- [ ] `create/4 (obj, int, list, list)`
+- [ ] `create/4 (obj, int, list, map)`
+- [ ] `create/4 (obj, int, map, int)`
+- [ ] `create/4 (obj, int, map, float)`
+- [ ] `create/4 (obj, int, map, obj)`
+- [ ] `create/4 (obj, int, map, str)`
+- [ ] `create/4 (obj, int, map, err)`
+- [ ] `create/4 (obj, int, map, list)`
+- [ ] `create/4 (obj, int, map, map)`
+- [ ] `create/4 (obj, float, int, int)`
+- [ ] `create/4 (obj, float, int, float)`
+- [ ] `create/4 (obj, float, int, obj)`
+- [ ] `create/4 (obj, float, int, str)`
+- [ ] `create/4 (obj, float, int, err)`
+- [ ] `create/4 (obj, float, int, list)`
+- [ ] `create/4 (obj, float, int, map)`
+- [ ] `create/4 (obj, float, float, int)`
+- [ ] `create/4 (obj, float, float, float)`
+- [ ] `create/4 (obj, float, float, obj)`
+- [ ] `create/4 (obj, float, float, str)`
+- [ ] `create/4 (obj, float, float, err)`
+- [ ] `create/4 (obj, float, float, list)`
+- [ ] `create/4 (obj, float, float, map)`
+- [ ] `create/4 (obj, float, obj, int)`
+- [ ] `create/4 (obj, float, obj, float)`
+- [ ] `create/4 (obj, float, obj, obj)`
+- [ ] `create/4 (obj, float, obj, str)`
+- [ ] `create/4 (obj, float, obj, err)`
+- [ ] `create/4 (obj, float, obj, list)`
+- [ ] `create/4 (obj, float, obj, map)`
+- [ ] `create/4 (obj, float, str, int)`
+- [ ] `create/4 (obj, float, str, float)`
+- [ ] `create/4 (obj, float, str, obj)`
+- [ ] `create/4 (obj, float, str, str)`
+- [ ] `create/4 (obj, float, str, err)`
+- [ ] `create/4 (obj, float, str, list)`
+- [ ] `create/4 (obj, float, str, map)`
+- [ ] `create/4 (obj, float, err, int)`
+- [ ] `create/4 (obj, float, err, float)`
+- [ ] `create/4 (obj, float, err, obj)`
+- [ ] `create/4 (obj, float, err, str)`
+- [ ] `create/4 (obj, float, err, err)`
+- [ ] `create/4 (obj, float, err, list)`
+- [ ] `create/4 (obj, float, err, map)`
+- [ ] `create/4 (obj, float, list, int)`
+- [ ] `create/4 (obj, float, list, float)`
+- [ ] `create/4 (obj, float, list, obj)`
+- [ ] `create/4 (obj, float, list, str)`
+- [ ] `create/4 (obj, float, list, err)`
+- [ ] `create/4 (obj, float, list, list)`
+- [ ] `create/4 (obj, float, list, map)`
+- [ ] `create/4 (obj, float, map, int)`
+- [ ] `create/4 (obj, float, map, float)`
+- [ ] `create/4 (obj, float, map, obj)`
+- [ ] `create/4 (obj, float, map, str)`
+- [ ] `create/4 (obj, float, map, err)`
+- [ ] `create/4 (obj, float, map, list)`
+- [ ] `create/4 (obj, float, map, map)`
+- [ ] `create/4 (obj, obj, int, int)`
+- [ ] `create/4 (obj, obj, int, float)`
+- [ ] `create/4 (obj, obj, int, obj)`
+- [ ] `create/4 (obj, obj, int, str)`
+- [ ] `create/4 (obj, obj, int, err)`
+- [ ] `create/4 (obj, obj, int, list)`
+- [ ] `create/4 (obj, obj, int, map)`
+- [ ] `create/4 (obj, obj, float, int)`
+- [ ] `create/4 (obj, obj, float, float)`
+- [ ] `create/4 (obj, obj, float, obj)`
+- [ ] `create/4 (obj, obj, float, str)`
+- [ ] `create/4 (obj, obj, float, err)`
+- [ ] `create/4 (obj, obj, float, list)`
+- [ ] `create/4 (obj, obj, float, map)`
+- [ ] `create/4 (obj, obj, obj, int)`
+- [ ] `create/4 (obj, obj, obj, float)`
+- [ ] `create/4 (obj, obj, obj, obj)`
+- [ ] `create/4 (obj, obj, obj, str)`
+- [ ] `create/4 (obj, obj, obj, err)`
+- [ ] `create/4 (obj, obj, obj, list)`
+- [ ] `create/4 (obj, obj, obj, map)`
+- [ ] `create/4 (obj, obj, str, int)`
+- [ ] `create/4 (obj, obj, str, float)`
+- [ ] `create/4 (obj, obj, str, obj)`
+- [ ] `create/4 (obj, obj, str, str)`
+- [ ] `create/4 (obj, obj, str, err)`
+- [ ] `create/4 (obj, obj, str, list)`
+- [ ] `create/4 (obj, obj, str, map)`
+- [ ] `create/4 (obj, obj, err, int)`
+- [ ] `create/4 (obj, obj, err, float)`
+- [ ] `create/4 (obj, obj, err, obj)`
+- [ ] `create/4 (obj, obj, err, str)`
+- [ ] `create/4 (obj, obj, err, err)`
+- [ ] `create/4 (obj, obj, err, list)`
+- [ ] `create/4 (obj, obj, err, map)`
+- [ ] `create/4 (obj, obj, list, int)`
+- [ ] `create/4 (obj, obj, list, float)`
+- [ ] `create/4 (obj, obj, list, obj)`
+- [ ] `create/4 (obj, obj, list, str)`
+- [ ] `create/4 (obj, obj, list, err)`
+- [ ] `create/4 (obj, obj, list, list)`
+- [ ] `create/4 (obj, obj, list, map)`
+- [ ] `create/4 (obj, obj, map, int)`
+- [ ] `create/4 (obj, obj, map, float)`
+- [ ] `create/4 (obj, obj, map, obj)`
+- [ ] `create/4 (obj, obj, map, str)`
+- [ ] `create/4 (obj, obj, map, err)`
+- [ ] `create/4 (obj, obj, map, list)`
+- [ ] `create/4 (obj, obj, map, map)`
+- [ ] `create/4 (obj, str, int, int)`
+- [ ] `create/4 (obj, str, int, float)`
+- [ ] `create/4 (obj, str, int, obj)`
+- [ ] `create/4 (obj, str, int, str)`
+- [ ] `create/4 (obj, str, int, err)`
+- [ ] `create/4 (obj, str, int, list)`
+- [ ] `create/4 (obj, str, int, map)`
+- [ ] `create/4 (obj, str, float, int)`
+- [ ] `create/4 (obj, str, float, float)`
+- [ ] `create/4 (obj, str, float, obj)`
+- [ ] `create/4 (obj, str, float, str)`
+- [ ] `create/4 (obj, str, float, err)`
+- [ ] `create/4 (obj, str, float, list)`
+- [ ] `create/4 (obj, str, float, map)`
+- [ ] `create/4 (obj, str, obj, int)`
+- [ ] `create/4 (obj, str, obj, float)`
+- [ ] `create/4 (obj, str, obj, obj)`
+- [ ] `create/4 (obj, str, obj, str)`
+- [ ] `create/4 (obj, str, obj, err)`
+- [ ] `create/4 (obj, str, obj, list)`
+- [ ] `create/4 (obj, str, obj, map)`
+- [ ] `create/4 (obj, str, str, int)`
+- [ ] `create/4 (obj, str, str, float)`
+- [ ] `create/4 (obj, str, str, obj)`
+- [ ] `create/4 (obj, str, str, str)`
+- [ ] `create/4 (obj, str, str, err)`
+- [ ] `create/4 (obj, str, str, list)`
+- [ ] `create/4 (obj, str, str, map)`
+- [ ] `create/4 (obj, str, err, int)`
+- [ ] `create/4 (obj, str, err, float)`
+- [ ] `create/4 (obj, str, err, obj)`
+- [ ] `create/4 (obj, str, err, str)`
+- [ ] `create/4 (obj, str, err, err)`
+- [ ] `create/4 (obj, str, err, list)`
+- [ ] `create/4 (obj, str, err, map)`
+- [ ] `create/4 (obj, str, list, int)`
+- [ ] `create/4 (obj, str, list, float)`
+- [ ] `create/4 (obj, str, list, obj)`
+- [ ] `create/4 (obj, str, list, str)`
+- [ ] `create/4 (obj, str, list, err)`
+- [ ] `create/4 (obj, str, list, list)`
+- [ ] `create/4 (obj, str, list, map)`
+- [ ] `create/4 (obj, str, map, int)`
+- [ ] `create/4 (obj, str, map, float)`
+- [ ] `create/4 (obj, str, map, obj)`
+- [ ] `create/4 (obj, str, map, str)`
+- [ ] `create/4 (obj, str, map, err)`
+- [ ] `create/4 (obj, str, map, list)`
+- [ ] `create/4 (obj, str, map, map)`
+- [ ] `create/4 (obj, err, int, int)`
+- [ ] `create/4 (obj, err, int, float)`
+- [ ] `create/4 (obj, err, int, obj)`
+- [ ] `create/4 (obj, err, int, str)`
+- [ ] `create/4 (obj, err, int, err)`
+- [ ] `create/4 (obj, err, int, list)`
+- [ ] `create/4 (obj, err, int, map)`
+- [ ] `create/4 (obj, err, float, int)`
+- [ ] `create/4 (obj, err, float, float)`
+- [ ] `create/4 (obj, err, float, obj)`
+- [ ] `create/4 (obj, err, float, str)`
+- [ ] `create/4 (obj, err, float, err)`
+- [ ] `create/4 (obj, err, float, list)`
+- [ ] `create/4 (obj, err, float, map)`
+- [ ] `create/4 (obj, err, obj, int)`
+- [ ] `create/4 (obj, err, obj, float)`
+- [ ] `create/4 (obj, err, obj, obj)`
+- [ ] `create/4 (obj, err, obj, str)`
+- [ ] `create/4 (obj, err, obj, err)`
+- [ ] `create/4 (obj, err, obj, list)`
+- [ ] `create/4 (obj, err, obj, map)`
+- [ ] `create/4 (obj, err, str, int)`
+- [ ] `create/4 (obj, err, str, float)`
+- [ ] `create/4 (obj, err, str, obj)`
+- [ ] `create/4 (obj, err, str, str)`
+- [ ] `create/4 (obj, err, str, err)`
+- [ ] `create/4 (obj, err, str, list)`
+- [ ] `create/4 (obj, err, str, map)`
+- [ ] `create/4 (obj, err, err, int)`
+- [ ] `create/4 (obj, err, err, float)`
+- [ ] `create/4 (obj, err, err, obj)`
+- [ ] `create/4 (obj, err, err, str)`
+- [ ] `create/4 (obj, err, err, err)`
+- [ ] `create/4 (obj, err, err, list)`
+- [ ] `create/4 (obj, err, err, map)`
+- [ ] `create/4 (obj, err, list, int)`
+- [ ] `create/4 (obj, err, list, float)`
+- [ ] `create/4 (obj, err, list, obj)`
+- [ ] `create/4 (obj, err, list, str)`
+- [ ] `create/4 (obj, err, list, err)`
+- [ ] `create/4 (obj, err, list, list)`
+- [ ] `create/4 (obj, err, list, map)`
+- [ ] `create/4 (obj, err, map, int)`
+- [ ] `create/4 (obj, err, map, float)`
+- [ ] `create/4 (obj, err, map, obj)`
+- [ ] `create/4 (obj, err, map, str)`
+- [ ] `create/4 (obj, err, map, err)`
+- [ ] `create/4 (obj, err, map, list)`
+- [ ] `create/4 (obj, err, map, map)`
+- [ ] `create/4 (obj, list, int, int)`
+- [ ] `create/4 (obj, list, int, float)`
+- [ ] `create/4 (obj, list, int, obj)`
+- [ ] `create/4 (obj, list, int, str)`
+- [ ] `create/4 (obj, list, int, err)`
+- [ ] `create/4 (obj, list, int, list)`
+- [ ] `create/4 (obj, list, int, map)`
+- [ ] `create/4 (obj, list, float, int)`
+- [ ] `create/4 (obj, list, float, float)`
+- [ ] `create/4 (obj, list, float, obj)`
+- [ ] `create/4 (obj, list, float, str)`
+- [ ] `create/4 (obj, list, float, err)`
+- [ ] `create/4 (obj, list, float, list)`
+- [ ] `create/4 (obj, list, float, map)`
+- [ ] `create/4 (obj, list, obj, int)`
+- [ ] `create/4 (obj, list, obj, float)`
+- [ ] `create/4 (obj, list, obj, obj)`
+- [ ] `create/4 (obj, list, obj, str)`
+- [ ] `create/4 (obj, list, obj, err)`
+- [ ] `create/4 (obj, list, obj, list)`
+- [ ] `create/4 (obj, list, obj, map)`
+- [ ] `create/4 (obj, list, str, int)`
+- [ ] `create/4 (obj, list, str, float)`
+- [ ] `create/4 (obj, list, str, obj)`
+- [ ] `create/4 (obj, list, str, str)`
+- [ ] `create/4 (obj, list, str, err)`
+- [ ] `create/4 (obj, list, str, list)`
+- [ ] `create/4 (obj, list, str, map)`
+- [ ] `create/4 (obj, list, err, int)`
+- [ ] `create/4 (obj, list, err, float)`
+- [ ] `create/4 (obj, list, err, obj)`
+- [ ] `create/4 (obj, list, err, str)`
+- [ ] `create/4 (obj, list, err, err)`
+- [ ] `create/4 (obj, list, err, list)`
+- [ ] `create/4 (obj, list, err, map)`
+- [ ] `create/4 (obj, list, list, int)`
+- [ ] `create/4 (obj, list, list, float)`
+- [ ] `create/4 (obj, list, list, obj)`
+- [ ] `create/4 (obj, list, list, str)`
+- [ ] `create/4 (obj, list, list, err)`
+- [ ] `create/4 (obj, list, list, list)`
+- [ ] `create/4 (obj, list, list, map)`
+- [ ] `create/4 (obj, list, map, int)`
+- [ ] `create/4 (obj, list, map, float)`
+- [ ] `create/4 (obj, list, map, obj)`
+- [ ] `create/4 (obj, list, map, str)`
+- [ ] `create/4 (obj, list, map, err)`
+- [ ] `create/4 (obj, list, map, list)`
+- [ ] `create/4 (obj, list, map, map)`
+- [ ] `create/4 (obj, map, int, int)`
+- [ ] `create/4 (obj, map, int, float)`
+- [ ] `create/4 (obj, map, int, obj)`
+- [ ] `create/4 (obj, map, int, str)`
+- [ ] `create/4 (obj, map, int, err)`
+- [ ] `create/4 (obj, map, int, list)`
+- [ ] `create/4 (obj, map, int, map)`
+- [ ] `create/4 (obj, map, float, int)`
+- [ ] `create/4 (obj, map, float, float)`
+- [ ] `create/4 (obj, map, float, obj)`
+- [ ] `create/4 (obj, map, float, str)`
+- [ ] `create/4 (obj, map, float, err)`
+- [ ] `create/4 (obj, map, float, list)`
+- [ ] `create/4 (obj, map, float, map)`
+- [ ] `create/4 (obj, map, obj, int)`
+- [ ] `create/4 (obj, map, obj, float)`
+- [ ] `create/4 (obj, map, obj, obj)`
+- [ ] `create/4 (obj, map, obj, str)`
+- [ ] `create/4 (obj, map, obj, err)`
+- [ ] `create/4 (obj, map, obj, list)`
+- [ ] `create/4 (obj, map, obj, map)`
+- [ ] `create/4 (obj, map, str, int)`
+- [ ] `create/4 (obj, map, str, float)`
+- [ ] `create/4 (obj, map, str, obj)`
+- [ ] `create/4 (obj, map, str, str)`
+- [ ] `create/4 (obj, map, str, err)`
+- [ ] `create/4 (obj, map, str, list)`
+- [ ] `create/4 (obj, map, str, map)`
+- [ ] `create/4 (obj, map, err, int)`
+- [ ] `create/4 (obj, map, err, float)`
+- [ ] `create/4 (obj, map, err, obj)`
+- [ ] `create/4 (obj, map, err, str)`
+- [ ] `create/4 (obj, map, err, err)`
+- [ ] `create/4 (obj, map, err, list)`
+- [ ] `create/4 (obj, map, err, map)`
+- [ ] `create/4 (obj, map, list, int)`
+- [ ] `create/4 (obj, map, list, float)`
+- [ ] `create/4 (obj, map, list, obj)`
+- [ ] `create/4 (obj, map, list, str)`
+- [ ] `create/4 (obj, map, list, err)`
+- [ ] `create/4 (obj, map, list, list)`
+- [ ] `create/4 (obj, map, list, map)`
+- [ ] `create/4 (obj, map, map, int)`
+- [ ] `create/4 (obj, map, map, float)`
+- [ ] `create/4 (obj, map, map, obj)`
+- [ ] `create/4 (obj, map, map, str)`
+- [ ] `create/4 (obj, map, map, err)`
+- [ ] `create/4 (obj, map, map, list)`
+- [ ] `create/4 (obj, map, map, map)`
+- [ ] `create/4 (str, int, int, int)`
+- [ ] `create/4 (str, int, int, float)`
+- [ ] `create/4 (str, int, int, obj)`
+- [ ] `create/4 (str, int, int, str)`
+- [ ] `create/4 (str, int, int, err)`
+- [ ] `create/4 (str, int, int, list)`
+- [ ] `create/4 (str, int, int, map)`
+- [ ] `create/4 (str, int, float, int)`
+- [ ] `create/4 (str, int, float, float)`
+- [ ] `create/4 (str, int, float, obj)`
+- [ ] `create/4 (str, int, float, str)`
+- [ ] `create/4 (str, int, float, err)`
+- [ ] `create/4 (str, int, float, list)`
+- [ ] `create/4 (str, int, float, map)`
+- [ ] `create/4 (str, int, obj, int)`
+- [ ] `create/4 (str, int, obj, float)`
+- [ ] `create/4 (str, int, obj, obj)`
+- [ ] `create/4 (str, int, obj, str)`
+- [ ] `create/4 (str, int, obj, err)`
+- [ ] `create/4 (str, int, obj, list)`
+- [ ] `create/4 (str, int, obj, map)`
+- [ ] `create/4 (str, int, str, int)`
+- [ ] `create/4 (str, int, str, float)`
+- [ ] `create/4 (str, int, str, obj)`
+- [ ] `create/4 (str, int, str, str)`
+- [ ] `create/4 (str, int, str, err)`
+- [ ] `create/4 (str, int, str, list)`
+- [ ] `create/4 (str, int, str, map)`
+- [ ] `create/4 (str, int, err, int)`
+- [ ] `create/4 (str, int, err, float)`
+- [ ] `create/4 (str, int, err, obj)`
+- [ ] `create/4 (str, int, err, str)`
+- [ ] `create/4 (str, int, err, err)`
+- [ ] `create/4 (str, int, err, list)`
+- [ ] `create/4 (str, int, err, map)`
+- [ ] `create/4 (str, int, list, int)`
+- [ ] `create/4 (str, int, list, float)`
+- [ ] `create/4 (str, int, list, obj)`
+- [ ] `create/4 (str, int, list, str)`
+- [ ] `create/4 (str, int, list, err)`
+- [ ] `create/4 (str, int, list, list)`
+- [ ] `create/4 (str, int, list, map)`
+- [ ] `create/4 (str, int, map, int)`
+- [ ] `create/4 (str, int, map, float)`
+- [ ] `create/4 (str, int, map, obj)`
+- [ ] `create/4 (str, int, map, str)`
+- [ ] `create/4 (str, int, map, err)`
+- [ ] `create/4 (str, int, map, list)`
+- [ ] `create/4 (str, int, map, map)`
+- [ ] `create/4 (str, float, int, int)`
+- [ ] `create/4 (str, float, int, float)`
+- [ ] `create/4 (str, float, int, obj)`
+- [ ] `create/4 (str, float, int, str)`
+- [ ] `create/4 (str, float, int, err)`
+- [ ] `create/4 (str, float, int, list)`
+- [ ] `create/4 (str, float, int, map)`
+- [ ] `create/4 (str, float, float, int)`
+- [ ] `create/4 (str, float, float, float)`
+- [ ] `create/4 (str, float, float, obj)`
+- [ ] `create/4 (str, float, float, str)`
+- [ ] `create/4 (str, float, float, err)`
+- [ ] `create/4 (str, float, float, list)`
+- [ ] `create/4 (str, float, float, map)`
+- [ ] `create/4 (str, float, obj, int)`
+- [ ] `create/4 (str, float, obj, float)`
+- [ ] `create/4 (str, float, obj, obj)`
+- [ ] `create/4 (str, float, obj, str)`
+- [ ] `create/4 (str, float, obj, err)`
+- [ ] `create/4 (str, float, obj, list)`
+- [ ] `create/4 (str, float, obj, map)`
+- [ ] `create/4 (str, float, str, int)`
+- [ ] `create/4 (str, float, str, float)`
+- [ ] `create/4 (str, float, str, obj)`
+- [ ] `create/4 (str, float, str, str)`
+- [ ] `create/4 (str, float, str, err)`
+- [ ] `create/4 (str, float, str, list)`
+- [ ] `create/4 (str, float, str, map)`
+- [ ] `create/4 (str, float, err, int)`
+- [ ] `create/4 (str, float, err, float)`
+- [ ] `create/4 (str, float, err, obj)`
+- [ ] `create/4 (str, float, err, str)`
+- [ ] `create/4 (str, float, err, err)`
+- [ ] `create/4 (str, float, err, list)`
+- [ ] `create/4 (str, float, err, map)`
+- [ ] `create/4 (str, float, list, int)`
+- [ ] `create/4 (str, float, list, float)`
+- [ ] `create/4 (str, float, list, obj)`
+- [ ] `create/4 (str, float, list, str)`
+- [ ] `create/4 (str, float, list, err)`
+- [ ] `create/4 (str, float, list, list)`
+- [ ] `create/4 (str, float, list, map)`
+- [ ] `create/4 (str, float, map, int)`
+- [ ] `create/4 (str, float, map, float)`
+- [ ] `create/4 (str, float, map, obj)`
+- [ ] `create/4 (str, float, map, str)`
+- [ ] `create/4 (str, float, map, err)`
+- [ ] `create/4 (str, float, map, list)`
+- [ ] `create/4 (str, float, map, map)`
+- [ ] `create/4 (str, obj, int, int)`
+- [ ] `create/4 (str, obj, int, float)`
+- [ ] `create/4 (str, obj, int, obj)`
+- [ ] `create/4 (str, obj, int, str)`
+- [ ] `create/4 (str, obj, int, err)`
+- [ ] `create/4 (str, obj, int, list)`
+- [ ] `create/4 (str, obj, int, map)`
+- [ ] `create/4 (str, obj, float, int)`
+- [ ] `create/4 (str, obj, float, float)`
+- [ ] `create/4 (str, obj, float, obj)`
+- [ ] `create/4 (str, obj, float, str)`
+- [ ] `create/4 (str, obj, float, err)`
+- [ ] `create/4 (str, obj, float, list)`
+- [ ] `create/4 (str, obj, float, map)`
+- [ ] `create/4 (str, obj, obj, int)`
+- [ ] `create/4 (str, obj, obj, float)`
+- [ ] `create/4 (str, obj, obj, obj)`
+- [ ] `create/4 (str, obj, obj, str)`
+- [ ] `create/4 (str, obj, obj, err)`
+- [ ] `create/4 (str, obj, obj, list)`
+- [ ] `create/4 (str, obj, obj, map)`
+- [ ] `create/4 (str, obj, str, int)`
+- [ ] `create/4 (str, obj, str, float)`
+- [ ] `create/4 (str, obj, str, obj)`
+- [ ] `create/4 (str, obj, str, str)`
+- [ ] `create/4 (str, obj, str, err)`
+- [ ] `create/4 (str, obj, str, list)`
+- [ ] `create/4 (str, obj, str, map)`
+- [ ] `create/4 (str, obj, err, int)`
+- [ ] `create/4 (str, obj, err, float)`
+- [ ] `create/4 (str, obj, err, obj)`
+- [ ] `create/4 (str, obj, err, str)`
+- [ ] `create/4 (str, obj, err, err)`
+- [ ] `create/4 (str, obj, err, list)`
+- [ ] `create/4 (str, obj, err, map)`
+- [ ] `create/4 (str, obj, list, int)`
+- [ ] `create/4 (str, obj, list, float)`
+- [ ] `create/4 (str, obj, list, obj)`
+- [ ] `create/4 (str, obj, list, str)`
+- [ ] `create/4 (str, obj, list, err)`
+- [ ] `create/4 (str, obj, list, list)`
+- [ ] `create/4 (str, obj, list, map)`
+- [ ] `create/4 (str, obj, map, int)`
+- [ ] `create/4 (str, obj, map, float)`
+- [ ] `create/4 (str, obj, map, obj)`
+- [ ] `create/4 (str, obj, map, str)`
+- [ ] `create/4 (str, obj, map, err)`
+- [ ] `create/4 (str, obj, map, list)`
+- [ ] `create/4 (str, obj, map, map)`
+- [ ] `create/4 (str, str, int, int)`
+- [ ] `create/4 (str, str, int, float)`
+- [ ] `create/4 (str, str, int, obj)`
+- [ ] `create/4 (str, str, int, str)`
+- [ ] `create/4 (str, str, int, err)`
+- [ ] `create/4 (str, str, int, list)`
+- [ ] `create/4 (str, str, int, map)`
+- [ ] `create/4 (str, str, float, int)`
+- [ ] `create/4 (str, str, float, float)`
+- [ ] `create/4 (str, str, float, obj)`
+- [ ] `create/4 (str, str, float, str)`
+- [ ] `create/4 (str, str, float, err)`
+- [ ] `create/4 (str, str, float, list)`
+- [ ] `create/4 (str, str, float, map)`
+- [ ] `create/4 (str, str, obj, int)`
+- [ ] `create/4 (str, str, obj, float)`
+- [ ] `create/4 (str, str, obj, obj)`
+- [ ] `create/4 (str, str, obj, str)`
+- [ ] `create/4 (str, str, obj, err)`
+- [ ] `create/4 (str, str, obj, list)`
+- [ ] `create/4 (str, str, obj, map)`
+- [ ] `create/4 (str, str, str, int)`
+- [ ] `create/4 (str, str, str, float)`
+- [ ] `create/4 (str, str, str, obj)`
+- [ ] `create/4 (str, str, str, str)`
+- [ ] `create/4 (str, str, str, err)`
+- [ ] `create/4 (str, str, str, list)`
+- [ ] `create/4 (str, str, str, map)`
+- [ ] `create/4 (str, str, err, int)`
+- [ ] `create/4 (str, str, err, float)`
+- [ ] `create/4 (str, str, err, obj)`
+- [ ] `create/4 (str, str, err, str)`
+- [ ] `create/4 (str, str, err, err)`
+- [ ] `create/4 (str, str, err, list)`
+- [ ] `create/4 (str, str, err, map)`
+- [ ] `create/4 (str, str, list, int)`
+- [ ] `create/4 (str, str, list, float)`
+- [ ] `create/4 (str, str, list, obj)`
+- [ ] `create/4 (str, str, list, str)`
+- [ ] `create/4 (str, str, list, err)`
+- [ ] `create/4 (str, str, list, list)`
+- [ ] `create/4 (str, str, list, map)`
+- [ ] `create/4 (str, str, map, int)`
+- [ ] `create/4 (str, str, map, float)`
+- [ ] `create/4 (str, str, map, obj)`
+- [ ] `create/4 (str, str, map, str)`
+- [ ] `create/4 (str, str, map, err)`
+- [ ] `create/4 (str, str, map, list)`
+- [ ] `create/4 (str, str, map, map)`
+- [ ] `create/4 (str, err, int, int)`
+- [ ] `create/4 (str, err, int, float)`
+- [ ] `create/4 (str, err, int, obj)`
+- [ ] `create/4 (str, err, int, str)`
+- [ ] `create/4 (str, err, int, err)`
+- [ ] `create/4 (str, err, int, list)`
+- [ ] `create/4 (str, err, int, map)`
+- [ ] `create/4 (str, err, float, int)`
+- [ ] `create/4 (str, err, float, float)`
+- [ ] `create/4 (str, err, float, obj)`
+- [ ] `create/4 (str, err, float, str)`
+- [ ] `create/4 (str, err, float, err)`
+- [ ] `create/4 (str, err, float, list)`
+- [ ] `create/4 (str, err, float, map)`
+- [ ] `create/4 (str, err, obj, int)`
+- [ ] `create/4 (str, err, obj, float)`
+- [ ] `create/4 (str, err, obj, obj)`
+- [ ] `create/4 (str, err, obj, str)`
+- [ ] `create/4 (str, err, obj, err)`
+- [ ] `create/4 (str, err, obj, list)`
+- [ ] `create/4 (str, err, obj, map)`
+- [ ] `create/4 (str, err, str, int)`
+- [ ] `create/4 (str, err, str, float)`
+- [ ] `create/4 (str, err, str, obj)`
+- [ ] `create/4 (str, err, str, str)`
+- [ ] `create/4 (str, err, str, err)`
+- [ ] `create/4 (str, err, str, list)`
+- [ ] `create/4 (str, err, str, map)`
+- [ ] `create/4 (str, err, err, int)`
+- [ ] `create/4 (str, err, err, float)`
+- [ ] `create/4 (str, err, err, obj)`
+- [ ] `create/4 (str, err, err, str)`
+- [ ] `create/4 (str, err, err, err)`
+- [ ] `create/4 (str, err, err, list)`
+- [ ] `create/4 (str, err, err, map)`
+- [ ] `create/4 (str, err, list, int)`
+- [ ] `create/4 (str, err, list, float)`
+- [ ] `create/4 (str, err, list, obj)`
+- [ ] `create/4 (str, err, list, str)`
+- [ ] `create/4 (str, err, list, err)`
+- [ ] `create/4 (str, err, list, list)`
+- [ ] `create/4 (str, err, list, map)`
+- [ ] `create/4 (str, err, map, int)`
+- [ ] `create/4 (str, err, map, float)`
+- [ ] `create/4 (str, err, map, obj)`
+- [ ] `create/4 (str, err, map, str)`
+- [ ] `create/4 (str, err, map, err)`
+- [ ] `create/4 (str, err, map, list)`
+- [ ] `create/4 (str, err, map, map)`
+- [ ] `create/4 (str, list, int, int)`
+- [ ] `create/4 (str, list, int, float)`
+- [ ] `create/4 (str, list, int, obj)`
+- [ ] `create/4 (str, list, int, str)`
+- [ ] `create/4 (str, list, int, err)`
+- [ ] `create/4 (str, list, int, list)`
+- [ ] `create/4 (str, list, int, map)`
+- [ ] `create/4 (str, list, float, int)`
+- [ ] `create/4 (str, list, float, float)`
+- [ ] `create/4 (str, list, float, obj)`
+- [ ] `create/4 (str, list, float, str)`
+- [ ] `create/4 (str, list, float, err)`
+- [ ] `create/4 (str, list, float, list)`
+- [ ] `create/4 (str, list, float, map)`
+- [ ] `create/4 (str, list, obj, int)`
+- [ ] `create/4 (str, list, obj, float)`
+- [ ] `create/4 (str, list, obj, obj)`
+- [ ] `create/4 (str, list, obj, str)`
+- [ ] `create/4 (str, list, obj, err)`
+- [ ] `create/4 (str, list, obj, list)`
+- [ ] `create/4 (str, list, obj, map)`
+- [ ] `create/4 (str, list, str, int)`
+- [ ] `create/4 (str, list, str, float)`
+- [ ] `create/4 (str, list, str, obj)`
+- [ ] `create/4 (str, list, str, str)`
+- [ ] `create/4 (str, list, str, err)`
+- [ ] `create/4 (str, list, str, list)`
+- [ ] `create/4 (str, list, str, map)`
+- [ ] `create/4 (str, list, err, int)`
+- [ ] `create/4 (str, list, err, float)`
+- [ ] `create/4 (str, list, err, obj)`
+- [ ] `create/4 (str, list, err, str)`
+- [ ] `create/4 (str, list, err, err)`
+- [ ] `create/4 (str, list, err, list)`
+- [ ] `create/4 (str, list, err, map)`
+- [ ] `create/4 (str, list, list, int)`
+- [ ] `create/4 (str, list, list, float)`
+- [ ] `create/4 (str, list, list, obj)`
+- [ ] `create/4 (str, list, list, str)`
+- [ ] `create/4 (str, list, list, err)`
+- [ ] `create/4 (str, list, list, list)`
+- [ ] `create/4 (str, list, list, map)`
+- [ ] `create/4 (str, list, map, int)`
+- [ ] `create/4 (str, list, map, float)`
+- [ ] `create/4 (str, list, map, obj)`
+- [ ] `create/4 (str, list, map, str)`
+- [ ] `create/4 (str, list, map, err)`
+- [ ] `create/4 (str, list, map, list)`
+- [ ] `create/4 (str, list, map, map)`
+- [ ] `create/4 (str, map, int, int)`
+- [ ] `create/4 (str, map, int, float)`
+- [ ] `create/4 (str, map, int, obj)`
+- [ ] `create/4 (str, map, int, str)`
+- [ ] `create/4 (str, map, int, err)`
+- [ ] `create/4 (str, map, int, list)`
+- [ ] `create/4 (str, map, int, map)`
+- [ ] `create/4 (str, map, float, int)`
+- [ ] `create/4 (str, map, float, float)`
+- [ ] `create/4 (str, map, float, obj)`
+- [ ] `create/4 (str, map, float, str)`
+- [ ] `create/4 (str, map, float, err)`
+- [ ] `create/4 (str, map, float, list)`
+- [ ] `create/4 (str, map, float, map)`
+- [ ] `create/4 (str, map, obj, int)`
+- [ ] `create/4 (str, map, obj, float)`
+- [ ] `create/4 (str, map, obj, obj)`
+- [ ] `create/4 (str, map, obj, str)`
+- [ ] `create/4 (str, map, obj, err)`
+- [ ] `create/4 (str, map, obj, list)`
+- [ ] `create/4 (str, map, obj, map)`
+- [ ] `create/4 (str, map, str, int)`
+- [ ] `create/4 (str, map, str, float)`
+- [ ] `create/4 (str, map, str, obj)`
+- [ ] `create/4 (str, map, str, str)`
+- [ ] `create/4 (str, map, str, err)`
+- [ ] `create/4 (str, map, str, list)`
+- [ ] `create/4 (str, map, str, map)`
+- [ ] `create/4 (str, map, err, int)`
+- [ ] `create/4 (str, map, err, float)`
+- [ ] `create/4 (str, map, err, obj)`
+- [ ] `create/4 (str, map, err, str)`
+- [ ] `create/4 (str, map, err, err)`
+- [ ] `create/4 (str, map, err, list)`
+- [ ] `create/4 (str, map, err, map)`
+- [ ] `create/4 (str, map, list, int)`
+- [ ] `create/4 (str, map, list, float)`
+- [ ] `create/4 (str, map, list, obj)`
+- [ ] `create/4 (str, map, list, str)`
+- [ ] `create/4 (str, map, list, err)`
+- [ ] `create/4 (str, map, list, list)`
+- [ ] `create/4 (str, map, list, map)`
+- [ ] `create/4 (str, map, map, int)`
+- [ ] `create/4 (str, map, map, float)`
+- [ ] `create/4 (str, map, map, obj)`
+- [ ] `create/4 (str, map, map, str)`
+- [ ] `create/4 (str, map, map, err)`
+- [ ] `create/4 (str, map, map, list)`
+- [ ] `create/4 (str, map, map, map)`
+- [ ] `create/4 (err, int, int, int)`
+- [ ] `create/4 (err, int, int, float)`
+- [ ] `create/4 (err, int, int, obj)`
+- [ ] `create/4 (err, int, int, str)`
+- [ ] `create/4 (err, int, int, err)`
+- [ ] `create/4 (err, int, int, list)`
+- [ ] `create/4 (err, int, int, map)`
+- [ ] `create/4 (err, int, float, int)`
+- [ ] `create/4 (err, int, float, float)`
+- [ ] `create/4 (err, int, float, obj)`
+- [ ] `create/4 (err, int, float, str)`
+- [ ] `create/4 (err, int, float, err)`
+- [ ] `create/4 (err, int, float, list)`
+- [ ] `create/4 (err, int, float, map)`
+- [ ] `create/4 (err, int, obj, int)`
+- [ ] `create/4 (err, int, obj, float)`
+- [ ] `create/4 (err, int, obj, obj)`
+- [ ] `create/4 (err, int, obj, str)`
+- [ ] `create/4 (err, int, obj, err)`
+- [ ] `create/4 (err, int, obj, list)`
+- [ ] `create/4 (err, int, obj, map)`
+- [ ] `create/4 (err, int, str, int)`
+- [ ] `create/4 (err, int, str, float)`
+- [ ] `create/4 (err, int, str, obj)`
+- [ ] `create/4 (err, int, str, str)`
+- [ ] `create/4 (err, int, str, err)`
+- [ ] `create/4 (err, int, str, list)`
+- [ ] `create/4 (err, int, str, map)`
+- [ ] `create/4 (err, int, err, int)`
+- [ ] `create/4 (err, int, err, float)`
+- [ ] `create/4 (err, int, err, obj)`
+- [ ] `create/4 (err, int, err, str)`
+- [ ] `create/4 (err, int, err, err)`
+- [ ] `create/4 (err, int, err, list)`
+- [ ] `create/4 (err, int, err, map)`
+- [ ] `create/4 (err, int, list, int)`
+- [ ] `create/4 (err, int, list, float)`
+- [ ] `create/4 (err, int, list, obj)`
+- [ ] `create/4 (err, int, list, str)`
+- [ ] `create/4 (err, int, list, err)`
+- [ ] `create/4 (err, int, list, list)`
+- [ ] `create/4 (err, int, list, map)`
+- [ ] `create/4 (err, int, map, int)`
+- [ ] `create/4 (err, int, map, float)`
+- [ ] `create/4 (err, int, map, obj)`
+- [ ] `create/4 (err, int, map, str)`
+- [ ] `create/4 (err, int, map, err)`
+- [ ] `create/4 (err, int, map, list)`
+- [ ] `create/4 (err, int, map, map)`
+- [ ] `create/4 (err, float, int, int)`
+- [ ] `create/4 (err, float, int, float)`
+- [ ] `create/4 (err, float, int, obj)`
+- [ ] `create/4 (err, float, int, str)`
+- [ ] `create/4 (err, float, int, err)`
+- [ ] `create/4 (err, float, int, list)`
+- [ ] `create/4 (err, float, int, map)`
+- [ ] `create/4 (err, float, float, int)`
+- [ ] `create/4 (err, float, float, float)`
+- [ ] `create/4 (err, float, float, obj)`
+- [ ] `create/4 (err, float, float, str)`
+- [ ] `create/4 (err, float, float, err)`
+- [ ] `create/4 (err, float, float, list)`
+- [ ] `create/4 (err, float, float, map)`
+- [ ] `create/4 (err, float, obj, int)`
+- [ ] `create/4 (err, float, obj, float)`
+- [ ] `create/4 (err, float, obj, obj)`
+- [ ] `create/4 (err, float, obj, str)`
+- [ ] `create/4 (err, float, obj, err)`
+- [ ] `create/4 (err, float, obj, list)`
+- [ ] `create/4 (err, float, obj, map)`
+- [ ] `create/4 (err, float, str, int)`
+- [ ] `create/4 (err, float, str, float)`
+- [ ] `create/4 (err, float, str, obj)`
+- [ ] `create/4 (err, float, str, str)`
+- [ ] `create/4 (err, float, str, err)`
+- [ ] `create/4 (err, float, str, list)`
+- [ ] `create/4 (err, float, str, map)`
+- [ ] `create/4 (err, float, err, int)`
+- [ ] `create/4 (err, float, err, float)`
+- [ ] `create/4 (err, float, err, obj)`
+- [ ] `create/4 (err, float, err, str)`
+- [ ] `create/4 (err, float, err, err)`
+- [ ] `create/4 (err, float, err, list)`
+- [ ] `create/4 (err, float, err, map)`
+- [ ] `create/4 (err, float, list, int)`
+- [ ] `create/4 (err, float, list, float)`
+- [ ] `create/4 (err, float, list, obj)`
+- [ ] `create/4 (err, float, list, str)`
+- [ ] `create/4 (err, float, list, err)`
+- [ ] `create/4 (err, float, list, list)`
+- [ ] `create/4 (err, float, list, map)`
+- [ ] `create/4 (err, float, map, int)`
+- [ ] `create/4 (err, float, map, float)`
+- [ ] `create/4 (err, float, map, obj)`
+- [ ] `create/4 (err, float, map, str)`
+- [ ] `create/4 (err, float, map, err)`
+- [ ] `create/4 (err, float, map, list)`
+- [ ] `create/4 (err, float, map, map)`
+- [ ] `create/4 (err, obj, int, int)`
+- [ ] `create/4 (err, obj, int, float)`
+- [ ] `create/4 (err, obj, int, obj)`
+- [ ] `create/4 (err, obj, int, str)`
+- [ ] `create/4 (err, obj, int, err)`
+- [ ] `create/4 (err, obj, int, list)`
+- [ ] `create/4 (err, obj, int, map)`
+- [ ] `create/4 (err, obj, float, int)`
+- [ ] `create/4 (err, obj, float, float)`
+- [ ] `create/4 (err, obj, float, obj)`
+- [ ] `create/4 (err, obj, float, str)`
+- [ ] `create/4 (err, obj, float, err)`
+- [ ] `create/4 (err, obj, float, list)`
+- [ ] `create/4 (err, obj, float, map)`
+- [ ] `create/4 (err, obj, obj, int)`
+- [ ] `create/4 (err, obj, obj, float)`
+- [ ] `create/4 (err, obj, obj, obj)`
+- [ ] `create/4 (err, obj, obj, str)`
+- [ ] `create/4 (err, obj, obj, err)`
+- [ ] `create/4 (err, obj, obj, list)`
+- [ ] `create/4 (err, obj, obj, map)`
+- [ ] `create/4 (err, obj, str, int)`
+- [ ] `create/4 (err, obj, str, float)`
+- [ ] `create/4 (err, obj, str, obj)`
+- [ ] `create/4 (err, obj, str, str)`
+- [ ] `create/4 (err, obj, str, err)`
+- [ ] `create/4 (err, obj, str, list)`
+- [ ] `create/4 (err, obj, str, map)`
+- [ ] `create/4 (err, obj, err, int)`
+- [ ] `create/4 (err, obj, err, float)`
+- [ ] `create/4 (err, obj, err, obj)`
+- [ ] `create/4 (err, obj, err, str)`
+- [ ] `create/4 (err, obj, err, err)`
+- [ ] `create/4 (err, obj, err, list)`
+- [ ] `create/4 (err, obj, err, map)`
+- [ ] `create/4 (err, obj, list, int)`
+- [ ] `create/4 (err, obj, list, float)`
+- [ ] `create/4 (err, obj, list, obj)`
+- [ ] `create/4 (err, obj, list, str)`
+- [ ] `create/4 (err, obj, list, err)`
+- [ ] `create/4 (err, obj, list, list)`
+- [ ] `create/4 (err, obj, list, map)`
+- [ ] `create/4 (err, obj, map, int)`
+- [ ] `create/4 (err, obj, map, float)`
+- [ ] `create/4 (err, obj, map, obj)`
+- [ ] `create/4 (err, obj, map, str)`
+- [ ] `create/4 (err, obj, map, err)`
+- [ ] `create/4 (err, obj, map, list)`
+- [ ] `create/4 (err, obj, map, map)`
+- [ ] `create/4 (err, str, int, int)`
+- [ ] `create/4 (err, str, int, float)`
+- [ ] `create/4 (err, str, int, obj)`
+- [ ] `create/4 (err, str, int, str)`
+- [ ] `create/4 (err, str, int, err)`
+- [ ] `create/4 (err, str, int, list)`
+- [ ] `create/4 (err, str, int, map)`
+- [ ] `create/4 (err, str, float, int)`
+- [ ] `create/4 (err, str, float, float)`
+- [ ] `create/4 (err, str, float, obj)`
+- [ ] `create/4 (err, str, float, str)`
+- [ ] `create/4 (err, str, float, err)`
+- [ ] `create/4 (err, str, float, list)`
+- [ ] `create/4 (err, str, float, map)`
+- [ ] `create/4 (err, str, obj, int)`
+- [ ] `create/4 (err, str, obj, float)`
+- [ ] `create/4 (err, str, obj, obj)`
+- [ ] `create/4 (err, str, obj, str)`
+- [ ] `create/4 (err, str, obj, err)`
+- [ ] `create/4 (err, str, obj, list)`
+- [ ] `create/4 (err, str, obj, map)`
+- [ ] `create/4 (err, str, str, int)`
+- [ ] `create/4 (err, str, str, float)`
+- [ ] `create/4 (err, str, str, obj)`
+- [ ] `create/4 (err, str, str, str)`
+- [ ] `create/4 (err, str, str, err)`
+- [ ] `create/4 (err, str, str, list)`
+- [ ] `create/4 (err, str, str, map)`
+- [ ] `create/4 (err, str, err, int)`
+- [ ] `create/4 (err, str, err, float)`
+- [ ] `create/4 (err, str, err, obj)`
+- [ ] `create/4 (err, str, err, str)`
+- [ ] `create/4 (err, str, err, err)`
+- [ ] `create/4 (err, str, err, list)`
+- [ ] `create/4 (err, str, err, map)`
+- [ ] `create/4 (err, str, list, int)`
+- [ ] `create/4 (err, str, list, float)`
+- [ ] `create/4 (err, str, list, obj)`
+- [ ] `create/4 (err, str, list, str)`
+- [ ] `create/4 (err, str, list, err)`
+- [ ] `create/4 (err, str, list, list)`
+- [ ] `create/4 (err, str, list, map)`
+- [ ] `create/4 (err, str, map, int)`
+- [ ] `create/4 (err, str, map, float)`
+- [ ] `create/4 (err, str, map, obj)`
+- [ ] `create/4 (err, str, map, str)`
+- [ ] `create/4 (err, str, map, err)`
+- [ ] `create/4 (err, str, map, list)`
+- [ ] `create/4 (err, str, map, map)`
+- [ ] `create/4 (err, err, int, int)`
+- [ ] `create/4 (err, err, int, float)`
+- [ ] `create/4 (err, err, int, obj)`
+- [ ] `create/4 (err, err, int, str)`
+- [ ] `create/4 (err, err, int, err)`
+- [ ] `create/4 (err, err, int, list)`
+- [ ] `create/4 (err, err, int, map)`
+- [ ] `create/4 (err, err, float, int)`
+- [ ] `create/4 (err, err, float, float)`
+- [ ] `create/4 (err, err, float, obj)`
+- [ ] `create/4 (err, err, float, str)`
+- [ ] `create/4 (err, err, float, err)`
+- [ ] `create/4 (err, err, float, list)`
+- [ ] `create/4 (err, err, float, map)`
+- [ ] `create/4 (err, err, obj, int)`
+- [ ] `create/4 (err, err, obj, float)`
+- [ ] `create/4 (err, err, obj, obj)`
+- [ ] `create/4 (err, err, obj, str)`
+- [ ] `create/4 (err, err, obj, err)`
+- [ ] `create/4 (err, err, obj, list)`
+- [ ] `create/4 (err, err, obj, map)`
+- [ ] `create/4 (err, err, str, int)`
+- [ ] `create/4 (err, err, str, float)`
+- [ ] `create/4 (err, err, str, obj)`
+- [ ] `create/4 (err, err, str, str)`
+- [ ] `create/4 (err, err, str, err)`
+- [ ] `create/4 (err, err, str, list)`
+- [ ] `create/4 (err, err, str, map)`
+- [ ] `create/4 (err, err, err, int)`
+- [ ] `create/4 (err, err, err, float)`
+- [ ] `create/4 (err, err, err, obj)`
+- [ ] `create/4 (err, err, err, str)`
+- [ ] `create/4 (err, err, err, err)`
+- [ ] `create/4 (err, err, err, list)`
+- [ ] `create/4 (err, err, err, map)`
+- [ ] `create/4 (err, err, list, int)`
+- [ ] `create/4 (err, err, list, float)`
+- [ ] `create/4 (err, err, list, obj)`
+- [ ] `create/4 (err, err, list, str)`
+- [ ] `create/4 (err, err, list, err)`
+- [ ] `create/4 (err, err, list, list)`
+- [ ] `create/4 (err, err, list, map)`
+- [ ] `create/4 (err, err, map, int)`
+- [ ] `create/4 (err, err, map, float)`
+- [ ] `create/4 (err, err, map, obj)`
+- [ ] `create/4 (err, err, map, str)`
+- [ ] `create/4 (err, err, map, err)`
+- [ ] `create/4 (err, err, map, list)`
+- [ ] `create/4 (err, err, map, map)`
+- [ ] `create/4 (err, list, int, int)`
+- [ ] `create/4 (err, list, int, float)`
+- [ ] `create/4 (err, list, int, obj)`
+- [ ] `create/4 (err, list, int, str)`
+- [ ] `create/4 (err, list, int, err)`
+- [ ] `create/4 (err, list, int, list)`
+- [ ] `create/4 (err, list, int, map)`
+- [ ] `create/4 (err, list, float, int)`
+- [ ] `create/4 (err, list, float, float)`
+- [ ] `create/4 (err, list, float, obj)`
+- [ ] `create/4 (err, list, float, str)`
+- [ ] `create/4 (err, list, float, err)`
+- [ ] `create/4 (err, list, float, list)`
+- [ ] `create/4 (err, list, float, map)`
+- [ ] `create/4 (err, list, obj, int)`
+- [ ] `create/4 (err, list, obj, float)`
+- [ ] `create/4 (err, list, obj, obj)`
+- [ ] `create/4 (err, list, obj, str)`
+- [ ] `create/4 (err, list, obj, err)`
+- [ ] `create/4 (err, list, obj, list)`
+- [ ] `create/4 (err, list, obj, map)`
+- [ ] `create/4 (err, list, str, int)`
+- [ ] `create/4 (err, list, str, float)`
+- [ ] `create/4 (err, list, str, obj)`
+- [ ] `create/4 (err, list, str, str)`
+- [ ] `create/4 (err, list, str, err)`
+- [ ] `create/4 (err, list, str, list)`
+- [ ] `create/4 (err, list, str, map)`
+- [ ] `create/4 (err, list, err, int)`
+- [ ] `create/4 (err, list, err, float)`
+- [ ] `create/4 (err, list, err, obj)`
+- [ ] `create/4 (err, list, err, str)`
+- [ ] `create/4 (err, list, err, err)`
+- [ ] `create/4 (err, list, err, list)`
+- [ ] `create/4 (err, list, err, map)`
+- [ ] `create/4 (err, list, list, int)`
+- [ ] `create/4 (err, list, list, float)`
+- [ ] `create/4 (err, list, list, obj)`
+- [ ] `create/4 (err, list, list, str)`
+- [ ] `create/4 (err, list, list, err)`
+- [ ] `create/4 (err, list, list, list)`
+- [ ] `create/4 (err, list, list, map)`
+- [ ] `create/4 (err, list, map, int)`
+- [ ] `create/4 (err, list, map, float)`
+- [ ] `create/4 (err, list, map, obj)`
+- [ ] `create/4 (err, list, map, str)`
+- [ ] `create/4 (err, list, map, err)`
+- [ ] `create/4 (err, list, map, list)`
+- [ ] `create/4 (err, list, map, map)`
+- [ ] `create/4 (err, map, int, int)`
+- [ ] `create/4 (err, map, int, float)`
+- [ ] `create/4 (err, map, int, obj)`
+- [ ] `create/4 (err, map, int, str)`
+- [ ] `create/4 (err, map, int, err)`
+- [ ] `create/4 (err, map, int, list)`
+- [ ] `create/4 (err, map, int, map)`
+- [ ] `create/4 (err, map, float, int)`
+- [ ] `create/4 (err, map, float, float)`
+- [ ] `create/4 (err, map, float, obj)`
+- [ ] `create/4 (err, map, float, str)`
+- [ ] `create/4 (err, map, float, err)`
+- [ ] `create/4 (err, map, float, list)`
+- [ ] `create/4 (err, map, float, map)`
+- [ ] `create/4 (err, map, obj, int)`
+- [ ] `create/4 (err, map, obj, float)`
+- [ ] `create/4 (err, map, obj, obj)`
+- [ ] `create/4 (err, map, obj, str)`
+- [ ] `create/4 (err, map, obj, err)`
+- [ ] `create/4 (err, map, obj, list)`
+- [ ] `create/4 (err, map, obj, map)`
+- [ ] `create/4 (err, map, str, int)`
+- [ ] `create/4 (err, map, str, float)`
+- [ ] `create/4 (err, map, str, obj)`
+- [ ] `create/4 (err, map, str, str)`
+- [ ] `create/4 (err, map, str, err)`
+- [ ] `create/4 (err, map, str, list)`
+- [ ] `create/4 (err, map, str, map)`
+- [ ] `create/4 (err, map, err, int)`
+- [ ] `create/4 (err, map, err, float)`
+- [ ] `create/4 (err, map, err, obj)`
+- [ ] `create/4 (err, map, err, str)`
+- [ ] `create/4 (err, map, err, err)`
+- [ ] `create/4 (err, map, err, list)`
+- [ ] `create/4 (err, map, err, map)`
+- [ ] `create/4 (err, map, list, int)`
+- [ ] `create/4 (err, map, list, float)`
+- [ ] `create/4 (err, map, list, obj)`
+- [ ] `create/4 (err, map, list, str)`
+- [ ] `create/4 (err, map, list, err)`
+- [ ] `create/4 (err, map, list, list)`
+- [ ] `create/4 (err, map, list, map)`
+- [ ] `create/4 (err, map, map, int)`
+- [ ] `create/4 (err, map, map, float)`
+- [ ] `create/4 (err, map, map, obj)`
+- [ ] `create/4 (err, map, map, str)`
+- [ ] `create/4 (err, map, map, err)`
+- [ ] `create/4 (err, map, map, list)`
+- [ ] `create/4 (err, map, map, map)`
+- [ ] `create/4 (list, int, int, int)`
+- [ ] `create/4 (list, int, int, float)`
+- [ ] `create/4 (list, int, int, obj)`
+- [ ] `create/4 (list, int, int, str)`
+- [ ] `create/4 (list, int, int, err)`
+- [ ] `create/4 (list, int, int, list)`
+- [ ] `create/4 (list, int, int, map)`
+- [ ] `create/4 (list, int, float, int)`
+- [ ] `create/4 (list, int, float, float)`
+- [ ] `create/4 (list, int, float, obj)`
+- [ ] `create/4 (list, int, float, str)`
+- [ ] `create/4 (list, int, float, err)`
+- [ ] `create/4 (list, int, float, list)`
+- [ ] `create/4 (list, int, float, map)`
+- [ ] `create/4 (list, int, obj, int)`
+- [ ] `create/4 (list, int, obj, float)`
+- [ ] `create/4 (list, int, obj, obj)`
+- [ ] `create/4 (list, int, obj, str)`
+- [ ] `create/4 (list, int, obj, err)`
+- [ ] `create/4 (list, int, obj, list)`
+- [ ] `create/4 (list, int, obj, map)`
+- [ ] `create/4 (list, int, str, int)`
+- [ ] `create/4 (list, int, str, float)`
+- [ ] `create/4 (list, int, str, obj)`
+- [ ] `create/4 (list, int, str, str)`
+- [ ] `create/4 (list, int, str, err)`
+- [ ] `create/4 (list, int, str, list)`
+- [ ] `create/4 (list, int, str, map)`
+- [ ] `create/4 (list, int, err, int)`
+- [ ] `create/4 (list, int, err, float)`
+- [ ] `create/4 (list, int, err, obj)`
+- [ ] `create/4 (list, int, err, str)`
+- [ ] `create/4 (list, int, err, err)`
+- [ ] `create/4 (list, int, err, list)`
+- [ ] `create/4 (list, int, err, map)`
+- [ ] `create/4 (list, int, list, int)`
+- [ ] `create/4 (list, int, list, float)`
+- [ ] `create/4 (list, int, list, obj)`
+- [ ] `create/4 (list, int, list, str)`
+- [ ] `create/4 (list, int, list, err)`
+- [ ] `create/4 (list, int, list, list)`
+- [ ] `create/4 (list, int, list, map)`
+- [ ] `create/4 (list, int, map, int)`
+- [ ] `create/4 (list, int, map, float)`
+- [ ] `create/4 (list, int, map, obj)`
+- [ ] `create/4 (list, int, map, str)`
+- [ ] `create/4 (list, int, map, err)`
+- [ ] `create/4 (list, int, map, list)`
+- [ ] `create/4 (list, int, map, map)`
+- [ ] `create/4 (list, float, int, int)`
+- [ ] `create/4 (list, float, int, float)`
+- [ ] `create/4 (list, float, int, obj)`
+- [ ] `create/4 (list, float, int, str)`
+- [ ] `create/4 (list, float, int, err)`
+- [ ] `create/4 (list, float, int, list)`
+- [ ] `create/4 (list, float, int, map)`
+- [ ] `create/4 (list, float, float, int)`
+- [ ] `create/4 (list, float, float, float)`
+- [ ] `create/4 (list, float, float, obj)`
+- [ ] `create/4 (list, float, float, str)`
+- [ ] `create/4 (list, float, float, err)`
+- [ ] `create/4 (list, float, float, list)`
+- [ ] `create/4 (list, float, float, map)`
+- [ ] `create/4 (list, float, obj, int)`
+- [ ] `create/4 (list, float, obj, float)`
+- [ ] `create/4 (list, float, obj, obj)`
+- [ ] `create/4 (list, float, obj, str)`
+- [ ] `create/4 (list, float, obj, err)`
+- [ ] `create/4 (list, float, obj, list)`
+- [ ] `create/4 (list, float, obj, map)`
+- [ ] `create/4 (list, float, str, int)`
+- [ ] `create/4 (list, float, str, float)`
+- [ ] `create/4 (list, float, str, obj)`
+- [ ] `create/4 (list, float, str, str)`
+- [ ] `create/4 (list, float, str, err)`
+- [ ] `create/4 (list, float, str, list)`
+- [ ] `create/4 (list, float, str, map)`
+- [ ] `create/4 (list, float, err, int)`
+- [ ] `create/4 (list, float, err, float)`
+- [ ] `create/4 (list, float, err, obj)`
+- [ ] `create/4 (list, float, err, str)`
+- [ ] `create/4 (list, float, err, err)`
+- [ ] `create/4 (list, float, err, list)`
+- [ ] `create/4 (list, float, err, map)`
+- [ ] `create/4 (list, float, list, int)`
+- [ ] `create/4 (list, float, list, float)`
+- [ ] `create/4 (list, float, list, obj)`
+- [ ] `create/4 (list, float, list, str)`
+- [ ] `create/4 (list, float, list, err)`
+- [ ] `create/4 (list, float, list, list)`
+- [ ] `create/4 (list, float, list, map)`
+- [ ] `create/4 (list, float, map, int)`
+- [ ] `create/4 (list, float, map, float)`
+- [ ] `create/4 (list, float, map, obj)`
+- [ ] `create/4 (list, float, map, str)`
+- [ ] `create/4 (list, float, map, err)`
+- [ ] `create/4 (list, float, map, list)`
+- [ ] `create/4 (list, float, map, map)`
+- [ ] `create/4 (list, obj, int, int)`
+- [ ] `create/4 (list, obj, int, float)`
+- [ ] `create/4 (list, obj, int, obj)`
+- [ ] `create/4 (list, obj, int, str)`
+- [ ] `create/4 (list, obj, int, err)`
+- [ ] `create/4 (list, obj, int, list)`
+- [ ] `create/4 (list, obj, int, map)`
+- [ ] `create/4 (list, obj, float, int)`
+- [ ] `create/4 (list, obj, float, float)`
+- [ ] `create/4 (list, obj, float, obj)`
+- [ ] `create/4 (list, obj, float, str)`
+- [ ] `create/4 (list, obj, float, err)`
+- [ ] `create/4 (list, obj, float, list)`
+- [ ] `create/4 (list, obj, float, map)`
+- [ ] `create/4 (list, obj, obj, int)`
+- [ ] `create/4 (list, obj, obj, float)`
+- [ ] `create/4 (list, obj, obj, obj)`
+- [ ] `create/4 (list, obj, obj, str)`
+- [ ] `create/4 (list, obj, obj, err)`
+- [ ] `create/4 (list, obj, obj, list)`
+- [ ] `create/4 (list, obj, obj, map)`
+- [ ] `create/4 (list, obj, str, int)`
+- [ ] `create/4 (list, obj, str, float)`
+- [ ] `create/4 (list, obj, str, obj)`
+- [ ] `create/4 (list, obj, str, str)`
+- [ ] `create/4 (list, obj, str, err)`
+- [ ] `create/4 (list, obj, str, list)`
+- [ ] `create/4 (list, obj, str, map)`
+- [ ] `create/4 (list, obj, err, int)`
+- [ ] `create/4 (list, obj, err, float)`
+- [ ] `create/4 (list, obj, err, obj)`
+- [ ] `create/4 (list, obj, err, str)`
+- [ ] `create/4 (list, obj, err, err)`
+- [ ] `create/4 (list, obj, err, list)`
+- [ ] `create/4 (list, obj, err, map)`
+- [ ] `create/4 (list, obj, list, int)`
+- [ ] `create/4 (list, obj, list, float)`
+- [ ] `create/4 (list, obj, list, obj)`
+- [ ] `create/4 (list, obj, list, str)`
+- [ ] `create/4 (list, obj, list, err)`
+- [ ] `create/4 (list, obj, list, list)`
+- [ ] `create/4 (list, obj, list, map)`
+- [ ] `create/4 (list, obj, map, int)`
+- [ ] `create/4 (list, obj, map, float)`
+- [ ] `create/4 (list, obj, map, obj)`
+- [ ] `create/4 (list, obj, map, str)`
+- [ ] `create/4 (list, obj, map, err)`
+- [ ] `create/4 (list, obj, map, list)`
+- [ ] `create/4 (list, obj, map, map)`
+- [ ] `create/4 (list, str, int, int)`
+- [ ] `create/4 (list, str, int, float)`
+- [ ] `create/4 (list, str, int, obj)`
+- [ ] `create/4 (list, str, int, str)`
+- [ ] `create/4 (list, str, int, err)`
+- [ ] `create/4 (list, str, int, list)`
+- [ ] `create/4 (list, str, int, map)`
+- [ ] `create/4 (list, str, float, int)`
+- [ ] `create/4 (list, str, float, float)`
+- [ ] `create/4 (list, str, float, obj)`
+- [ ] `create/4 (list, str, float, str)`
+- [ ] `create/4 (list, str, float, err)`
+- [ ] `create/4 (list, str, float, list)`
+- [ ] `create/4 (list, str, float, map)`
+- [ ] `create/4 (list, str, obj, int)`
+- [ ] `create/4 (list, str, obj, float)`
+- [ ] `create/4 (list, str, obj, obj)`
+- [ ] `create/4 (list, str, obj, str)`
+- [ ] `create/4 (list, str, obj, err)`
+- [ ] `create/4 (list, str, obj, list)`
+- [ ] `create/4 (list, str, obj, map)`
+- [ ] `create/4 (list, str, str, int)`
+- [ ] `create/4 (list, str, str, float)`
+- [ ] `create/4 (list, str, str, obj)`
+- [ ] `create/4 (list, str, str, str)`
+- [ ] `create/4 (list, str, str, err)`
+- [ ] `create/4 (list, str, str, list)`
+- [ ] `create/4 (list, str, str, map)`
+- [ ] `create/4 (list, str, err, int)`
+- [ ] `create/4 (list, str, err, float)`
+- [ ] `create/4 (list, str, err, obj)`
+- [ ] `create/4 (list, str, err, str)`
+- [ ] `create/4 (list, str, err, err)`
+- [ ] `create/4 (list, str, err, list)`
+- [ ] `create/4 (list, str, err, map)`
+- [ ] `create/4 (list, str, list, int)`
+- [ ] `create/4 (list, str, list, float)`
+- [ ] `create/4 (list, str, list, obj)`
+- [ ] `create/4 (list, str, list, str)`
+- [ ] `create/4 (list, str, list, err)`
+- [ ] `create/4 (list, str, list, list)`
+- [ ] `create/4 (list, str, list, map)`
+- [ ] `create/4 (list, str, map, int)`
+- [ ] `create/4 (list, str, map, float)`
+- [ ] `create/4 (list, str, map, obj)`
+- [ ] `create/4 (list, str, map, str)`
+- [ ] `create/4 (list, str, map, err)`
+- [ ] `create/4 (list, str, map, list)`
+- [ ] `create/4 (list, str, map, map)`
+- [ ] `create/4 (list, err, int, int)`
+- [ ] `create/4 (list, err, int, float)`
+- [ ] `create/4 (list, err, int, obj)`
+- [ ] `create/4 (list, err, int, str)`
+- [ ] `create/4 (list, err, int, err)`
+- [ ] `create/4 (list, err, int, list)`
+- [ ] `create/4 (list, err, int, map)`
+- [ ] `create/4 (list, err, float, int)`
+- [ ] `create/4 (list, err, float, float)`
+- [ ] `create/4 (list, err, float, obj)`
+- [ ] `create/4 (list, err, float, str)`
+- [ ] `create/4 (list, err, float, err)`
+- [ ] `create/4 (list, err, float, list)`
+- [ ] `create/4 (list, err, float, map)`
+- [ ] `create/4 (list, err, obj, int)`
+- [ ] `create/4 (list, err, obj, float)`
+- [ ] `create/4 (list, err, obj, obj)`
+- [ ] `create/4 (list, err, obj, str)`
+- [ ] `create/4 (list, err, obj, err)`
+- [ ] `create/4 (list, err, obj, list)`
+- [ ] `create/4 (list, err, obj, map)`
+- [ ] `create/4 (list, err, str, int)`
+- [ ] `create/4 (list, err, str, float)`
+- [ ] `create/4 (list, err, str, obj)`
+- [ ] `create/4 (list, err, str, str)`
+- [ ] `create/4 (list, err, str, err)`
+- [ ] `create/4 (list, err, str, list)`
+- [ ] `create/4 (list, err, str, map)`
+- [ ] `create/4 (list, err, err, int)`
+- [ ] `create/4 (list, err, err, float)`
+- [ ] `create/4 (list, err, err, obj)`
+- [ ] `create/4 (list, err, err, str)`
+- [ ] `create/4 (list, err, err, err)`
+- [ ] `create/4 (list, err, err, list)`
+- [ ] `create/4 (list, err, err, map)`
+- [ ] `create/4 (list, err, list, int)`
+- [ ] `create/4 (list, err, list, float)`
+- [ ] `create/4 (list, err, list, obj)`
+- [ ] `create/4 (list, err, list, str)`
+- [ ] `create/4 (list, err, list, err)`
+- [ ] `create/4 (list, err, list, list)`
+- [ ] `create/4 (list, err, list, map)`
+- [ ] `create/4 (list, err, map, int)`
+- [ ] `create/4 (list, err, map, float)`
+- [ ] `create/4 (list, err, map, obj)`
+- [ ] `create/4 (list, err, map, str)`
+- [ ] `create/4 (list, err, map, err)`
+- [ ] `create/4 (list, err, map, list)`
+- [ ] `create/4 (list, err, map, map)`
+- [ ] `create/4 (list, list, int, int)`
+- [ ] `create/4 (list, list, int, float)`
+- [ ] `create/4 (list, list, int, obj)`
+- [ ] `create/4 (list, list, int, str)`
+- [ ] `create/4 (list, list, int, err)`
+- [ ] `create/4 (list, list, int, list)`
+- [ ] `create/4 (list, list, int, map)`
+- [ ] `create/4 (list, list, float, int)`
+- [ ] `create/4 (list, list, float, float)`
+- [ ] `create/4 (list, list, float, obj)`
+- [ ] `create/4 (list, list, float, str)`
+- [ ] `create/4 (list, list, float, err)`
+- [ ] `create/4 (list, list, float, list)`
+- [ ] `create/4 (list, list, float, map)`
+- [ ] `create/4 (list, list, obj, int)`
+- [ ] `create/4 (list, list, obj, float)`
+- [ ] `create/4 (list, list, obj, obj)`
+- [ ] `create/4 (list, list, obj, str)`
+- [ ] `create/4 (list, list, obj, err)`
+- [ ] `create/4 (list, list, obj, list)`
+- [ ] `create/4 (list, list, obj, map)`
+- [ ] `create/4 (list, list, str, int)`
+- [ ] `create/4 (list, list, str, float)`
+- [ ] `create/4 (list, list, str, obj)`
+- [ ] `create/4 (list, list, str, str)`
+- [ ] `create/4 (list, list, str, err)`
+- [ ] `create/4 (list, list, str, list)`
+- [ ] `create/4 (list, list, str, map)`
+- [ ] `create/4 (list, list, err, int)`
+- [ ] `create/4 (list, list, err, float)`
+- [ ] `create/4 (list, list, err, obj)`
+- [ ] `create/4 (list, list, err, str)`
+- [ ] `create/4 (list, list, err, err)`
+- [ ] `create/4 (list, list, err, list)`
+- [ ] `create/4 (list, list, err, map)`
+- [ ] `create/4 (list, list, list, int)`
+- [ ] `create/4 (list, list, list, float)`
+- [ ] `create/4 (list, list, list, obj)`
+- [ ] `create/4 (list, list, list, str)`
+- [ ] `create/4 (list, list, list, err)`
+- [ ] `create/4 (list, list, list, list)`
+- [ ] `create/4 (list, list, list, map)`
+- [ ] `create/4 (list, list, map, int)`
+- [ ] `create/4 (list, list, map, float)`
+- [ ] `create/4 (list, list, map, obj)`
+- [ ] `create/4 (list, list, map, str)`
+- [ ] `create/4 (list, list, map, err)`
+- [ ] `create/4 (list, list, map, list)`
+- [ ] `create/4 (list, list, map, map)`
+- [ ] `create/4 (list, map, int, int)`
+- [ ] `create/4 (list, map, int, float)`
+- [ ] `create/4 (list, map, int, obj)`
+- [ ] `create/4 (list, map, int, str)`
+- [ ] `create/4 (list, map, int, err)`
+- [ ] `create/4 (list, map, int, list)`
+- [ ] `create/4 (list, map, int, map)`
+- [ ] `create/4 (list, map, float, int)`
+- [ ] `create/4 (list, map, float, float)`
+- [ ] `create/4 (list, map, float, obj)`
+- [ ] `create/4 (list, map, float, str)`
+- [ ] `create/4 (list, map, float, err)`
+- [ ] `create/4 (list, map, float, list)`
+- [ ] `create/4 (list, map, float, map)`
+- [ ] `create/4 (list, map, obj, int)`
+- [ ] `create/4 (list, map, obj, float)`
+- [ ] `create/4 (list, map, obj, obj)`
+- [ ] `create/4 (list, map, obj, str)`
+- [ ] `create/4 (list, map, obj, err)`
+- [ ] `create/4 (list, map, obj, list)`
+- [ ] `create/4 (list, map, obj, map)`
+- [ ] `create/4 (list, map, str, int)`
+- [ ] `create/4 (list, map, str, float)`
+- [ ] `create/4 (list, map, str, obj)`
+- [ ] `create/4 (list, map, str, str)`
+- [ ] `create/4 (list, map, str, err)`
+- [ ] `create/4 (list, map, str, list)`
+- [ ] `create/4 (list, map, str, map)`
+- [ ] `create/4 (list, map, err, int)`
+- [ ] `create/4 (list, map, err, float)`
+- [ ] `create/4 (list, map, err, obj)`
+- [ ] `create/4 (list, map, err, str)`
+- [ ] `create/4 (list, map, err, err)`
+- [ ] `create/4 (list, map, err, list)`
+- [ ] `create/4 (list, map, err, map)`
+- [ ] `create/4 (list, map, list, int)`
+- [ ] `create/4 (list, map, list, float)`
+- [ ] `create/4 (list, map, list, obj)`
+- [ ] `create/4 (list, map, list, str)`
+- [ ] `create/4 (list, map, list, err)`
+- [ ] `create/4 (list, map, list, list)`
+- [ ] `create/4 (list, map, list, map)`
+- [ ] `create/4 (list, map, map, int)`
+- [ ] `create/4 (list, map, map, float)`
+- [ ] `create/4 (list, map, map, obj)`
+- [ ] `create/4 (list, map, map, str)`
+- [ ] `create/4 (list, map, map, err)`
+- [ ] `create/4 (list, map, map, list)`
+- [ ] `create/4 (list, map, map, map)`
+- [ ] `create/4 (map, int, int, int)`
+- [ ] `create/4 (map, int, int, float)`
+- [ ] `create/4 (map, int, int, obj)`
+- [ ] `create/4 (map, int, int, str)`
+- [ ] `create/4 (map, int, int, err)`
+- [ ] `create/4 (map, int, int, list)`
+- [ ] `create/4 (map, int, int, map)`
+- [ ] `create/4 (map, int, float, int)`
+- [ ] `create/4 (map, int, float, float)`
+- [ ] `create/4 (map, int, float, obj)`
+- [ ] `create/4 (map, int, float, str)`
+- [ ] `create/4 (map, int, float, err)`
+- [ ] `create/4 (map, int, float, list)`
+- [ ] `create/4 (map, int, float, map)`
+- [ ] `create/4 (map, int, obj, int)`
+- [ ] `create/4 (map, int, obj, float)`
+- [ ] `create/4 (map, int, obj, obj)`
+- [ ] `create/4 (map, int, obj, str)`
+- [ ] `create/4 (map, int, obj, err)`
+- [ ] `create/4 (map, int, obj, list)`
+- [ ] `create/4 (map, int, obj, map)`
+- [ ] `create/4 (map, int, str, int)`
+- [ ] `create/4 (map, int, str, float)`
+- [ ] `create/4 (map, int, str, obj)`
+- [ ] `create/4 (map, int, str, str)`
+- [ ] `create/4 (map, int, str, err)`
+- [ ] `create/4 (map, int, str, list)`
+- [ ] `create/4 (map, int, str, map)`
+- [ ] `create/4 (map, int, err, int)`
+- [ ] `create/4 (map, int, err, float)`
+- [ ] `create/4 (map, int, err, obj)`
+- [ ] `create/4 (map, int, err, str)`
+- [ ] `create/4 (map, int, err, err)`
+- [ ] `create/4 (map, int, err, list)`
+- [ ] `create/4 (map, int, err, map)`
+- [ ] `create/4 (map, int, list, int)`
+- [ ] `create/4 (map, int, list, float)`
+- [ ] `create/4 (map, int, list, obj)`
+- [ ] `create/4 (map, int, list, str)`
+- [ ] `create/4 (map, int, list, err)`
+- [ ] `create/4 (map, int, list, list)`
+- [ ] `create/4 (map, int, list, map)`
+- [ ] `create/4 (map, int, map, int)`
+- [ ] `create/4 (map, int, map, float)`
+- [ ] `create/4 (map, int, map, obj)`
+- [ ] `create/4 (map, int, map, str)`
+- [ ] `create/4 (map, int, map, err)`
+- [ ] `create/4 (map, int, map, list)`
+- [ ] `create/4 (map, int, map, map)`
+- [ ] `create/4 (map, float, int, int)`
+- [ ] `create/4 (map, float, int, float)`
+- [ ] `create/4 (map, float, int, obj)`
+- [ ] `create/4 (map, float, int, str)`
+- [ ] `create/4 (map, float, int, err)`
+- [ ] `create/4 (map, float, int, list)`
+- [ ] `create/4 (map, float, int, map)`
+- [ ] `create/4 (map, float, float, int)`
+- [ ] `create/4 (map, float, float, float)`
+- [ ] `create/4 (map, float, float, obj)`
+- [ ] `create/4 (map, float, float, str)`
+- [ ] `create/4 (map, float, float, err)`
+- [ ] `create/4 (map, float, float, list)`
+- [ ] `create/4 (map, float, float, map)`
+- [ ] `create/4 (map, float, obj, int)`
+- [ ] `create/4 (map, float, obj, float)`
+- [ ] `create/4 (map, float, obj, obj)`
+- [ ] `create/4 (map, float, obj, str)`
+- [ ] `create/4 (map, float, obj, err)`
+- [ ] `create/4 (map, float, obj, list)`
+- [ ] `create/4 (map, float, obj, map)`
+- [ ] `create/4 (map, float, str, int)`
+- [ ] `create/4 (map, float, str, float)`
+- [ ] `create/4 (map, float, str, obj)`
+- [ ] `create/4 (map, float, str, str)`
+- [ ] `create/4 (map, float, str, err)`
+- [ ] `create/4 (map, float, str, list)`
+- [ ] `create/4 (map, float, str, map)`
+- [ ] `create/4 (map, float, err, int)`
+- [ ] `create/4 (map, float, err, float)`
+- [ ] `create/4 (map, float, err, obj)`
+- [ ] `create/4 (map, float, err, str)`
+- [ ] `create/4 (map, float, err, err)`
+- [ ] `create/4 (map, float, err, list)`
+- [ ] `create/4 (map, float, err, map)`
+- [ ] `create/4 (map, float, list, int)`
+- [ ] `create/4 (map, float, list, float)`
+- [ ] `create/4 (map, float, list, obj)`
+- [ ] `create/4 (map, float, list, str)`
+- [ ] `create/4 (map, float, list, err)`
+- [ ] `create/4 (map, float, list, list)`
+- [ ] `create/4 (map, float, list, map)`
+- [ ] `create/4 (map, float, map, int)`
+- [ ] `create/4 (map, float, map, float)`
+- [ ] `create/4 (map, float, map, obj)`
+- [ ] `create/4 (map, float, map, str)`
+- [ ] `create/4 (map, float, map, err)`
+- [ ] `create/4 (map, float, map, list)`
+- [ ] `create/4 (map, float, map, map)`
+- [ ] `create/4 (map, obj, int, int)`
+- [ ] `create/4 (map, obj, int, float)`
+- [ ] `create/4 (map, obj, int, obj)`
+- [ ] `create/4 (map, obj, int, str)`
+- [ ] `create/4 (map, obj, int, err)`
+- [ ] `create/4 (map, obj, int, list)`
+- [ ] `create/4 (map, obj, int, map)`
+- [ ] `create/4 (map, obj, float, int)`
+- [ ] `create/4 (map, obj, float, float)`
+- [ ] `create/4 (map, obj, float, obj)`
+- [ ] `create/4 (map, obj, float, str)`
+- [ ] `create/4 (map, obj, float, err)`
+- [ ] `create/4 (map, obj, float, list)`
+- [ ] `create/4 (map, obj, float, map)`
+- [ ] `create/4 (map, obj, obj, int)`
+- [ ] `create/4 (map, obj, obj, float)`
+- [ ] `create/4 (map, obj, obj, obj)`
+- [ ] `create/4 (map, obj, obj, str)`
+- [ ] `create/4 (map, obj, obj, err)`
+- [ ] `create/4 (map, obj, obj, list)`
+- [ ] `create/4 (map, obj, obj, map)`
+- [ ] `create/4 (map, obj, str, int)`
+- [ ] `create/4 (map, obj, str, float)`
+- [ ] `create/4 (map, obj, str, obj)`
+- [ ] `create/4 (map, obj, str, str)`
+- [ ] `create/4 (map, obj, str, err)`
+- [ ] `create/4 (map, obj, str, list)`
+- [ ] `create/4 (map, obj, str, map)`
+- [ ] `create/4 (map, obj, err, int)`
+- [ ] `create/4 (map, obj, err, float)`
+- [ ] `create/4 (map, obj, err, obj)`
+- [ ] `create/4 (map, obj, err, str)`
+- [ ] `create/4 (map, obj, err, err)`
+- [ ] `create/4 (map, obj, err, list)`
+- [ ] `create/4 (map, obj, err, map)`
+- [ ] `create/4 (map, obj, list, int)`
+- [ ] `create/4 (map, obj, list, float)`
+- [ ] `create/4 (map, obj, list, obj)`
+- [ ] `create/4 (map, obj, list, str)`
+- [ ] `create/4 (map, obj, list, err)`
+- [ ] `create/4 (map, obj, list, list)`
+- [ ] `create/4 (map, obj, list, map)`
+- [ ] `create/4 (map, obj, map, int)`
+- [ ] `create/4 (map, obj, map, float)`
+- [ ] `create/4 (map, obj, map, obj)`
+- [ ] `create/4 (map, obj, map, str)`
+- [ ] `create/4 (map, obj, map, err)`
+- [ ] `create/4 (map, obj, map, list)`
+- [ ] `create/4 (map, obj, map, map)`
+- [ ] `create/4 (map, str, int, int)`
+- [ ] `create/4 (map, str, int, float)`
+- [ ] `create/4 (map, str, int, obj)`
+- [ ] `create/4 (map, str, int, str)`
+- [ ] `create/4 (map, str, int, err)`
+- [ ] `create/4 (map, str, int, list)`
+- [ ] `create/4 (map, str, int, map)`
+- [ ] `create/4 (map, str, float, int)`
+- [ ] `create/4 (map, str, float, float)`
+- [ ] `create/4 (map, str, float, obj)`
+- [ ] `create/4 (map, str, float, str)`
+- [ ] `create/4 (map, str, float, err)`
+- [ ] `create/4 (map, str, float, list)`
+- [ ] `create/4 (map, str, float, map)`
+- [ ] `create/4 (map, str, obj, int)`
+- [ ] `create/4 (map, str, obj, float)`
+- [ ] `create/4 (map, str, obj, obj)`
+- [ ] `create/4 (map, str, obj, str)`
+- [ ] `create/4 (map, str, obj, err)`
+- [ ] `create/4 (map, str, obj, list)`
+- [ ] `create/4 (map, str, obj, map)`
+- [ ] `create/4 (map, str, str, int)`
+- [ ] `create/4 (map, str, str, float)`
+- [ ] `create/4 (map, str, str, obj)`
+- [ ] `create/4 (map, str, str, str)`
+- [ ] `create/4 (map, str, str, err)`
+- [ ] `create/4 (map, str, str, list)`
+- [ ] `create/4 (map, str, str, map)`
+- [ ] `create/4 (map, str, err, int)`
+- [ ] `create/4 (map, str, err, float)`
+- [ ] `create/4 (map, str, err, obj)`
+- [ ] `create/4 (map, str, err, str)`
+- [ ] `create/4 (map, str, err, err)`
+- [ ] `create/4 (map, str, err, list)`
+- [ ] `create/4 (map, str, err, map)`
+- [ ] `create/4 (map, str, list, int)`
+- [ ] `create/4 (map, str, list, float)`
+- [ ] `create/4 (map, str, list, obj)`
+- [ ] `create/4 (map, str, list, str)`
+- [ ] `create/4 (map, str, list, err)`
+- [ ] `create/4 (map, str, list, list)`
+- [ ] `create/4 (map, str, list, map)`
+- [ ] `create/4 (map, str, map, int)`
+- [ ] `create/4 (map, str, map, float)`
+- [ ] `create/4 (map, str, map, obj)`
+- [ ] `create/4 (map, str, map, str)`
+- [ ] `create/4 (map, str, map, err)`
+- [ ] `create/4 (map, str, map, list)`
+- [ ] `create/4 (map, str, map, map)`
+- [ ] `create/4 (map, err, int, int)`
+- [ ] `create/4 (map, err, int, float)`
+- [ ] `create/4 (map, err, int, obj)`
+- [ ] `create/4 (map, err, int, str)`
+- [ ] `create/4 (map, err, int, err)`
+- [ ] `create/4 (map, err, int, list)`
+- [ ] `create/4 (map, err, int, map)`
+- [ ] `create/4 (map, err, float, int)`
+- [ ] `create/4 (map, err, float, float)`
+- [ ] `create/4 (map, err, float, obj)`
+- [ ] `create/4 (map, err, float, str)`
+- [ ] `create/4 (map, err, float, err)`
+- [ ] `create/4 (map, err, float, list)`
+- [ ] `create/4 (map, err, float, map)`
+- [ ] `create/4 (map, err, obj, int)`
+- [ ] `create/4 (map, err, obj, float)`
+- [ ] `create/4 (map, err, obj, obj)`
+- [ ] `create/4 (map, err, obj, str)`
+- [ ] `create/4 (map, err, obj, err)`
+- [ ] `create/4 (map, err, obj, list)`
+- [ ] `create/4 (map, err, obj, map)`
+- [ ] `create/4 (map, err, str, int)`
+- [ ] `create/4 (map, err, str, float)`
+- [ ] `create/4 (map, err, str, obj)`
+- [ ] `create/4 (map, err, str, str)`
+- [ ] `create/4 (map, err, str, err)`
+- [ ] `create/4 (map, err, str, list)`
+- [ ] `create/4 (map, err, str, map)`
+- [ ] `create/4 (map, err, err, int)`
+- [ ] `create/4 (map, err, err, float)`
+- [ ] `create/4 (map, err, err, obj)`
+- [ ] `create/4 (map, err, err, str)`
+- [ ] `create/4 (map, err, err, err)`
+- [ ] `create/4 (map, err, err, list)`
+- [ ] `create/4 (map, err, err, map)`
+- [ ] `create/4 (map, err, list, int)`
+- [ ] `create/4 (map, err, list, float)`
+- [ ] `create/4 (map, err, list, obj)`
+- [ ] `create/4 (map, err, list, str)`
+- [ ] `create/4 (map, err, list, err)`
+- [ ] `create/4 (map, err, list, list)`
+- [ ] `create/4 (map, err, list, map)`
+- [ ] `create/4 (map, err, map, int)`
+- [ ] `create/4 (map, err, map, float)`
+- [ ] `create/4 (map, err, map, obj)`
+- [ ] `create/4 (map, err, map, str)`
+- [ ] `create/4 (map, err, map, err)`
+- [ ] `create/4 (map, err, map, list)`
+- [ ] `create/4 (map, err, map, map)`
+- [ ] `create/4 (map, list, int, int)`
+- [ ] `create/4 (map, list, int, float)`
+- [ ] `create/4 (map, list, int, obj)`
+- [ ] `create/4 (map, list, int, str)`
+- [ ] `create/4 (map, list, int, err)`
+- [ ] `create/4 (map, list, int, list)`
+- [ ] `create/4 (map, list, int, map)`
+- [ ] `create/4 (map, list, float, int)`
+- [ ] `create/4 (map, list, float, float)`
+- [ ] `create/4 (map, list, float, obj)`
+- [ ] `create/4 (map, list, float, str)`
+- [ ] `create/4 (map, list, float, err)`
+- [ ] `create/4 (map, list, float, list)`
+- [ ] `create/4 (map, list, float, map)`
+- [ ] `create/4 (map, list, obj, int)`
+- [ ] `create/4 (map, list, obj, float)`
+- [ ] `create/4 (map, list, obj, obj)`
+- [ ] `create/4 (map, list, obj, str)`
+- [ ] `create/4 (map, list, obj, err)`
+- [ ] `create/4 (map, list, obj, list)`
+- [ ] `create/4 (map, list, obj, map)`
+- [ ] `create/4 (map, list, str, int)`
+- [ ] `create/4 (map, list, str, float)`
+- [ ] `create/4 (map, list, str, obj)`
+- [ ] `create/4 (map, list, str, str)`
+- [ ] `create/4 (map, list, str, err)`
+- [ ] `create/4 (map, list, str, list)`
+- [ ] `create/4 (map, list, str, map)`
+- [ ] `create/4 (map, list, err, int)`
+- [ ] `create/4 (map, list, err, float)`
+- [ ] `create/4 (map, list, err, obj)`
+- [ ] `create/4 (map, list, err, str)`
+- [ ] `create/4 (map, list, err, err)`
+- [ ] `create/4 (map, list, err, list)`
+- [ ] `create/4 (map, list, err, map)`
+- [ ] `create/4 (map, list, list, int)`
+- [ ] `create/4 (map, list, list, float)`
+- [ ] `create/4 (map, list, list, obj)`
+- [ ] `create/4 (map, list, list, str)`
+- [ ] `create/4 (map, list, list, err)`
+- [ ] `create/4 (map, list, list, list)`
+- [ ] `create/4 (map, list, list, map)`
+- [ ] `create/4 (map, list, map, int)`
+- [ ] `create/4 (map, list, map, float)`
+- [ ] `create/4 (map, list, map, obj)`
+- [ ] `create/4 (map, list, map, str)`
+- [ ] `create/4 (map, list, map, err)`
+- [ ] `create/4 (map, list, map, list)`
+- [ ] `create/4 (map, list, map, map)`
+- [ ] `create/4 (map, map, int, int)`
+- [ ] `create/4 (map, map, int, float)`
+- [ ] `create/4 (map, map, int, obj)`
+- [ ] `create/4 (map, map, int, str)`
+- [ ] `create/4 (map, map, int, err)`
+- [ ] `create/4 (map, map, int, list)`
+- [ ] `create/4 (map, map, int, map)`
+- [ ] `create/4 (map, map, float, int)`
+- [ ] `create/4 (map, map, float, float)`
+- [ ] `create/4 (map, map, float, obj)`
+- [ ] `create/4 (map, map, float, str)`
+- [ ] `create/4 (map, map, float, err)`
+- [ ] `create/4 (map, map, float, list)`
+- [ ] `create/4 (map, map, float, map)`
+- [ ] `create/4 (map, map, obj, int)`
+- [ ] `create/4 (map, map, obj, float)`
+- [ ] `create/4 (map, map, obj, obj)`
+- [ ] `create/4 (map, map, obj, str)`
+- [ ] `create/4 (map, map, obj, err)`
+- [ ] `create/4 (map, map, obj, list)`
+- [ ] `create/4 (map, map, obj, map)`
+- [ ] `create/4 (map, map, str, int)`
+- [ ] `create/4 (map, map, str, float)`
+- [ ] `create/4 (map, map, str, obj)`
+- [ ] `create/4 (map, map, str, str)`
+- [ ] `create/4 (map, map, str, err)`
+- [ ] `create/4 (map, map, str, list)`
+- [ ] `create/4 (map, map, str, map)`
+- [ ] `create/4 (map, map, err, int)`
+- [ ] `create/4 (map, map, err, float)`
+- [ ] `create/4 (map, map, err, obj)`
+- [ ] `create/4 (map, map, err, str)`
+- [ ] `create/4 (map, map, err, err)`
+- [ ] `create/4 (map, map, err, list)`
+- [ ] `create/4 (map, map, err, map)`
+- [ ] `create/4 (map, map, list, int)`
+- [ ] `create/4 (map, map, list, float)`
+- [ ] `create/4 (map, map, list, obj)`
+- [ ] `create/4 (map, map, list, str)`
+- [ ] `create/4 (map, map, list, err)`
+- [ ] `create/4 (map, map, list, list)`
+- [ ] `create/4 (map, map, list, map)`
+- [ ] `create/4 (map, map, map, int)`
+- [ ] `create/4 (map, map, map, float)`
+- [ ] `create/4 (map, map, map, obj)`
+- [ ] `create/4 (map, map, map, str)`
+- [ ] `create/4 (map, map, map, err)`
+- [ ] `create/4 (map, map, map, list)`
+- [ ] `create/4 (map, map, map, map)`
+- [?] `create/1` unknown argument types covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml` and 886 more
+- [?] `create/2` unknown argument types covered by `builtins/objects.yaml`, `builtins/objects.yaml`, `builtins/create.yaml` and 128 more
+- [?] `create/3` unknown argument types covered by `builtins/create.yaml`, `builtins/create.yaml`, `builtins/create.yaml` and 10 more
+- [?] `create/4` unknown argument types covered by `builtins/create.yaml`, `builtins/create.yaml`, `builtins/create.yaml` and 3 more
+
+### `crypt`
+
+- signature: `1..2 (str, str)`
+- source: `crypto.cc`
+- [ ] `crypt/1 (str)`
+- [x] `crypt/2 (str, str)` covered by `basic/string.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml` and 8 more
+
+### `ctime`
+
+- signature: `0..1 (int)`
+- source: `numbers.cc`
+- [x] `ctime/0 ()` covered by `audit/time_server_builtins_toast_oracle.yaml`, `builtins/math.yaml`, `builtins/math.yaml`
+- [x] `ctime/1 (int)` covered by `audit/time_server_builtins_toast_oracle.yaml`
+- [?] `ctime/1` unknown argument types covered by `builtins/math.yaml`
+
+### `curl`
+
+- signature: `1..3 (str, any, int)`
+- source: `curl.cc`
+- [x] `curl/1 (str)` covered by `builtins/url_curl.yaml`
+- [ ] `curl/2 (str, int)`
+- [ ] `curl/2 (str, float)`
+- [ ] `curl/2 (str, obj)`
+- [ ] `curl/2 (str, str)`
+- [ ] `curl/2 (str, err)`
+- [ ] `curl/2 (str, list)`
+- [ ] `curl/2 (str, map)`
+- [ ] `curl/3 (str, int, int)`
+- [ ] `curl/3 (str, float, int)`
+- [ ] `curl/3 (str, obj, int)`
+- [ ] `curl/3 (str, str, int)`
+- [ ] `curl/3 (str, err, int)`
+- [ ] `curl/3 (str, list, int)`
+- [ ] `curl/3 (str, map, int)`
+
+### `db_disk_size`
+
+- signature: `0..0 ()`
+- source: `server.cc`
+- [x] `db_disk_size/0 ()` covered by `builtins/server_admin.yaml`
+
+### `decode_base64`
+
+- signature: `1..2 (str, any)`
+- source: `base64.cc`
+- [x] `decode_base64/1 (str)` covered by `builtins/algorithms.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml` and 11 more
+- [x] `decode_base64/2 (str, int)` covered by `builtins/algorithms.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml` and 11 more
+- [ ] `decode_base64/2 (str, float)`
+- [ ] `decode_base64/2 (str, obj)`
+- [ ] `decode_base64/2 (str, str)`
+- [ ] `decode_base64/2 (str, err)`
+- [ ] `decode_base64/2 (str, list)`
+- [ ] `decode_base64/2 (str, map)`
+
+### `decode_binary`
+
+- signature: `1..2 (str, any)`
+- source: `list.cc`
+- [x] `decode_binary/1 (str)` covered by `basic/string.yaml`, `basic/string.yaml`, `basic/string.yaml` and 3 more
+- [x] `decode_binary/2 (str, int)` covered by `basic/string.yaml`, `basic/string.yaml`
+- [ ] `decode_binary/2 (str, float)`
+- [ ] `decode_binary/2 (str, obj)`
+- [ ] `decode_binary/2 (str, str)`
+- [ ] `decode_binary/2 (str, err)`
+- [ ] `decode_binary/2 (str, list)`
+- [ ] `decode_binary/2 (str, map)`
+- [?] `decode_binary/1` unknown argument types covered by `server/limits.yaml`
+- [?] `decode_binary/2` unknown argument types covered by `basic/string.yaml`, `server/limits.yaml`
+
+### `delete_property`
+
+- signature: `2..2 (any, str)`
+- source: `property.cc`
+- [ ] `delete_property/2 (int, str)`
+- [ ] `delete_property/2 (float, str)`
+- [x] `delete_property/2 (obj, str)` covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 74 more
+- [ ] `delete_property/2 (str, str)`
+- [ ] `delete_property/2 (err, str)`
+- [x] `delete_property/2 (list, str)` covered by `builtins/properties.yaml`, `builtins/properties.yaml`, `builtins/properties.yaml` and 6 more
+- [ ] `delete_property/2 (map, str)`
+- [?] `delete_property/2` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 50 more
+
+### `delete_verb`
+
+- signature: `2..2 (any, any)`
+- source: `verbs.cc`
+- [ ] `delete_verb/2 (int, int)`
+- [ ] `delete_verb/2 (int, float)`
+- [ ] `delete_verb/2 (int, obj)`
+- [ ] `delete_verb/2 (int, str)`
+- [ ] `delete_verb/2 (int, err)`
+- [ ] `delete_verb/2 (int, list)`
+- [ ] `delete_verb/2 (int, map)`
+- [ ] `delete_verb/2 (float, int)`
+- [ ] `delete_verb/2 (float, float)`
+- [ ] `delete_verb/2 (float, obj)`
+- [ ] `delete_verb/2 (float, str)`
+- [ ] `delete_verb/2 (float, err)`
+- [ ] `delete_verb/2 (float, list)`
+- [ ] `delete_verb/2 (float, map)`
+- [ ] `delete_verb/2 (obj, int)`
+- [ ] `delete_verb/2 (obj, float)`
+- [ ] `delete_verb/2 (obj, obj)`
+- [x] `delete_verb/2 (obj, str)` covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 24 more
+- [ ] `delete_verb/2 (obj, err)`
+- [ ] `delete_verb/2 (obj, list)`
+- [ ] `delete_verb/2 (obj, map)`
+- [ ] `delete_verb/2 (str, int)`
+- [ ] `delete_verb/2 (str, float)`
+- [ ] `delete_verb/2 (str, obj)`
+- [ ] `delete_verb/2 (str, str)`
+- [ ] `delete_verb/2 (str, err)`
+- [ ] `delete_verb/2 (str, list)`
+- [ ] `delete_verb/2 (str, map)`
+- [ ] `delete_verb/2 (err, int)`
+- [ ] `delete_verb/2 (err, float)`
+- [ ] `delete_verb/2 (err, obj)`
+- [ ] `delete_verb/2 (err, str)`
+- [ ] `delete_verb/2 (err, err)`
+- [ ] `delete_verb/2 (err, list)`
+- [ ] `delete_verb/2 (err, map)`
+- [ ] `delete_verb/2 (list, int)`
+- [ ] `delete_verb/2 (list, float)`
+- [ ] `delete_verb/2 (list, obj)`
+- [x] `delete_verb/2 (list, str)` covered by `audit/command_parser_toast_oracle.yaml`, `builtins/verbs.yaml`, `builtins/verbs.yaml` and 7 more
+- [ ] `delete_verb/2 (list, err)`
+- [ ] `delete_verb/2 (list, list)`
+- [ ] `delete_verb/2 (list, map)`
+- [ ] `delete_verb/2 (map, int)`
+- [ ] `delete_verb/2 (map, float)`
+- [ ] `delete_verb/2 (map, obj)`
+- [ ] `delete_verb/2 (map, str)`
+- [ ] `delete_verb/2 (map, err)`
+- [ ] `delete_verb/2 (map, list)`
+- [ ] `delete_verb/2 (map, map)`
+- [?] `delete_verb/2` unknown argument types covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml` and 53 more
+
+### `descendants`
+
+- signature: `1..2 (any, any)`
+- source: `objects.cc`
+- [x] `descendants/1 (int)` covered by `server/stress_objects.yaml`
+- [x] `descendants/1 (float)` covered by `server/stress_objects.yaml`
+- [ ] `descendants/1 (obj)`
+- [x] `descendants/1 (str)` covered by `server/stress_objects.yaml`
+- [ ] `descendants/1 (err)`
+- [ ] `descendants/1 (list)`
+- [ ] `descendants/1 (map)`
+- [ ] `descendants/2 (int, int)`
+- [ ] `descendants/2 (int, float)`
+- [ ] `descendants/2 (int, obj)`
+- [ ] `descendants/2 (int, str)`
+- [ ] `descendants/2 (int, err)`
+- [ ] `descendants/2 (int, list)`
+- [ ] `descendants/2 (int, map)`
+- [ ] `descendants/2 (float, int)`
+- [ ] `descendants/2 (float, float)`
+- [ ] `descendants/2 (float, obj)`
+- [ ] `descendants/2 (float, str)`
+- [ ] `descendants/2 (float, err)`
+- [ ] `descendants/2 (float, list)`
+- [ ] `descendants/2 (float, map)`
+- [ ] `descendants/2 (obj, int)`
+- [ ] `descendants/2 (obj, float)`
+- [ ] `descendants/2 (obj, obj)`
+- [ ] `descendants/2 (obj, str)`
+- [ ] `descendants/2 (obj, err)`
+- [ ] `descendants/2 (obj, list)`
+- [ ] `descendants/2 (obj, map)`
+- [ ] `descendants/2 (str, int)`
+- [ ] `descendants/2 (str, float)`
+- [ ] `descendants/2 (str, obj)`
+- [ ] `descendants/2 (str, str)`
+- [ ] `descendants/2 (str, err)`
+- [ ] `descendants/2 (str, list)`
+- [ ] `descendants/2 (str, map)`
+- [ ] `descendants/2 (err, int)`
+- [ ] `descendants/2 (err, float)`
+- [ ] `descendants/2 (err, obj)`
+- [ ] `descendants/2 (err, str)`
+- [ ] `descendants/2 (err, err)`
+- [ ] `descendants/2 (err, list)`
+- [ ] `descendants/2 (err, map)`
+- [ ] `descendants/2 (list, int)`
+- [ ] `descendants/2 (list, float)`
+- [ ] `descendants/2 (list, obj)`
+- [ ] `descendants/2 (list, str)`
+- [ ] `descendants/2 (list, err)`
+- [ ] `descendants/2 (list, list)`
+- [ ] `descendants/2 (list, map)`
+- [ ] `descendants/2 (map, int)`
+- [ ] `descendants/2 (map, float)`
+- [ ] `descendants/2 (map, obj)`
+- [ ] `descendants/2 (map, str)`
+- [ ] `descendants/2 (map, err)`
+- [ ] `descendants/2 (map, list)`
+- [ ] `descendants/2 (map, map)`
+- [?] `descendants/1` unknown argument types covered by `builtins/objects.yaml`, `builtins/objects.yaml`, `builtins/objects.yaml` and 16 more
+- [?] `descendants/2` unknown argument types covered by `builtins/objects.yaml`, `builtins/objects.yaml`, `server/stress_objects.yaml` and 3 more
+
+### `disassemble`
+
+- signature: `2..2 (any, any)`
+- source: `disassemble.cc`
+- [ ] `disassemble/2 (int, int)`
+- [ ] `disassemble/2 (int, float)`
+- [ ] `disassemble/2 (int, obj)`
+- [ ] `disassemble/2 (int, str)`
+- [ ] `disassemble/2 (int, err)`
+- [ ] `disassemble/2 (int, list)`
+- [ ] `disassemble/2 (int, map)`
+- [ ] `disassemble/2 (float, int)`
+- [ ] `disassemble/2 (float, float)`
+- [ ] `disassemble/2 (float, obj)`
+- [ ] `disassemble/2 (float, str)`
+- [ ] `disassemble/2 (float, err)`
+- [ ] `disassemble/2 (float, list)`
+- [ ] `disassemble/2 (float, map)`
+- [ ] `disassemble/2 (obj, int)`
+- [ ] `disassemble/2 (obj, float)`
+- [ ] `disassemble/2 (obj, obj)`
+- [ ] `disassemble/2 (obj, str)`
+- [ ] `disassemble/2 (obj, err)`
+- [ ] `disassemble/2 (obj, list)`
+- [ ] `disassemble/2 (obj, map)`
+- [ ] `disassemble/2 (str, int)`
+- [ ] `disassemble/2 (str, float)`
+- [ ] `disassemble/2 (str, obj)`
+- [ ] `disassemble/2 (str, str)`
+- [ ] `disassemble/2 (str, err)`
+- [ ] `disassemble/2 (str, list)`
+- [ ] `disassemble/2 (str, map)`
+- [ ] `disassemble/2 (err, int)`
+- [ ] `disassemble/2 (err, float)`
+- [ ] `disassemble/2 (err, obj)`
+- [ ] `disassemble/2 (err, str)`
+- [ ] `disassemble/2 (err, err)`
+- [ ] `disassemble/2 (err, list)`
+- [ ] `disassemble/2 (err, map)`
+- [ ] `disassemble/2 (list, int)`
+- [ ] `disassemble/2 (list, float)`
+- [ ] `disassemble/2 (list, obj)`
+- [x] `disassemble/2 (list, str)` covered by `builtins/verbs.yaml`, `builtins/verbs.yaml`, `builtins/verbs.yaml`
+- [ ] `disassemble/2 (list, err)`
+- [ ] `disassemble/2 (list, list)`
+- [ ] `disassemble/2 (list, map)`
+- [ ] `disassemble/2 (map, int)`
+- [ ] `disassemble/2 (map, float)`
+- [ ] `disassemble/2 (map, obj)`
+- [ ] `disassemble/2 (map, str)`
+- [ ] `disassemble/2 (map, err)`
+- [ ] `disassemble/2 (map, list)`
+- [ ] `disassemble/2 (map, map)`
+- [?] `disassemble/2` unknown argument types covered by `language/index_and_range.yaml`, `language/moocode_parsing.yaml`, `language/moocode_parsing.yaml` and 4 more
+
+### `distance`
+
+- signature: `2..2 (list, list)`
+- source: `numbers.cc`
+- [x] `distance/2 (list, list)` covered by `builtins/math.yaml`, `builtins/math.yaml`, `builtins/math.yaml` and 3 more
+
+### `dump_database`
+
+- signature: `0..0 ()`
+- source: `server.cc`
+- [x] `dump_database/0 ()` covered by `audit/task_scheduling_toast_oracle.yaml`, `builtins/server_admin.yaml`, `builtins/server_admin.yaml` and 5 more
+
+### `encode_base64`
+
+- signature: `1..2 (str, any)`
+- source: `base64.cc`
+- [x] `encode_base64/1 (str)` covered by `builtins/algorithms.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml` and 7 more
+- [x] `encode_base64/2 (str, int)` covered by `builtins/algorithms.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml` and 5 more
+- [ ] `encode_base64/2 (str, float)`
+- [ ] `encode_base64/2 (str, obj)`
+- [ ] `encode_base64/2 (str, str)`
+- [ ] `encode_base64/2 (str, err)`
+- [ ] `encode_base64/2 (str, list)`
+- [ ] `encode_base64/2 (str, map)`
+- [?] `encode_base64/1` unknown argument types covered by `server/limits.yaml`, `server/limits.yaml`
+
+### `encode_binary`
+
+- signature: `0..* ()`
+- source: `list.cc`
+- [x] `encode_binary/0 ()` covered by `basic/string.yaml`
+- [x] `encode_binary/1 (int)` covered by `basic/string.yaml`, `basic/string.yaml`
+- [ ] `encode_binary/1 (float)`
+- [x] `encode_binary/1 (obj)` covered by `basic/string.yaml`
+- [x] `encode_binary/1 (str)` covered by `basic/string.yaml`
+- [ ] `encode_binary/1 (err)`
+- [x] `encode_binary/1 (list)` covered by `basic/string.yaml`
+- [ ] `encode_binary/1 (map)`
+- [?] `encode_binary/1` unknown argument types covered by `builtins/chr_raw_bytes.yaml`, `builtins/chr_raw_bytes.yaml`, `server/limits.yaml` and 1 more
+
+### `equal`
+
+- signature: `2..2 (any, any)`
+- source: `list.cc`
+- [ ] `equal/2 (int, int)`
+- [ ] `equal/2 (int, float)`
+- [ ] `equal/2 (int, obj)`
+- [ ] `equal/2 (int, str)`
+- [ ] `equal/2 (int, err)`
+- [ ] `equal/2 (int, list)`
+- [ ] `equal/2 (int, map)`
+- [ ] `equal/2 (float, int)`
+- [ ] `equal/2 (float, float)`
+- [ ] `equal/2 (float, obj)`
+- [ ] `equal/2 (float, str)`
+- [ ] `equal/2 (float, err)`
+- [ ] `equal/2 (float, list)`
+- [ ] `equal/2 (float, map)`
+- [ ] `equal/2 (obj, int)`
+- [ ] `equal/2 (obj, float)`
+- [ ] `equal/2 (obj, obj)`
+- [ ] `equal/2 (obj, str)`
+- [ ] `equal/2 (obj, err)`
+- [ ] `equal/2 (obj, list)`
+- [ ] `equal/2 (obj, map)`
+- [ ] `equal/2 (str, int)`
+- [ ] `equal/2 (str, float)`
+- [ ] `equal/2 (str, obj)`
+- [x] `equal/2 (str, str)` covered by `basic/value.yaml`, `basic/value.yaml`, `language/string_comparison_case.yaml`
+- [ ] `equal/2 (str, err)`
+- [ ] `equal/2 (str, list)`
+- [ ] `equal/2 (str, map)`
+- [ ] `equal/2 (err, int)`
+- [ ] `equal/2 (err, float)`
+- [ ] `equal/2 (err, obj)`
+- [ ] `equal/2 (err, str)`
+- [ ] `equal/2 (err, err)`
+- [ ] `equal/2 (err, list)`
+- [ ] `equal/2 (err, map)`
+- [ ] `equal/2 (list, int)`
+- [ ] `equal/2 (list, float)`
+- [ ] `equal/2 (list, obj)`
+- [ ] `equal/2 (list, str)`
+- [ ] `equal/2 (list, err)`
+- [x] `equal/2 (list, list)` covered by `basic/value.yaml`, `basic/value.yaml`
+- [ ] `equal/2 (list, map)`
+- [ ] `equal/2 (map, int)`
+- [ ] `equal/2 (map, float)`
+- [ ] `equal/2 (map, obj)`
+- [ ] `equal/2 (map, str)`
+- [ ] `equal/2 (map, err)`
+- [ ] `equal/2 (map, list)`
+- [x] `equal/2 (map, map)` covered by `builtins/map.yaml`, `builtins/map.yaml`, `builtins/map.yaml` and 4 more
+- [?] `equal/2` unknown argument types covered by `basic/value.yaml`
+
+### `eval`
+
+- signature: `1..* (str)`
+- source: `verbs.cc`
+- [x] `eval/1 (str)` covered by `basic/property.yaml`, `basic/property.yaml`, `basic/property.yaml` and 9 more
+- [ ] `eval/2 (str, int)`
+- [ ] `eval/2 (str, float)`
+- [ ] `eval/2 (str, obj)`
+- [ ] `eval/2 (str, str)`
+- [ ] `eval/2 (str, err)`
+- [ ] `eval/2 (str, list)`
+- [ ] `eval/2 (str, map)`
+- [?] `eval/1` unknown argument types covered by `server/limits.yaml`, `server/limits.yaml`
+
+### `exec`
+
+- signature: `1..3 (list, str, list)`
+- source: `exec.cc`
+- [x] `exec/1 (list)` covered by `server/exec.yaml`, `server/exec.yaml`, `server/exec.yaml` and 8 more
+- [x] `exec/2 (list, str)` covered by `server/exec.yaml`, `server/exec.yaml`, `server/exec.yaml` and 2 more
+- [ ] `exec/3 (list, str, list)`
+
+### `exp`
+
+- signature: `1..1 (float)`
+- source: `numbers.cc`
+- [x] `exp/1 (float)` covered by `builtins/math.yaml`, `builtins/math.yaml`, `builtins/math.yaml` and 1 more
+
+### `explode`
+
+- signature: `1..3 (str, str, int)`
+- source: `list.cc`
+- [x] `explode/1 (str)` covered by `builtins/explode.yaml`, `builtins/explode.yaml`, `builtins/explode.yaml` and 3 more
+- [x] `explode/2 (str, str)` covered by `builtins/explode.yaml`, `builtins/explode.yaml`, `builtins/explode.yaml` and 1 more
+- [x] `explode/3 (str, str, int)` covered by `builtins/explode.yaml`, `builtins/explode.yaml`, `builtins/explode.yaml` and 1 more
+
+### `file_chmod`
+
+- signature: `2..2 (str, str)`
+- source: `fileio.cc`
+- [x] `file_chmod/2 (str, str)` covered by `builtins/fileio.yaml`, `builtins/fileio_security.yaml`, `builtins/fileio_security.yaml` and 1 more
+
+### `file_close`
+
+- signature: `1..1 (int)`
+- source: `fileio.cc`
+- [x] `file_close/1 (int)` covered by `builtins/fileio.yaml`, `builtins/fileio_security.yaml`, `builtins/fileio_security.yaml`
+- [?] `file_close/1` unknown argument types covered by `builtins/fileio.yaml`, `builtins/fileio.yaml`, `builtins/fileio.yaml` and 66 more
+
+### `file_count_lines`
+
+- signature: `1..1 (int)`
+- source: `fileio.cc`
+- [ ] `file_count_lines/1 (int)`
+
+### `file_eof`
+
+- signature: `1..1 (int)`
+- source: `fileio.cc`
+- [x] `file_eof/1 (int)` covered by `builtins/fileio.yaml`, `builtins/fileio_security.yaml`
+- [?] `file_eof/1` unknown argument types covered by `builtins/fileio.yaml`, `builtins/fileio.yaml`
+
+### `file_flush`
+
+- signature: `1..1 (int)`
+- source: `fileio.cc`
+- [ ] `file_flush/1 (int)`
+
+### `file_grep`
+
+- signature: `2..3 (int, str, int)`
+- source: `fileio.cc`
+- [ ] `file_grep/2 (int, str)`
+- [ ] `file_grep/3 (int, str, int)`
+
+### `file_handles`
+
+- signature: `0..0 ()`
+- source: `fileio.cc`
+- [ ] `file_handles/0 ()`
+
+### `file_last_access`
+
+- signature: `1..1 (any)`
+- source: `fileio.cc`
+- [x] `file_last_access/1 (int)` covered by `builtins/fileio.yaml`
+- [ ] `file_last_access/1 (float)`
+- [ ] `file_last_access/1 (obj)`
+- [x] `file_last_access/1 (str)` covered by `builtins/fileio.yaml`
+- [ ] `file_last_access/1 (err)`
+- [ ] `file_last_access/1 (list)`
+- [ ] `file_last_access/1 (map)`
+
+### `file_last_change`
+
+- signature: `1..1 (any)`
+- source: `fileio.cc`
+- [x] `file_last_change/1 (int)` covered by `builtins/fileio.yaml`
+- [ ] `file_last_change/1 (float)`
+- [ ] `file_last_change/1 (obj)`
+- [x] `file_last_change/1 (str)` covered by `builtins/fileio.yaml`
+- [ ] `file_last_change/1 (err)`
+- [ ] `file_last_change/1 (list)`
+- [ ] `file_last_change/1 (map)`
+
+### `file_last_modify`
+
+- signature: `1..1 (any)`
+- source: `fileio.cc`
+- [x] `file_last_modify/1 (int)` covered by `builtins/fileio.yaml`
+- [ ] `file_last_modify/1 (float)`
+- [ ] `file_last_modify/1 (obj)`
+- [x] `file_last_modify/1 (str)` covered by `builtins/fileio.yaml`
+- [ ] `file_last_modify/1 (err)`
+- [ ] `file_last_modify/1 (list)`
+- [ ] `file_last_modify/1 (map)`
+
+### `file_list`
+
+- signature: `1..2 (str, any)`
+- source: `fileio.cc`
+- [x] `file_list/1 (str)` covered by `builtins/fileio.yaml`, `builtins/fileio_security.yaml`, `builtins/fileio_security.yaml` and 1 more
+- [x] `file_list/2 (str, int)` covered by `builtins/fileio.yaml`
+- [ ] `file_list/2 (str, float)`
+- [ ] `file_list/2 (str, obj)`
+- [ ] `file_list/2 (str, str)`
+- [ ] `file_list/2 (str, err)`
+- [ ] `file_list/2 (str, list)`
+- [ ] `file_list/2 (str, map)`
+
+### `file_mkdir`
+
+- signature: `1..1 (str)`
+- source: `fileio.cc`
+- [x] `file_mkdir/1 (str)` covered by `builtins/fileio.yaml`, `builtins/fileio_security.yaml`, `builtins/fileio_verified.yaml`
+
+### `file_mode`
+
+- signature: `1..1 (any)`
+- source: `fileio.cc`
+- [x] `file_mode/1 (int)` covered by `builtins/fileio.yaml`
+- [ ] `file_mode/1 (float)`
+- [ ] `file_mode/1 (obj)`
+- [x] `file_mode/1 (str)` covered by `builtins/fileio.yaml`
+- [ ] `file_mode/1 (err)`
+- [ ] `file_mode/1 (list)`
+- [ ] `file_mode/1 (map)`
+
+### `file_name`
+
+- signature: `1..1 (int)`
+- source: `fileio.cc`
+- [x] `file_name/1 (int)` covered by `builtins/fileio.yaml`, `builtins/fileio_security.yaml`
+
+### `file_open`
+
+- signature: `2..2 (str, str)`
+- source: `fileio.cc`
+- [x] `file_open/2 (str, str)` covered by `builtins/fileio.yaml`, `builtins/fileio.yaml`, `builtins/fileio.yaml` and 74 more
+
+### `file_openmode`
+
+- signature: `1..1 (int)`
+- source: `fileio.cc`
+- [x] `file_openmode/1 (int)` covered by `builtins/fileio.yaml`, `builtins/fileio_security.yaml`
+- [?] `file_openmode/1` unknown argument types covered by `builtins/fileio.yaml`
+
+### `file_read`
+
+- signature: `2..2 (int, int)`
+- source: `fileio.cc`
+- [x] `file_read/2 (int, int)` covered by `builtins/fileio.yaml`
+- [?] `file_read/2` unknown argument types covered by `builtins/fileio.yaml`, `builtins/fileio.yaml`, `builtins/fileio.yaml` and 2 more
+
+### `file_readline`
+
+- signature: `1..1 (int)`
+- source: `fileio.cc`
+- [x] `file_readline/1 (int)` covered by `builtins/fileio.yaml`, `builtins/fileio_security.yaml`, `builtins/fileio_security.yaml`
+- [?] `file_readline/1` unknown argument types covered by `builtins/fileio.yaml`, `builtins/fileio.yaml`, `builtins/fileio.yaml` and 6 more
+
+### `file_readlines`
+
+- signature: `3..3 (int, int, int)`
+- source: `fileio.cc`
+- [x] `file_readlines/3 (int, int, int)` covered by `builtins/fileio.yaml`
+- [?] `file_readlines/3` unknown argument types covered by `builtins/fileio.yaml`, `builtins/fileio.yaml`, `builtins/fileio.yaml` and 6 more
+
+### `file_remove`
+
+- signature: `1..1 (str)`
+- source: `fileio.cc`
+- [x] `file_remove/1 (str)` covered by `builtins/fileio.yaml`, `builtins/fileio.yaml`, `builtins/fileio.yaml` and 47 more
+
+### `file_rename`
+
+- signature: `2..2 (str, str)`
+- source: `fileio.cc`
+- [x] `file_rename/2 (str, str)` covered by `builtins/fileio.yaml`, `builtins/fileio_security.yaml`, `builtins/fileio_security.yaml`
+
+### `file_rmdir`
+
+- signature: `1..1 (str)`
+- source: `fileio.cc`
+- [x] `file_rmdir/1 (str)` covered by `builtins/fileio.yaml`, `builtins/fileio_security.yaml`, `builtins/fileio_verified.yaml`
+
+### `file_seek`
+
+- signature: `3..3 (int, int, str)`
+- source: `fileio.cc`
+- [x] `file_seek/3 (int, int, str)` covered by `builtins/fileio.yaml`, `builtins/fileio_security.yaml`
+- [?] `file_seek/3` unknown argument types covered by `builtins/fileio.yaml`, `builtins/fileio.yaml`, `builtins/fileio_security.yaml`
+
+### `file_size`
+
+- signature: `1..1 (any)`
+- source: `fileio.cc`
+- [x] `file_size/1 (int)` covered by `builtins/fileio.yaml`
+- [ ] `file_size/1 (float)`
+- [ ] `file_size/1 (obj)`
+- [x] `file_size/1 (str)` covered by `builtins/fileio.yaml`, `builtins/fileio.yaml`, `builtins/fileio.yaml` and 1 more
+- [ ] `file_size/1 (err)`
+- [ ] `file_size/1 (list)`
+- [ ] `file_size/1 (map)`
+
+### `file_stat`
+
+- signature: `1..1 (any)`
+- source: `fileio.cc`
+- [x] `file_stat/1 (int)` covered by `builtins/fileio.yaml`
+- [ ] `file_stat/1 (float)`
+- [ ] `file_stat/1 (obj)`
+- [x] `file_stat/1 (str)` covered by `builtins/fileio.yaml`, `builtins/fileio_security.yaml`, `builtins/fileio_verified.yaml` and 1 more
+- [ ] `file_stat/1 (err)`
+- [ ] `file_stat/1 (list)`
+- [ ] `file_stat/1 (map)`
+
+### `file_tell`
+
+- signature: `1..1 (int)`
+- source: `fileio.cc`
+- [x] `file_tell/1 (int)` covered by `builtins/fileio.yaml`, `builtins/fileio_security.yaml`
+
+### `file_type`
+
+- signature: `1..1 (any)`
+- source: `fileio.cc`
+- [ ] `file_type/1 (int)`
+- [ ] `file_type/1 (float)`
+- [ ] `file_type/1 (obj)`
+- [x] `file_type/1 (str)` covered by `builtins/fileio.yaml`, `builtins/fileio_security.yaml`
+- [ ] `file_type/1 (err)`
+- [ ] `file_type/1 (list)`
+- [ ] `file_type/1 (map)`
+
+### `file_write`
+
+- signature: `2..2 (int, str)`
+- source: `fileio.cc`
+- [x] `file_write/2 (int, str)` covered by `builtins/fileio.yaml`
+- [?] `file_write/2` unknown argument types covered by `builtins/fileio.yaml`, `builtins/fileio.yaml`, `builtins/fileio.yaml` and 9 more
+
+### `file_writeline`
+
+- signature: `2..2 (int, str)`
+- source: `fileio.cc`
+- [x] `file_writeline/2 (int, str)` covered by `builtins/fileio.yaml`, `builtins/fileio_security.yaml`
+- [?] `file_writeline/2` unknown argument types covered by `builtins/fileio.yaml`, `builtins/fileio.yaml`, `builtins/fileio.yaml` and 34 more
+
+### `finished_tasks`
+
+- signature: `0..0 ()`
+- source: `tasks.cc`
+- [x] `finished_tasks/0 ()` covered by `builtins/task_management.yaml`
+
+### `floatstr`
+
+- signature: `2..3 (float, int, any)`
+- source: `numbers.cc`
+- [x] `floatstr/2 (float, int)` covered by `builtins/math.yaml`, `builtins/math.yaml`, `builtins/math.yaml` and 1 more
+- [x] `floatstr/3 (float, int, int)` covered by `builtins/math.yaml`
+- [ ] `floatstr/3 (float, int, float)`
+- [ ] `floatstr/3 (float, int, obj)`
+- [ ] `floatstr/3 (float, int, str)`
+- [ ] `floatstr/3 (float, int, err)`
+- [ ] `floatstr/3 (float, int, list)`
+- [ ] `floatstr/3 (float, int, map)`
+
+### `floor`
+
+- signature: `1..1 (float)`
+- source: `numbers.cc`
+- [x] `floor/1 (float)` covered by `builtins/math.yaml`, `builtins/math.yaml`, `builtins/math.yaml` and 1 more
+- [?] `floor/1` unknown argument types covered by `language/float_overflow.yaml`
+
+### `flush_input`
+
+- signature: `1..2 (obj, any)`
+- source: `tasks.cc`
+- [x] `flush_input/1 (obj)` covered by `builtins/task_management.yaml`, `generated_builtins/flush_input.yaml`
+- [ ] `flush_input/2 (obj, int)`
+- [ ] `flush_input/2 (obj, float)`
+- [ ] `flush_input/2 (obj, obj)`
+- [ ] `flush_input/2 (obj, str)`
+- [ ] `flush_input/2 (obj, err)`
+- [ ] `flush_input/2 (obj, list)`
+- [ ] `flush_input/2 (obj, map)`
+- [?] `flush_input/3` unknown argument types covered by `builtins/task_management.yaml`
+
+### `force_input`
+
+- signature: `2..3 (obj, str, any)`
+- source: `tasks.cc`
+- [x] `force_input/2 (obj, str)` covered by `builtins/task_management.yaml`, `generated_builtins/force_input.yaml`
+- [ ] `force_input/3 (obj, str, int)`
+- [ ] `force_input/3 (obj, str, float)`
+- [ ] `force_input/3 (obj, str, obj)`
+- [ ] `force_input/3 (obj, str, str)`
+- [ ] `force_input/3 (obj, str, err)`
+- [ ] `force_input/3 (obj, str, list)`
+- [ ] `force_input/3 (obj, str, map)`
+- [?] `force_input/1` unknown argument types covered by `builtins/task_management.yaml`
+- [?] `force_input/2` unknown argument types covered by `builtins/task_management.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 59 more
+- [?] `force_input/4` unknown argument types covered by `builtins/task_management.yaml`
+
+### `frandom`
+
+- signature: `1..2 (float, float)`
+- source: `numbers.cc`
+- [x] `frandom/1 (float)` covered by `builtins/math.yaml`, `builtins/math.yaml`
+- [x] `frandom/2 (float, float)` covered by `builtins/math.yaml`
+
+### `ftime`
+
+- signature: `0..1 (int)`
+- source: `numbers.cc`
+- [x] `ftime/0 ()` covered by `builtins/math.yaml`, `builtins/math.yaml`, `generated_builtins/ftime.yaml`
+- [x] `ftime/1 (int)` covered by `audit/time_server_builtins_toast_oracle.yaml`, `audit/time_server_builtins_toast_oracle.yaml`, `builtins/math.yaml`
+
+### `function_info`
+
+- signature: `0..1 (str)`
+- source: `functions.cc`
+- [ ] `function_info/0 ()`
+- [x] `function_info/1 (str)` covered by `builtins/server_admin.yaml`, `builtins/server_admin.yaml`, `builtins/server_admin.yaml` and 236 more
+
+### `gc_stats`
+
+- signature: `0..0 ()`
+- source: `garbage.cc`
+- [x] `gc_stats/0 ()` covered by `builtins/gc.yaml`, `builtins/gc.yaml`, `builtins/gc.yaml` and 8 more
+
+### `generate_json`
+
+- signature: `1..3 (any, str, any)`
+- source: `json.cc`
+- [x] `generate_json/1 (int)` covered by `builtins/json.yaml`
+- [x] `generate_json/1 (float)` covered by `builtins/json.yaml`, `builtins/json.yaml`
+- [x] `generate_json/1 (obj)` covered by `builtins/json.yaml`
+- [x] `generate_json/1 (str)` covered by `builtins/json.yaml`
+- [x] `generate_json/1 (err)` covered by `builtins/json.yaml`
+- [x] `generate_json/1 (list)` covered by `builtins/json.yaml`, `builtins/json.yaml`, `builtins/json.yaml` and 2 more
+- [x] `generate_json/1 (map)` covered by `builtins/json.yaml`, `builtins/json.yaml`, `builtins/json.yaml` and 9 more
+- [x] `generate_json/2 (int, str)` covered by `builtins/json.yaml`, `builtins/json.yaml`, `builtins/json.yaml`
+- [x] `generate_json/2 (float, str)` covered by `builtins/json.yaml`, `builtins/json.yaml`
+- [x] `generate_json/2 (obj, str)` covered by `builtins/json.yaml`, `builtins/json.yaml`
+- [x] `generate_json/2 (str, str)` covered by `builtins/json.yaml`, `builtins/json.yaml`
+- [x] `generate_json/2 (err, str)` covered by `builtins/json.yaml`, `builtins/json.yaml`
+- [x] `generate_json/2 (list, str)` covered by `builtins/json.yaml`, `builtins/json.yaml`, `builtins/json.yaml` and 3 more
+- [x] `generate_json/2 (map, str)` covered by `builtins/json.yaml`, `builtins/json.yaml`, `builtins/json.yaml` and 5 more
+- [ ] `generate_json/3 (int, str, int)`
+- [ ] `generate_json/3 (int, str, float)`
+- [ ] `generate_json/3 (int, str, obj)`
+- [ ] `generate_json/3 (int, str, str)`
+- [ ] `generate_json/3 (int, str, err)`
+- [ ] `generate_json/3 (int, str, list)`
+- [ ] `generate_json/3 (int, str, map)`
+- [ ] `generate_json/3 (float, str, int)`
+- [ ] `generate_json/3 (float, str, float)`
+- [ ] `generate_json/3 (float, str, obj)`
+- [ ] `generate_json/3 (float, str, str)`
+- [ ] `generate_json/3 (float, str, err)`
+- [ ] `generate_json/3 (float, str, list)`
+- [ ] `generate_json/3 (float, str, map)`
+- [ ] `generate_json/3 (obj, str, int)`
+- [ ] `generate_json/3 (obj, str, float)`
+- [ ] `generate_json/3 (obj, str, obj)`
+- [ ] `generate_json/3 (obj, str, str)`
+- [ ] `generate_json/3 (obj, str, err)`
+- [ ] `generate_json/3 (obj, str, list)`
+- [ ] `generate_json/3 (obj, str, map)`
+- [ ] `generate_json/3 (str, str, int)`
+- [ ] `generate_json/3 (str, str, float)`
+- [ ] `generate_json/3 (str, str, obj)`
+- [ ] `generate_json/3 (str, str, str)`
+- [ ] `generate_json/3 (str, str, err)`
+- [ ] `generate_json/3 (str, str, list)`
+- [ ] `generate_json/3 (str, str, map)`
+- [ ] `generate_json/3 (err, str, int)`
+- [ ] `generate_json/3 (err, str, float)`
+- [ ] `generate_json/3 (err, str, obj)`
+- [ ] `generate_json/3 (err, str, str)`
+- [ ] `generate_json/3 (err, str, err)`
+- [ ] `generate_json/3 (err, str, list)`
+- [ ] `generate_json/3 (err, str, map)`
+- [ ] `generate_json/3 (list, str, int)`
+- [ ] `generate_json/3 (list, str, float)`
+- [ ] `generate_json/3 (list, str, obj)`
+- [ ] `generate_json/3 (list, str, str)`
+- [ ] `generate_json/3 (list, str, err)`
+- [ ] `generate_json/3 (list, str, list)`
+- [ ] `generate_json/3 (list, str, map)`
+- [ ] `generate_json/3 (map, str, int)`
+- [ ] `generate_json/3 (map, str, float)`
+- [ ] `generate_json/3 (map, str, obj)`
+- [ ] `generate_json/3 (map, str, str)`
+- [ ] `generate_json/3 (map, str, err)`
+- [ ] `generate_json/3 (map, str, list)`
+- [ ] `generate_json/3 (map, str, map)`
+- [?] `generate_json/1` unknown argument types covered by `builtins/json.yaml`
+- [?] `generate_json/2` unknown argument types covered by `builtins/json.yaml`, `builtins/json.yaml`
+
+### `getenv`
+
+- signature: `1..1 (str)`
+- source: `system.cc`
+- [x] `getenv/1 (str)` covered by `builtins/system_builtins.yaml`, `builtins/system_builtins.yaml`, `builtins/system_builtins.yaml`
+
+### `idle_seconds`
+
+- signature: `1..1 (obj)`
+- source: `server.cc`
+- [x] `idle_seconds/1 (obj)` covered by `builtins/server_admin.yaml`
+- [?] `idle_seconds/1` unknown argument types covered by `builtins/server_admin.yaml`
+
+### `index`
+
+- signature: `2..4 (str, str, any, int)`
+- source: `list.cc`
+- [x] `index/2 (str, str)` covered by `basic/string.yaml`, `basic/string.yaml`, `basic/string.yaml` and 3 more
+- [x] `index/3 (str, str, int)` covered by `basic/string.yaml`, `builtins/string_operations.yaml`, `builtins/string_operations.yaml`
+- [ ] `index/3 (str, str, float)`
+- [ ] `index/3 (str, str, obj)`
+- [ ] `index/3 (str, str, str)`
+- [ ] `index/3 (str, str, err)`
+- [ ] `index/3 (str, str, list)`
+- [ ] `index/3 (str, str, map)`
+- [x] `index/4 (str, str, int, int)` covered by `builtins/string_operations.yaml`, `builtins/string_operations.yaml`, `builtins/string_operations.yaml` and 2 more
+- [ ] `index/4 (str, str, float, int)`
+- [ ] `index/4 (str, str, obj, int)`
+- [ ] `index/4 (str, str, str, int)`
+- [ ] `index/4 (str, str, err, int)`
+- [ ] `index/4 (str, str, list, int)`
+- [ ] `index/4 (str, str, map, int)`
+- [?] `index/2` unknown argument types covered by `basic/string.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml` and 8 more
+
+### `is_clear_property`
+
+- signature: `2..2 (any, str)`
+- source: `property.cc`
+- [ ] `is_clear_property/2 (int, str)`
+- [ ] `is_clear_property/2 (float, str)`
+- [ ] `is_clear_property/2 (obj, str)`
+- [ ] `is_clear_property/2 (str, str)`
+- [ ] `is_clear_property/2 (err, str)`
+- [x] `is_clear_property/2 (list, str)` covered by `builtins/properties.yaml`, `builtins/properties.yaml`, `builtins/properties.yaml` and 6 more
+- [ ] `is_clear_property/2 (map, str)`
+- [?] `is_clear_property/2` unknown argument types covered by `basic/property.yaml`, `basic/property.yaml`, `language/waif.yaml`
+
+### `is_member`
+
+- signature: `2..3 (any, any, int)`
+- source: `collection.cc`
+- [ ] `is_member/2 (int, int)`
+- [ ] `is_member/2 (int, float)`
+- [ ] `is_member/2 (int, obj)`
+- [ ] `is_member/2 (int, str)`
+- [ ] `is_member/2 (int, err)`
+- [ ] `is_member/2 (int, list)`
+- [x] `is_member/2 (int, map)` covered by `builtins/map.yaml`
+- [ ] `is_member/2 (float, int)`
+- [ ] `is_member/2 (float, float)`
+- [ ] `is_member/2 (float, obj)`
+- [ ] `is_member/2 (float, str)`
+- [ ] `is_member/2 (float, err)`
+- [ ] `is_member/2 (float, list)`
+- [ ] `is_member/2 (float, map)`
+- [ ] `is_member/2 (obj, int)`
+- [ ] `is_member/2 (obj, float)`
+- [ ] `is_member/2 (obj, obj)`
+- [ ] `is_member/2 (obj, str)`
+- [ ] `is_member/2 (obj, err)`
+- [ ] `is_member/2 (obj, list)`
+- [ ] `is_member/2 (obj, map)`
+- [ ] `is_member/2 (str, int)`
+- [ ] `is_member/2 (str, float)`
+- [ ] `is_member/2 (str, obj)`
+- [ ] `is_member/2 (str, str)`
+- [ ] `is_member/2 (str, err)`
+- [ ] `is_member/2 (str, list)`
+- [x] `is_member/2 (str, map)` covered by `builtins/map.yaml`, `builtins/map.yaml`, `builtins/map.yaml`
+- [ ] `is_member/2 (err, int)`
+- [ ] `is_member/2 (err, float)`
+- [ ] `is_member/2 (err, obj)`
+- [ ] `is_member/2 (err, str)`
+- [ ] `is_member/2 (err, err)`
+- [ ] `is_member/2 (err, list)`
+- [ ] `is_member/2 (err, map)`
+- [ ] `is_member/2 (list, int)`
+- [ ] `is_member/2 (list, float)`
+- [ ] `is_member/2 (list, obj)`
+- [ ] `is_member/2 (list, str)`
+- [ ] `is_member/2 (list, err)`
+- [ ] `is_member/2 (list, list)`
+- [ ] `is_member/2 (list, map)`
+- [ ] `is_member/2 (map, int)`
+- [ ] `is_member/2 (map, float)`
+- [ ] `is_member/2 (map, obj)`
+- [ ] `is_member/2 (map, str)`
+- [ ] `is_member/2 (map, err)`
+- [ ] `is_member/2 (map, list)`
+- [ ] `is_member/2 (map, map)`
+- [ ] `is_member/3 (int, int, int)`
+- [ ] `is_member/3 (int, float, int)`
+- [ ] `is_member/3 (int, obj, int)`
+- [ ] `is_member/3 (int, str, int)`
+- [ ] `is_member/3 (int, err, int)`
+- [ ] `is_member/3 (int, list, int)`
+- [ ] `is_member/3 (int, map, int)`
+- [ ] `is_member/3 (float, int, int)`
+- [ ] `is_member/3 (float, float, int)`
+- [ ] `is_member/3 (float, obj, int)`
+- [ ] `is_member/3 (float, str, int)`
+- [ ] `is_member/3 (float, err, int)`
+- [ ] `is_member/3 (float, list, int)`
+- [ ] `is_member/3 (float, map, int)`
+- [ ] `is_member/3 (obj, int, int)`
+- [ ] `is_member/3 (obj, float, int)`
+- [ ] `is_member/3 (obj, obj, int)`
+- [ ] `is_member/3 (obj, str, int)`
+- [ ] `is_member/3 (obj, err, int)`
+- [ ] `is_member/3 (obj, list, int)`
+- [ ] `is_member/3 (obj, map, int)`
+- [ ] `is_member/3 (str, int, int)`
+- [ ] `is_member/3 (str, float, int)`
+- [ ] `is_member/3 (str, obj, int)`
+- [ ] `is_member/3 (str, str, int)`
+- [ ] `is_member/3 (str, err, int)`
+- [ ] `is_member/3 (str, list, int)`
+- [ ] `is_member/3 (str, map, int)`
+- [ ] `is_member/3 (err, int, int)`
+- [ ] `is_member/3 (err, float, int)`
+- [ ] `is_member/3 (err, obj, int)`
+- [ ] `is_member/3 (err, str, int)`
+- [ ] `is_member/3 (err, err, int)`
+- [ ] `is_member/3 (err, list, int)`
+- [ ] `is_member/3 (err, map, int)`
+- [ ] `is_member/3 (list, int, int)`
+- [ ] `is_member/3 (list, float, int)`
+- [ ] `is_member/3 (list, obj, int)`
+- [ ] `is_member/3 (list, str, int)`
+- [ ] `is_member/3 (list, err, int)`
+- [ ] `is_member/3 (list, list, int)`
+- [ ] `is_member/3 (list, map, int)`
+- [ ] `is_member/3 (map, int, int)`
+- [ ] `is_member/3 (map, float, int)`
+- [ ] `is_member/3 (map, obj, int)`
+- [ ] `is_member/3 (map, str, int)`
+- [ ] `is_member/3 (map, err, int)`
+- [ ] `is_member/3 (map, list, int)`
+- [ ] `is_member/3 (map, map, int)`
+
+### `is_player`
+
+- signature: `1..1 (obj)`
+- source: `objects.cc`
+- [ ] `is_player/1 (obj)`
+- [?] `is_player/1` unknown argument types covered by `basic/object.yaml`, `builtins/object_hierarchy.yaml`, `builtins/object_hierarchy.yaml` and 4 more
+
+### `isa`
+
+- signature: `2..3 (any, any, int)`
+- source: `objects.cc`
+- [ ] `isa/2 (int, int)`
+- [ ] `isa/2 (int, float)`
+- [ ] `isa/2 (int, obj)`
+- [ ] `isa/2 (int, str)`
+- [ ] `isa/2 (int, err)`
+- [ ] `isa/2 (int, list)`
+- [ ] `isa/2 (int, map)`
+- [ ] `isa/2 (float, int)`
+- [ ] `isa/2 (float, float)`
+- [ ] `isa/2 (float, obj)`
+- [ ] `isa/2 (float, str)`
+- [ ] `isa/2 (float, err)`
+- [ ] `isa/2 (float, list)`
+- [ ] `isa/2 (float, map)`
+- [ ] `isa/2 (obj, int)`
+- [ ] `isa/2 (obj, float)`
+- [x] `isa/2 (obj, obj)` covered by `builtins/miscellaneous.yaml`, `builtins/miscellaneous.yaml`, `builtins/miscellaneous.yaml` and 2 more
+- [ ] `isa/2 (obj, str)`
+- [ ] `isa/2 (obj, err)`
+- [ ] `isa/2 (obj, list)`
+- [ ] `isa/2 (obj, map)`
+- [ ] `isa/2 (str, int)`
+- [ ] `isa/2 (str, float)`
+- [ ] `isa/2 (str, obj)`
+- [ ] `isa/2 (str, str)`
+- [ ] `isa/2 (str, err)`
+- [ ] `isa/2 (str, list)`
+- [ ] `isa/2 (str, map)`
+- [ ] `isa/2 (err, int)`
+- [ ] `isa/2 (err, float)`
+- [ ] `isa/2 (err, obj)`
+- [ ] `isa/2 (err, str)`
+- [ ] `isa/2 (err, err)`
+- [ ] `isa/2 (err, list)`
+- [ ] `isa/2 (err, map)`
+- [ ] `isa/2 (list, int)`
+- [ ] `isa/2 (list, float)`
+- [ ] `isa/2 (list, obj)`
+- [ ] `isa/2 (list, str)`
+- [ ] `isa/2 (list, err)`
+- [ ] `isa/2 (list, list)`
+- [ ] `isa/2 (list, map)`
+- [ ] `isa/2 (map, int)`
+- [ ] `isa/2 (map, float)`
+- [ ] `isa/2 (map, obj)`
+- [ ] `isa/2 (map, str)`
+- [ ] `isa/2 (map, err)`
+- [ ] `isa/2 (map, list)`
+- [ ] `isa/2 (map, map)`
+- [ ] `isa/3 (int, int, int)`
+- [ ] `isa/3 (int, float, int)`
+- [ ] `isa/3 (int, obj, int)`
+- [ ] `isa/3 (int, str, int)`
+- [ ] `isa/3 (int, err, int)`
+- [ ] `isa/3 (int, list, int)`
+- [ ] `isa/3 (int, map, int)`
+- [ ] `isa/3 (float, int, int)`
+- [ ] `isa/3 (float, float, int)`
+- [ ] `isa/3 (float, obj, int)`
+- [ ] `isa/3 (float, str, int)`
+- [ ] `isa/3 (float, err, int)`
+- [ ] `isa/3 (float, list, int)`
+- [ ] `isa/3 (float, map, int)`
+- [ ] `isa/3 (obj, int, int)`
+- [ ] `isa/3 (obj, float, int)`
+- [ ] `isa/3 (obj, obj, int)`
+- [ ] `isa/3 (obj, str, int)`
+- [ ] `isa/3 (obj, err, int)`
+- [ ] `isa/3 (obj, list, int)`
+- [ ] `isa/3 (obj, map, int)`
+- [ ] `isa/3 (str, int, int)`
+- [ ] `isa/3 (str, float, int)`
+- [ ] `isa/3 (str, obj, int)`
+- [ ] `isa/3 (str, str, int)`
+- [ ] `isa/3 (str, err, int)`
+- [ ] `isa/3 (str, list, int)`
+- [ ] `isa/3 (str, map, int)`
+- [ ] `isa/3 (err, int, int)`
+- [ ] `isa/3 (err, float, int)`
+- [ ] `isa/3 (err, obj, int)`
+- [ ] `isa/3 (err, str, int)`
+- [ ] `isa/3 (err, err, int)`
+- [ ] `isa/3 (err, list, int)`
+- [ ] `isa/3 (err, map, int)`
+- [ ] `isa/3 (list, int, int)`
+- [ ] `isa/3 (list, float, int)`
+- [ ] `isa/3 (list, obj, int)`
+- [ ] `isa/3 (list, str, int)`
+- [ ] `isa/3 (list, err, int)`
+- [ ] `isa/3 (list, list, int)`
+- [ ] `isa/3 (list, map, int)`
+- [ ] `isa/3 (map, int, int)`
+- [ ] `isa/3 (map, float, int)`
+- [ ] `isa/3 (map, obj, int)`
+- [ ] `isa/3 (map, str, int)`
+- [ ] `isa/3 (map, err, int)`
+- [ ] `isa/3 (map, list, int)`
+- [ ] `isa/3 (map, map, int)`
+- [?] `isa/2` unknown argument types covered by `builtins/miscellaneous.yaml`, `builtins/miscellaneous.yaml`, `builtins/miscellaneous.yaml` and 6 more
+- [?] `isa/3` unknown argument types covered by `builtins/miscellaneous.yaml`, `builtins/miscellaneous.yaml`, `builtins/miscellaneous.yaml` and 1 more
+
+### `kill_task`
+
+- signature: `1..1 (int)`
+- source: `tasks.cc`
+- [x] `kill_task/1 (int)` covered by `builtins/task_management.yaml`, `builtins/task_management.yaml`
+- [?] `kill_task/1` unknown argument types covered by `builtins/primitives.yaml`, `builtins/primitives.yaml`, `builtins/task_local.yaml` and 9 more
+
+### `length`
+
+- signature: `1..1 (any)`
+- source: `list.cc`
+- [x] `length/1 (int)` covered by `basic/string.yaml`
+- [ ] `length/1 (float)`
+- [x] `length/1 (obj)` covered by `basic/string.yaml`
+- [x] `length/1 (str)` covered by `basic/string.yaml`, `basic/string.yaml`, `language/splice.yaml`
+- [ ] `length/1 (err)`
+- [x] `length/1 (list)` covered by `audit/time_server_builtins_toast_oracle.yaml`, `basic/list.yaml`, `features/steps_basic.yaml`
+- [x] `length/1 (map)` covered by `builtins/map.yaml`
+- [?] `length/1` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/time_server_builtins_toast_oracle.yaml`, `builtins/algorithms.yaml` and 133 more
+
+### `listappend`
+
+- signature: `2..3 (list, any, int)`
+- source: `list.cc`
+- [x] `listappend/2 (list, int)` covered by `basic/list.yaml`
+- [ ] `listappend/2 (list, float)`
+- [ ] `listappend/2 (list, obj)`
+- [ ] `listappend/2 (list, str)`
+- [ ] `listappend/2 (list, err)`
+- [x] `listappend/2 (list, list)` covered by `server/limits.yaml`, `server/limits.yaml`
+- [ ] `listappend/2 (list, map)`
+- [x] `listappend/3 (list, int, int)` covered by `basic/list.yaml`
+- [ ] `listappend/3 (list, float, int)`
+- [ ] `listappend/3 (list, obj, int)`
+- [ ] `listappend/3 (list, str, int)`
+- [ ] `listappend/3 (list, err, int)`
+- [ ] `listappend/3 (list, list, int)`
+- [ ] `listappend/3 (list, map, int)`
+- [?] `listappend/2` unknown argument types covered by `audit/task_scheduling_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml` and 3 more
+
+### `listdelete`
+
+- signature: `2..2 (list, int)`
+- source: `list.cc`
+- [x] `listdelete/2 (list, int)` covered by `basic/list.yaml`
+- [?] `listdelete/2` unknown argument types covered by `server/limits.yaml`
+
+### `listen`
+
+- signature: `2..3 (obj, any, map)`
+- source: `server.cc`
+- [ ] `listen/2 (obj, int)`
+- [ ] `listen/2 (obj, float)`
+- [ ] `listen/2 (obj, obj)`
+- [ ] `listen/2 (obj, str)`
+- [ ] `listen/2 (obj, err)`
+- [ ] `listen/2 (obj, list)`
+- [ ] `listen/2 (obj, map)`
+- [x] `listen/3 (obj, int, map)` covered by `builtins/server_admin.yaml`, `builtins/server_admin.yaml`, `builtins/server_admin.yaml`
+- [ ] `listen/3 (obj, float, map)`
+- [ ] `listen/3 (obj, obj, map)`
+- [ ] `listen/3 (obj, str, map)`
+- [ ] `listen/3 (obj, err, map)`
+- [x] `listen/3 (obj, list, map)` covered by `builtins/server_admin.yaml`
+- [ ] `listen/3 (obj, map, map)`
+- [?] `listen/2` unknown argument types covered by `builtins/server_admin.yaml`
+- [?] `listen/3` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 3 more
+
+### `listeners`
+
+- signature: `0..1 (any)`
+- source: `server.cc`
+- [x] `listeners/0 ()` covered by `builtins/server_admin.yaml`, `builtins/server_admin.yaml`, `builtins/server_admin.yaml` and 8 more
+- [ ] `listeners/1 (int)`
+- [ ] `listeners/1 (float)`
+- [x] `listeners/1 (obj)` covered by `builtins/server_admin.yaml`, `builtins/server_admin.yaml`
+- [ ] `listeners/1 (str)`
+- [ ] `listeners/1 (err)`
+- [ ] `listeners/1 (list)`
+- [ ] `listeners/1 (map)`
+- [?] `listeners/1` unknown argument types covered by `builtins/server_admin.yaml`
+
+### `listinsert`
+
+- signature: `2..3 (list, any, int)`
+- source: `list.cc`
+- [ ] `listinsert/2 (list, int)`
+- [ ] `listinsert/2 (list, float)`
+- [ ] `listinsert/2 (list, obj)`
+- [ ] `listinsert/2 (list, str)`
+- [ ] `listinsert/2 (list, err)`
+- [x] `listinsert/2 (list, list)` covered by `server/limits.yaml`, `server/limits.yaml`
+- [ ] `listinsert/2 (list, map)`
+- [x] `listinsert/3 (list, int, int)` covered by `basic/list.yaml`, `basic/list.yaml`
+- [ ] `listinsert/3 (list, float, int)`
+- [ ] `listinsert/3 (list, obj, int)`
+- [ ] `listinsert/3 (list, str, int)`
+- [ ] `listinsert/3 (list, err, int)`
+- [ ] `listinsert/3 (list, list, int)`
+- [ ] `listinsert/3 (list, map, int)`
+- [?] `listinsert/2` unknown argument types covered by `server/limits.yaml`, `server/limits.yaml`
+
+### `listset`
+
+- signature: `3..3 (list, any, int)`
+- source: `list.cc`
+- [x] `listset/3 (list, int, int)` covered by `basic/list.yaml`
+- [ ] `listset/3 (list, float, int)`
+- [ ] `listset/3 (list, obj, int)`
+- [ ] `listset/3 (list, str, int)`
+- [ ] `listset/3 (list, err, int)`
+- [x] `listset/3 (list, list, int)` covered by `server/limits.yaml`, `server/limits.yaml`
+- [ ] `listset/3 (list, map, int)`
+
+### `load_server_options`
+
+- signature: `0..0 ()`
+- source: `functions.cc`
+- [x] `load_server_options/0 ()` covered by `audit/task_scheduling_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml` and 87 more
+
+### `locate_by_name`
+
+- signature: `1..2 (str, int)`
+- source: `objects.cc`
+- [x] `locate_by_name/1 (str)` covered by `builtins/object_hierarchy.yaml`, `builtins/object_hierarchy.yaml`, `builtins/object_hierarchy.yaml` and 2 more
+- [x] `locate_by_name/2 (str, int)` covered by `builtins/object_hierarchy.yaml`, `builtins/object_hierarchy.yaml`
+
+### `locations`
+
+- signature: `1..3 (obj, obj, int)`
+- source: `objects.cc`
+- [ ] `locations/1 (obj)`
+- [ ] `locations/2 (obj, obj)`
+- [ ] `locations/3 (obj, obj, int)`
+- [?] `locations/1` unknown argument types covered by `builtins/object_hierarchy.yaml`, `builtins/object_hierarchy.yaml`, `builtins/object_hierarchy.yaml`
+- [?] `locations/2` unknown argument types covered by `builtins/object_hierarchy.yaml`
+- [?] `locations/3` unknown argument types covered by `builtins/object_hierarchy.yaml`
+
+### `log`
+
+- signature: `1..1 (float)`
+- source: `numbers.cc`
+- [x] `log/1 (float)` covered by `builtins/math.yaml`, `builtins/math.yaml`, `builtins/math.yaml` and 1 more
+
+### `log10`
+
+- signature: `1..1 (float)`
+- source: `numbers.cc`
+- [x] `log10/1 (float)` covered by `builtins/math.yaml`, `builtins/math.yaml`, `builtins/math.yaml` and 2 more
+
+### `log_cache_stats`
+
+- signature: `0..0 ()`
+- source: `extensions.cc`
+- [x] `log_cache_stats/0 ()` covered by `generated_builtins/log_cache_stats.yaml`
+
+### `malloc_stats`
+
+- signature: `0..0 ()`
+- source: `server.cc`
+- [ ] `malloc_stats/0 ()`
+
+### `mapdelete`
+
+- signature: `2..2 (map, any)`
+- source: `map.cc`
+- [ ] `mapdelete/2 (map, int)`
+- [ ] `mapdelete/2 (map, float)`
+- [ ] `mapdelete/2 (map, obj)`
+- [x] `mapdelete/2 (map, str)` covered by `builtins/map.yaml`
+- [ ] `mapdelete/2 (map, err)`
+- [x] `mapdelete/2 (map, list)` covered by `builtins/map.yaml`, `builtins/map.yaml`, `builtins/map.yaml`
+- [x] `mapdelete/2 (map, map)` covered by `builtins/map.yaml`, `builtins/map.yaml`
+- [?] `mapdelete/2` unknown argument types covered by `builtins/map.yaml`, `builtins/map.yaml`, `builtins/map.yaml` and 9 more
+
+### `maphaskey`
+
+- signature: `2..3 (map, any, int)`
+- source: `map.cc`
+- [x] `maphaskey/2 (map, int)` covered by `builtins/map.yaml`, `builtins/map.yaml`
+- [x] `maphaskey/2 (map, float)` covered by `builtins/map.yaml`
+- [x] `maphaskey/2 (map, obj)` covered by `builtins/map.yaml`
+- [x] `maphaskey/2 (map, str)` covered by `builtins/map.yaml`, `builtins/map.yaml`, `builtins/map.yaml` and 2 more
+- [x] `maphaskey/2 (map, err)` covered by `builtins/map.yaml`
+- [x] `maphaskey/2 (map, list)` covered by `builtins/map.yaml`
+- [x] `maphaskey/2 (map, map)` covered by `builtins/map.yaml`
+- [ ] `maphaskey/3 (map, int, int)`
+- [ ] `maphaskey/3 (map, float, int)`
+- [ ] `maphaskey/3 (map, obj, int)`
+- [x] `maphaskey/3 (map, str, int)` covered by `builtins/map.yaml`, `builtins/map.yaml`, `builtins/map.yaml`
+- [ ] `maphaskey/3 (map, err, int)`
+- [ ] `maphaskey/3 (map, list, int)`
+- [ ] `maphaskey/3 (map, map, int)`
+- [?] `maphaskey/2` unknown argument types covered by `audit/time_server_builtins_toast_oracle.yaml`, `audit/time_server_builtins_toast_oracle.yaml`, `audit/time_server_builtins_toast_oracle.yaml` and 2 more
+
+### `mapkeys`
+
+- signature: `1..1 (map)`
+- source: `map.cc`
+- [x] `mapkeys/1 (map)` covered by `builtins/map.yaml`, `builtins/map.yaml`, `builtins/map.yaml` and 1 more
+- [?] `mapkeys/1` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `builtins/http.yaml`, `builtins/http.yaml` and 9 more
+
+### `mapvalues`
+
+- signature: `1..* (map)`
+- source: `map.cc`
+- [x] `mapvalues/1 (map)` covered by `builtins/map.yaml`, `builtins/map.yaml`, `builtins/map.yaml`
+- [ ] `mapvalues/2 (map, int)`
+- [ ] `mapvalues/2 (map, float)`
+- [ ] `mapvalues/2 (map, obj)`
+- [x] `mapvalues/2 (map, str)` covered by `builtins/map.yaml`, `builtins/map.yaml`, `builtins/map.yaml`
+- [ ] `mapvalues/2 (map, err)`
+- [ ] `mapvalues/2 (map, list)`
+- [ ] `mapvalues/2 (map, map)`
+- [?] `mapvalues/1` unknown argument types covered by `builtins/map.yaml`
+
+### `match`
+
+- signature: `2..3 (str, str, any)`
+- source: `list.cc`
+- [x] `match/2 (str, str)` covered by `builtins/match_percent_escapes.yaml`, `builtins/match_percent_escapes.yaml`, `builtins/match_percent_escapes.yaml` and 30 more
+- [x] `match/3 (str, str, int)` covered by `builtins/match_rmatch.yaml`
+- [ ] `match/3 (str, str, float)`
+- [ ] `match/3 (str, str, obj)`
+- [ ] `match/3 (str, str, str)`
+- [ ] `match/3 (str, str, err)`
+- [ ] `match/3 (str, str, list)`
+- [ ] `match/3 (str, str, map)`
+
+### `max`
+
+- signature: `1..* (numeric)`
+- source: `numbers.cc`
+- [x] `max/1 (int)` covered by `builtins/math.yaml`
+- [ ] `max/1 (float)`
+- [x] `max/2 (int, int)` covered by `builtins/math.yaml`
+- [x] `max/2 (int, float)` covered by `builtins/math.yaml`
+- [ ] `max/2 (int, obj)`
+- [ ] `max/2 (int, str)`
+- [ ] `max/2 (int, err)`
+- [ ] `max/2 (int, list)`
+- [ ] `max/2 (int, map)`
+- [ ] `max/2 (float, int)`
+- [x] `max/2 (float, float)` covered by `builtins/math.yaml`
+- [ ] `max/2 (float, obj)`
+- [ ] `max/2 (float, str)`
+- [ ] `max/2 (float, err)`
+- [ ] `max/2 (float, list)`
+- [ ] `max/2 (float, map)`
+- [?] `max/1` unknown argument types covered by `language/splice.yaml`
+- [?] `max/2` unknown argument types covered by `language/index_and_range.yaml`
+
+### `max_object`
+
+- signature: `0..0 ()`
+- source: `objects.cc`
+- [x] `max_object/0 ()` covered by `builtins/create.yaml`, `builtins/create.yaml`, `builtins/create.yaml` and 4 more
+
+### `memory_usage`
+
+- signature: `0..0 ()`
+- source: `server.cc`
+- [x] `memory_usage/0 ()` covered by `audit/time_server_builtins_toast_oracle.yaml`, `builtins/server_admin.yaml`
+
+### `min`
+
+- signature: `1..* (numeric)`
+- source: `numbers.cc`
+- [x] `min/1 (int)` covered by `builtins/math.yaml`
+- [ ] `min/1 (float)`
+- [x] `min/2 (int, int)` covered by `builtins/math.yaml`
+- [x] `min/2 (int, float)` covered by `builtins/math.yaml`
+- [ ] `min/2 (int, obj)`
+- [ ] `min/2 (int, str)`
+- [ ] `min/2 (int, err)`
+- [ ] `min/2 (int, list)`
+- [ ] `min/2 (int, map)`
+- [ ] `min/2 (float, int)`
+- [x] `min/2 (float, float)` covered by `builtins/math.yaml`
+- [ ] `min/2 (float, obj)`
+- [ ] `min/2 (float, str)`
+- [ ] `min/2 (float, err)`
+- [ ] `min/2 (float, list)`
+- [ ] `min/2 (float, map)`
+
+### `move`
+
+- signature: `2..3 (obj, obj, int)`
+- source: `objects.cc`
+- [ ] `move/2 (obj, obj)`
+- [ ] `move/3 (obj, obj, int)`
+- [?] `move/2` unknown argument types covered by `builtins/move_invalid_args.yaml`, `builtins/move_invalid_args.yaml`, `builtins/move_invalid_args.yaml` and 83 more
+- [?] `move/3` unknown argument types covered by `builtins/move.yaml`, `builtins/move.yaml`, `builtins/move.yaml` and 1 more
+
+### `new_waif`
+
+- signature: `0..0 ()`
+- source: `waif.cc`
+- [x] `new_waif/0 ()` covered by `generated_builtins/new_waif.yaml`
+
+### `next_recycled_object`
+
+- signature: `0..1 (obj)`
+- source: `objects.cc`
+- [x] `next_recycled_object/0 ()` covered by `builtins/object_hierarchy.yaml`
+- [x] `next_recycled_object/1 (obj)` covered by `builtins/object_hierarchy.yaml`
+- [?] `next_recycled_object/1` unknown argument types covered by `builtins/object_hierarchy.yaml`, `builtins/object_hierarchy.yaml`, `builtins/object_hierarchy.yaml`
+
+### `notify`
+
+- signature: `2..4 (obj, str, any, any)`
+- source: `server.cc`
+- [x] `notify/2 (obj, str)` covered by `builtins/server_admin.yaml`, `builtins/server_admin.yaml`
+- [x] `notify/3 (obj, str, int)` covered by `builtins/server_admin.yaml`
+- [ ] `notify/3 (obj, str, float)`
+- [ ] `notify/3 (obj, str, obj)`
+- [ ] `notify/3 (obj, str, str)`
+- [ ] `notify/3 (obj, str, err)`
+- [ ] `notify/3 (obj, str, list)`
+- [ ] `notify/3 (obj, str, map)`
+- [x] `notify/4 (obj, str, int, int)` covered by `builtins/server_admin.yaml`
+- [ ] `notify/4 (obj, str, int, float)`
+- [ ] `notify/4 (obj, str, int, obj)`
+- [ ] `notify/4 (obj, str, int, str)`
+- [ ] `notify/4 (obj, str, int, err)`
+- [ ] `notify/4 (obj, str, int, list)`
+- [ ] `notify/4 (obj, str, int, map)`
+- [ ] `notify/4 (obj, str, float, int)`
+- [ ] `notify/4 (obj, str, float, float)`
+- [ ] `notify/4 (obj, str, float, obj)`
+- [ ] `notify/4 (obj, str, float, str)`
+- [ ] `notify/4 (obj, str, float, err)`
+- [ ] `notify/4 (obj, str, float, list)`
+- [ ] `notify/4 (obj, str, float, map)`
+- [ ] `notify/4 (obj, str, obj, int)`
+- [ ] `notify/4 (obj, str, obj, float)`
+- [ ] `notify/4 (obj, str, obj, obj)`
+- [ ] `notify/4 (obj, str, obj, str)`
+- [ ] `notify/4 (obj, str, obj, err)`
+- [ ] `notify/4 (obj, str, obj, list)`
+- [ ] `notify/4 (obj, str, obj, map)`
+- [ ] `notify/4 (obj, str, str, int)`
+- [ ] `notify/4 (obj, str, str, float)`
+- [ ] `notify/4 (obj, str, str, obj)`
+- [ ] `notify/4 (obj, str, str, str)`
+- [ ] `notify/4 (obj, str, str, err)`
+- [ ] `notify/4 (obj, str, str, list)`
+- [ ] `notify/4 (obj, str, str, map)`
+- [ ] `notify/4 (obj, str, err, int)`
+- [ ] `notify/4 (obj, str, err, float)`
+- [ ] `notify/4 (obj, str, err, obj)`
+- [ ] `notify/4 (obj, str, err, str)`
+- [ ] `notify/4 (obj, str, err, err)`
+- [ ] `notify/4 (obj, str, err, list)`
+- [ ] `notify/4 (obj, str, err, map)`
+- [ ] `notify/4 (obj, str, list, int)`
+- [ ] `notify/4 (obj, str, list, float)`
+- [ ] `notify/4 (obj, str, list, obj)`
+- [ ] `notify/4 (obj, str, list, str)`
+- [ ] `notify/4 (obj, str, list, err)`
+- [ ] `notify/4 (obj, str, list, list)`
+- [ ] `notify/4 (obj, str, list, map)`
+- [ ] `notify/4 (obj, str, map, int)`
+- [ ] `notify/4 (obj, str, map, float)`
+- [ ] `notify/4 (obj, str, map, obj)`
+- [ ] `notify/4 (obj, str, map, str)`
+- [ ] `notify/4 (obj, str, map, err)`
+- [ ] `notify/4 (obj, str, map, list)`
+- [ ] `notify/4 (obj, str, map, map)`
+- [?] `notify/1` unknown argument types covered by `builtins/server_admin.yaml`, `builtins/server_admin.yaml`
+- [?] `notify/2` unknown argument types covered by `builtins/server_admin.yaml`
+
+### `object_bytes`
+
+- signature: `1..1 (any)`
+- source: `objects.cc`
+- [x] `object_bytes/1 (int)` covered by `server/stress_objects.yaml`
+- [x] `object_bytes/1 (float)` covered by `server/stress_objects.yaml`
+- [ ] `object_bytes/1 (obj)`
+- [x] `object_bytes/1 (str)` covered by `server/stress_objects.yaml`
+- [ ] `object_bytes/1 (err)`
+- [ ] `object_bytes/1 (list)`
+- [ ] `object_bytes/1 (map)`
+- [?] `object_bytes/1` unknown argument types covered by `builtins/object_hierarchy.yaml`, `builtins/object_hierarchy.yaml`, `builtins/object_hierarchy.yaml` and 6 more
+
+### `occupants`
+
+- signature: `1..4 (list, any, int, int)`
+- source: `objects.cc`
+- [x] `occupants/1 (list)` covered by `builtins/object_hierarchy.yaml`, `builtins/object_hierarchy.yaml`
+- [ ] `occupants/2 (list, int)`
+- [ ] `occupants/2 (list, float)`
+- [ ] `occupants/2 (list, obj)`
+- [x] `occupants/2 (list, str)` covered by `builtins/object_hierarchy.yaml`
+- [ ] `occupants/2 (list, err)`
+- [ ] `occupants/2 (list, list)`
+- [ ] `occupants/2 (list, map)`
+- [ ] `occupants/3 (list, int, int)`
+- [ ] `occupants/3 (list, float, int)`
+- [ ] `occupants/3 (list, obj, int)`
+- [ ] `occupants/3 (list, str, int)`
+- [ ] `occupants/3 (list, err, int)`
+- [ ] `occupants/3 (list, list, int)`
+- [ ] `occupants/3 (list, map, int)`
+- [ ] `occupants/4 (list, int, int, int)`
+- [ ] `occupants/4 (list, float, int, int)`
+- [ ] `occupants/4 (list, obj, int, int)`
+- [ ] `occupants/4 (list, str, int, int)`
+- [ ] `occupants/4 (list, err, int, int)`
+- [ ] `occupants/4 (list, list, int, int)`
+- [ ] `occupants/4 (list, map, int, int)`
+- [?] `occupants/1` unknown argument types covered by `builtins/object_hierarchy.yaml`
+- [?] `occupants/2` unknown argument types covered by `builtins/object_hierarchy.yaml`
+- [?] `occupants/3` unknown argument types covered by `builtins/object_hierarchy.yaml`
+- [?] `occupants/4` unknown argument types covered by `builtins/object_hierarchy.yaml`
+
+### `open_network_connection`
+
+- signature: `2..3 (str, int, map)`
+- source: `server.cc`
+- [x] `open_network_connection/2 (str, int)` covered by `builtins/open_network_connection_options.yaml`, `builtins/server_admin.yaml`
+- [ ] `open_network_connection/3 (str, int, map)`
+- [?] `open_network_connection/2` unknown argument types covered by `builtins/server_admin.yaml`, `builtins/server_admin.yaml`, `builtins/server_admin.yaml` and 1 more
+
+### `output_delimiters`
+
+- signature: `1..1 (obj)`
+- source: `tasks.cc`
+- [x] `output_delimiters/1 (obj)` covered by `builtins/server_admin.yaml`
+
+### `owned_objects`
+
+- signature: `1..1 (obj)`
+- source: `objects.cc`
+- [ ] `owned_objects/1 (obj)`
+- [?] `owned_objects/1` unknown argument types covered by `builtins/object_hierarchy.yaml`, `builtins/object_hierarchy.yaml`, `builtins/object_hierarchy.yaml`
+
+### `parent`
+
+- signature: `1..1 (any)`
+- source: `objects.cc`
+- [x] `parent/1 (int)` covered by `generated_builtins/parent.yaml`, `server/stress_objects.yaml`
+- [ ] `parent/1 (float)`
+- [ ] `parent/1 (obj)`
+- [x] `parent/1 (str)` covered by `server/stress_objects.yaml`
+- [ ] `parent/1 (err)`
+- [ ] `parent/1 (list)`
+- [ ] `parent/1 (map)`
+- [?] `parent/1` unknown argument types covered by `basic/object.yaml`, `builtins/objects.yaml`, `builtins/objects.yaml` and 44 more
+
+### `parents`
+
+- signature: `1..1 (any)`
+- source: `objects.cc`
+- [x] `parents/1 (int)` covered by `generated_builtins/parents.yaml`
+- [ ] `parents/1 (float)`
+- [ ] `parents/1 (obj)`
+- [ ] `parents/1 (str)`
+- [ ] `parents/1 (err)`
+- [ ] `parents/1 (list)`
+- [ ] `parents/1 (map)`
+- [?] `parents/1` unknown argument types covered by `builtins/objects.yaml`, `builtins/objects.yaml`, `builtins/objects.yaml` and 27 more
+
+### `parse_ansi`
+
+- signature: `1..1 (str)`
+- source: `list.cc`
+- [x] `parse_ansi/1 (str)` covered by `builtins/parse_remove_ansi.yaml`, `builtins/parse_remove_ansi.yaml`, `builtins/parse_remove_ansi.yaml` and 3 more
+
+### `parse_json`
+
+- signature: `1..2 (str, str)`
+- source: `json.cc`
+- [x] `parse_json/1 (str)` covered by `builtins/json.yaml`, `builtins/json.yaml`, `builtins/json.yaml` and 47 more
+- [x] `parse_json/2 (str, str)` covered by `builtins/json.yaml`, `builtins/json.yaml`, `builtins/json.yaml` and 36 more
+- [?] `parse_json/1` unknown argument types covered by `builtins/json.yaml`, `builtins/json.yaml`, `builtins/json.yaml` and 6 more
+
+### `pass`
+
+- signature: `0..* ()`
+- source: `execute.cc`
+- [ ] `pass/0 ()`
+- [ ] `pass/1 (int)`
+- [ ] `pass/1 (float)`
+- [ ] `pass/1 (obj)`
+- [ ] `pass/1 (str)`
+- [ ] `pass/1 (err)`
+- [ ] `pass/1 (list)`
+- [ ] `pass/1 (map)`
+
+### `pcre_cache_stats`
+
+- signature: `0..0 ()`
+- source: `pcre_moo.cc`
+- [x] `pcre_cache_stats/0 ()` covered by `builtins/pcre.yaml`, `builtins/pcre.yaml`
+
+### `pcre_match`
+
+- signature: `2..4 (str, str, int, int)`
+- source: `pcre_moo.cc`
+- [x] `pcre_match/2 (str, str)` covered by `builtins/pcre.yaml`, `builtins/pcre.yaml`, `builtins/pcre.yaml` and 8 more
+- [x] `pcre_match/3 (str, str, int)` covered by `builtins/pcre.yaml`
+- [x] `pcre_match/4 (str, str, int, int)` covered by `builtins/pcre.yaml`, `builtins/pcre.yaml`, `builtins/pcre.yaml` and 11 more
+
+### `pcre_replace`
+
+- signature: `2..2 (str, str)`
+- source: `pcre_moo.cc`
+- [x] `pcre_replace/2 (str, str)` covered by `builtins/pcre.yaml`, `builtins/pcre.yaml`, `builtins/pcre.yaml` and 11 more
+
+### `players`
+
+- signature: `0..0 ()`
+- source: `objects.cc`
+- [x] `players/0 ()` covered by `builtins/object_hierarchy.yaml`, `builtins/object_hierarchy.yaml`, `builtins/object_hierarchy.yaml` and 1 more
+
+### `properties`
+
+- signature: `1..1 (any)`
+- source: `property.cc`
+- [ ] `properties/1 (int)`
+- [ ] `properties/1 (float)`
+- [x] `properties/1 (obj)` covered by `builtins/properties.yaml`, `builtins/properties.yaml`
+- [ ] `properties/1 (str)`
+- [ ] `properties/1 (err)`
+- [x] `properties/1 (list)` covered by `builtins/properties.yaml`, `builtins/properties.yaml`, `builtins/properties.yaml` and 5 more
+- [ ] `properties/1 (map)`
+- [?] `properties/1` unknown argument types covered by `basic/property.yaml`, `basic/property.yaml`, `language/anonymous.yaml` and 3 more
+
+### `property_info`
+
+- signature: `2..2 (any, str)`
+- source: `property.cc`
+- [ ] `property_info/2 (int, str)`
+- [ ] `property_info/2 (float, str)`
+- [x] `property_info/2 (obj, str)` covered by `builtins/properties.yaml`
+- [ ] `property_info/2 (str, str)`
+- [ ] `property_info/2 (err, str)`
+- [x] `property_info/2 (list, str)` covered by `builtins/properties.yaml`, `builtins/properties.yaml`, `builtins/properties.yaml` and 12 more
+- [ ] `property_info/2 (map, str)`
+- [?] `property_info/2` unknown argument types covered by `builtins/objects.yaml`, `builtins/objects.yaml`, `builtins/objects.yaml` and 8 more
+
+### `queue_info`
+
+- signature: `0..1 (obj)`
+- source: `tasks.cc`
+- [x] `queue_info/0 ()` covered by `builtins/task_management.yaml`, `builtins/task_management.yaml`
+- [x] `queue_info/1 (obj)` covered by `builtins/task_management.yaml`
+- [?] `queue_info/1` unknown argument types covered by `audit/time_server_builtins_toast_oracle.yaml`, `builtins/task_management.yaml`, `builtins/task_management.yaml` and 2 more
+- [?] `queue_info/2` unknown argument types covered by `builtins/task_management.yaml`
+
+### `queued_tasks`
+
+- signature: `0..2 (int, int)`
+- source: `tasks.cc`
+- [x] `queued_tasks/0 ()` covered by `audit/task_scheduling_toast_oracle.yaml`, `builtins/primitives.yaml`, `builtins/primitives.yaml` and 6 more
+- [ ] `queued_tasks/1 (int)`
+- [x] `queued_tasks/2 (int, int)` covered by `builtins/task_management.yaml`, `builtins/task_management.yaml`
+
+### `raise`
+
+- signature: `1..3 (any, str, any)`
+- source: `execute.cc`
+- [ ] `raise/1 (int)`
+- [ ] `raise/1 (float)`
+- [ ] `raise/1 (obj)`
+- [ ] `raise/1 (str)`
+- [x] `raise/1 (err)` covered by `language/try_except.yaml`, `language/try_except.yaml`, `language/try_except.yaml` and 1 more
+- [ ] `raise/1 (list)`
+- [ ] `raise/1 (map)`
+- [ ] `raise/2 (int, str)`
+- [ ] `raise/2 (float, str)`
+- [ ] `raise/2 (obj, str)`
+- [ ] `raise/2 (str, str)`
+- [x] `raise/2 (err, str)` covered by `language/try_except.yaml`
+- [ ] `raise/2 (list, str)`
+- [ ] `raise/2 (map, str)`
+- [ ] `raise/3 (int, str, int)`
+- [ ] `raise/3 (int, str, float)`
+- [ ] `raise/3 (int, str, obj)`
+- [ ] `raise/3 (int, str, str)`
+- [ ] `raise/3 (int, str, err)`
+- [ ] `raise/3 (int, str, list)`
+- [ ] `raise/3 (int, str, map)`
+- [ ] `raise/3 (float, str, int)`
+- [ ] `raise/3 (float, str, float)`
+- [ ] `raise/3 (float, str, obj)`
+- [ ] `raise/3 (float, str, str)`
+- [ ] `raise/3 (float, str, err)`
+- [ ] `raise/3 (float, str, list)`
+- [ ] `raise/3 (float, str, map)`
+- [ ] `raise/3 (obj, str, int)`
+- [ ] `raise/3 (obj, str, float)`
+- [ ] `raise/3 (obj, str, obj)`
+- [ ] `raise/3 (obj, str, str)`
+- [ ] `raise/3 (obj, str, err)`
+- [ ] `raise/3 (obj, str, list)`
+- [ ] `raise/3 (obj, str, map)`
+- [ ] `raise/3 (str, str, int)`
+- [ ] `raise/3 (str, str, float)`
+- [ ] `raise/3 (str, str, obj)`
+- [ ] `raise/3 (str, str, str)`
+- [ ] `raise/3 (str, str, err)`
+- [ ] `raise/3 (str, str, list)`
+- [ ] `raise/3 (str, str, map)`
+- [ ] `raise/3 (err, str, int)`
+- [ ] `raise/3 (err, str, float)`
+- [ ] `raise/3 (err, str, obj)`
+- [ ] `raise/3 (err, str, str)`
+- [ ] `raise/3 (err, str, err)`
+- [x] `raise/3 (err, str, list)` covered by `language/try_except.yaml`
+- [ ] `raise/3 (err, str, map)`
+- [ ] `raise/3 (list, str, int)`
+- [ ] `raise/3 (list, str, float)`
+- [ ] `raise/3 (list, str, obj)`
+- [ ] `raise/3 (list, str, str)`
+- [ ] `raise/3 (list, str, err)`
+- [ ] `raise/3 (list, str, list)`
+- [ ] `raise/3 (list, str, map)`
+- [ ] `raise/3 (map, str, int)`
+- [ ] `raise/3 (map, str, float)`
+- [ ] `raise/3 (map, str, obj)`
+- [ ] `raise/3 (map, str, str)`
+- [ ] `raise/3 (map, str, err)`
+- [ ] `raise/3 (map, str, list)`
+- [ ] `raise/3 (map, str, map)`
+- [?] `raise/1` unknown argument types covered by `builtins/fileio.yaml`, `builtins/fileio.yaml`, `builtins/fileio.yaml` and 9 more
+
+### `random`
+
+- signature: `0..2 (int, int)`
+- source: `numbers.cc`
+- [x] `random/0 ()` covered by `builtins/math.yaml`, `builtins/math.yaml`, `builtins/math.yaml`
+- [x] `random/1 (int)` covered by `builtins/math.yaml`, `builtins/math.yaml`, `builtins/math.yaml` and 2 more
+- [x] `random/2 (int, int)` covered by `builtins/math.yaml`, `builtins/math.yaml`
+- [?] `random/1` unknown argument types covered by `language/index_and_range.yaml`
+
+### `random_bytes`
+
+- signature: `1..1 (int)`
+- source: `numbers.cc`
+- [x] `random_bytes/1 (int)` covered by `builtins/math.yaml`, `builtins/math.yaml`, `builtins/math.yaml` and 1 more
+
+### `read`
+
+- signature: `0..2 (obj, any)`
+- source: `execute.cc`
+- [x] `read/0 ()` covered by `audit/task_scheduling_toast_oracle.yaml`, `builtins/read.yaml`
+- [x] `read/1 (obj)` covered by `builtins/read.yaml`
+- [ ] `read/2 (obj, int)`
+- [ ] `read/2 (obj, float)`
+- [ ] `read/2 (obj, obj)`
+- [ ] `read/2 (obj, str)`
+- [ ] `read/2 (obj, err)`
+- [ ] `read/2 (obj, list)`
+- [ ] `read/2 (obj, map)`
+- [?] `read/1` unknown argument types covered by `builtins/http.yaml`, `builtins/read.yaml`
+- [?] `read/2` unknown argument types covered by `audit/task_scheduling_toast_oracle.yaml`, `builtins/read.yaml`
+
+### `read_http`
+
+- signature: `1..2 (str, obj)`
+- source: `execute.cc`
+- [x] `read_http/1 (str)` covered by `builtins/http.yaml`, `builtins/http.yaml`, `builtins/http.yaml` and 17 more
+- [ ] `read_http/2 (str, obj)`
+- [?] `read_http/2` unknown argument types covered by `builtins/http.yaml`, `builtins/http.yaml`, `builtins/http.yaml` and 2 more
+
+### `read_stdin`
+
+- signature: `0..0 ()`
+- source: `extensions.cc`
+- [ ] `read_stdin/0 ()`
+
+### `recreate`
+
+- signature: `2..3 (obj, obj, obj)`
+- source: `objects.cc`
+- [ ] `recreate/2 (obj, obj)`
+- [ ] `recreate/3 (obj, obj, obj)`
+- [?] `recreate/2` unknown argument types covered by `builtins/recreate.yaml`, `builtins/recreate.yaml`, `builtins/recreate.yaml` and 2 more
+- [?] `recreate/3` unknown argument types covered by `builtins/recreate.yaml`
+
+### `recycle`
+
+- signature: `1..1 (any)`
+- source: `objects.cc`
+- [x] `recycle/1 (int)` covered by `builtins/recycle.yaml`, `generated_builtins/recycle.yaml`
+- [x] `recycle/1 (float)` covered by `builtins/recycle.yaml`
+- [x] `recycle/1 (obj)` covered by `builtins/recycle.yaml`, `builtins/task_local.yaml`
+- [x] `recycle/1 (str)` covered by `builtins/recycle.yaml`
+- [ ] `recycle/1 (err)`
+- [x] `recycle/1 (list)` covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml` and 240 more
+- [x] `recycle/1 (map)` covered by `builtins/recycle.yaml`
+- [?] `recycle/1` unknown argument types covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml` and 362 more
+
+### `recycled_objects`
+
+- signature: `0..0 ()`
+- source: `objects.cc`
+- [x] `recycled_objects/0 ()` covered by `builtins/object_hierarchy.yaml`, `builtins/object_hierarchy.yaml`
+
+### `relative_heading`
+
+- signature: `2..2 (list, list)`
+- source: `numbers.cc`
+- [x] `relative_heading/2 (list, list)` covered by `builtins/math.yaml`, `builtins/math.yaml`, `builtins/math.yaml` and 1 more
+
+### `remove_ansi`
+
+- signature: `1..1 (str)`
+- source: `list.cc`
+- [x] `remove_ansi/1 (str)` covered by `builtins/parse_remove_ansi.yaml`, `builtins/parse_remove_ansi.yaml`, `builtins/parse_remove_ansi.yaml` and 4 more
+
+### `renumber`
+
+- signature: `1..1 (obj)`
+- source: `server.cc`
+- [ ] `renumber/1 (obj)`
+- [?] `renumber/1` unknown argument types covered by `builtins/objects.yaml`, `builtins/objects.yaml`, `builtins/objects.yaml` and 5 more
+
+### `reseed_random`
+
+- signature: `0..0 ()`
+- source: `numbers.cc`
+- [x] `reseed_random/0 ()` covered by `builtins/math.yaml`, `builtins/math.yaml`, `generated_builtins/reseed_random.yaml`
+
+### `reset_max_object`
+
+- signature: `0..0 ()`
+- source: `server.cc`
+- [x] `reset_max_object/0 ()` covered by `generated_builtins/reset_max_object.yaml`, `language/anonymous.yaml`
+
+### `respond_to`
+
+- signature: `2..2 (any, str)`
+- source: `verbs.cc`
+- [ ] `respond_to/2 (int, str)`
+- [ ] `respond_to/2 (float, str)`
+- [ ] `respond_to/2 (obj, str)`
+- [ ] `respond_to/2 (str, str)`
+- [ ] `respond_to/2 (err, str)`
+- [x] `respond_to/2 (list, str)` covered by `builtins/verbs.yaml`, `builtins/verbs.yaml`, `builtins/verbs.yaml` and 5 more
+- [ ] `respond_to/2 (map, str)`
+
+### `resume`
+
+- signature: `1..2 (int, any)`
+- source: `tasks.cc`
+- [x] `resume/1 (int)` covered by `builtins/task_management.yaml`, `builtins/task_management.yaml`
+- [ ] `resume/2 (int, int)`
+- [ ] `resume/2 (int, float)`
+- [ ] `resume/2 (int, obj)`
+- [ ] `resume/2 (int, str)`
+- [ ] `resume/2 (int, err)`
+- [ ] `resume/2 (int, list)`
+- [ ] `resume/2 (int, map)`
+- [?] `resume/1` unknown argument types covered by `server/exec.yaml`
+- [?] `resume/2` unknown argument types covered by `builtins/task_local.yaml`, `builtins/task_local.yaml`
+
+### `reverse`
+
+- signature: `1..1 (any)`
+- source: `list.cc`
+- [x] `reverse/1 (int)` covered by `builtins/reverse.yaml`
+- [ ] `reverse/1 (float)`
+- [ ] `reverse/1 (obj)`
+- [x] `reverse/1 (str)` covered by `builtins/reverse.yaml`, `builtins/reverse.yaml`, `builtins/reverse.yaml` and 1 more
+- [ ] `reverse/1 (err)`
+- [x] `reverse/1 (list)` covered by `builtins/reverse.yaml`, `builtins/reverse.yaml`, `builtins/reverse.yaml` and 1 more
+- [x] `reverse/1 (map)` covered by `builtins/reverse.yaml`
+
+### `rindex`
+
+- signature: `2..4 (str, str, any, int)`
+- source: `list.cc`
+- [x] `rindex/2 (str, str)` covered by `basic/string.yaml`, `basic/string.yaml`, `basic/string.yaml` and 2 more
+- [x] `rindex/3 (str, str, int)` covered by `basic/string.yaml`, `builtins/string_operations.yaml`, `builtins/string_operations.yaml`
+- [ ] `rindex/3 (str, str, float)`
+- [ ] `rindex/3 (str, str, obj)`
+- [ ] `rindex/3 (str, str, str)`
+- [ ] `rindex/3 (str, str, err)`
+- [ ] `rindex/3 (str, str, list)`
+- [ ] `rindex/3 (str, str, map)`
+- [x] `rindex/4 (str, str, int, int)` covered by `builtins/string_operations.yaml`, `builtins/string_operations.yaml`, `builtins/string_operations.yaml` and 2 more
+- [ ] `rindex/4 (str, str, float, int)`
+- [ ] `rindex/4 (str, str, obj, int)`
+- [ ] `rindex/4 (str, str, str, int)`
+- [ ] `rindex/4 (str, str, err, int)`
+- [ ] `rindex/4 (str, str, list, int)`
+- [ ] `rindex/4 (str, str, map, int)`
+
+### `rmatch`
+
+- signature: `2..3 (str, str, any)`
+- source: `list.cc`
+- [x] `rmatch/2 (str, str)` covered by `builtins/match_percent_escapes.yaml`, `builtins/match_rmatch.yaml`, `builtins/match_rmatch.yaml` and 2 more
+- [x] `rmatch/3 (str, str, int)` covered by `builtins/match_rmatch.yaml`
+- [ ] `rmatch/3 (str, str, float)`
+- [ ] `rmatch/3 (str, str, obj)`
+- [ ] `rmatch/3 (str, str, str)`
+- [ ] `rmatch/3 (str, str, err)`
+- [ ] `rmatch/3 (str, str, list)`
+- [ ] `rmatch/3 (str, str, map)`
+
+### `round`
+
+- signature: `1..1 (float)`
+- source: `numbers.cc`
+- [x] `round/1 (float)` covered by `builtins/math.yaml`, `builtins/math.yaml`, `builtins/math.yaml` and 5 more
+
+### `run_gc`
+
+- signature: `0..0 ()`
+- source: `garbage.cc`
+- [x] `run_gc/0 ()` covered by `builtins/gc.yaml`, `builtins/gc.yaml`, `builtins/gc.yaml` and 37 more
+
+### `salt`
+
+- signature: `2..2 (str, str)`
+- source: `crypto.cc`
+- [x] `salt/2 (str, str)` covered by `builtins/algorithms.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml` and 23 more
+
+### `seconds_left`
+
+- signature: `0..0 ()`
+- source: `execute.cc`
+- [x] `seconds_left/0 ()` covered by `audit/task_scheduling_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml` and 6 more
+
+### `server_log`
+
+- signature: `1..2 (str, any)`
+- source: `log.cc`
+- [x] `server_log/1 (str)` covered by `builtins/server_admin.yaml`, `builtins/server_admin.yaml`, `builtins/server_log.yaml` and 2 more
+- [x] `server_log/2 (str, int)` covered by `builtins/server_admin.yaml`, `builtins/server_admin.yaml`, `builtins/server_log.yaml`
+- [ ] `server_log/2 (str, float)`
+- [ ] `server_log/2 (str, obj)`
+- [x] `server_log/2 (str, str)` covered by `builtins/server_admin.yaml`
+- [ ] `server_log/2 (str, err)`
+- [ ] `server_log/2 (str, list)`
+- [ ] `server_log/2 (str, map)`
+
+### `server_version`
+
+- signature: `0..1 (any)`
+- source: `server.cc`
+- [x] `server_version/0 ()` covered by `builtins/server_admin.yaml`, `builtins/server_admin.yaml`
+- [ ] `server_version/1 (int)`
+- [ ] `server_version/1 (float)`
+- [ ] `server_version/1 (obj)`
+- [x] `server_version/1 (str)` covered by `builtins/server_admin.yaml`, `builtins/server_admin.yaml`, `builtins/server_admin.yaml`
+- [ ] `server_version/1 (err)`
+- [ ] `server_version/1 (list)`
+- [ ] `server_version/1 (map)`
+
+### `set_connection_option`
+
+- signature: `3..3 (obj, str, any)`
+- source: `server.cc`
+- [x] `set_connection_option/3 (obj, str, int)` covered by `builtins/server_admin.yaml`
+- [ ] `set_connection_option/3 (obj, str, float)`
+- [ ] `set_connection_option/3 (obj, str, obj)`
+- [ ] `set_connection_option/3 (obj, str, str)`
+- [ ] `set_connection_option/3 (obj, str, err)`
+- [ ] `set_connection_option/3 (obj, str, list)`
+- [ ] `set_connection_option/3 (obj, str, map)`
+- [?] `set_connection_option/3` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 113 more
+
+### `set_player_flag`
+
+- signature: `2..2 (obj, any)`
+- source: `objects.cc`
+- [x] `set_player_flag/2 (obj, int)` covered by `generated_builtins/set_player_flag.yaml`
+- [ ] `set_player_flag/2 (obj, float)`
+- [ ] `set_player_flag/2 (obj, obj)`
+- [ ] `set_player_flag/2 (obj, str)`
+- [ ] `set_player_flag/2 (obj, err)`
+- [ ] `set_player_flag/2 (obj, list)`
+- [ ] `set_player_flag/2 (obj, map)`
+- [?] `set_player_flag/2` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 20 more
+
+### `set_property_info`
+
+- signature: `3..3 (any, str, list)`
+- source: `property.cc`
+- [ ] `set_property_info/3 (int, str, list)`
+- [ ] `set_property_info/3 (float, str, list)`
+- [ ] `set_property_info/3 (obj, str, list)`
+- [ ] `set_property_info/3 (str, str, list)`
+- [ ] `set_property_info/3 (err, str, list)`
+- [x] `set_property_info/3 (list, str, list)` covered by `audit/time_server_builtins_toast_oracle.yaml`, `builtins/properties.yaml`, `builtins/properties.yaml` and 2 more
+- [ ] `set_property_info/3 (map, str, list)`
+- [?] `set_property_info/3` unknown argument types covered by `builtins/objects.yaml`
+
+### `set_task_local`
+
+- signature: `1..1 (any)`
+- source: `tasks.cc`
+- [x] `set_task_local/1 (int)` covered by `builtins/task_local.yaml`, `generated_builtins/set_task_local.yaml`
+- [ ] `set_task_local/1 (float)`
+- [ ] `set_task_local/1 (obj)`
+- [x] `set_task_local/1 (str)` covered by `builtins/task_local.yaml`
+- [ ] `set_task_local/1 (err)`
+- [x] `set_task_local/1 (list)` covered by `audit/gap_followups_toast_oracle.yaml`, `builtins/task_local.yaml`, `builtins/task_local.yaml` and 7 more
+- [ ] `set_task_local/1 (map)`
+
+### `set_task_perms`
+
+- signature: `1..1 (obj)`
+- source: `execute.cc`
+- [x] `set_task_perms/1 (obj)` covered by `builtins/task_management.yaml`, `builtins/task_management.yaml`, `builtins/task_management.yaml` and 1 more
+- [?] `set_task_perms/1` unknown argument types covered by `builtins/task_management.yaml`, `builtins/task_management.yaml`, `builtins/task_management.yaml`
+- [?] `set_task_perms/2` unknown argument types covered by `builtins/task_management.yaml`
+
+### `set_thread_mode`
+
+- signature: `0..1 (int)`
+- source: `tasks.cc`
+- [x] `set_thread_mode/0 ()` covered by `generated_builtins/set_thread_mode.yaml`
+- [ ] `set_thread_mode/1 (int)`
+
+### `set_verb_args`
+
+- signature: `3..3 (any, any, list)`
+- source: `verbs.cc`
+- [ ] `set_verb_args/3 (int, int, list)`
+- [ ] `set_verb_args/3 (int, float, list)`
+- [ ] `set_verb_args/3 (int, obj, list)`
+- [ ] `set_verb_args/3 (int, str, list)`
+- [ ] `set_verb_args/3 (int, err, list)`
+- [ ] `set_verb_args/3 (int, list, list)`
+- [ ] `set_verb_args/3 (int, map, list)`
+- [ ] `set_verb_args/3 (float, int, list)`
+- [ ] `set_verb_args/3 (float, float, list)`
+- [ ] `set_verb_args/3 (float, obj, list)`
+- [ ] `set_verb_args/3 (float, str, list)`
+- [ ] `set_verb_args/3 (float, err, list)`
+- [ ] `set_verb_args/3 (float, list, list)`
+- [ ] `set_verb_args/3 (float, map, list)`
+- [ ] `set_verb_args/3 (obj, int, list)`
+- [ ] `set_verb_args/3 (obj, float, list)`
+- [ ] `set_verb_args/3 (obj, obj, list)`
+- [x] `set_verb_args/3 (obj, str, list)` covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 18 more
+- [ ] `set_verb_args/3 (obj, err, list)`
+- [ ] `set_verb_args/3 (obj, list, list)`
+- [ ] `set_verb_args/3 (obj, map, list)`
+- [ ] `set_verb_args/3 (str, int, list)`
+- [ ] `set_verb_args/3 (str, float, list)`
+- [ ] `set_verb_args/3 (str, obj, list)`
+- [ ] `set_verb_args/3 (str, str, list)`
+- [ ] `set_verb_args/3 (str, err, list)`
+- [ ] `set_verb_args/3 (str, list, list)`
+- [ ] `set_verb_args/3 (str, map, list)`
+- [ ] `set_verb_args/3 (err, int, list)`
+- [ ] `set_verb_args/3 (err, float, list)`
+- [ ] `set_verb_args/3 (err, obj, list)`
+- [ ] `set_verb_args/3 (err, str, list)`
+- [ ] `set_verb_args/3 (err, err, list)`
+- [ ] `set_verb_args/3 (err, list, list)`
+- [ ] `set_verb_args/3 (err, map, list)`
+- [ ] `set_verb_args/3 (list, int, list)`
+- [ ] `set_verb_args/3 (list, float, list)`
+- [ ] `set_verb_args/3 (list, obj, list)`
+- [x] `set_verb_args/3 (list, str, list)` covered by `audit/verb_dispatch_toast_oracle.yaml`, `builtins/verbs.yaml`, `builtins/verbs.yaml` and 3 more
+- [ ] `set_verb_args/3 (list, err, list)`
+- [ ] `set_verb_args/3 (list, list, list)`
+- [ ] `set_verb_args/3 (list, map, list)`
+- [ ] `set_verb_args/3 (map, int, list)`
+- [ ] `set_verb_args/3 (map, float, list)`
+- [ ] `set_verb_args/3 (map, obj, list)`
+- [ ] `set_verb_args/3 (map, str, list)`
+- [ ] `set_verb_args/3 (map, err, list)`
+- [ ] `set_verb_args/3 (map, list, list)`
+- [ ] `set_verb_args/3 (map, map, list)`
+- [?] `set_verb_args/3` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 18 more
+
+### `set_verb_code`
+
+- signature: `3..3 (any, any, list)`
+- source: `verbs.cc`
+- [ ] `set_verb_code/3 (int, int, list)`
+- [ ] `set_verb_code/3 (int, float, list)`
+- [ ] `set_verb_code/3 (int, obj, list)`
+- [ ] `set_verb_code/3 (int, str, list)`
+- [ ] `set_verb_code/3 (int, err, list)`
+- [ ] `set_verb_code/3 (int, list, list)`
+- [ ] `set_verb_code/3 (int, map, list)`
+- [ ] `set_verb_code/3 (float, int, list)`
+- [ ] `set_verb_code/3 (float, float, list)`
+- [ ] `set_verb_code/3 (float, obj, list)`
+- [ ] `set_verb_code/3 (float, str, list)`
+- [ ] `set_verb_code/3 (float, err, list)`
+- [ ] `set_verb_code/3 (float, list, list)`
+- [ ] `set_verb_code/3 (float, map, list)`
+- [ ] `set_verb_code/3 (obj, int, list)`
+- [ ] `set_verb_code/3 (obj, float, list)`
+- [ ] `set_verb_code/3 (obj, obj, list)`
+- [x] `set_verb_code/3 (obj, str, list)` covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 24 more
+- [ ] `set_verb_code/3 (obj, err, list)`
+- [ ] `set_verb_code/3 (obj, list, list)`
+- [ ] `set_verb_code/3 (obj, map, list)`
+- [ ] `set_verb_code/3 (str, int, list)`
+- [ ] `set_verb_code/3 (str, float, list)`
+- [ ] `set_verb_code/3 (str, obj, list)`
+- [ ] `set_verb_code/3 (str, str, list)`
+- [ ] `set_verb_code/3 (str, err, list)`
+- [ ] `set_verb_code/3 (str, list, list)`
+- [ ] `set_verb_code/3 (str, map, list)`
+- [ ] `set_verb_code/3 (err, int, list)`
+- [ ] `set_verb_code/3 (err, float, list)`
+- [ ] `set_verb_code/3 (err, obj, list)`
+- [ ] `set_verb_code/3 (err, str, list)`
+- [ ] `set_verb_code/3 (err, err, list)`
+- [ ] `set_verb_code/3 (err, list, list)`
+- [ ] `set_verb_code/3 (err, map, list)`
+- [ ] `set_verb_code/3 (list, int, list)`
+- [ ] `set_verb_code/3 (list, float, list)`
+- [ ] `set_verb_code/3 (list, obj, list)`
+- [x] `set_verb_code/3 (list, str, list)` covered by `audit/verb_dispatch_toast_oracle.yaml`, `builtins/eval.yaml`, `builtins/recycle.yaml` and 18 more
+- [ ] `set_verb_code/3 (list, err, list)`
+- [ ] `set_verb_code/3 (list, list, list)`
+- [ ] `set_verb_code/3 (list, map, list)`
+- [ ] `set_verb_code/3 (map, int, list)`
+- [ ] `set_verb_code/3 (map, float, list)`
+- [ ] `set_verb_code/3 (map, obj, list)`
+- [ ] `set_verb_code/3 (map, str, list)`
+- [ ] `set_verb_code/3 (map, err, list)`
+- [ ] `set_verb_code/3 (map, list, list)`
+- [ ] `set_verb_code/3 (map, map, list)`
+- [?] `set_verb_code/3` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 307 more
+
+### `set_verb_info`
+
+- signature: `3..3 (any, any, list)`
+- source: `verbs.cc`
+- [ ] `set_verb_info/3 (int, int, list)`
+- [ ] `set_verb_info/3 (int, float, list)`
+- [ ] `set_verb_info/3 (int, obj, list)`
+- [ ] `set_verb_info/3 (int, str, list)`
+- [ ] `set_verb_info/3 (int, err, list)`
+- [ ] `set_verb_info/3 (int, list, list)`
+- [ ] `set_verb_info/3 (int, map, list)`
+- [ ] `set_verb_info/3 (float, int, list)`
+- [ ] `set_verb_info/3 (float, float, list)`
+- [ ] `set_verb_info/3 (float, obj, list)`
+- [ ] `set_verb_info/3 (float, str, list)`
+- [ ] `set_verb_info/3 (float, err, list)`
+- [ ] `set_verb_info/3 (float, list, list)`
+- [ ] `set_verb_info/3 (float, map, list)`
+- [ ] `set_verb_info/3 (obj, int, list)`
+- [ ] `set_verb_info/3 (obj, float, list)`
+- [ ] `set_verb_info/3 (obj, obj, list)`
+- [x] `set_verb_info/3 (obj, str, list)` covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 18 more
+- [ ] `set_verb_info/3 (obj, err, list)`
+- [ ] `set_verb_info/3 (obj, list, list)`
+- [ ] `set_verb_info/3 (obj, map, list)`
+- [ ] `set_verb_info/3 (str, int, list)`
+- [ ] `set_verb_info/3 (str, float, list)`
+- [ ] `set_verb_info/3 (str, obj, list)`
+- [ ] `set_verb_info/3 (str, str, list)`
+- [ ] `set_verb_info/3 (str, err, list)`
+- [ ] `set_verb_info/3 (str, list, list)`
+- [ ] `set_verb_info/3 (str, map, list)`
+- [ ] `set_verb_info/3 (err, int, list)`
+- [ ] `set_verb_info/3 (err, float, list)`
+- [ ] `set_verb_info/3 (err, obj, list)`
+- [ ] `set_verb_info/3 (err, str, list)`
+- [ ] `set_verb_info/3 (err, err, list)`
+- [ ] `set_verb_info/3 (err, list, list)`
+- [ ] `set_verb_info/3 (err, map, list)`
+- [ ] `set_verb_info/3 (list, int, list)`
+- [ ] `set_verb_info/3 (list, float, list)`
+- [ ] `set_verb_info/3 (list, obj, list)`
+- [x] `set_verb_info/3 (list, str, list)` covered by `audit/verb_dispatch_toast_oracle.yaml`, `builtins/verbs.yaml`, `builtins/verbs.yaml` and 1 more
+- [ ] `set_verb_info/3 (list, err, list)`
+- [ ] `set_verb_info/3 (list, list, list)`
+- [ ] `set_verb_info/3 (list, map, list)`
+- [ ] `set_verb_info/3 (map, int, list)`
+- [ ] `set_verb_info/3 (map, float, list)`
+- [ ] `set_verb_info/3 (map, obj, list)`
+- [ ] `set_verb_info/3 (map, str, list)`
+- [ ] `set_verb_info/3 (map, err, list)`
+- [ ] `set_verb_info/3 (map, list, list)`
+- [ ] `set_verb_info/3 (map, map, list)`
+- [?] `set_verb_info/3` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 18 more
+
+### `setadd`
+
+- signature: `2..2 (list, any)`
+- source: `list.cc`
+- [x] `setadd/2 (list, int)` covered by `basic/list.yaml`, `basic/list.yaml`
+- [ ] `setadd/2 (list, float)`
+- [ ] `setadd/2 (list, obj)`
+- [ ] `setadd/2 (list, str)`
+- [ ] `setadd/2 (list, err)`
+- [x] `setadd/2 (list, list)` covered by `server/limits.yaml`, `server/limits.yaml`
+- [ ] `setadd/2 (list, map)`
+- [?] `setadd/2` unknown argument types covered by `features/limits_dynamic.yaml`, `features/limits_dynamic.yaml`, `features/limits_dynamic.yaml` and 4 more
+
+### `setremove`
+
+- signature: `2..2 (list, any)`
+- source: `list.cc`
+- [ ] `setremove/2 (list, int)`
+- [ ] `setremove/2 (list, float)`
+- [ ] `setremove/2 (list, obj)`
+- [ ] `setremove/2 (list, str)`
+- [ ] `setremove/2 (list, err)`
+- [ ] `setremove/2 (list, list)`
+- [ ] `setremove/2 (list, map)`
+- [?] `setremove/2` unknown argument types covered by `server/limits.yaml`
+
+### `shutdown`
+
+- signature: `0..2 (str, any)`
+- source: `server.cc`
+- [x] `shutdown/0 ()` covered by `builtins/server_admin.yaml`
+- [x] `shutdown/1 (str)` covered by `builtins/server_admin.yaml`
+- [x] `shutdown/2 (str, int)` covered by `audit/time_server_builtins_toast_oracle.yaml`
+- [ ] `shutdown/2 (str, float)`
+- [ ] `shutdown/2 (str, obj)`
+- [ ] `shutdown/2 (str, str)`
+- [ ] `shutdown/2 (str, err)`
+- [ ] `shutdown/2 (str, list)`
+- [ ] `shutdown/2 (str, map)`
+
+### `simplex_noise`
+
+- signature: `1..1 (list)`
+- source: `simplexnoise.cc`
+- [ ] `simplex_noise/1 (list)`
+
+### `sin`
+
+- signature: `1..1 (float)`
+- source: `numbers.cc`
+- [x] `sin/1 (float)` covered by `builtins/math.yaml`, `builtins/math.yaml`, `builtins/math.yaml` and 1 more
+- [?] `sin/1` unknown argument types covered by `builtins/math.yaml`
+
+### `sinh`
+
+- signature: `1..1 (float)`
+- source: `numbers.cc`
+- [x] `sinh/1 (float)` covered by `builtins/math.yaml`, `builtins/math.yaml`, `builtins/math.yaml`
+
+### `slice`
+
+- signature: `1..3 (list, any, any)`
+- source: `list.cc`
+- [ ] `slice/1 (list)`
+- [ ] `slice/2 (list, int)`
+- [ ] `slice/2 (list, float)`
+- [ ] `slice/2 (list, obj)`
+- [ ] `slice/2 (list, str)`
+- [ ] `slice/2 (list, err)`
+- [ ] `slice/2 (list, list)`
+- [ ] `slice/2 (list, map)`
+- [ ] `slice/3 (list, int, int)`
+- [ ] `slice/3 (list, int, float)`
+- [ ] `slice/3 (list, int, obj)`
+- [ ] `slice/3 (list, int, str)`
+- [ ] `slice/3 (list, int, err)`
+- [ ] `slice/3 (list, int, list)`
+- [ ] `slice/3 (list, int, map)`
+- [ ] `slice/3 (list, float, int)`
+- [ ] `slice/3 (list, float, float)`
+- [ ] `slice/3 (list, float, obj)`
+- [ ] `slice/3 (list, float, str)`
+- [ ] `slice/3 (list, float, err)`
+- [ ] `slice/3 (list, float, list)`
+- [ ] `slice/3 (list, float, map)`
+- [ ] `slice/3 (list, obj, int)`
+- [ ] `slice/3 (list, obj, float)`
+- [ ] `slice/3 (list, obj, obj)`
+- [ ] `slice/3 (list, obj, str)`
+- [ ] `slice/3 (list, obj, err)`
+- [ ] `slice/3 (list, obj, list)`
+- [ ] `slice/3 (list, obj, map)`
+- [ ] `slice/3 (list, str, int)`
+- [ ] `slice/3 (list, str, float)`
+- [ ] `slice/3 (list, str, obj)`
+- [ ] `slice/3 (list, str, str)`
+- [ ] `slice/3 (list, str, err)`
+- [ ] `slice/3 (list, str, list)`
+- [ ] `slice/3 (list, str, map)`
+- [ ] `slice/3 (list, err, int)`
+- [ ] `slice/3 (list, err, float)`
+- [ ] `slice/3 (list, err, obj)`
+- [ ] `slice/3 (list, err, str)`
+- [ ] `slice/3 (list, err, err)`
+- [ ] `slice/3 (list, err, list)`
+- [ ] `slice/3 (list, err, map)`
+- [ ] `slice/3 (list, list, int)`
+- [ ] `slice/3 (list, list, float)`
+- [ ] `slice/3 (list, list, obj)`
+- [ ] `slice/3 (list, list, str)`
+- [ ] `slice/3 (list, list, err)`
+- [ ] `slice/3 (list, list, list)`
+- [ ] `slice/3 (list, list, map)`
+- [ ] `slice/3 (list, map, int)`
+- [ ] `slice/3 (list, map, float)`
+- [ ] `slice/3 (list, map, obj)`
+- [ ] `slice/3 (list, map, str)`
+- [ ] `slice/3 (list, map, err)`
+- [ ] `slice/3 (list, map, list)`
+- [ ] `slice/3 (list, map, map)`
+
+### `sort`
+
+- signature: `1..4 (list, list, int, int)`
+- source: `list.cc`
+- [ ] `sort/1 (list)`
+- [ ] `sort/2 (list, list)`
+- [ ] `sort/3 (list, list, int)`
+- [ ] `sort/4 (list, list, int, int)`
+
+### `spellcheck`
+
+- signature: `1..1 (str)`
+- source: `spellcheck.cc`
+- [ ] `spellcheck/1 (str)`
+
+### `sqlite_close`
+
+- signature: `1..1 (int)`
+- source: `sqlite.cc`
+- [x] `sqlite_close/1 (int)` covered by `builtins/sqlite.yaml`, `generated_builtins/sqlite_close.yaml`
+
+### `sqlite_execute`
+
+- signature: `3..3 (int, str, list)`
+- source: `sqlite.cc`
+- [x] `sqlite_execute/3 (int, str, list)` covered by `builtins/sqlite.yaml`
+
+### `sqlite_handles`
+
+- signature: `0..0 ()`
+- source: `sqlite.cc`
+- [x] `sqlite_handles/0 ()` covered by `builtins/sqlite.yaml`
+
+### `sqlite_info`
+
+- signature: `1..1 (int)`
+- source: `sqlite.cc`
+- [x] `sqlite_info/1 (int)` covered by `builtins/sqlite.yaml`
+
+### `sqlite_interrupt`
+
+- signature: `1..1 (int)`
+- source: `sqlite.cc`
+- [x] `sqlite_interrupt/1 (int)` covered by `builtins/sqlite.yaml`, `generated_builtins/sqlite_interrupt.yaml`
+
+### `sqlite_last_insert_row_id`
+
+- signature: `1..1 (int)`
+- source: `sqlite.cc`
+- [ ] `sqlite_last_insert_row_id/1 (int)`
+
+### `sqlite_limit`
+
+- signature: `3..3 (int, any, int)`
+- source: `sqlite.cc`
+- [ ] `sqlite_limit/3 (int, int, int)`
+- [ ] `sqlite_limit/3 (int, float, int)`
+- [ ] `sqlite_limit/3 (int, obj, int)`
+- [ ] `sqlite_limit/3 (int, str, int)`
+- [ ] `sqlite_limit/3 (int, err, int)`
+- [ ] `sqlite_limit/3 (int, list, int)`
+- [ ] `sqlite_limit/3 (int, map, int)`
+- [?] `sqlite_limit/3` unknown argument types covered by `builtins/sqlite.yaml`, `builtins/sqlite.yaml`
+
+### `sqlite_open`
+
+- signature: `1..2 (str, int)`
+- source: `sqlite.cc`
+- [x] `sqlite_open/1 (str)` covered by `builtins/sqlite.yaml`, `builtins/sqlite.yaml`, `builtins/sqlite.yaml` and 4 more
+- [ ] `sqlite_open/2 (str, int)`
+
+### `sqlite_query`
+
+- signature: `2..3 (int, str, any)`
+- source: `sqlite.cc`
+- [x] `sqlite_query/2 (int, str)` covered by `builtins/sqlite.yaml`
+- [ ] `sqlite_query/3 (int, str, int)`
+- [ ] `sqlite_query/3 (int, str, float)`
+- [ ] `sqlite_query/3 (int, str, obj)`
+- [ ] `sqlite_query/3 (int, str, str)`
+- [ ] `sqlite_query/3 (int, str, err)`
+- [ ] `sqlite_query/3 (int, str, list)`
+- [ ] `sqlite_query/3 (int, str, map)`
+
+### `sqrt`
+
+- signature: `1..1 (float)`
+- source: `numbers.cc`
+- [x] `sqrt/1 (float)` covered by `builtins/math.yaml`, `builtins/math.yaml`, `builtins/math.yaml` and 2 more
+
+### `strcmp`
+
+- signature: `2..2 (str, str)`
+- source: `list.cc`
+- [x] `strcmp/2 (str, str)` covered by `basic/string.yaml`, `basic/string.yaml`, `basic/string.yaml` and 6 more
+
+### `string_hash`
+
+- signature: `1..3 (str, str, any)`
+- source: `crypto.cc`
+- [x] `string_hash/1 (str)` covered by `builtins/algorithms.yaml`
+- [x] `string_hash/2 (str, str)` covered by `builtins/algorithms.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml` and 68 more
+- [x] `string_hash/3 (str, str, int)` covered by `builtins/algorithms.yaml`
+- [ ] `string_hash/3 (str, str, float)`
+- [ ] `string_hash/3 (str, str, obj)`
+- [ ] `string_hash/3 (str, str, str)`
+- [ ] `string_hash/3 (str, str, err)`
+- [ ] `string_hash/3 (str, str, list)`
+- [ ] `string_hash/3 (str, str, map)`
+
+### `string_hmac`
+
+- signature: `2..4 (str, str, str, any)`
+- source: `crypto.cc`
+- [x] `string_hmac/2 (str, str)` covered by `builtins/algorithms.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml`
+- [x] `string_hmac/3 (str, str, str)` covered by `builtins/algorithms.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml` and 11 more
+- [x] `string_hmac/4 (str, str, str, int)` covered by `builtins/algorithms.yaml`
+- [ ] `string_hmac/4 (str, str, str, float)`
+- [ ] `string_hmac/4 (str, str, str, obj)`
+- [ ] `string_hmac/4 (str, str, str, str)`
+- [ ] `string_hmac/4 (str, str, str, err)`
+- [ ] `string_hmac/4 (str, str, str, list)`
+- [ ] `string_hmac/4 (str, str, str, map)`
+
+### `strsub`
+
+- signature: `3..4 (str, str, str, any)`
+- source: `list.cc`
+- [x] `strsub/3 (str, str, str)` covered by `basic/string.yaml`, `basic/string.yaml`, `basic/string.yaml` and 3 more
+- [x] `strsub/4 (str, str, str, int)` covered by `basic/string.yaml`, `basic/string.yaml`
+- [ ] `strsub/4 (str, str, str, float)`
+- [ ] `strsub/4 (str, str, str, obj)`
+- [ ] `strsub/4 (str, str, str, str)`
+- [ ] `strsub/4 (str, str, str, err)`
+- [ ] `strsub/4 (str, str, str, list)`
+- [ ] `strsub/4 (str, str, str, map)`
+- [?] `strsub/3` unknown argument types covered by `server/limits.yaml`, `server/limits.yaml`
+
+### `strtr`
+
+- signature: `3..4 (str, str, str, any)`
+- source: `list.cc`
+- [x] `strtr/3 (str, str, str)` covered by `builtins/string_operations.yaml`, `builtins/string_operations.yaml`, `builtins/string_operations.yaml` and 6 more
+- [x] `strtr/4 (str, str, str, int)` covered by `builtins/string_operations.yaml`, `builtins/string_operations.yaml`, `builtins/string_operations.yaml` and 11 more
+- [ ] `strtr/4 (str, str, str, float)`
+- [ ] `strtr/4 (str, str, str, obj)`
+- [ ] `strtr/4 (str, str, str, str)`
+- [ ] `strtr/4 (str, str, str, err)`
+- [ ] `strtr/4 (str, str, str, list)`
+- [ ] `strtr/4 (str, str, str, map)`
+
+### `substitute`
+
+- signature: `2..2 (str, list)`
+- source: `list.cc`
+- [x] `substitute/2 (str, list)` covered by `builtins/substitute.yaml`, `builtins/substitute_validation.yaml`, `builtins/substitute_validation.yaml` and 1 more
+- [?] `substitute/2` unknown argument types covered by `builtins/substitute.yaml`, `builtins/substitute.yaml`, `builtins/substitute.yaml` and 5 more
+
+### `suspend`
+
+- signature: `0..1 (numeric)`
+- source: `execute.cc`
+- [x] `suspend/0 ()` covered by `builtins/http.yaml`, `builtins/http.yaml`, `builtins/http.yaml` and 3 more
+- [x] `suspend/1 (int)` covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 52 more
+- [x] `suspend/1 (float)` covered by `builtins/task_management.yaml`
+
+### `switch_player`
+
+- signature: `2..3 (obj, obj, int)`
+- source: `tasks.cc`
+- [x] `switch_player/2 (obj, obj)` covered by `builtins/switch_player.yaml`, `builtins/switch_player.yaml`, `builtins/switch_player.yaml` and 3 more
+- [x] `switch_player/3 (obj, obj, int)` covered by `builtins/switch_player.yaml`, `builtins/switch_player.yaml`
+- [?] `switch_player/2` unknown argument types covered by `builtins/switch_player.yaml`
+
+### `tan`
+
+- signature: `1..1 (float)`
+- source: `numbers.cc`
+- [x] `tan/1 (float)` covered by `builtins/math.yaml`, `builtins/math.yaml`
+
+### `tanh`
+
+- signature: `1..1 (float)`
+- source: `numbers.cc`
+- [x] `tanh/1 (float)` covered by `builtins/math.yaml`, `builtins/math.yaml`, `builtins/math.yaml`
+
+### `task_id`
+
+- signature: `0..0 ()`
+- source: `tasks.cc`
+- [x] `task_id/0 ()` covered by `builtins/task_local.yaml`, `builtins/task_local.yaml`, `builtins/task_management.yaml` and 2 more
+
+### `task_local`
+
+- signature: `0..0 ()`
+- source: `tasks.cc`
+- [x] `task_local/0 ()` covered by `audit/gap_followups_toast_oracle.yaml`, `builtins/task_local.yaml`, `builtins/task_local.yaml` and 6 more
+
+### `task_perms`
+
+- signature: `0..0 ()`
+- source: `execute.cc`
+- [x] `task_perms/0 ()` covered by `builtins/task_management.yaml`, `builtins/task_management.yaml`, `builtins/task_management.yaml` and 3 more
+
+### `task_stack`
+
+- signature: `1..3 (int, any, any)`
+- source: `execute.cc`
+- [x] `task_stack/1 (int)` covered by `builtins/task_management.yaml`
+- [ ] `task_stack/2 (int, int)`
+- [ ] `task_stack/2 (int, float)`
+- [ ] `task_stack/2 (int, obj)`
+- [ ] `task_stack/2 (int, str)`
+- [ ] `task_stack/2 (int, err)`
+- [ ] `task_stack/2 (int, list)`
+- [ ] `task_stack/2 (int, map)`
+- [ ] `task_stack/3 (int, int, int)`
+- [ ] `task_stack/3 (int, int, float)`
+- [ ] `task_stack/3 (int, int, obj)`
+- [ ] `task_stack/3 (int, int, str)`
+- [ ] `task_stack/3 (int, int, err)`
+- [ ] `task_stack/3 (int, int, list)`
+- [ ] `task_stack/3 (int, int, map)`
+- [ ] `task_stack/3 (int, float, int)`
+- [ ] `task_stack/3 (int, float, float)`
+- [ ] `task_stack/3 (int, float, obj)`
+- [ ] `task_stack/3 (int, float, str)`
+- [ ] `task_stack/3 (int, float, err)`
+- [ ] `task_stack/3 (int, float, list)`
+- [ ] `task_stack/3 (int, float, map)`
+- [ ] `task_stack/3 (int, obj, int)`
+- [ ] `task_stack/3 (int, obj, float)`
+- [ ] `task_stack/3 (int, obj, obj)`
+- [ ] `task_stack/3 (int, obj, str)`
+- [ ] `task_stack/3 (int, obj, err)`
+- [ ] `task_stack/3 (int, obj, list)`
+- [ ] `task_stack/3 (int, obj, map)`
+- [ ] `task_stack/3 (int, str, int)`
+- [ ] `task_stack/3 (int, str, float)`
+- [ ] `task_stack/3 (int, str, obj)`
+- [ ] `task_stack/3 (int, str, str)`
+- [ ] `task_stack/3 (int, str, err)`
+- [ ] `task_stack/3 (int, str, list)`
+- [ ] `task_stack/3 (int, str, map)`
+- [ ] `task_stack/3 (int, err, int)`
+- [ ] `task_stack/3 (int, err, float)`
+- [ ] `task_stack/3 (int, err, obj)`
+- [ ] `task_stack/3 (int, err, str)`
+- [ ] `task_stack/3 (int, err, err)`
+- [ ] `task_stack/3 (int, err, list)`
+- [ ] `task_stack/3 (int, err, map)`
+- [ ] `task_stack/3 (int, list, int)`
+- [ ] `task_stack/3 (int, list, float)`
+- [ ] `task_stack/3 (int, list, obj)`
+- [ ] `task_stack/3 (int, list, str)`
+- [ ] `task_stack/3 (int, list, err)`
+- [ ] `task_stack/3 (int, list, list)`
+- [ ] `task_stack/3 (int, list, map)`
+- [ ] `task_stack/3 (int, map, int)`
+- [ ] `task_stack/3 (int, map, float)`
+- [ ] `task_stack/3 (int, map, obj)`
+- [ ] `task_stack/3 (int, map, str)`
+- [ ] `task_stack/3 (int, map, err)`
+- [ ] `task_stack/3 (int, map, list)`
+- [ ] `task_stack/3 (int, map, map)`
+- [?] `task_stack/1` unknown argument types covered by `builtins/task_management.yaml`, `builtins/task_management.yaml`, `builtins/task_management.yaml` and 4 more
+- [?] `task_stack/2` unknown argument types covered by `builtins/task_management.yaml`, `builtins/task_management.yaml`
+
+### `thread_pool`
+
+- signature: `2..3 (str, str, int)`
+- source: `background.cc`
+- [x] `thread_pool/2 (str, str)` covered by `generated_builtins/thread_pool.yaml`
+- [ ] `thread_pool/3 (str, str, int)`
+
+### `threads`
+
+- signature: `0..0 ()`
+- source: `background.cc`
+- [ ] `threads/0 ()`
+
+### `ticks_left`
+
+- signature: `0..0 ()`
+- source: `execute.cc`
+- [x] `ticks_left/0 ()` covered by `audit/task_scheduling_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml` and 12 more
+
+### `time`
+
+- signature: `0..0 ()`
+- source: `numbers.cc`
+- [x] `time/0 ()` covered by `audit/task_scheduling_toast_oracle.yaml`, `builtins/math.yaml`, `builtins/math.yaml` and 1 more
+
+### `tofloat`
+
+- signature: `1..1 (any)`
+- source: `numbers.cc`
+- [x] `tofloat/1 (int)` covered by `basic/value.yaml`
+- [x] `tofloat/1 (float)` covered by `basic/value.yaml`
+- [x] `tofloat/1 (obj)` covered by `basic/types.yaml`
+- [x] `tofloat/1 (str)` covered by `basic/types.yaml`, `basic/types.yaml`, `basic/types.yaml` and 7 more
+- [x] `tofloat/1 (err)` covered by `basic/types.yaml`
+- [x] `tofloat/1 (list)` covered by `basic/types.yaml`
+- [x] `tofloat/1 (map)` covered by `basic/types.yaml`
+- [?] `tofloat/1` unknown argument types covered by `basic/types.yaml`, `basic/types.yaml`
+
+### `toint`
+
+- signature: `1..1 (any)`
+- source: `numbers.cc`
+- [x] `toint/1 (int)` covered by `basic/value.yaml`
+- [x] `toint/1 (float)` covered by `basic/types.yaml`, `basic/types.yaml`, `basic/value.yaml`
+- [x] `toint/1 (obj)` covered by `basic/value.yaml`
+- [x] `toint/1 (str)` covered by `basic/types.yaml`, `basic/types.yaml`, `basic/types.yaml` and 6 more
+- [x] `toint/1 (err)` covered by `basic/types.yaml`, `basic/types.yaml`, `basic/types.yaml`
+- [x] `toint/1 (list)` covered by `basic/types.yaml`
+- [x] `toint/1 (map)` covered by `basic/types.yaml`
+- [?] `toint/1` unknown argument types covered by `basic/types.yaml`, `basic/types.yaml`
+
+### `toliteral`
+
+- signature: `1..1 (any)`
+- source: `list.cc`
+- [x] `toliteral/1 (int)` covered by `basic/value.yaml`
+- [x] `toliteral/1 (float)` covered by `basic/types.yaml`, `basic/value.yaml`
+- [x] `toliteral/1 (obj)` covered by `basic/types.yaml`, `basic/value.yaml`
+- [x] `toliteral/1 (str)` covered by `basic/types.yaml`, `basic/types.yaml`, `basic/value.yaml`
+- [x] `toliteral/1 (err)` covered by `basic/types.yaml`, `basic/types.yaml`, `basic/value.yaml`
+- [x] `toliteral/1 (list)` covered by `basic/types.yaml`, `basic/value.yaml`, `basic/value.yaml`
+- [x] `toliteral/1 (map)` covered by `basic/types.yaml`, `basic/value.yaml`, `builtins/map.yaml`
+- [?] `toliteral/1` unknown argument types covered by `basic/types.yaml`, `basic/types.yaml`, `language/float_formatting.yaml` and 3 more
+
+### `toobj`
+
+- signature: `1..1 (any)`
+- source: `objects.cc`
+- [x] `toobj/1 (int)` covered by `basic/types.yaml`, `basic/value.yaml`
+- [x] `toobj/1 (float)` covered by `basic/types.yaml`
+- [x] `toobj/1 (obj)` covered by `basic/types.yaml`
+- [x] `toobj/1 (str)` covered by `basic/types.yaml`, `basic/value.yaml`, `basic/value.yaml`
+- [x] `toobj/1 (err)` covered by `basic/types.yaml`
+- [x] `toobj/1 (list)` covered by `basic/types.yaml`
+- [x] `toobj/1 (map)` covered by `basic/types.yaml`
+- [?] `toobj/1` unknown argument types covered by `basic/types.yaml`, `basic/types.yaml`, `builtins/objects.yaml`
+
+### `tostr`
+
+- signature: `0..* ()`
+- source: `list.cc`
+- [x] `tostr/0 ()` covered by `basic/value.yaml`
+- [x] `tostr/1 (int)` covered by `basic/types.yaml`, `basic/value.yaml`
+- [x] `tostr/1 (float)` covered by `basic/types.yaml`, `basic/types.yaml`, `basic/value.yaml` and 3 more
+- [x] `tostr/1 (obj)` covered by `basic/value.yaml`
+- [x] `tostr/1 (str)` covered by `basic/value.yaml`
+- [x] `tostr/1 (err)` covered by `basic/value.yaml`
+- [x] `tostr/1 (list)` covered by `basic/types.yaml`, `basic/value.yaml`
+- [x] `tostr/1 (map)` covered by `basic/types.yaml`, `basic/types.yaml`, `builtins/map.yaml`
+- [?] `tostr/1` unknown argument types covered by `basic/types.yaml`, `basic/types.yaml`, `builtins/max_object_type.yaml` and 10 more
+- [?] `tostr/2` unknown argument types covered by `server/limits.yaml`, `server/limits.yaml`, `server/limits.yaml` and 1 more
+
+### `trunc`
+
+- signature: `1..1 (float)`
+- source: `numbers.cc`
+- [x] `trunc/1 (float)` covered by `builtins/math.yaml`, `builtins/math.yaml`, `builtins/math.yaml` and 2 more
+
+### `typeof`
+
+- signature: `1..1 (any)`
+- source: `objects.cc`
+- [x] `typeof/1 (int)` covered by `basic/types.yaml`, `basic/types.yaml`, `basic/types.yaml` and 1 more
+- [x] `typeof/1 (float)` covered by `basic/types.yaml`, `basic/value.yaml`
+- [x] `typeof/1 (obj)` covered by `basic/types.yaml`, `basic/value.yaml`, `builtins/switch_player.yaml` and 1 more
+- [x] `typeof/1 (str)` covered by `basic/types.yaml`, `basic/value.yaml`
+- [x] `typeof/1 (err)` covered by `basic/types.yaml`, `basic/types.yaml`
+- [x] `typeof/1 (list)` covered by `basic/types.yaml`, `basic/value.yaml`, `builtins/pcre.yaml` and 1 more
+- [x] `typeof/1 (map)` covered by `basic/types.yaml`, `basic/types.yaml`
+- [?] `typeof/1` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 160 more
+
+### `unlisten`
+
+- signature: `1..2 (any, any)`
+- source: `server.cc`
+- [x] `unlisten/1 (int)` covered by `builtins/server_admin.yaml`
+- [ ] `unlisten/1 (float)`
+- [ ] `unlisten/1 (obj)`
+- [ ] `unlisten/1 (str)`
+- [ ] `unlisten/1 (err)`
+- [x] `unlisten/1 (list)` covered by `builtins/server_admin.yaml`, `builtins/server_admin.yaml`
+- [ ] `unlisten/1 (map)`
+- [ ] `unlisten/2 (int, int)`
+- [ ] `unlisten/2 (int, float)`
+- [ ] `unlisten/2 (int, obj)`
+- [ ] `unlisten/2 (int, str)`
+- [ ] `unlisten/2 (int, err)`
+- [ ] `unlisten/2 (int, list)`
+- [ ] `unlisten/2 (int, map)`
+- [ ] `unlisten/2 (float, int)`
+- [ ] `unlisten/2 (float, float)`
+- [ ] `unlisten/2 (float, obj)`
+- [ ] `unlisten/2 (float, str)`
+- [ ] `unlisten/2 (float, err)`
+- [ ] `unlisten/2 (float, list)`
+- [ ] `unlisten/2 (float, map)`
+- [ ] `unlisten/2 (obj, int)`
+- [ ] `unlisten/2 (obj, float)`
+- [ ] `unlisten/2 (obj, obj)`
+- [ ] `unlisten/2 (obj, str)`
+- [ ] `unlisten/2 (obj, err)`
+- [ ] `unlisten/2 (obj, list)`
+- [ ] `unlisten/2 (obj, map)`
+- [ ] `unlisten/2 (str, int)`
+- [ ] `unlisten/2 (str, float)`
+- [ ] `unlisten/2 (str, obj)`
+- [ ] `unlisten/2 (str, str)`
+- [ ] `unlisten/2 (str, err)`
+- [ ] `unlisten/2 (str, list)`
+- [ ] `unlisten/2 (str, map)`
+- [ ] `unlisten/2 (err, int)`
+- [ ] `unlisten/2 (err, float)`
+- [ ] `unlisten/2 (err, obj)`
+- [ ] `unlisten/2 (err, str)`
+- [ ] `unlisten/2 (err, err)`
+- [ ] `unlisten/2 (err, list)`
+- [ ] `unlisten/2 (err, map)`
+- [ ] `unlisten/2 (list, int)`
+- [ ] `unlisten/2 (list, float)`
+- [ ] `unlisten/2 (list, obj)`
+- [ ] `unlisten/2 (list, str)`
+- [ ] `unlisten/2 (list, err)`
+- [ ] `unlisten/2 (list, list)`
+- [ ] `unlisten/2 (list, map)`
+- [ ] `unlisten/2 (map, int)`
+- [ ] `unlisten/2 (map, float)`
+- [ ] `unlisten/2 (map, obj)`
+- [ ] `unlisten/2 (map, str)`
+- [ ] `unlisten/2 (map, err)`
+- [ ] `unlisten/2 (map, list)`
+- [ ] `unlisten/2 (map, map)`
+- [?] `unlisten/1` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 6 more
+
+### `url_decode`
+
+- signature: `1..1 (str)`
+- source: `curl.cc`
+- [x] `url_decode/1 (str)` covered by `builtins/url_curl.yaml`
+
+### `url_encode`
+
+- signature: `1..1 (str)`
+- source: `curl.cc`
+- [x] `url_encode/1 (str)` covered by `builtins/url_curl.yaml`
+
+### `usage`
+
+- signature: `0..0 ()`
+- source: `server.cc`
+- [x] `usage/0 ()` covered by `builtins/server_admin.yaml`, `builtins/server_admin.yaml`, `builtins/server_admin.yaml`
+
+### `valid`
+
+- signature: `1..1 (any)`
+- source: `objects.cc`
+- [ ] `valid/1 (int)`
+- [ ] `valid/1 (float)`
+- [x] `valid/1 (obj)` covered by `basic/object.yaml`, `basic/object.yaml`
+- [ ] `valid/1 (str)`
+- [ ] `valid/1 (err)`
+- [x] `valid/1 (list)` covered by `features/steps_basic.yaml`, `features/steps_basic.yaml`
+- [ ] `valid/1 (map)`
+- [?] `valid/1` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/task_scheduling_toast_oracle.yaml`, `audit/time_server_builtins_toast_oracle.yaml` and 46 more
+
+### `value_bytes`
+
+- signature: `1..1 (any)`
+- source: `list.cc`
+- [x] `value_bytes/1 (int)` covered by `builtins/value_bytes.yaml`
+- [ ] `value_bytes/1 (float)`
+- [ ] `value_bytes/1 (obj)`
+- [x] `value_bytes/1 (str)` covered by `builtins/value_bytes.yaml`, `builtins/value_bytes.yaml`
+- [ ] `value_bytes/1 (err)`
+- [x] `value_bytes/1 (list)` covered by `builtins/value_bytes.yaml`, `builtins/value_bytes.yaml`, `features/limits_dynamic.yaml` and 21 more
+- [ ] `value_bytes/1 (map)`
+- [?] `value_bytes/1` unknown argument types covered by `features/limits_dynamic.yaml`, `features/limits_dynamic.yaml`, `features/limits_dynamic.yaml` and 32 more
+
+### `value_hash`
+
+- signature: `1..3 (any, str, any)`
+- source: `crypto.cc`
+- [ ] `value_hash/1 (int)`
+- [ ] `value_hash/1 (float)`
+- [ ] `value_hash/1 (obj)`
+- [ ] `value_hash/1 (str)`
+- [ ] `value_hash/1 (err)`
+- [ ] `value_hash/1 (list)`
+- [ ] `value_hash/1 (map)`
+- [ ] `value_hash/2 (int, str)`
+- [ ] `value_hash/2 (float, str)`
+- [ ] `value_hash/2 (obj, str)`
+- [x] `value_hash/2 (str, str)` covered by `builtins/algorithms.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml`
+- [ ] `value_hash/2 (err, str)`
+- [x] `value_hash/2 (list, str)` covered by `builtins/algorithms.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml` and 4 more
+- [x] `value_hash/2 (map, str)` covered by `builtins/algorithms.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml` and 4 more
+- [ ] `value_hash/3 (int, str, int)`
+- [ ] `value_hash/3 (int, str, float)`
+- [ ] `value_hash/3 (int, str, obj)`
+- [ ] `value_hash/3 (int, str, str)`
+- [ ] `value_hash/3 (int, str, err)`
+- [ ] `value_hash/3 (int, str, list)`
+- [ ] `value_hash/3 (int, str, map)`
+- [ ] `value_hash/3 (float, str, int)`
+- [ ] `value_hash/3 (float, str, float)`
+- [ ] `value_hash/3 (float, str, obj)`
+- [ ] `value_hash/3 (float, str, str)`
+- [ ] `value_hash/3 (float, str, err)`
+- [ ] `value_hash/3 (float, str, list)`
+- [ ] `value_hash/3 (float, str, map)`
+- [ ] `value_hash/3 (obj, str, int)`
+- [ ] `value_hash/3 (obj, str, float)`
+- [ ] `value_hash/3 (obj, str, obj)`
+- [ ] `value_hash/3 (obj, str, str)`
+- [ ] `value_hash/3 (obj, str, err)`
+- [ ] `value_hash/3 (obj, str, list)`
+- [ ] `value_hash/3 (obj, str, map)`
+- [ ] `value_hash/3 (str, str, int)`
+- [ ] `value_hash/3 (str, str, float)`
+- [ ] `value_hash/3 (str, str, obj)`
+- [ ] `value_hash/3 (str, str, str)`
+- [ ] `value_hash/3 (str, str, err)`
+- [ ] `value_hash/3 (str, str, list)`
+- [ ] `value_hash/3 (str, str, map)`
+- [ ] `value_hash/3 (err, str, int)`
+- [ ] `value_hash/3 (err, str, float)`
+- [ ] `value_hash/3 (err, str, obj)`
+- [ ] `value_hash/3 (err, str, str)`
+- [ ] `value_hash/3 (err, str, err)`
+- [ ] `value_hash/3 (err, str, list)`
+- [ ] `value_hash/3 (err, str, map)`
+- [ ] `value_hash/3 (list, str, int)`
+- [ ] `value_hash/3 (list, str, float)`
+- [ ] `value_hash/3 (list, str, obj)`
+- [ ] `value_hash/3 (list, str, str)`
+- [ ] `value_hash/3 (list, str, err)`
+- [ ] `value_hash/3 (list, str, list)`
+- [ ] `value_hash/3 (list, str, map)`
+- [x] `value_hash/3 (map, str, int)` covered by `builtins/algorithms.yaml`
+- [ ] `value_hash/3 (map, str, float)`
+- [ ] `value_hash/3 (map, str, obj)`
+- [ ] `value_hash/3 (map, str, str)`
+- [ ] `value_hash/3 (map, str, err)`
+- [ ] `value_hash/3 (map, str, list)`
+- [ ] `value_hash/3 (map, str, map)`
+
+### `value_hmac`
+
+- signature: `2..4 (any, str, str, any)`
+- source: `crypto.cc`
+- [ ] `value_hmac/2 (int, str)`
+- [ ] `value_hmac/2 (float, str)`
+- [ ] `value_hmac/2 (obj, str)`
+- [x] `value_hmac/2 (str, str)` covered by `builtins/algorithms.yaml`
+- [ ] `value_hmac/2 (err, str)`
+- [ ] `value_hmac/2 (list, str)`
+- [ ] `value_hmac/2 (map, str)`
+- [ ] `value_hmac/3 (int, str, str)`
+- [ ] `value_hmac/3 (float, str, str)`
+- [ ] `value_hmac/3 (obj, str, str)`
+- [x] `value_hmac/3 (str, str, str)` covered by `builtins/algorithms.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml` and 1 more
+- [ ] `value_hmac/3 (err, str, str)`
+- [ ] `value_hmac/3 (list, str, str)`
+- [ ] `value_hmac/3 (map, str, str)`
+- [ ] `value_hmac/4 (int, str, str, int)`
+- [ ] `value_hmac/4 (int, str, str, float)`
+- [ ] `value_hmac/4 (int, str, str, obj)`
+- [ ] `value_hmac/4 (int, str, str, str)`
+- [ ] `value_hmac/4 (int, str, str, err)`
+- [ ] `value_hmac/4 (int, str, str, list)`
+- [ ] `value_hmac/4 (int, str, str, map)`
+- [ ] `value_hmac/4 (float, str, str, int)`
+- [ ] `value_hmac/4 (float, str, str, float)`
+- [ ] `value_hmac/4 (float, str, str, obj)`
+- [ ] `value_hmac/4 (float, str, str, str)`
+- [ ] `value_hmac/4 (float, str, str, err)`
+- [ ] `value_hmac/4 (float, str, str, list)`
+- [ ] `value_hmac/4 (float, str, str, map)`
+- [ ] `value_hmac/4 (obj, str, str, int)`
+- [ ] `value_hmac/4 (obj, str, str, float)`
+- [ ] `value_hmac/4 (obj, str, str, obj)`
+- [ ] `value_hmac/4 (obj, str, str, str)`
+- [ ] `value_hmac/4 (obj, str, str, err)`
+- [ ] `value_hmac/4 (obj, str, str, list)`
+- [ ] `value_hmac/4 (obj, str, str, map)`
+- [x] `value_hmac/4 (str, str, str, int)` covered by `builtins/algorithms.yaml`
+- [ ] `value_hmac/4 (str, str, str, float)`
+- [ ] `value_hmac/4 (str, str, str, obj)`
+- [ ] `value_hmac/4 (str, str, str, str)`
+- [ ] `value_hmac/4 (str, str, str, err)`
+- [ ] `value_hmac/4 (str, str, str, list)`
+- [ ] `value_hmac/4 (str, str, str, map)`
+- [ ] `value_hmac/4 (err, str, str, int)`
+- [ ] `value_hmac/4 (err, str, str, float)`
+- [ ] `value_hmac/4 (err, str, str, obj)`
+- [ ] `value_hmac/4 (err, str, str, str)`
+- [ ] `value_hmac/4 (err, str, str, err)`
+- [ ] `value_hmac/4 (err, str, str, list)`
+- [ ] `value_hmac/4 (err, str, str, map)`
+- [ ] `value_hmac/4 (list, str, str, int)`
+- [ ] `value_hmac/4 (list, str, str, float)`
+- [ ] `value_hmac/4 (list, str, str, obj)`
+- [ ] `value_hmac/4 (list, str, str, str)`
+- [ ] `value_hmac/4 (list, str, str, err)`
+- [ ] `value_hmac/4 (list, str, str, list)`
+- [ ] `value_hmac/4 (list, str, str, map)`
+- [ ] `value_hmac/4 (map, str, str, int)`
+- [ ] `value_hmac/4 (map, str, str, float)`
+- [ ] `value_hmac/4 (map, str, str, obj)`
+- [ ] `value_hmac/4 (map, str, str, str)`
+- [ ] `value_hmac/4 (map, str, str, err)`
+- [ ] `value_hmac/4 (map, str, str, list)`
+- [ ] `value_hmac/4 (map, str, str, map)`
+
+### `verb_args`
+
+- signature: `2..2 (any, any)`
+- source: `verbs.cc`
+- [ ] `verb_args/2 (int, int)`
+- [ ] `verb_args/2 (int, float)`
+- [ ] `verb_args/2 (int, obj)`
+- [ ] `verb_args/2 (int, str)`
+- [ ] `verb_args/2 (int, err)`
+- [ ] `verb_args/2 (int, list)`
+- [ ] `verb_args/2 (int, map)`
+- [ ] `verb_args/2 (float, int)`
+- [ ] `verb_args/2 (float, float)`
+- [ ] `verb_args/2 (float, obj)`
+- [ ] `verb_args/2 (float, str)`
+- [ ] `verb_args/2 (float, err)`
+- [ ] `verb_args/2 (float, list)`
+- [ ] `verb_args/2 (float, map)`
+- [ ] `verb_args/2 (obj, int)`
+- [ ] `verb_args/2 (obj, float)`
+- [ ] `verb_args/2 (obj, obj)`
+- [x] `verb_args/2 (obj, str)` covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 18 more
+- [ ] `verb_args/2 (obj, err)`
+- [ ] `verb_args/2 (obj, list)`
+- [ ] `verb_args/2 (obj, map)`
+- [ ] `verb_args/2 (str, int)`
+- [ ] `verb_args/2 (str, float)`
+- [ ] `verb_args/2 (str, obj)`
+- [ ] `verb_args/2 (str, str)`
+- [ ] `verb_args/2 (str, err)`
+- [ ] `verb_args/2 (str, list)`
+- [ ] `verb_args/2 (str, map)`
+- [ ] `verb_args/2 (err, int)`
+- [ ] `verb_args/2 (err, float)`
+- [ ] `verb_args/2 (err, obj)`
+- [ ] `verb_args/2 (err, str)`
+- [ ] `verb_args/2 (err, err)`
+- [ ] `verb_args/2 (err, list)`
+- [ ] `verb_args/2 (err, map)`
+- [ ] `verb_args/2 (list, int)`
+- [ ] `verb_args/2 (list, float)`
+- [ ] `verb_args/2 (list, obj)`
+- [x] `verb_args/2 (list, str)` covered by `audit/verb_dispatch_toast_oracle.yaml`, `builtins/verbs.yaml`, `builtins/verbs.yaml` and 4 more
+- [ ] `verb_args/2 (list, err)`
+- [ ] `verb_args/2 (list, list)`
+- [ ] `verb_args/2 (list, map)`
+- [ ] `verb_args/2 (map, int)`
+- [ ] `verb_args/2 (map, float)`
+- [ ] `verb_args/2 (map, obj)`
+- [ ] `verb_args/2 (map, str)`
+- [ ] `verb_args/2 (map, err)`
+- [ ] `verb_args/2 (map, list)`
+- [ ] `verb_args/2 (map, map)`
+- [?] `verb_args/2` unknown argument types covered by `audit/verb_dispatch_toast_oracle.yaml`
+
+### `verb_cache_stats`
+
+- signature: `0..0 ()`
+- source: `extensions.cc`
+- [x] `verb_cache_stats/0 ()` covered by `builtins/objects.yaml`, `builtins/verb_cache.yaml`, `builtins/verb_cache.yaml` and 1 more
+
+### `verb_code`
+
+- signature: `2..4 (any, any, any, any)`
+- source: `verbs.cc`
+- [ ] `verb_code/2 (int, int)`
+- [ ] `verb_code/2 (int, float)`
+- [ ] `verb_code/2 (int, obj)`
+- [ ] `verb_code/2 (int, str)`
+- [ ] `verb_code/2 (int, err)`
+- [ ] `verb_code/2 (int, list)`
+- [ ] `verb_code/2 (int, map)`
+- [ ] `verb_code/2 (float, int)`
+- [ ] `verb_code/2 (float, float)`
+- [ ] `verb_code/2 (float, obj)`
+- [ ] `verb_code/2 (float, str)`
+- [ ] `verb_code/2 (float, err)`
+- [ ] `verb_code/2 (float, list)`
+- [ ] `verb_code/2 (float, map)`
+- [ ] `verb_code/2 (obj, int)`
+- [ ] `verb_code/2 (obj, float)`
+- [ ] `verb_code/2 (obj, obj)`
+- [x] `verb_code/2 (obj, str)` covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 18 more
+- [ ] `verb_code/2 (obj, err)`
+- [ ] `verb_code/2 (obj, list)`
+- [ ] `verb_code/2 (obj, map)`
+- [ ] `verb_code/2 (str, int)`
+- [ ] `verb_code/2 (str, float)`
+- [ ] `verb_code/2 (str, obj)`
+- [ ] `verb_code/2 (str, str)`
+- [ ] `verb_code/2 (str, err)`
+- [ ] `verb_code/2 (str, list)`
+- [ ] `verb_code/2 (str, map)`
+- [ ] `verb_code/2 (err, int)`
+- [ ] `verb_code/2 (err, float)`
+- [ ] `verb_code/2 (err, obj)`
+- [ ] `verb_code/2 (err, str)`
+- [ ] `verb_code/2 (err, err)`
+- [ ] `verb_code/2 (err, list)`
+- [ ] `verb_code/2 (err, map)`
+- [ ] `verb_code/2 (list, int)`
+- [ ] `verb_code/2 (list, float)`
+- [ ] `verb_code/2 (list, obj)`
+- [x] `verb_code/2 (list, str)` covered by `audit/verb_dispatch_toast_oracle.yaml`, `builtins/verbs.yaml`, `builtins/verbs.yaml` and 4 more
+- [ ] `verb_code/2 (list, err)`
+- [ ] `verb_code/2 (list, list)`
+- [ ] `verb_code/2 (list, map)`
+- [ ] `verb_code/2 (map, int)`
+- [ ] `verb_code/2 (map, float)`
+- [ ] `verb_code/2 (map, obj)`
+- [ ] `verb_code/2 (map, str)`
+- [ ] `verb_code/2 (map, err)`
+- [ ] `verb_code/2 (map, list)`
+- [ ] `verb_code/2 (map, map)`
+- [ ] `verb_code/3 (int, int, int)`
+- [ ] `verb_code/3 (int, int, float)`
+- [ ] `verb_code/3 (int, int, obj)`
+- [ ] `verb_code/3 (int, int, str)`
+- [ ] `verb_code/3 (int, int, err)`
+- [ ] `verb_code/3 (int, int, list)`
+- [ ] `verb_code/3 (int, int, map)`
+- [ ] `verb_code/3 (int, float, int)`
+- [ ] `verb_code/3 (int, float, float)`
+- [ ] `verb_code/3 (int, float, obj)`
+- [ ] `verb_code/3 (int, float, str)`
+- [ ] `verb_code/3 (int, float, err)`
+- [ ] `verb_code/3 (int, float, list)`
+- [ ] `verb_code/3 (int, float, map)`
+- [ ] `verb_code/3 (int, obj, int)`
+- [ ] `verb_code/3 (int, obj, float)`
+- [ ] `verb_code/3 (int, obj, obj)`
+- [ ] `verb_code/3 (int, obj, str)`
+- [ ] `verb_code/3 (int, obj, err)`
+- [ ] `verb_code/3 (int, obj, list)`
+- [ ] `verb_code/3 (int, obj, map)`
+- [ ] `verb_code/3 (int, str, int)`
+- [ ] `verb_code/3 (int, str, float)`
+- [ ] `verb_code/3 (int, str, obj)`
+- [ ] `verb_code/3 (int, str, str)`
+- [ ] `verb_code/3 (int, str, err)`
+- [ ] `verb_code/3 (int, str, list)`
+- [ ] `verb_code/3 (int, str, map)`
+- [ ] `verb_code/3 (int, err, int)`
+- [ ] `verb_code/3 (int, err, float)`
+- [ ] `verb_code/3 (int, err, obj)`
+- [ ] `verb_code/3 (int, err, str)`
+- [ ] `verb_code/3 (int, err, err)`
+- [ ] `verb_code/3 (int, err, list)`
+- [ ] `verb_code/3 (int, err, map)`
+- [ ] `verb_code/3 (int, list, int)`
+- [ ] `verb_code/3 (int, list, float)`
+- [ ] `verb_code/3 (int, list, obj)`
+- [ ] `verb_code/3 (int, list, str)`
+- [ ] `verb_code/3 (int, list, err)`
+- [ ] `verb_code/3 (int, list, list)`
+- [ ] `verb_code/3 (int, list, map)`
+- [ ] `verb_code/3 (int, map, int)`
+- [ ] `verb_code/3 (int, map, float)`
+- [ ] `verb_code/3 (int, map, obj)`
+- [ ] `verb_code/3 (int, map, str)`
+- [ ] `verb_code/3 (int, map, err)`
+- [ ] `verb_code/3 (int, map, list)`
+- [ ] `verb_code/3 (int, map, map)`
+- [ ] `verb_code/3 (float, int, int)`
+- [ ] `verb_code/3 (float, int, float)`
+- [ ] `verb_code/3 (float, int, obj)`
+- [ ] `verb_code/3 (float, int, str)`
+- [ ] `verb_code/3 (float, int, err)`
+- [ ] `verb_code/3 (float, int, list)`
+- [ ] `verb_code/3 (float, int, map)`
+- [ ] `verb_code/3 (float, float, int)`
+- [ ] `verb_code/3 (float, float, float)`
+- [ ] `verb_code/3 (float, float, obj)`
+- [ ] `verb_code/3 (float, float, str)`
+- [ ] `verb_code/3 (float, float, err)`
+- [ ] `verb_code/3 (float, float, list)`
+- [ ] `verb_code/3 (float, float, map)`
+- [ ] `verb_code/3 (float, obj, int)`
+- [ ] `verb_code/3 (float, obj, float)`
+- [ ] `verb_code/3 (float, obj, obj)`
+- [ ] `verb_code/3 (float, obj, str)`
+- [ ] `verb_code/3 (float, obj, err)`
+- [ ] `verb_code/3 (float, obj, list)`
+- [ ] `verb_code/3 (float, obj, map)`
+- [ ] `verb_code/3 (float, str, int)`
+- [ ] `verb_code/3 (float, str, float)`
+- [ ] `verb_code/3 (float, str, obj)`
+- [ ] `verb_code/3 (float, str, str)`
+- [ ] `verb_code/3 (float, str, err)`
+- [ ] `verb_code/3 (float, str, list)`
+- [ ] `verb_code/3 (float, str, map)`
+- [ ] `verb_code/3 (float, err, int)`
+- [ ] `verb_code/3 (float, err, float)`
+- [ ] `verb_code/3 (float, err, obj)`
+- [ ] `verb_code/3 (float, err, str)`
+- [ ] `verb_code/3 (float, err, err)`
+- [ ] `verb_code/3 (float, err, list)`
+- [ ] `verb_code/3 (float, err, map)`
+- [ ] `verb_code/3 (float, list, int)`
+- [ ] `verb_code/3 (float, list, float)`
+- [ ] `verb_code/3 (float, list, obj)`
+- [ ] `verb_code/3 (float, list, str)`
+- [ ] `verb_code/3 (float, list, err)`
+- [ ] `verb_code/3 (float, list, list)`
+- [ ] `verb_code/3 (float, list, map)`
+- [ ] `verb_code/3 (float, map, int)`
+- [ ] `verb_code/3 (float, map, float)`
+- [ ] `verb_code/3 (float, map, obj)`
+- [ ] `verb_code/3 (float, map, str)`
+- [ ] `verb_code/3 (float, map, err)`
+- [ ] `verb_code/3 (float, map, list)`
+- [ ] `verb_code/3 (float, map, map)`
+- [ ] `verb_code/3 (obj, int, int)`
+- [ ] `verb_code/3 (obj, int, float)`
+- [ ] `verb_code/3 (obj, int, obj)`
+- [ ] `verb_code/3 (obj, int, str)`
+- [ ] `verb_code/3 (obj, int, err)`
+- [ ] `verb_code/3 (obj, int, list)`
+- [ ] `verb_code/3 (obj, int, map)`
+- [ ] `verb_code/3 (obj, float, int)`
+- [ ] `verb_code/3 (obj, float, float)`
+- [ ] `verb_code/3 (obj, float, obj)`
+- [ ] `verb_code/3 (obj, float, str)`
+- [ ] `verb_code/3 (obj, float, err)`
+- [ ] `verb_code/3 (obj, float, list)`
+- [ ] `verb_code/3 (obj, float, map)`
+- [ ] `verb_code/3 (obj, obj, int)`
+- [ ] `verb_code/3 (obj, obj, float)`
+- [ ] `verb_code/3 (obj, obj, obj)`
+- [ ] `verb_code/3 (obj, obj, str)`
+- [ ] `verb_code/3 (obj, obj, err)`
+- [ ] `verb_code/3 (obj, obj, list)`
+- [ ] `verb_code/3 (obj, obj, map)`
+- [ ] `verb_code/3 (obj, str, int)`
+- [ ] `verb_code/3 (obj, str, float)`
+- [ ] `verb_code/3 (obj, str, obj)`
+- [ ] `verb_code/3 (obj, str, str)`
+- [ ] `verb_code/3 (obj, str, err)`
+- [ ] `verb_code/3 (obj, str, list)`
+- [ ] `verb_code/3 (obj, str, map)`
+- [ ] `verb_code/3 (obj, err, int)`
+- [ ] `verb_code/3 (obj, err, float)`
+- [ ] `verb_code/3 (obj, err, obj)`
+- [ ] `verb_code/3 (obj, err, str)`
+- [ ] `verb_code/3 (obj, err, err)`
+- [ ] `verb_code/3 (obj, err, list)`
+- [ ] `verb_code/3 (obj, err, map)`
+- [ ] `verb_code/3 (obj, list, int)`
+- [ ] `verb_code/3 (obj, list, float)`
+- [ ] `verb_code/3 (obj, list, obj)`
+- [ ] `verb_code/3 (obj, list, str)`
+- [ ] `verb_code/3 (obj, list, err)`
+- [ ] `verb_code/3 (obj, list, list)`
+- [ ] `verb_code/3 (obj, list, map)`
+- [ ] `verb_code/3 (obj, map, int)`
+- [ ] `verb_code/3 (obj, map, float)`
+- [ ] `verb_code/3 (obj, map, obj)`
+- [ ] `verb_code/3 (obj, map, str)`
+- [ ] `verb_code/3 (obj, map, err)`
+- [ ] `verb_code/3 (obj, map, list)`
+- [ ] `verb_code/3 (obj, map, map)`
+- [ ] `verb_code/3 (str, int, int)`
+- [ ] `verb_code/3 (str, int, float)`
+- [ ] `verb_code/3 (str, int, obj)`
+- [ ] `verb_code/3 (str, int, str)`
+- [ ] `verb_code/3 (str, int, err)`
+- [ ] `verb_code/3 (str, int, list)`
+- [ ] `verb_code/3 (str, int, map)`
+- [ ] `verb_code/3 (str, float, int)`
+- [ ] `verb_code/3 (str, float, float)`
+- [ ] `verb_code/3 (str, float, obj)`
+- [ ] `verb_code/3 (str, float, str)`
+- [ ] `verb_code/3 (str, float, err)`
+- [ ] `verb_code/3 (str, float, list)`
+- [ ] `verb_code/3 (str, float, map)`
+- [ ] `verb_code/3 (str, obj, int)`
+- [ ] `verb_code/3 (str, obj, float)`
+- [ ] `verb_code/3 (str, obj, obj)`
+- [ ] `verb_code/3 (str, obj, str)`
+- [ ] `verb_code/3 (str, obj, err)`
+- [ ] `verb_code/3 (str, obj, list)`
+- [ ] `verb_code/3 (str, obj, map)`
+- [ ] `verb_code/3 (str, str, int)`
+- [ ] `verb_code/3 (str, str, float)`
+- [ ] `verb_code/3 (str, str, obj)`
+- [ ] `verb_code/3 (str, str, str)`
+- [ ] `verb_code/3 (str, str, err)`
+- [ ] `verb_code/3 (str, str, list)`
+- [ ] `verb_code/3 (str, str, map)`
+- [ ] `verb_code/3 (str, err, int)`
+- [ ] `verb_code/3 (str, err, float)`
+- [ ] `verb_code/3 (str, err, obj)`
+- [ ] `verb_code/3 (str, err, str)`
+- [ ] `verb_code/3 (str, err, err)`
+- [ ] `verb_code/3 (str, err, list)`
+- [ ] `verb_code/3 (str, err, map)`
+- [ ] `verb_code/3 (str, list, int)`
+- [ ] `verb_code/3 (str, list, float)`
+- [ ] `verb_code/3 (str, list, obj)`
+- [ ] `verb_code/3 (str, list, str)`
+- [ ] `verb_code/3 (str, list, err)`
+- [ ] `verb_code/3 (str, list, list)`
+- [ ] `verb_code/3 (str, list, map)`
+- [ ] `verb_code/3 (str, map, int)`
+- [ ] `verb_code/3 (str, map, float)`
+- [ ] `verb_code/3 (str, map, obj)`
+- [ ] `verb_code/3 (str, map, str)`
+- [ ] `verb_code/3 (str, map, err)`
+- [ ] `verb_code/3 (str, map, list)`
+- [ ] `verb_code/3 (str, map, map)`
+- [ ] `verb_code/3 (err, int, int)`
+- [ ] `verb_code/3 (err, int, float)`
+- [ ] `verb_code/3 (err, int, obj)`
+- [ ] `verb_code/3 (err, int, str)`
+- [ ] `verb_code/3 (err, int, err)`
+- [ ] `verb_code/3 (err, int, list)`
+- [ ] `verb_code/3 (err, int, map)`
+- [ ] `verb_code/3 (err, float, int)`
+- [ ] `verb_code/3 (err, float, float)`
+- [ ] `verb_code/3 (err, float, obj)`
+- [ ] `verb_code/3 (err, float, str)`
+- [ ] `verb_code/3 (err, float, err)`
+- [ ] `verb_code/3 (err, float, list)`
+- [ ] `verb_code/3 (err, float, map)`
+- [ ] `verb_code/3 (err, obj, int)`
+- [ ] `verb_code/3 (err, obj, float)`
+- [ ] `verb_code/3 (err, obj, obj)`
+- [ ] `verb_code/3 (err, obj, str)`
+- [ ] `verb_code/3 (err, obj, err)`
+- [ ] `verb_code/3 (err, obj, list)`
+- [ ] `verb_code/3 (err, obj, map)`
+- [ ] `verb_code/3 (err, str, int)`
+- [ ] `verb_code/3 (err, str, float)`
+- [ ] `verb_code/3 (err, str, obj)`
+- [ ] `verb_code/3 (err, str, str)`
+- [ ] `verb_code/3 (err, str, err)`
+- [ ] `verb_code/3 (err, str, list)`
+- [ ] `verb_code/3 (err, str, map)`
+- [ ] `verb_code/3 (err, err, int)`
+- [ ] `verb_code/3 (err, err, float)`
+- [ ] `verb_code/3 (err, err, obj)`
+- [ ] `verb_code/3 (err, err, str)`
+- [ ] `verb_code/3 (err, err, err)`
+- [ ] `verb_code/3 (err, err, list)`
+- [ ] `verb_code/3 (err, err, map)`
+- [ ] `verb_code/3 (err, list, int)`
+- [ ] `verb_code/3 (err, list, float)`
+- [ ] `verb_code/3 (err, list, obj)`
+- [ ] `verb_code/3 (err, list, str)`
+- [ ] `verb_code/3 (err, list, err)`
+- [ ] `verb_code/3 (err, list, list)`
+- [ ] `verb_code/3 (err, list, map)`
+- [ ] `verb_code/3 (err, map, int)`
+- [ ] `verb_code/3 (err, map, float)`
+- [ ] `verb_code/3 (err, map, obj)`
+- [ ] `verb_code/3 (err, map, str)`
+- [ ] `verb_code/3 (err, map, err)`
+- [ ] `verb_code/3 (err, map, list)`
+- [ ] `verb_code/3 (err, map, map)`
+- [ ] `verb_code/3 (list, int, int)`
+- [ ] `verb_code/3 (list, int, float)`
+- [ ] `verb_code/3 (list, int, obj)`
+- [ ] `verb_code/3 (list, int, str)`
+- [ ] `verb_code/3 (list, int, err)`
+- [ ] `verb_code/3 (list, int, list)`
+- [ ] `verb_code/3 (list, int, map)`
+- [ ] `verb_code/3 (list, float, int)`
+- [ ] `verb_code/3 (list, float, float)`
+- [ ] `verb_code/3 (list, float, obj)`
+- [ ] `verb_code/3 (list, float, str)`
+- [ ] `verb_code/3 (list, float, err)`
+- [ ] `verb_code/3 (list, float, list)`
+- [ ] `verb_code/3 (list, float, map)`
+- [ ] `verb_code/3 (list, obj, int)`
+- [ ] `verb_code/3 (list, obj, float)`
+- [ ] `verb_code/3 (list, obj, obj)`
+- [ ] `verb_code/3 (list, obj, str)`
+- [ ] `verb_code/3 (list, obj, err)`
+- [ ] `verb_code/3 (list, obj, list)`
+- [ ] `verb_code/3 (list, obj, map)`
+- [ ] `verb_code/3 (list, str, int)`
+- [ ] `verb_code/3 (list, str, float)`
+- [ ] `verb_code/3 (list, str, obj)`
+- [ ] `verb_code/3 (list, str, str)`
+- [ ] `verb_code/3 (list, str, err)`
+- [ ] `verb_code/3 (list, str, list)`
+- [ ] `verb_code/3 (list, str, map)`
+- [ ] `verb_code/3 (list, err, int)`
+- [ ] `verb_code/3 (list, err, float)`
+- [ ] `verb_code/3 (list, err, obj)`
+- [ ] `verb_code/3 (list, err, str)`
+- [ ] `verb_code/3 (list, err, err)`
+- [ ] `verb_code/3 (list, err, list)`
+- [ ] `verb_code/3 (list, err, map)`
+- [ ] `verb_code/3 (list, list, int)`
+- [ ] `verb_code/3 (list, list, float)`
+- [ ] `verb_code/3 (list, list, obj)`
+- [ ] `verb_code/3 (list, list, str)`
+- [ ] `verb_code/3 (list, list, err)`
+- [ ] `verb_code/3 (list, list, list)`
+- [ ] `verb_code/3 (list, list, map)`
+- [ ] `verb_code/3 (list, map, int)`
+- [ ] `verb_code/3 (list, map, float)`
+- [ ] `verb_code/3 (list, map, obj)`
+- [ ] `verb_code/3 (list, map, str)`
+- [ ] `verb_code/3 (list, map, err)`
+- [ ] `verb_code/3 (list, map, list)`
+- [ ] `verb_code/3 (list, map, map)`
+- [ ] `verb_code/3 (map, int, int)`
+- [ ] `verb_code/3 (map, int, float)`
+- [ ] `verb_code/3 (map, int, obj)`
+- [ ] `verb_code/3 (map, int, str)`
+- [ ] `verb_code/3 (map, int, err)`
+- [ ] `verb_code/3 (map, int, list)`
+- [ ] `verb_code/3 (map, int, map)`
+- [ ] `verb_code/3 (map, float, int)`
+- [ ] `verb_code/3 (map, float, float)`
+- [ ] `verb_code/3 (map, float, obj)`
+- [ ] `verb_code/3 (map, float, str)`
+- [ ] `verb_code/3 (map, float, err)`
+- [ ] `verb_code/3 (map, float, list)`
+- [ ] `verb_code/3 (map, float, map)`
+- [ ] `verb_code/3 (map, obj, int)`
+- [ ] `verb_code/3 (map, obj, float)`
+- [ ] `verb_code/3 (map, obj, obj)`
+- [ ] `verb_code/3 (map, obj, str)`
+- [ ] `verb_code/3 (map, obj, err)`
+- [ ] `verb_code/3 (map, obj, list)`
+- [ ] `verb_code/3 (map, obj, map)`
+- [ ] `verb_code/3 (map, str, int)`
+- [ ] `verb_code/3 (map, str, float)`
+- [ ] `verb_code/3 (map, str, obj)`
+- [ ] `verb_code/3 (map, str, str)`
+- [ ] `verb_code/3 (map, str, err)`
+- [ ] `verb_code/3 (map, str, list)`
+- [ ] `verb_code/3 (map, str, map)`
+- [ ] `verb_code/3 (map, err, int)`
+- [ ] `verb_code/3 (map, err, float)`
+- [ ] `verb_code/3 (map, err, obj)`
+- [ ] `verb_code/3 (map, err, str)`
+- [ ] `verb_code/3 (map, err, err)`
+- [ ] `verb_code/3 (map, err, list)`
+- [ ] `verb_code/3 (map, err, map)`
+- [ ] `verb_code/3 (map, list, int)`
+- [ ] `verb_code/3 (map, list, float)`
+- [ ] `verb_code/3 (map, list, obj)`
+- [ ] `verb_code/3 (map, list, str)`
+- [ ] `verb_code/3 (map, list, err)`
+- [ ] `verb_code/3 (map, list, list)`
+- [ ] `verb_code/3 (map, list, map)`
+- [ ] `verb_code/3 (map, map, int)`
+- [ ] `verb_code/3 (map, map, float)`
+- [ ] `verb_code/3 (map, map, obj)`
+- [ ] `verb_code/3 (map, map, str)`
+- [ ] `verb_code/3 (map, map, err)`
+- [ ] `verb_code/3 (map, map, list)`
+- [ ] `verb_code/3 (map, map, map)`
+- [ ] `verb_code/4 (int, int, int, int)`
+- [ ] `verb_code/4 (int, int, int, float)`
+- [ ] `verb_code/4 (int, int, int, obj)`
+- [ ] `verb_code/4 (int, int, int, str)`
+- [ ] `verb_code/4 (int, int, int, err)`
+- [ ] `verb_code/4 (int, int, int, list)`
+- [ ] `verb_code/4 (int, int, int, map)`
+- [ ] `verb_code/4 (int, int, float, int)`
+- [ ] `verb_code/4 (int, int, float, float)`
+- [ ] `verb_code/4 (int, int, float, obj)`
+- [ ] `verb_code/4 (int, int, float, str)`
+- [ ] `verb_code/4 (int, int, float, err)`
+- [ ] `verb_code/4 (int, int, float, list)`
+- [ ] `verb_code/4 (int, int, float, map)`
+- [ ] `verb_code/4 (int, int, obj, int)`
+- [ ] `verb_code/4 (int, int, obj, float)`
+- [ ] `verb_code/4 (int, int, obj, obj)`
+- [ ] `verb_code/4 (int, int, obj, str)`
+- [ ] `verb_code/4 (int, int, obj, err)`
+- [ ] `verb_code/4 (int, int, obj, list)`
+- [ ] `verb_code/4 (int, int, obj, map)`
+- [ ] `verb_code/4 (int, int, str, int)`
+- [ ] `verb_code/4 (int, int, str, float)`
+- [ ] `verb_code/4 (int, int, str, obj)`
+- [ ] `verb_code/4 (int, int, str, str)`
+- [ ] `verb_code/4 (int, int, str, err)`
+- [ ] `verb_code/4 (int, int, str, list)`
+- [ ] `verb_code/4 (int, int, str, map)`
+- [ ] `verb_code/4 (int, int, err, int)`
+- [ ] `verb_code/4 (int, int, err, float)`
+- [ ] `verb_code/4 (int, int, err, obj)`
+- [ ] `verb_code/4 (int, int, err, str)`
+- [ ] `verb_code/4 (int, int, err, err)`
+- [ ] `verb_code/4 (int, int, err, list)`
+- [ ] `verb_code/4 (int, int, err, map)`
+- [ ] `verb_code/4 (int, int, list, int)`
+- [ ] `verb_code/4 (int, int, list, float)`
+- [ ] `verb_code/4 (int, int, list, obj)`
+- [ ] `verb_code/4 (int, int, list, str)`
+- [ ] `verb_code/4 (int, int, list, err)`
+- [ ] `verb_code/4 (int, int, list, list)`
+- [ ] `verb_code/4 (int, int, list, map)`
+- [ ] `verb_code/4 (int, int, map, int)`
+- [ ] `verb_code/4 (int, int, map, float)`
+- [ ] `verb_code/4 (int, int, map, obj)`
+- [ ] `verb_code/4 (int, int, map, str)`
+- [ ] `verb_code/4 (int, int, map, err)`
+- [ ] `verb_code/4 (int, int, map, list)`
+- [ ] `verb_code/4 (int, int, map, map)`
+- [ ] `verb_code/4 (int, float, int, int)`
+- [ ] `verb_code/4 (int, float, int, float)`
+- [ ] `verb_code/4 (int, float, int, obj)`
+- [ ] `verb_code/4 (int, float, int, str)`
+- [ ] `verb_code/4 (int, float, int, err)`
+- [ ] `verb_code/4 (int, float, int, list)`
+- [ ] `verb_code/4 (int, float, int, map)`
+- [ ] `verb_code/4 (int, float, float, int)`
+- [ ] `verb_code/4 (int, float, float, float)`
+- [ ] `verb_code/4 (int, float, float, obj)`
+- [ ] `verb_code/4 (int, float, float, str)`
+- [ ] `verb_code/4 (int, float, float, err)`
+- [ ] `verb_code/4 (int, float, float, list)`
+- [ ] `verb_code/4 (int, float, float, map)`
+- [ ] `verb_code/4 (int, float, obj, int)`
+- [ ] `verb_code/4 (int, float, obj, float)`
+- [ ] `verb_code/4 (int, float, obj, obj)`
+- [ ] `verb_code/4 (int, float, obj, str)`
+- [ ] `verb_code/4 (int, float, obj, err)`
+- [ ] `verb_code/4 (int, float, obj, list)`
+- [ ] `verb_code/4 (int, float, obj, map)`
+- [ ] `verb_code/4 (int, float, str, int)`
+- [ ] `verb_code/4 (int, float, str, float)`
+- [ ] `verb_code/4 (int, float, str, obj)`
+- [ ] `verb_code/4 (int, float, str, str)`
+- [ ] `verb_code/4 (int, float, str, err)`
+- [ ] `verb_code/4 (int, float, str, list)`
+- [ ] `verb_code/4 (int, float, str, map)`
+- [ ] `verb_code/4 (int, float, err, int)`
+- [ ] `verb_code/4 (int, float, err, float)`
+- [ ] `verb_code/4 (int, float, err, obj)`
+- [ ] `verb_code/4 (int, float, err, str)`
+- [ ] `verb_code/4 (int, float, err, err)`
+- [ ] `verb_code/4 (int, float, err, list)`
+- [ ] `verb_code/4 (int, float, err, map)`
+- [ ] `verb_code/4 (int, float, list, int)`
+- [ ] `verb_code/4 (int, float, list, float)`
+- [ ] `verb_code/4 (int, float, list, obj)`
+- [ ] `verb_code/4 (int, float, list, str)`
+- [ ] `verb_code/4 (int, float, list, err)`
+- [ ] `verb_code/4 (int, float, list, list)`
+- [ ] `verb_code/4 (int, float, list, map)`
+- [ ] `verb_code/4 (int, float, map, int)`
+- [ ] `verb_code/4 (int, float, map, float)`
+- [ ] `verb_code/4 (int, float, map, obj)`
+- [ ] `verb_code/4 (int, float, map, str)`
+- [ ] `verb_code/4 (int, float, map, err)`
+- [ ] `verb_code/4 (int, float, map, list)`
+- [ ] `verb_code/4 (int, float, map, map)`
+- [ ] `verb_code/4 (int, obj, int, int)`
+- [ ] `verb_code/4 (int, obj, int, float)`
+- [ ] `verb_code/4 (int, obj, int, obj)`
+- [ ] `verb_code/4 (int, obj, int, str)`
+- [ ] `verb_code/4 (int, obj, int, err)`
+- [ ] `verb_code/4 (int, obj, int, list)`
+- [ ] `verb_code/4 (int, obj, int, map)`
+- [ ] `verb_code/4 (int, obj, float, int)`
+- [ ] `verb_code/4 (int, obj, float, float)`
+- [ ] `verb_code/4 (int, obj, float, obj)`
+- [ ] `verb_code/4 (int, obj, float, str)`
+- [ ] `verb_code/4 (int, obj, float, err)`
+- [ ] `verb_code/4 (int, obj, float, list)`
+- [ ] `verb_code/4 (int, obj, float, map)`
+- [ ] `verb_code/4 (int, obj, obj, int)`
+- [ ] `verb_code/4 (int, obj, obj, float)`
+- [ ] `verb_code/4 (int, obj, obj, obj)`
+- [ ] `verb_code/4 (int, obj, obj, str)`
+- [ ] `verb_code/4 (int, obj, obj, err)`
+- [ ] `verb_code/4 (int, obj, obj, list)`
+- [ ] `verb_code/4 (int, obj, obj, map)`
+- [ ] `verb_code/4 (int, obj, str, int)`
+- [ ] `verb_code/4 (int, obj, str, float)`
+- [ ] `verb_code/4 (int, obj, str, obj)`
+- [ ] `verb_code/4 (int, obj, str, str)`
+- [ ] `verb_code/4 (int, obj, str, err)`
+- [ ] `verb_code/4 (int, obj, str, list)`
+- [ ] `verb_code/4 (int, obj, str, map)`
+- [ ] `verb_code/4 (int, obj, err, int)`
+- [ ] `verb_code/4 (int, obj, err, float)`
+- [ ] `verb_code/4 (int, obj, err, obj)`
+- [ ] `verb_code/4 (int, obj, err, str)`
+- [ ] `verb_code/4 (int, obj, err, err)`
+- [ ] `verb_code/4 (int, obj, err, list)`
+- [ ] `verb_code/4 (int, obj, err, map)`
+- [ ] `verb_code/4 (int, obj, list, int)`
+- [ ] `verb_code/4 (int, obj, list, float)`
+- [ ] `verb_code/4 (int, obj, list, obj)`
+- [ ] `verb_code/4 (int, obj, list, str)`
+- [ ] `verb_code/4 (int, obj, list, err)`
+- [ ] `verb_code/4 (int, obj, list, list)`
+- [ ] `verb_code/4 (int, obj, list, map)`
+- [ ] `verb_code/4 (int, obj, map, int)`
+- [ ] `verb_code/4 (int, obj, map, float)`
+- [ ] `verb_code/4 (int, obj, map, obj)`
+- [ ] `verb_code/4 (int, obj, map, str)`
+- [ ] `verb_code/4 (int, obj, map, err)`
+- [ ] `verb_code/4 (int, obj, map, list)`
+- [ ] `verb_code/4 (int, obj, map, map)`
+- [ ] `verb_code/4 (int, str, int, int)`
+- [ ] `verb_code/4 (int, str, int, float)`
+- [ ] `verb_code/4 (int, str, int, obj)`
+- [ ] `verb_code/4 (int, str, int, str)`
+- [ ] `verb_code/4 (int, str, int, err)`
+- [ ] `verb_code/4 (int, str, int, list)`
+- [ ] `verb_code/4 (int, str, int, map)`
+- [ ] `verb_code/4 (int, str, float, int)`
+- [ ] `verb_code/4 (int, str, float, float)`
+- [ ] `verb_code/4 (int, str, float, obj)`
+- [ ] `verb_code/4 (int, str, float, str)`
+- [ ] `verb_code/4 (int, str, float, err)`
+- [ ] `verb_code/4 (int, str, float, list)`
+- [ ] `verb_code/4 (int, str, float, map)`
+- [ ] `verb_code/4 (int, str, obj, int)`
+- [ ] `verb_code/4 (int, str, obj, float)`
+- [ ] `verb_code/4 (int, str, obj, obj)`
+- [ ] `verb_code/4 (int, str, obj, str)`
+- [ ] `verb_code/4 (int, str, obj, err)`
+- [ ] `verb_code/4 (int, str, obj, list)`
+- [ ] `verb_code/4 (int, str, obj, map)`
+- [ ] `verb_code/4 (int, str, str, int)`
+- [ ] `verb_code/4 (int, str, str, float)`
+- [ ] `verb_code/4 (int, str, str, obj)`
+- [ ] `verb_code/4 (int, str, str, str)`
+- [ ] `verb_code/4 (int, str, str, err)`
+- [ ] `verb_code/4 (int, str, str, list)`
+- [ ] `verb_code/4 (int, str, str, map)`
+- [ ] `verb_code/4 (int, str, err, int)`
+- [ ] `verb_code/4 (int, str, err, float)`
+- [ ] `verb_code/4 (int, str, err, obj)`
+- [ ] `verb_code/4 (int, str, err, str)`
+- [ ] `verb_code/4 (int, str, err, err)`
+- [ ] `verb_code/4 (int, str, err, list)`
+- [ ] `verb_code/4 (int, str, err, map)`
+- [ ] `verb_code/4 (int, str, list, int)`
+- [ ] `verb_code/4 (int, str, list, float)`
+- [ ] `verb_code/4 (int, str, list, obj)`
+- [ ] `verb_code/4 (int, str, list, str)`
+- [ ] `verb_code/4 (int, str, list, err)`
+- [ ] `verb_code/4 (int, str, list, list)`
+- [ ] `verb_code/4 (int, str, list, map)`
+- [ ] `verb_code/4 (int, str, map, int)`
+- [ ] `verb_code/4 (int, str, map, float)`
+- [ ] `verb_code/4 (int, str, map, obj)`
+- [ ] `verb_code/4 (int, str, map, str)`
+- [ ] `verb_code/4 (int, str, map, err)`
+- [ ] `verb_code/4 (int, str, map, list)`
+- [ ] `verb_code/4 (int, str, map, map)`
+- [ ] `verb_code/4 (int, err, int, int)`
+- [ ] `verb_code/4 (int, err, int, float)`
+- [ ] `verb_code/4 (int, err, int, obj)`
+- [ ] `verb_code/4 (int, err, int, str)`
+- [ ] `verb_code/4 (int, err, int, err)`
+- [ ] `verb_code/4 (int, err, int, list)`
+- [ ] `verb_code/4 (int, err, int, map)`
+- [ ] `verb_code/4 (int, err, float, int)`
+- [ ] `verb_code/4 (int, err, float, float)`
+- [ ] `verb_code/4 (int, err, float, obj)`
+- [ ] `verb_code/4 (int, err, float, str)`
+- [ ] `verb_code/4 (int, err, float, err)`
+- [ ] `verb_code/4 (int, err, float, list)`
+- [ ] `verb_code/4 (int, err, float, map)`
+- [ ] `verb_code/4 (int, err, obj, int)`
+- [ ] `verb_code/4 (int, err, obj, float)`
+- [ ] `verb_code/4 (int, err, obj, obj)`
+- [ ] `verb_code/4 (int, err, obj, str)`
+- [ ] `verb_code/4 (int, err, obj, err)`
+- [ ] `verb_code/4 (int, err, obj, list)`
+- [ ] `verb_code/4 (int, err, obj, map)`
+- [ ] `verb_code/4 (int, err, str, int)`
+- [ ] `verb_code/4 (int, err, str, float)`
+- [ ] `verb_code/4 (int, err, str, obj)`
+- [ ] `verb_code/4 (int, err, str, str)`
+- [ ] `verb_code/4 (int, err, str, err)`
+- [ ] `verb_code/4 (int, err, str, list)`
+- [ ] `verb_code/4 (int, err, str, map)`
+- [ ] `verb_code/4 (int, err, err, int)`
+- [ ] `verb_code/4 (int, err, err, float)`
+- [ ] `verb_code/4 (int, err, err, obj)`
+- [ ] `verb_code/4 (int, err, err, str)`
+- [ ] `verb_code/4 (int, err, err, err)`
+- [ ] `verb_code/4 (int, err, err, list)`
+- [ ] `verb_code/4 (int, err, err, map)`
+- [ ] `verb_code/4 (int, err, list, int)`
+- [ ] `verb_code/4 (int, err, list, float)`
+- [ ] `verb_code/4 (int, err, list, obj)`
+- [ ] `verb_code/4 (int, err, list, str)`
+- [ ] `verb_code/4 (int, err, list, err)`
+- [ ] `verb_code/4 (int, err, list, list)`
+- [ ] `verb_code/4 (int, err, list, map)`
+- [ ] `verb_code/4 (int, err, map, int)`
+- [ ] `verb_code/4 (int, err, map, float)`
+- [ ] `verb_code/4 (int, err, map, obj)`
+- [ ] `verb_code/4 (int, err, map, str)`
+- [ ] `verb_code/4 (int, err, map, err)`
+- [ ] `verb_code/4 (int, err, map, list)`
+- [ ] `verb_code/4 (int, err, map, map)`
+- [ ] `verb_code/4 (int, list, int, int)`
+- [ ] `verb_code/4 (int, list, int, float)`
+- [ ] `verb_code/4 (int, list, int, obj)`
+- [ ] `verb_code/4 (int, list, int, str)`
+- [ ] `verb_code/4 (int, list, int, err)`
+- [ ] `verb_code/4 (int, list, int, list)`
+- [ ] `verb_code/4 (int, list, int, map)`
+- [ ] `verb_code/4 (int, list, float, int)`
+- [ ] `verb_code/4 (int, list, float, float)`
+- [ ] `verb_code/4 (int, list, float, obj)`
+- [ ] `verb_code/4 (int, list, float, str)`
+- [ ] `verb_code/4 (int, list, float, err)`
+- [ ] `verb_code/4 (int, list, float, list)`
+- [ ] `verb_code/4 (int, list, float, map)`
+- [ ] `verb_code/4 (int, list, obj, int)`
+- [ ] `verb_code/4 (int, list, obj, float)`
+- [ ] `verb_code/4 (int, list, obj, obj)`
+- [ ] `verb_code/4 (int, list, obj, str)`
+- [ ] `verb_code/4 (int, list, obj, err)`
+- [ ] `verb_code/4 (int, list, obj, list)`
+- [ ] `verb_code/4 (int, list, obj, map)`
+- [ ] `verb_code/4 (int, list, str, int)`
+- [ ] `verb_code/4 (int, list, str, float)`
+- [ ] `verb_code/4 (int, list, str, obj)`
+- [ ] `verb_code/4 (int, list, str, str)`
+- [ ] `verb_code/4 (int, list, str, err)`
+- [ ] `verb_code/4 (int, list, str, list)`
+- [ ] `verb_code/4 (int, list, str, map)`
+- [ ] `verb_code/4 (int, list, err, int)`
+- [ ] `verb_code/4 (int, list, err, float)`
+- [ ] `verb_code/4 (int, list, err, obj)`
+- [ ] `verb_code/4 (int, list, err, str)`
+- [ ] `verb_code/4 (int, list, err, err)`
+- [ ] `verb_code/4 (int, list, err, list)`
+- [ ] `verb_code/4 (int, list, err, map)`
+- [ ] `verb_code/4 (int, list, list, int)`
+- [ ] `verb_code/4 (int, list, list, float)`
+- [ ] `verb_code/4 (int, list, list, obj)`
+- [ ] `verb_code/4 (int, list, list, str)`
+- [ ] `verb_code/4 (int, list, list, err)`
+- [ ] `verb_code/4 (int, list, list, list)`
+- [ ] `verb_code/4 (int, list, list, map)`
+- [ ] `verb_code/4 (int, list, map, int)`
+- [ ] `verb_code/4 (int, list, map, float)`
+- [ ] `verb_code/4 (int, list, map, obj)`
+- [ ] `verb_code/4 (int, list, map, str)`
+- [ ] `verb_code/4 (int, list, map, err)`
+- [ ] `verb_code/4 (int, list, map, list)`
+- [ ] `verb_code/4 (int, list, map, map)`
+- [ ] `verb_code/4 (int, map, int, int)`
+- [ ] `verb_code/4 (int, map, int, float)`
+- [ ] `verb_code/4 (int, map, int, obj)`
+- [ ] `verb_code/4 (int, map, int, str)`
+- [ ] `verb_code/4 (int, map, int, err)`
+- [ ] `verb_code/4 (int, map, int, list)`
+- [ ] `verb_code/4 (int, map, int, map)`
+- [ ] `verb_code/4 (int, map, float, int)`
+- [ ] `verb_code/4 (int, map, float, float)`
+- [ ] `verb_code/4 (int, map, float, obj)`
+- [ ] `verb_code/4 (int, map, float, str)`
+- [ ] `verb_code/4 (int, map, float, err)`
+- [ ] `verb_code/4 (int, map, float, list)`
+- [ ] `verb_code/4 (int, map, float, map)`
+- [ ] `verb_code/4 (int, map, obj, int)`
+- [ ] `verb_code/4 (int, map, obj, float)`
+- [ ] `verb_code/4 (int, map, obj, obj)`
+- [ ] `verb_code/4 (int, map, obj, str)`
+- [ ] `verb_code/4 (int, map, obj, err)`
+- [ ] `verb_code/4 (int, map, obj, list)`
+- [ ] `verb_code/4 (int, map, obj, map)`
+- [ ] `verb_code/4 (int, map, str, int)`
+- [ ] `verb_code/4 (int, map, str, float)`
+- [ ] `verb_code/4 (int, map, str, obj)`
+- [ ] `verb_code/4 (int, map, str, str)`
+- [ ] `verb_code/4 (int, map, str, err)`
+- [ ] `verb_code/4 (int, map, str, list)`
+- [ ] `verb_code/4 (int, map, str, map)`
+- [ ] `verb_code/4 (int, map, err, int)`
+- [ ] `verb_code/4 (int, map, err, float)`
+- [ ] `verb_code/4 (int, map, err, obj)`
+- [ ] `verb_code/4 (int, map, err, str)`
+- [ ] `verb_code/4 (int, map, err, err)`
+- [ ] `verb_code/4 (int, map, err, list)`
+- [ ] `verb_code/4 (int, map, err, map)`
+- [ ] `verb_code/4 (int, map, list, int)`
+- [ ] `verb_code/4 (int, map, list, float)`
+- [ ] `verb_code/4 (int, map, list, obj)`
+- [ ] `verb_code/4 (int, map, list, str)`
+- [ ] `verb_code/4 (int, map, list, err)`
+- [ ] `verb_code/4 (int, map, list, list)`
+- [ ] `verb_code/4 (int, map, list, map)`
+- [ ] `verb_code/4 (int, map, map, int)`
+- [ ] `verb_code/4 (int, map, map, float)`
+- [ ] `verb_code/4 (int, map, map, obj)`
+- [ ] `verb_code/4 (int, map, map, str)`
+- [ ] `verb_code/4 (int, map, map, err)`
+- [ ] `verb_code/4 (int, map, map, list)`
+- [ ] `verb_code/4 (int, map, map, map)`
+- [ ] `verb_code/4 (float, int, int, int)`
+- [ ] `verb_code/4 (float, int, int, float)`
+- [ ] `verb_code/4 (float, int, int, obj)`
+- [ ] `verb_code/4 (float, int, int, str)`
+- [ ] `verb_code/4 (float, int, int, err)`
+- [ ] `verb_code/4 (float, int, int, list)`
+- [ ] `verb_code/4 (float, int, int, map)`
+- [ ] `verb_code/4 (float, int, float, int)`
+- [ ] `verb_code/4 (float, int, float, float)`
+- [ ] `verb_code/4 (float, int, float, obj)`
+- [ ] `verb_code/4 (float, int, float, str)`
+- [ ] `verb_code/4 (float, int, float, err)`
+- [ ] `verb_code/4 (float, int, float, list)`
+- [ ] `verb_code/4 (float, int, float, map)`
+- [ ] `verb_code/4 (float, int, obj, int)`
+- [ ] `verb_code/4 (float, int, obj, float)`
+- [ ] `verb_code/4 (float, int, obj, obj)`
+- [ ] `verb_code/4 (float, int, obj, str)`
+- [ ] `verb_code/4 (float, int, obj, err)`
+- [ ] `verb_code/4 (float, int, obj, list)`
+- [ ] `verb_code/4 (float, int, obj, map)`
+- [ ] `verb_code/4 (float, int, str, int)`
+- [ ] `verb_code/4 (float, int, str, float)`
+- [ ] `verb_code/4 (float, int, str, obj)`
+- [ ] `verb_code/4 (float, int, str, str)`
+- [ ] `verb_code/4 (float, int, str, err)`
+- [ ] `verb_code/4 (float, int, str, list)`
+- [ ] `verb_code/4 (float, int, str, map)`
+- [ ] `verb_code/4 (float, int, err, int)`
+- [ ] `verb_code/4 (float, int, err, float)`
+- [ ] `verb_code/4 (float, int, err, obj)`
+- [ ] `verb_code/4 (float, int, err, str)`
+- [ ] `verb_code/4 (float, int, err, err)`
+- [ ] `verb_code/4 (float, int, err, list)`
+- [ ] `verb_code/4 (float, int, err, map)`
+- [ ] `verb_code/4 (float, int, list, int)`
+- [ ] `verb_code/4 (float, int, list, float)`
+- [ ] `verb_code/4 (float, int, list, obj)`
+- [ ] `verb_code/4 (float, int, list, str)`
+- [ ] `verb_code/4 (float, int, list, err)`
+- [ ] `verb_code/4 (float, int, list, list)`
+- [ ] `verb_code/4 (float, int, list, map)`
+- [ ] `verb_code/4 (float, int, map, int)`
+- [ ] `verb_code/4 (float, int, map, float)`
+- [ ] `verb_code/4 (float, int, map, obj)`
+- [ ] `verb_code/4 (float, int, map, str)`
+- [ ] `verb_code/4 (float, int, map, err)`
+- [ ] `verb_code/4 (float, int, map, list)`
+- [ ] `verb_code/4 (float, int, map, map)`
+- [ ] `verb_code/4 (float, float, int, int)`
+- [ ] `verb_code/4 (float, float, int, float)`
+- [ ] `verb_code/4 (float, float, int, obj)`
+- [ ] `verb_code/4 (float, float, int, str)`
+- [ ] `verb_code/4 (float, float, int, err)`
+- [ ] `verb_code/4 (float, float, int, list)`
+- [ ] `verb_code/4 (float, float, int, map)`
+- [ ] `verb_code/4 (float, float, float, int)`
+- [ ] `verb_code/4 (float, float, float, float)`
+- [ ] `verb_code/4 (float, float, float, obj)`
+- [ ] `verb_code/4 (float, float, float, str)`
+- [ ] `verb_code/4 (float, float, float, err)`
+- [ ] `verb_code/4 (float, float, float, list)`
+- [ ] `verb_code/4 (float, float, float, map)`
+- [ ] `verb_code/4 (float, float, obj, int)`
+- [ ] `verb_code/4 (float, float, obj, float)`
+- [ ] `verb_code/4 (float, float, obj, obj)`
+- [ ] `verb_code/4 (float, float, obj, str)`
+- [ ] `verb_code/4 (float, float, obj, err)`
+- [ ] `verb_code/4 (float, float, obj, list)`
+- [ ] `verb_code/4 (float, float, obj, map)`
+- [ ] `verb_code/4 (float, float, str, int)`
+- [ ] `verb_code/4 (float, float, str, float)`
+- [ ] `verb_code/4 (float, float, str, obj)`
+- [ ] `verb_code/4 (float, float, str, str)`
+- [ ] `verb_code/4 (float, float, str, err)`
+- [ ] `verb_code/4 (float, float, str, list)`
+- [ ] `verb_code/4 (float, float, str, map)`
+- [ ] `verb_code/4 (float, float, err, int)`
+- [ ] `verb_code/4 (float, float, err, float)`
+- [ ] `verb_code/4 (float, float, err, obj)`
+- [ ] `verb_code/4 (float, float, err, str)`
+- [ ] `verb_code/4 (float, float, err, err)`
+- [ ] `verb_code/4 (float, float, err, list)`
+- [ ] `verb_code/4 (float, float, err, map)`
+- [ ] `verb_code/4 (float, float, list, int)`
+- [ ] `verb_code/4 (float, float, list, float)`
+- [ ] `verb_code/4 (float, float, list, obj)`
+- [ ] `verb_code/4 (float, float, list, str)`
+- [ ] `verb_code/4 (float, float, list, err)`
+- [ ] `verb_code/4 (float, float, list, list)`
+- [ ] `verb_code/4 (float, float, list, map)`
+- [ ] `verb_code/4 (float, float, map, int)`
+- [ ] `verb_code/4 (float, float, map, float)`
+- [ ] `verb_code/4 (float, float, map, obj)`
+- [ ] `verb_code/4 (float, float, map, str)`
+- [ ] `verb_code/4 (float, float, map, err)`
+- [ ] `verb_code/4 (float, float, map, list)`
+- [ ] `verb_code/4 (float, float, map, map)`
+- [ ] `verb_code/4 (float, obj, int, int)`
+- [ ] `verb_code/4 (float, obj, int, float)`
+- [ ] `verb_code/4 (float, obj, int, obj)`
+- [ ] `verb_code/4 (float, obj, int, str)`
+- [ ] `verb_code/4 (float, obj, int, err)`
+- [ ] `verb_code/4 (float, obj, int, list)`
+- [ ] `verb_code/4 (float, obj, int, map)`
+- [ ] `verb_code/4 (float, obj, float, int)`
+- [ ] `verb_code/4 (float, obj, float, float)`
+- [ ] `verb_code/4 (float, obj, float, obj)`
+- [ ] `verb_code/4 (float, obj, float, str)`
+- [ ] `verb_code/4 (float, obj, float, err)`
+- [ ] `verb_code/4 (float, obj, float, list)`
+- [ ] `verb_code/4 (float, obj, float, map)`
+- [ ] `verb_code/4 (float, obj, obj, int)`
+- [ ] `verb_code/4 (float, obj, obj, float)`
+- [ ] `verb_code/4 (float, obj, obj, obj)`
+- [ ] `verb_code/4 (float, obj, obj, str)`
+- [ ] `verb_code/4 (float, obj, obj, err)`
+- [ ] `verb_code/4 (float, obj, obj, list)`
+- [ ] `verb_code/4 (float, obj, obj, map)`
+- [ ] `verb_code/4 (float, obj, str, int)`
+- [ ] `verb_code/4 (float, obj, str, float)`
+- [ ] `verb_code/4 (float, obj, str, obj)`
+- [ ] `verb_code/4 (float, obj, str, str)`
+- [ ] `verb_code/4 (float, obj, str, err)`
+- [ ] `verb_code/4 (float, obj, str, list)`
+- [ ] `verb_code/4 (float, obj, str, map)`
+- [ ] `verb_code/4 (float, obj, err, int)`
+- [ ] `verb_code/4 (float, obj, err, float)`
+- [ ] `verb_code/4 (float, obj, err, obj)`
+- [ ] `verb_code/4 (float, obj, err, str)`
+- [ ] `verb_code/4 (float, obj, err, err)`
+- [ ] `verb_code/4 (float, obj, err, list)`
+- [ ] `verb_code/4 (float, obj, err, map)`
+- [ ] `verb_code/4 (float, obj, list, int)`
+- [ ] `verb_code/4 (float, obj, list, float)`
+- [ ] `verb_code/4 (float, obj, list, obj)`
+- [ ] `verb_code/4 (float, obj, list, str)`
+- [ ] `verb_code/4 (float, obj, list, err)`
+- [ ] `verb_code/4 (float, obj, list, list)`
+- [ ] `verb_code/4 (float, obj, list, map)`
+- [ ] `verb_code/4 (float, obj, map, int)`
+- [ ] `verb_code/4 (float, obj, map, float)`
+- [ ] `verb_code/4 (float, obj, map, obj)`
+- [ ] `verb_code/4 (float, obj, map, str)`
+- [ ] `verb_code/4 (float, obj, map, err)`
+- [ ] `verb_code/4 (float, obj, map, list)`
+- [ ] `verb_code/4 (float, obj, map, map)`
+- [ ] `verb_code/4 (float, str, int, int)`
+- [ ] `verb_code/4 (float, str, int, float)`
+- [ ] `verb_code/4 (float, str, int, obj)`
+- [ ] `verb_code/4 (float, str, int, str)`
+- [ ] `verb_code/4 (float, str, int, err)`
+- [ ] `verb_code/4 (float, str, int, list)`
+- [ ] `verb_code/4 (float, str, int, map)`
+- [ ] `verb_code/4 (float, str, float, int)`
+- [ ] `verb_code/4 (float, str, float, float)`
+- [ ] `verb_code/4 (float, str, float, obj)`
+- [ ] `verb_code/4 (float, str, float, str)`
+- [ ] `verb_code/4 (float, str, float, err)`
+- [ ] `verb_code/4 (float, str, float, list)`
+- [ ] `verb_code/4 (float, str, float, map)`
+- [ ] `verb_code/4 (float, str, obj, int)`
+- [ ] `verb_code/4 (float, str, obj, float)`
+- [ ] `verb_code/4 (float, str, obj, obj)`
+- [ ] `verb_code/4 (float, str, obj, str)`
+- [ ] `verb_code/4 (float, str, obj, err)`
+- [ ] `verb_code/4 (float, str, obj, list)`
+- [ ] `verb_code/4 (float, str, obj, map)`
+- [ ] `verb_code/4 (float, str, str, int)`
+- [ ] `verb_code/4 (float, str, str, float)`
+- [ ] `verb_code/4 (float, str, str, obj)`
+- [ ] `verb_code/4 (float, str, str, str)`
+- [ ] `verb_code/4 (float, str, str, err)`
+- [ ] `verb_code/4 (float, str, str, list)`
+- [ ] `verb_code/4 (float, str, str, map)`
+- [ ] `verb_code/4 (float, str, err, int)`
+- [ ] `verb_code/4 (float, str, err, float)`
+- [ ] `verb_code/4 (float, str, err, obj)`
+- [ ] `verb_code/4 (float, str, err, str)`
+- [ ] `verb_code/4 (float, str, err, err)`
+- [ ] `verb_code/4 (float, str, err, list)`
+- [ ] `verb_code/4 (float, str, err, map)`
+- [ ] `verb_code/4 (float, str, list, int)`
+- [ ] `verb_code/4 (float, str, list, float)`
+- [ ] `verb_code/4 (float, str, list, obj)`
+- [ ] `verb_code/4 (float, str, list, str)`
+- [ ] `verb_code/4 (float, str, list, err)`
+- [ ] `verb_code/4 (float, str, list, list)`
+- [ ] `verb_code/4 (float, str, list, map)`
+- [ ] `verb_code/4 (float, str, map, int)`
+- [ ] `verb_code/4 (float, str, map, float)`
+- [ ] `verb_code/4 (float, str, map, obj)`
+- [ ] `verb_code/4 (float, str, map, str)`
+- [ ] `verb_code/4 (float, str, map, err)`
+- [ ] `verb_code/4 (float, str, map, list)`
+- [ ] `verb_code/4 (float, str, map, map)`
+- [ ] `verb_code/4 (float, err, int, int)`
+- [ ] `verb_code/4 (float, err, int, float)`
+- [ ] `verb_code/4 (float, err, int, obj)`
+- [ ] `verb_code/4 (float, err, int, str)`
+- [ ] `verb_code/4 (float, err, int, err)`
+- [ ] `verb_code/4 (float, err, int, list)`
+- [ ] `verb_code/4 (float, err, int, map)`
+- [ ] `verb_code/4 (float, err, float, int)`
+- [ ] `verb_code/4 (float, err, float, float)`
+- [ ] `verb_code/4 (float, err, float, obj)`
+- [ ] `verb_code/4 (float, err, float, str)`
+- [ ] `verb_code/4 (float, err, float, err)`
+- [ ] `verb_code/4 (float, err, float, list)`
+- [ ] `verb_code/4 (float, err, float, map)`
+- [ ] `verb_code/4 (float, err, obj, int)`
+- [ ] `verb_code/4 (float, err, obj, float)`
+- [ ] `verb_code/4 (float, err, obj, obj)`
+- [ ] `verb_code/4 (float, err, obj, str)`
+- [ ] `verb_code/4 (float, err, obj, err)`
+- [ ] `verb_code/4 (float, err, obj, list)`
+- [ ] `verb_code/4 (float, err, obj, map)`
+- [ ] `verb_code/4 (float, err, str, int)`
+- [ ] `verb_code/4 (float, err, str, float)`
+- [ ] `verb_code/4 (float, err, str, obj)`
+- [ ] `verb_code/4 (float, err, str, str)`
+- [ ] `verb_code/4 (float, err, str, err)`
+- [ ] `verb_code/4 (float, err, str, list)`
+- [ ] `verb_code/4 (float, err, str, map)`
+- [ ] `verb_code/4 (float, err, err, int)`
+- [ ] `verb_code/4 (float, err, err, float)`
+- [ ] `verb_code/4 (float, err, err, obj)`
+- [ ] `verb_code/4 (float, err, err, str)`
+- [ ] `verb_code/4 (float, err, err, err)`
+- [ ] `verb_code/4 (float, err, err, list)`
+- [ ] `verb_code/4 (float, err, err, map)`
+- [ ] `verb_code/4 (float, err, list, int)`
+- [ ] `verb_code/4 (float, err, list, float)`
+- [ ] `verb_code/4 (float, err, list, obj)`
+- [ ] `verb_code/4 (float, err, list, str)`
+- [ ] `verb_code/4 (float, err, list, err)`
+- [ ] `verb_code/4 (float, err, list, list)`
+- [ ] `verb_code/4 (float, err, list, map)`
+- [ ] `verb_code/4 (float, err, map, int)`
+- [ ] `verb_code/4 (float, err, map, float)`
+- [ ] `verb_code/4 (float, err, map, obj)`
+- [ ] `verb_code/4 (float, err, map, str)`
+- [ ] `verb_code/4 (float, err, map, err)`
+- [ ] `verb_code/4 (float, err, map, list)`
+- [ ] `verb_code/4 (float, err, map, map)`
+- [ ] `verb_code/4 (float, list, int, int)`
+- [ ] `verb_code/4 (float, list, int, float)`
+- [ ] `verb_code/4 (float, list, int, obj)`
+- [ ] `verb_code/4 (float, list, int, str)`
+- [ ] `verb_code/4 (float, list, int, err)`
+- [ ] `verb_code/4 (float, list, int, list)`
+- [ ] `verb_code/4 (float, list, int, map)`
+- [ ] `verb_code/4 (float, list, float, int)`
+- [ ] `verb_code/4 (float, list, float, float)`
+- [ ] `verb_code/4 (float, list, float, obj)`
+- [ ] `verb_code/4 (float, list, float, str)`
+- [ ] `verb_code/4 (float, list, float, err)`
+- [ ] `verb_code/4 (float, list, float, list)`
+- [ ] `verb_code/4 (float, list, float, map)`
+- [ ] `verb_code/4 (float, list, obj, int)`
+- [ ] `verb_code/4 (float, list, obj, float)`
+- [ ] `verb_code/4 (float, list, obj, obj)`
+- [ ] `verb_code/4 (float, list, obj, str)`
+- [ ] `verb_code/4 (float, list, obj, err)`
+- [ ] `verb_code/4 (float, list, obj, list)`
+- [ ] `verb_code/4 (float, list, obj, map)`
+- [ ] `verb_code/4 (float, list, str, int)`
+- [ ] `verb_code/4 (float, list, str, float)`
+- [ ] `verb_code/4 (float, list, str, obj)`
+- [ ] `verb_code/4 (float, list, str, str)`
+- [ ] `verb_code/4 (float, list, str, err)`
+- [ ] `verb_code/4 (float, list, str, list)`
+- [ ] `verb_code/4 (float, list, str, map)`
+- [ ] `verb_code/4 (float, list, err, int)`
+- [ ] `verb_code/4 (float, list, err, float)`
+- [ ] `verb_code/4 (float, list, err, obj)`
+- [ ] `verb_code/4 (float, list, err, str)`
+- [ ] `verb_code/4 (float, list, err, err)`
+- [ ] `verb_code/4 (float, list, err, list)`
+- [ ] `verb_code/4 (float, list, err, map)`
+- [ ] `verb_code/4 (float, list, list, int)`
+- [ ] `verb_code/4 (float, list, list, float)`
+- [ ] `verb_code/4 (float, list, list, obj)`
+- [ ] `verb_code/4 (float, list, list, str)`
+- [ ] `verb_code/4 (float, list, list, err)`
+- [ ] `verb_code/4 (float, list, list, list)`
+- [ ] `verb_code/4 (float, list, list, map)`
+- [ ] `verb_code/4 (float, list, map, int)`
+- [ ] `verb_code/4 (float, list, map, float)`
+- [ ] `verb_code/4 (float, list, map, obj)`
+- [ ] `verb_code/4 (float, list, map, str)`
+- [ ] `verb_code/4 (float, list, map, err)`
+- [ ] `verb_code/4 (float, list, map, list)`
+- [ ] `verb_code/4 (float, list, map, map)`
+- [ ] `verb_code/4 (float, map, int, int)`
+- [ ] `verb_code/4 (float, map, int, float)`
+- [ ] `verb_code/4 (float, map, int, obj)`
+- [ ] `verb_code/4 (float, map, int, str)`
+- [ ] `verb_code/4 (float, map, int, err)`
+- [ ] `verb_code/4 (float, map, int, list)`
+- [ ] `verb_code/4 (float, map, int, map)`
+- [ ] `verb_code/4 (float, map, float, int)`
+- [ ] `verb_code/4 (float, map, float, float)`
+- [ ] `verb_code/4 (float, map, float, obj)`
+- [ ] `verb_code/4 (float, map, float, str)`
+- [ ] `verb_code/4 (float, map, float, err)`
+- [ ] `verb_code/4 (float, map, float, list)`
+- [ ] `verb_code/4 (float, map, float, map)`
+- [ ] `verb_code/4 (float, map, obj, int)`
+- [ ] `verb_code/4 (float, map, obj, float)`
+- [ ] `verb_code/4 (float, map, obj, obj)`
+- [ ] `verb_code/4 (float, map, obj, str)`
+- [ ] `verb_code/4 (float, map, obj, err)`
+- [ ] `verb_code/4 (float, map, obj, list)`
+- [ ] `verb_code/4 (float, map, obj, map)`
+- [ ] `verb_code/4 (float, map, str, int)`
+- [ ] `verb_code/4 (float, map, str, float)`
+- [ ] `verb_code/4 (float, map, str, obj)`
+- [ ] `verb_code/4 (float, map, str, str)`
+- [ ] `verb_code/4 (float, map, str, err)`
+- [ ] `verb_code/4 (float, map, str, list)`
+- [ ] `verb_code/4 (float, map, str, map)`
+- [ ] `verb_code/4 (float, map, err, int)`
+- [ ] `verb_code/4 (float, map, err, float)`
+- [ ] `verb_code/4 (float, map, err, obj)`
+- [ ] `verb_code/4 (float, map, err, str)`
+- [ ] `verb_code/4 (float, map, err, err)`
+- [ ] `verb_code/4 (float, map, err, list)`
+- [ ] `verb_code/4 (float, map, err, map)`
+- [ ] `verb_code/4 (float, map, list, int)`
+- [ ] `verb_code/4 (float, map, list, float)`
+- [ ] `verb_code/4 (float, map, list, obj)`
+- [ ] `verb_code/4 (float, map, list, str)`
+- [ ] `verb_code/4 (float, map, list, err)`
+- [ ] `verb_code/4 (float, map, list, list)`
+- [ ] `verb_code/4 (float, map, list, map)`
+- [ ] `verb_code/4 (float, map, map, int)`
+- [ ] `verb_code/4 (float, map, map, float)`
+- [ ] `verb_code/4 (float, map, map, obj)`
+- [ ] `verb_code/4 (float, map, map, str)`
+- [ ] `verb_code/4 (float, map, map, err)`
+- [ ] `verb_code/4 (float, map, map, list)`
+- [ ] `verb_code/4 (float, map, map, map)`
+- [ ] `verb_code/4 (obj, int, int, int)`
+- [ ] `verb_code/4 (obj, int, int, float)`
+- [ ] `verb_code/4 (obj, int, int, obj)`
+- [ ] `verb_code/4 (obj, int, int, str)`
+- [ ] `verb_code/4 (obj, int, int, err)`
+- [ ] `verb_code/4 (obj, int, int, list)`
+- [ ] `verb_code/4 (obj, int, int, map)`
+- [ ] `verb_code/4 (obj, int, float, int)`
+- [ ] `verb_code/4 (obj, int, float, float)`
+- [ ] `verb_code/4 (obj, int, float, obj)`
+- [ ] `verb_code/4 (obj, int, float, str)`
+- [ ] `verb_code/4 (obj, int, float, err)`
+- [ ] `verb_code/4 (obj, int, float, list)`
+- [ ] `verb_code/4 (obj, int, float, map)`
+- [ ] `verb_code/4 (obj, int, obj, int)`
+- [ ] `verb_code/4 (obj, int, obj, float)`
+- [ ] `verb_code/4 (obj, int, obj, obj)`
+- [ ] `verb_code/4 (obj, int, obj, str)`
+- [ ] `verb_code/4 (obj, int, obj, err)`
+- [ ] `verb_code/4 (obj, int, obj, list)`
+- [ ] `verb_code/4 (obj, int, obj, map)`
+- [ ] `verb_code/4 (obj, int, str, int)`
+- [ ] `verb_code/4 (obj, int, str, float)`
+- [ ] `verb_code/4 (obj, int, str, obj)`
+- [ ] `verb_code/4 (obj, int, str, str)`
+- [ ] `verb_code/4 (obj, int, str, err)`
+- [ ] `verb_code/4 (obj, int, str, list)`
+- [ ] `verb_code/4 (obj, int, str, map)`
+- [ ] `verb_code/4 (obj, int, err, int)`
+- [ ] `verb_code/4 (obj, int, err, float)`
+- [ ] `verb_code/4 (obj, int, err, obj)`
+- [ ] `verb_code/4 (obj, int, err, str)`
+- [ ] `verb_code/4 (obj, int, err, err)`
+- [ ] `verb_code/4 (obj, int, err, list)`
+- [ ] `verb_code/4 (obj, int, err, map)`
+- [ ] `verb_code/4 (obj, int, list, int)`
+- [ ] `verb_code/4 (obj, int, list, float)`
+- [ ] `verb_code/4 (obj, int, list, obj)`
+- [ ] `verb_code/4 (obj, int, list, str)`
+- [ ] `verb_code/4 (obj, int, list, err)`
+- [ ] `verb_code/4 (obj, int, list, list)`
+- [ ] `verb_code/4 (obj, int, list, map)`
+- [ ] `verb_code/4 (obj, int, map, int)`
+- [ ] `verb_code/4 (obj, int, map, float)`
+- [ ] `verb_code/4 (obj, int, map, obj)`
+- [ ] `verb_code/4 (obj, int, map, str)`
+- [ ] `verb_code/4 (obj, int, map, err)`
+- [ ] `verb_code/4 (obj, int, map, list)`
+- [ ] `verb_code/4 (obj, int, map, map)`
+- [ ] `verb_code/4 (obj, float, int, int)`
+- [ ] `verb_code/4 (obj, float, int, float)`
+- [ ] `verb_code/4 (obj, float, int, obj)`
+- [ ] `verb_code/4 (obj, float, int, str)`
+- [ ] `verb_code/4 (obj, float, int, err)`
+- [ ] `verb_code/4 (obj, float, int, list)`
+- [ ] `verb_code/4 (obj, float, int, map)`
+- [ ] `verb_code/4 (obj, float, float, int)`
+- [ ] `verb_code/4 (obj, float, float, float)`
+- [ ] `verb_code/4 (obj, float, float, obj)`
+- [ ] `verb_code/4 (obj, float, float, str)`
+- [ ] `verb_code/4 (obj, float, float, err)`
+- [ ] `verb_code/4 (obj, float, float, list)`
+- [ ] `verb_code/4 (obj, float, float, map)`
+- [ ] `verb_code/4 (obj, float, obj, int)`
+- [ ] `verb_code/4 (obj, float, obj, float)`
+- [ ] `verb_code/4 (obj, float, obj, obj)`
+- [ ] `verb_code/4 (obj, float, obj, str)`
+- [ ] `verb_code/4 (obj, float, obj, err)`
+- [ ] `verb_code/4 (obj, float, obj, list)`
+- [ ] `verb_code/4 (obj, float, obj, map)`
+- [ ] `verb_code/4 (obj, float, str, int)`
+- [ ] `verb_code/4 (obj, float, str, float)`
+- [ ] `verb_code/4 (obj, float, str, obj)`
+- [ ] `verb_code/4 (obj, float, str, str)`
+- [ ] `verb_code/4 (obj, float, str, err)`
+- [ ] `verb_code/4 (obj, float, str, list)`
+- [ ] `verb_code/4 (obj, float, str, map)`
+- [ ] `verb_code/4 (obj, float, err, int)`
+- [ ] `verb_code/4 (obj, float, err, float)`
+- [ ] `verb_code/4 (obj, float, err, obj)`
+- [ ] `verb_code/4 (obj, float, err, str)`
+- [ ] `verb_code/4 (obj, float, err, err)`
+- [ ] `verb_code/4 (obj, float, err, list)`
+- [ ] `verb_code/4 (obj, float, err, map)`
+- [ ] `verb_code/4 (obj, float, list, int)`
+- [ ] `verb_code/4 (obj, float, list, float)`
+- [ ] `verb_code/4 (obj, float, list, obj)`
+- [ ] `verb_code/4 (obj, float, list, str)`
+- [ ] `verb_code/4 (obj, float, list, err)`
+- [ ] `verb_code/4 (obj, float, list, list)`
+- [ ] `verb_code/4 (obj, float, list, map)`
+- [ ] `verb_code/4 (obj, float, map, int)`
+- [ ] `verb_code/4 (obj, float, map, float)`
+- [ ] `verb_code/4 (obj, float, map, obj)`
+- [ ] `verb_code/4 (obj, float, map, str)`
+- [ ] `verb_code/4 (obj, float, map, err)`
+- [ ] `verb_code/4 (obj, float, map, list)`
+- [ ] `verb_code/4 (obj, float, map, map)`
+- [ ] `verb_code/4 (obj, obj, int, int)`
+- [ ] `verb_code/4 (obj, obj, int, float)`
+- [ ] `verb_code/4 (obj, obj, int, obj)`
+- [ ] `verb_code/4 (obj, obj, int, str)`
+- [ ] `verb_code/4 (obj, obj, int, err)`
+- [ ] `verb_code/4 (obj, obj, int, list)`
+- [ ] `verb_code/4 (obj, obj, int, map)`
+- [ ] `verb_code/4 (obj, obj, float, int)`
+- [ ] `verb_code/4 (obj, obj, float, float)`
+- [ ] `verb_code/4 (obj, obj, float, obj)`
+- [ ] `verb_code/4 (obj, obj, float, str)`
+- [ ] `verb_code/4 (obj, obj, float, err)`
+- [ ] `verb_code/4 (obj, obj, float, list)`
+- [ ] `verb_code/4 (obj, obj, float, map)`
+- [ ] `verb_code/4 (obj, obj, obj, int)`
+- [ ] `verb_code/4 (obj, obj, obj, float)`
+- [ ] `verb_code/4 (obj, obj, obj, obj)`
+- [ ] `verb_code/4 (obj, obj, obj, str)`
+- [ ] `verb_code/4 (obj, obj, obj, err)`
+- [ ] `verb_code/4 (obj, obj, obj, list)`
+- [ ] `verb_code/4 (obj, obj, obj, map)`
+- [ ] `verb_code/4 (obj, obj, str, int)`
+- [ ] `verb_code/4 (obj, obj, str, float)`
+- [ ] `verb_code/4 (obj, obj, str, obj)`
+- [ ] `verb_code/4 (obj, obj, str, str)`
+- [ ] `verb_code/4 (obj, obj, str, err)`
+- [ ] `verb_code/4 (obj, obj, str, list)`
+- [ ] `verb_code/4 (obj, obj, str, map)`
+- [ ] `verb_code/4 (obj, obj, err, int)`
+- [ ] `verb_code/4 (obj, obj, err, float)`
+- [ ] `verb_code/4 (obj, obj, err, obj)`
+- [ ] `verb_code/4 (obj, obj, err, str)`
+- [ ] `verb_code/4 (obj, obj, err, err)`
+- [ ] `verb_code/4 (obj, obj, err, list)`
+- [ ] `verb_code/4 (obj, obj, err, map)`
+- [ ] `verb_code/4 (obj, obj, list, int)`
+- [ ] `verb_code/4 (obj, obj, list, float)`
+- [ ] `verb_code/4 (obj, obj, list, obj)`
+- [ ] `verb_code/4 (obj, obj, list, str)`
+- [ ] `verb_code/4 (obj, obj, list, err)`
+- [ ] `verb_code/4 (obj, obj, list, list)`
+- [ ] `verb_code/4 (obj, obj, list, map)`
+- [ ] `verb_code/4 (obj, obj, map, int)`
+- [ ] `verb_code/4 (obj, obj, map, float)`
+- [ ] `verb_code/4 (obj, obj, map, obj)`
+- [ ] `verb_code/4 (obj, obj, map, str)`
+- [ ] `verb_code/4 (obj, obj, map, err)`
+- [ ] `verb_code/4 (obj, obj, map, list)`
+- [ ] `verb_code/4 (obj, obj, map, map)`
+- [ ] `verb_code/4 (obj, str, int, int)`
+- [ ] `verb_code/4 (obj, str, int, float)`
+- [ ] `verb_code/4 (obj, str, int, obj)`
+- [ ] `verb_code/4 (obj, str, int, str)`
+- [ ] `verb_code/4 (obj, str, int, err)`
+- [ ] `verb_code/4 (obj, str, int, list)`
+- [ ] `verb_code/4 (obj, str, int, map)`
+- [ ] `verb_code/4 (obj, str, float, int)`
+- [ ] `verb_code/4 (obj, str, float, float)`
+- [ ] `verb_code/4 (obj, str, float, obj)`
+- [ ] `verb_code/4 (obj, str, float, str)`
+- [ ] `verb_code/4 (obj, str, float, err)`
+- [ ] `verb_code/4 (obj, str, float, list)`
+- [ ] `verb_code/4 (obj, str, float, map)`
+- [ ] `verb_code/4 (obj, str, obj, int)`
+- [ ] `verb_code/4 (obj, str, obj, float)`
+- [ ] `verb_code/4 (obj, str, obj, obj)`
+- [ ] `verb_code/4 (obj, str, obj, str)`
+- [ ] `verb_code/4 (obj, str, obj, err)`
+- [ ] `verb_code/4 (obj, str, obj, list)`
+- [ ] `verb_code/4 (obj, str, obj, map)`
+- [ ] `verb_code/4 (obj, str, str, int)`
+- [ ] `verb_code/4 (obj, str, str, float)`
+- [ ] `verb_code/4 (obj, str, str, obj)`
+- [ ] `verb_code/4 (obj, str, str, str)`
+- [ ] `verb_code/4 (obj, str, str, err)`
+- [ ] `verb_code/4 (obj, str, str, list)`
+- [ ] `verb_code/4 (obj, str, str, map)`
+- [ ] `verb_code/4 (obj, str, err, int)`
+- [ ] `verb_code/4 (obj, str, err, float)`
+- [ ] `verb_code/4 (obj, str, err, obj)`
+- [ ] `verb_code/4 (obj, str, err, str)`
+- [ ] `verb_code/4 (obj, str, err, err)`
+- [ ] `verb_code/4 (obj, str, err, list)`
+- [ ] `verb_code/4 (obj, str, err, map)`
+- [ ] `verb_code/4 (obj, str, list, int)`
+- [ ] `verb_code/4 (obj, str, list, float)`
+- [ ] `verb_code/4 (obj, str, list, obj)`
+- [ ] `verb_code/4 (obj, str, list, str)`
+- [ ] `verb_code/4 (obj, str, list, err)`
+- [ ] `verb_code/4 (obj, str, list, list)`
+- [ ] `verb_code/4 (obj, str, list, map)`
+- [ ] `verb_code/4 (obj, str, map, int)`
+- [ ] `verb_code/4 (obj, str, map, float)`
+- [ ] `verb_code/4 (obj, str, map, obj)`
+- [ ] `verb_code/4 (obj, str, map, str)`
+- [ ] `verb_code/4 (obj, str, map, err)`
+- [ ] `verb_code/4 (obj, str, map, list)`
+- [ ] `verb_code/4 (obj, str, map, map)`
+- [ ] `verb_code/4 (obj, err, int, int)`
+- [ ] `verb_code/4 (obj, err, int, float)`
+- [ ] `verb_code/4 (obj, err, int, obj)`
+- [ ] `verb_code/4 (obj, err, int, str)`
+- [ ] `verb_code/4 (obj, err, int, err)`
+- [ ] `verb_code/4 (obj, err, int, list)`
+- [ ] `verb_code/4 (obj, err, int, map)`
+- [ ] `verb_code/4 (obj, err, float, int)`
+- [ ] `verb_code/4 (obj, err, float, float)`
+- [ ] `verb_code/4 (obj, err, float, obj)`
+- [ ] `verb_code/4 (obj, err, float, str)`
+- [ ] `verb_code/4 (obj, err, float, err)`
+- [ ] `verb_code/4 (obj, err, float, list)`
+- [ ] `verb_code/4 (obj, err, float, map)`
+- [ ] `verb_code/4 (obj, err, obj, int)`
+- [ ] `verb_code/4 (obj, err, obj, float)`
+- [ ] `verb_code/4 (obj, err, obj, obj)`
+- [ ] `verb_code/4 (obj, err, obj, str)`
+- [ ] `verb_code/4 (obj, err, obj, err)`
+- [ ] `verb_code/4 (obj, err, obj, list)`
+- [ ] `verb_code/4 (obj, err, obj, map)`
+- [ ] `verb_code/4 (obj, err, str, int)`
+- [ ] `verb_code/4 (obj, err, str, float)`
+- [ ] `verb_code/4 (obj, err, str, obj)`
+- [ ] `verb_code/4 (obj, err, str, str)`
+- [ ] `verb_code/4 (obj, err, str, err)`
+- [ ] `verb_code/4 (obj, err, str, list)`
+- [ ] `verb_code/4 (obj, err, str, map)`
+- [ ] `verb_code/4 (obj, err, err, int)`
+- [ ] `verb_code/4 (obj, err, err, float)`
+- [ ] `verb_code/4 (obj, err, err, obj)`
+- [ ] `verb_code/4 (obj, err, err, str)`
+- [ ] `verb_code/4 (obj, err, err, err)`
+- [ ] `verb_code/4 (obj, err, err, list)`
+- [ ] `verb_code/4 (obj, err, err, map)`
+- [ ] `verb_code/4 (obj, err, list, int)`
+- [ ] `verb_code/4 (obj, err, list, float)`
+- [ ] `verb_code/4 (obj, err, list, obj)`
+- [ ] `verb_code/4 (obj, err, list, str)`
+- [ ] `verb_code/4 (obj, err, list, err)`
+- [ ] `verb_code/4 (obj, err, list, list)`
+- [ ] `verb_code/4 (obj, err, list, map)`
+- [ ] `verb_code/4 (obj, err, map, int)`
+- [ ] `verb_code/4 (obj, err, map, float)`
+- [ ] `verb_code/4 (obj, err, map, obj)`
+- [ ] `verb_code/4 (obj, err, map, str)`
+- [ ] `verb_code/4 (obj, err, map, err)`
+- [ ] `verb_code/4 (obj, err, map, list)`
+- [ ] `verb_code/4 (obj, err, map, map)`
+- [ ] `verb_code/4 (obj, list, int, int)`
+- [ ] `verb_code/4 (obj, list, int, float)`
+- [ ] `verb_code/4 (obj, list, int, obj)`
+- [ ] `verb_code/4 (obj, list, int, str)`
+- [ ] `verb_code/4 (obj, list, int, err)`
+- [ ] `verb_code/4 (obj, list, int, list)`
+- [ ] `verb_code/4 (obj, list, int, map)`
+- [ ] `verb_code/4 (obj, list, float, int)`
+- [ ] `verb_code/4 (obj, list, float, float)`
+- [ ] `verb_code/4 (obj, list, float, obj)`
+- [ ] `verb_code/4 (obj, list, float, str)`
+- [ ] `verb_code/4 (obj, list, float, err)`
+- [ ] `verb_code/4 (obj, list, float, list)`
+- [ ] `verb_code/4 (obj, list, float, map)`
+- [ ] `verb_code/4 (obj, list, obj, int)`
+- [ ] `verb_code/4 (obj, list, obj, float)`
+- [ ] `verb_code/4 (obj, list, obj, obj)`
+- [ ] `verb_code/4 (obj, list, obj, str)`
+- [ ] `verb_code/4 (obj, list, obj, err)`
+- [ ] `verb_code/4 (obj, list, obj, list)`
+- [ ] `verb_code/4 (obj, list, obj, map)`
+- [ ] `verb_code/4 (obj, list, str, int)`
+- [ ] `verb_code/4 (obj, list, str, float)`
+- [ ] `verb_code/4 (obj, list, str, obj)`
+- [ ] `verb_code/4 (obj, list, str, str)`
+- [ ] `verb_code/4 (obj, list, str, err)`
+- [ ] `verb_code/4 (obj, list, str, list)`
+- [ ] `verb_code/4 (obj, list, str, map)`
+- [ ] `verb_code/4 (obj, list, err, int)`
+- [ ] `verb_code/4 (obj, list, err, float)`
+- [ ] `verb_code/4 (obj, list, err, obj)`
+- [ ] `verb_code/4 (obj, list, err, str)`
+- [ ] `verb_code/4 (obj, list, err, err)`
+- [ ] `verb_code/4 (obj, list, err, list)`
+- [ ] `verb_code/4 (obj, list, err, map)`
+- [ ] `verb_code/4 (obj, list, list, int)`
+- [ ] `verb_code/4 (obj, list, list, float)`
+- [ ] `verb_code/4 (obj, list, list, obj)`
+- [ ] `verb_code/4 (obj, list, list, str)`
+- [ ] `verb_code/4 (obj, list, list, err)`
+- [ ] `verb_code/4 (obj, list, list, list)`
+- [ ] `verb_code/4 (obj, list, list, map)`
+- [ ] `verb_code/4 (obj, list, map, int)`
+- [ ] `verb_code/4 (obj, list, map, float)`
+- [ ] `verb_code/4 (obj, list, map, obj)`
+- [ ] `verb_code/4 (obj, list, map, str)`
+- [ ] `verb_code/4 (obj, list, map, err)`
+- [ ] `verb_code/4 (obj, list, map, list)`
+- [ ] `verb_code/4 (obj, list, map, map)`
+- [ ] `verb_code/4 (obj, map, int, int)`
+- [ ] `verb_code/4 (obj, map, int, float)`
+- [ ] `verb_code/4 (obj, map, int, obj)`
+- [ ] `verb_code/4 (obj, map, int, str)`
+- [ ] `verb_code/4 (obj, map, int, err)`
+- [ ] `verb_code/4 (obj, map, int, list)`
+- [ ] `verb_code/4 (obj, map, int, map)`
+- [ ] `verb_code/4 (obj, map, float, int)`
+- [ ] `verb_code/4 (obj, map, float, float)`
+- [ ] `verb_code/4 (obj, map, float, obj)`
+- [ ] `verb_code/4 (obj, map, float, str)`
+- [ ] `verb_code/4 (obj, map, float, err)`
+- [ ] `verb_code/4 (obj, map, float, list)`
+- [ ] `verb_code/4 (obj, map, float, map)`
+- [ ] `verb_code/4 (obj, map, obj, int)`
+- [ ] `verb_code/4 (obj, map, obj, float)`
+- [ ] `verb_code/4 (obj, map, obj, obj)`
+- [ ] `verb_code/4 (obj, map, obj, str)`
+- [ ] `verb_code/4 (obj, map, obj, err)`
+- [ ] `verb_code/4 (obj, map, obj, list)`
+- [ ] `verb_code/4 (obj, map, obj, map)`
+- [ ] `verb_code/4 (obj, map, str, int)`
+- [ ] `verb_code/4 (obj, map, str, float)`
+- [ ] `verb_code/4 (obj, map, str, obj)`
+- [ ] `verb_code/4 (obj, map, str, str)`
+- [ ] `verb_code/4 (obj, map, str, err)`
+- [ ] `verb_code/4 (obj, map, str, list)`
+- [ ] `verb_code/4 (obj, map, str, map)`
+- [ ] `verb_code/4 (obj, map, err, int)`
+- [ ] `verb_code/4 (obj, map, err, float)`
+- [ ] `verb_code/4 (obj, map, err, obj)`
+- [ ] `verb_code/4 (obj, map, err, str)`
+- [ ] `verb_code/4 (obj, map, err, err)`
+- [ ] `verb_code/4 (obj, map, err, list)`
+- [ ] `verb_code/4 (obj, map, err, map)`
+- [ ] `verb_code/4 (obj, map, list, int)`
+- [ ] `verb_code/4 (obj, map, list, float)`
+- [ ] `verb_code/4 (obj, map, list, obj)`
+- [ ] `verb_code/4 (obj, map, list, str)`
+- [ ] `verb_code/4 (obj, map, list, err)`
+- [ ] `verb_code/4 (obj, map, list, list)`
+- [ ] `verb_code/4 (obj, map, list, map)`
+- [ ] `verb_code/4 (obj, map, map, int)`
+- [ ] `verb_code/4 (obj, map, map, float)`
+- [ ] `verb_code/4 (obj, map, map, obj)`
+- [ ] `verb_code/4 (obj, map, map, str)`
+- [ ] `verb_code/4 (obj, map, map, err)`
+- [ ] `verb_code/4 (obj, map, map, list)`
+- [ ] `verb_code/4 (obj, map, map, map)`
+- [ ] `verb_code/4 (str, int, int, int)`
+- [ ] `verb_code/4 (str, int, int, float)`
+- [ ] `verb_code/4 (str, int, int, obj)`
+- [ ] `verb_code/4 (str, int, int, str)`
+- [ ] `verb_code/4 (str, int, int, err)`
+- [ ] `verb_code/4 (str, int, int, list)`
+- [ ] `verb_code/4 (str, int, int, map)`
+- [ ] `verb_code/4 (str, int, float, int)`
+- [ ] `verb_code/4 (str, int, float, float)`
+- [ ] `verb_code/4 (str, int, float, obj)`
+- [ ] `verb_code/4 (str, int, float, str)`
+- [ ] `verb_code/4 (str, int, float, err)`
+- [ ] `verb_code/4 (str, int, float, list)`
+- [ ] `verb_code/4 (str, int, float, map)`
+- [ ] `verb_code/4 (str, int, obj, int)`
+- [ ] `verb_code/4 (str, int, obj, float)`
+- [ ] `verb_code/4 (str, int, obj, obj)`
+- [ ] `verb_code/4 (str, int, obj, str)`
+- [ ] `verb_code/4 (str, int, obj, err)`
+- [ ] `verb_code/4 (str, int, obj, list)`
+- [ ] `verb_code/4 (str, int, obj, map)`
+- [ ] `verb_code/4 (str, int, str, int)`
+- [ ] `verb_code/4 (str, int, str, float)`
+- [ ] `verb_code/4 (str, int, str, obj)`
+- [ ] `verb_code/4 (str, int, str, str)`
+- [ ] `verb_code/4 (str, int, str, err)`
+- [ ] `verb_code/4 (str, int, str, list)`
+- [ ] `verb_code/4 (str, int, str, map)`
+- [ ] `verb_code/4 (str, int, err, int)`
+- [ ] `verb_code/4 (str, int, err, float)`
+- [ ] `verb_code/4 (str, int, err, obj)`
+- [ ] `verb_code/4 (str, int, err, str)`
+- [ ] `verb_code/4 (str, int, err, err)`
+- [ ] `verb_code/4 (str, int, err, list)`
+- [ ] `verb_code/4 (str, int, err, map)`
+- [ ] `verb_code/4 (str, int, list, int)`
+- [ ] `verb_code/4 (str, int, list, float)`
+- [ ] `verb_code/4 (str, int, list, obj)`
+- [ ] `verb_code/4 (str, int, list, str)`
+- [ ] `verb_code/4 (str, int, list, err)`
+- [ ] `verb_code/4 (str, int, list, list)`
+- [ ] `verb_code/4 (str, int, list, map)`
+- [ ] `verb_code/4 (str, int, map, int)`
+- [ ] `verb_code/4 (str, int, map, float)`
+- [ ] `verb_code/4 (str, int, map, obj)`
+- [ ] `verb_code/4 (str, int, map, str)`
+- [ ] `verb_code/4 (str, int, map, err)`
+- [ ] `verb_code/4 (str, int, map, list)`
+- [ ] `verb_code/4 (str, int, map, map)`
+- [ ] `verb_code/4 (str, float, int, int)`
+- [ ] `verb_code/4 (str, float, int, float)`
+- [ ] `verb_code/4 (str, float, int, obj)`
+- [ ] `verb_code/4 (str, float, int, str)`
+- [ ] `verb_code/4 (str, float, int, err)`
+- [ ] `verb_code/4 (str, float, int, list)`
+- [ ] `verb_code/4 (str, float, int, map)`
+- [ ] `verb_code/4 (str, float, float, int)`
+- [ ] `verb_code/4 (str, float, float, float)`
+- [ ] `verb_code/4 (str, float, float, obj)`
+- [ ] `verb_code/4 (str, float, float, str)`
+- [ ] `verb_code/4 (str, float, float, err)`
+- [ ] `verb_code/4 (str, float, float, list)`
+- [ ] `verb_code/4 (str, float, float, map)`
+- [ ] `verb_code/4 (str, float, obj, int)`
+- [ ] `verb_code/4 (str, float, obj, float)`
+- [ ] `verb_code/4 (str, float, obj, obj)`
+- [ ] `verb_code/4 (str, float, obj, str)`
+- [ ] `verb_code/4 (str, float, obj, err)`
+- [ ] `verb_code/4 (str, float, obj, list)`
+- [ ] `verb_code/4 (str, float, obj, map)`
+- [ ] `verb_code/4 (str, float, str, int)`
+- [ ] `verb_code/4 (str, float, str, float)`
+- [ ] `verb_code/4 (str, float, str, obj)`
+- [ ] `verb_code/4 (str, float, str, str)`
+- [ ] `verb_code/4 (str, float, str, err)`
+- [ ] `verb_code/4 (str, float, str, list)`
+- [ ] `verb_code/4 (str, float, str, map)`
+- [ ] `verb_code/4 (str, float, err, int)`
+- [ ] `verb_code/4 (str, float, err, float)`
+- [ ] `verb_code/4 (str, float, err, obj)`
+- [ ] `verb_code/4 (str, float, err, str)`
+- [ ] `verb_code/4 (str, float, err, err)`
+- [ ] `verb_code/4 (str, float, err, list)`
+- [ ] `verb_code/4 (str, float, err, map)`
+- [ ] `verb_code/4 (str, float, list, int)`
+- [ ] `verb_code/4 (str, float, list, float)`
+- [ ] `verb_code/4 (str, float, list, obj)`
+- [ ] `verb_code/4 (str, float, list, str)`
+- [ ] `verb_code/4 (str, float, list, err)`
+- [ ] `verb_code/4 (str, float, list, list)`
+- [ ] `verb_code/4 (str, float, list, map)`
+- [ ] `verb_code/4 (str, float, map, int)`
+- [ ] `verb_code/4 (str, float, map, float)`
+- [ ] `verb_code/4 (str, float, map, obj)`
+- [ ] `verb_code/4 (str, float, map, str)`
+- [ ] `verb_code/4 (str, float, map, err)`
+- [ ] `verb_code/4 (str, float, map, list)`
+- [ ] `verb_code/4 (str, float, map, map)`
+- [ ] `verb_code/4 (str, obj, int, int)`
+- [ ] `verb_code/4 (str, obj, int, float)`
+- [ ] `verb_code/4 (str, obj, int, obj)`
+- [ ] `verb_code/4 (str, obj, int, str)`
+- [ ] `verb_code/4 (str, obj, int, err)`
+- [ ] `verb_code/4 (str, obj, int, list)`
+- [ ] `verb_code/4 (str, obj, int, map)`
+- [ ] `verb_code/4 (str, obj, float, int)`
+- [ ] `verb_code/4 (str, obj, float, float)`
+- [ ] `verb_code/4 (str, obj, float, obj)`
+- [ ] `verb_code/4 (str, obj, float, str)`
+- [ ] `verb_code/4 (str, obj, float, err)`
+- [ ] `verb_code/4 (str, obj, float, list)`
+- [ ] `verb_code/4 (str, obj, float, map)`
+- [ ] `verb_code/4 (str, obj, obj, int)`
+- [ ] `verb_code/4 (str, obj, obj, float)`
+- [ ] `verb_code/4 (str, obj, obj, obj)`
+- [ ] `verb_code/4 (str, obj, obj, str)`
+- [ ] `verb_code/4 (str, obj, obj, err)`
+- [ ] `verb_code/4 (str, obj, obj, list)`
+- [ ] `verb_code/4 (str, obj, obj, map)`
+- [ ] `verb_code/4 (str, obj, str, int)`
+- [ ] `verb_code/4 (str, obj, str, float)`
+- [ ] `verb_code/4 (str, obj, str, obj)`
+- [ ] `verb_code/4 (str, obj, str, str)`
+- [ ] `verb_code/4 (str, obj, str, err)`
+- [ ] `verb_code/4 (str, obj, str, list)`
+- [ ] `verb_code/4 (str, obj, str, map)`
+- [ ] `verb_code/4 (str, obj, err, int)`
+- [ ] `verb_code/4 (str, obj, err, float)`
+- [ ] `verb_code/4 (str, obj, err, obj)`
+- [ ] `verb_code/4 (str, obj, err, str)`
+- [ ] `verb_code/4 (str, obj, err, err)`
+- [ ] `verb_code/4 (str, obj, err, list)`
+- [ ] `verb_code/4 (str, obj, err, map)`
+- [ ] `verb_code/4 (str, obj, list, int)`
+- [ ] `verb_code/4 (str, obj, list, float)`
+- [ ] `verb_code/4 (str, obj, list, obj)`
+- [ ] `verb_code/4 (str, obj, list, str)`
+- [ ] `verb_code/4 (str, obj, list, err)`
+- [ ] `verb_code/4 (str, obj, list, list)`
+- [ ] `verb_code/4 (str, obj, list, map)`
+- [ ] `verb_code/4 (str, obj, map, int)`
+- [ ] `verb_code/4 (str, obj, map, float)`
+- [ ] `verb_code/4 (str, obj, map, obj)`
+- [ ] `verb_code/4 (str, obj, map, str)`
+- [ ] `verb_code/4 (str, obj, map, err)`
+- [ ] `verb_code/4 (str, obj, map, list)`
+- [ ] `verb_code/4 (str, obj, map, map)`
+- [ ] `verb_code/4 (str, str, int, int)`
+- [ ] `verb_code/4 (str, str, int, float)`
+- [ ] `verb_code/4 (str, str, int, obj)`
+- [ ] `verb_code/4 (str, str, int, str)`
+- [ ] `verb_code/4 (str, str, int, err)`
+- [ ] `verb_code/4 (str, str, int, list)`
+- [ ] `verb_code/4 (str, str, int, map)`
+- [ ] `verb_code/4 (str, str, float, int)`
+- [ ] `verb_code/4 (str, str, float, float)`
+- [ ] `verb_code/4 (str, str, float, obj)`
+- [ ] `verb_code/4 (str, str, float, str)`
+- [ ] `verb_code/4 (str, str, float, err)`
+- [ ] `verb_code/4 (str, str, float, list)`
+- [ ] `verb_code/4 (str, str, float, map)`
+- [ ] `verb_code/4 (str, str, obj, int)`
+- [ ] `verb_code/4 (str, str, obj, float)`
+- [ ] `verb_code/4 (str, str, obj, obj)`
+- [ ] `verb_code/4 (str, str, obj, str)`
+- [ ] `verb_code/4 (str, str, obj, err)`
+- [ ] `verb_code/4 (str, str, obj, list)`
+- [ ] `verb_code/4 (str, str, obj, map)`
+- [ ] `verb_code/4 (str, str, str, int)`
+- [ ] `verb_code/4 (str, str, str, float)`
+- [ ] `verb_code/4 (str, str, str, obj)`
+- [ ] `verb_code/4 (str, str, str, str)`
+- [ ] `verb_code/4 (str, str, str, err)`
+- [ ] `verb_code/4 (str, str, str, list)`
+- [ ] `verb_code/4 (str, str, str, map)`
+- [ ] `verb_code/4 (str, str, err, int)`
+- [ ] `verb_code/4 (str, str, err, float)`
+- [ ] `verb_code/4 (str, str, err, obj)`
+- [ ] `verb_code/4 (str, str, err, str)`
+- [ ] `verb_code/4 (str, str, err, err)`
+- [ ] `verb_code/4 (str, str, err, list)`
+- [ ] `verb_code/4 (str, str, err, map)`
+- [ ] `verb_code/4 (str, str, list, int)`
+- [ ] `verb_code/4 (str, str, list, float)`
+- [ ] `verb_code/4 (str, str, list, obj)`
+- [ ] `verb_code/4 (str, str, list, str)`
+- [ ] `verb_code/4 (str, str, list, err)`
+- [ ] `verb_code/4 (str, str, list, list)`
+- [ ] `verb_code/4 (str, str, list, map)`
+- [ ] `verb_code/4 (str, str, map, int)`
+- [ ] `verb_code/4 (str, str, map, float)`
+- [ ] `verb_code/4 (str, str, map, obj)`
+- [ ] `verb_code/4 (str, str, map, str)`
+- [ ] `verb_code/4 (str, str, map, err)`
+- [ ] `verb_code/4 (str, str, map, list)`
+- [ ] `verb_code/4 (str, str, map, map)`
+- [ ] `verb_code/4 (str, err, int, int)`
+- [ ] `verb_code/4 (str, err, int, float)`
+- [ ] `verb_code/4 (str, err, int, obj)`
+- [ ] `verb_code/4 (str, err, int, str)`
+- [ ] `verb_code/4 (str, err, int, err)`
+- [ ] `verb_code/4 (str, err, int, list)`
+- [ ] `verb_code/4 (str, err, int, map)`
+- [ ] `verb_code/4 (str, err, float, int)`
+- [ ] `verb_code/4 (str, err, float, float)`
+- [ ] `verb_code/4 (str, err, float, obj)`
+- [ ] `verb_code/4 (str, err, float, str)`
+- [ ] `verb_code/4 (str, err, float, err)`
+- [ ] `verb_code/4 (str, err, float, list)`
+- [ ] `verb_code/4 (str, err, float, map)`
+- [ ] `verb_code/4 (str, err, obj, int)`
+- [ ] `verb_code/4 (str, err, obj, float)`
+- [ ] `verb_code/4 (str, err, obj, obj)`
+- [ ] `verb_code/4 (str, err, obj, str)`
+- [ ] `verb_code/4 (str, err, obj, err)`
+- [ ] `verb_code/4 (str, err, obj, list)`
+- [ ] `verb_code/4 (str, err, obj, map)`
+- [ ] `verb_code/4 (str, err, str, int)`
+- [ ] `verb_code/4 (str, err, str, float)`
+- [ ] `verb_code/4 (str, err, str, obj)`
+- [ ] `verb_code/4 (str, err, str, str)`
+- [ ] `verb_code/4 (str, err, str, err)`
+- [ ] `verb_code/4 (str, err, str, list)`
+- [ ] `verb_code/4 (str, err, str, map)`
+- [ ] `verb_code/4 (str, err, err, int)`
+- [ ] `verb_code/4 (str, err, err, float)`
+- [ ] `verb_code/4 (str, err, err, obj)`
+- [ ] `verb_code/4 (str, err, err, str)`
+- [ ] `verb_code/4 (str, err, err, err)`
+- [ ] `verb_code/4 (str, err, err, list)`
+- [ ] `verb_code/4 (str, err, err, map)`
+- [ ] `verb_code/4 (str, err, list, int)`
+- [ ] `verb_code/4 (str, err, list, float)`
+- [ ] `verb_code/4 (str, err, list, obj)`
+- [ ] `verb_code/4 (str, err, list, str)`
+- [ ] `verb_code/4 (str, err, list, err)`
+- [ ] `verb_code/4 (str, err, list, list)`
+- [ ] `verb_code/4 (str, err, list, map)`
+- [ ] `verb_code/4 (str, err, map, int)`
+- [ ] `verb_code/4 (str, err, map, float)`
+- [ ] `verb_code/4 (str, err, map, obj)`
+- [ ] `verb_code/4 (str, err, map, str)`
+- [ ] `verb_code/4 (str, err, map, err)`
+- [ ] `verb_code/4 (str, err, map, list)`
+- [ ] `verb_code/4 (str, err, map, map)`
+- [ ] `verb_code/4 (str, list, int, int)`
+- [ ] `verb_code/4 (str, list, int, float)`
+- [ ] `verb_code/4 (str, list, int, obj)`
+- [ ] `verb_code/4 (str, list, int, str)`
+- [ ] `verb_code/4 (str, list, int, err)`
+- [ ] `verb_code/4 (str, list, int, list)`
+- [ ] `verb_code/4 (str, list, int, map)`
+- [ ] `verb_code/4 (str, list, float, int)`
+- [ ] `verb_code/4 (str, list, float, float)`
+- [ ] `verb_code/4 (str, list, float, obj)`
+- [ ] `verb_code/4 (str, list, float, str)`
+- [ ] `verb_code/4 (str, list, float, err)`
+- [ ] `verb_code/4 (str, list, float, list)`
+- [ ] `verb_code/4 (str, list, float, map)`
+- [ ] `verb_code/4 (str, list, obj, int)`
+- [ ] `verb_code/4 (str, list, obj, float)`
+- [ ] `verb_code/4 (str, list, obj, obj)`
+- [ ] `verb_code/4 (str, list, obj, str)`
+- [ ] `verb_code/4 (str, list, obj, err)`
+- [ ] `verb_code/4 (str, list, obj, list)`
+- [ ] `verb_code/4 (str, list, obj, map)`
+- [ ] `verb_code/4 (str, list, str, int)`
+- [ ] `verb_code/4 (str, list, str, float)`
+- [ ] `verb_code/4 (str, list, str, obj)`
+- [ ] `verb_code/4 (str, list, str, str)`
+- [ ] `verb_code/4 (str, list, str, err)`
+- [ ] `verb_code/4 (str, list, str, list)`
+- [ ] `verb_code/4 (str, list, str, map)`
+- [ ] `verb_code/4 (str, list, err, int)`
+- [ ] `verb_code/4 (str, list, err, float)`
+- [ ] `verb_code/4 (str, list, err, obj)`
+- [ ] `verb_code/4 (str, list, err, str)`
+- [ ] `verb_code/4 (str, list, err, err)`
+- [ ] `verb_code/4 (str, list, err, list)`
+- [ ] `verb_code/4 (str, list, err, map)`
+- [ ] `verb_code/4 (str, list, list, int)`
+- [ ] `verb_code/4 (str, list, list, float)`
+- [ ] `verb_code/4 (str, list, list, obj)`
+- [ ] `verb_code/4 (str, list, list, str)`
+- [ ] `verb_code/4 (str, list, list, err)`
+- [ ] `verb_code/4 (str, list, list, list)`
+- [ ] `verb_code/4 (str, list, list, map)`
+- [ ] `verb_code/4 (str, list, map, int)`
+- [ ] `verb_code/4 (str, list, map, float)`
+- [ ] `verb_code/4 (str, list, map, obj)`
+- [ ] `verb_code/4 (str, list, map, str)`
+- [ ] `verb_code/4 (str, list, map, err)`
+- [ ] `verb_code/4 (str, list, map, list)`
+- [ ] `verb_code/4 (str, list, map, map)`
+- [ ] `verb_code/4 (str, map, int, int)`
+- [ ] `verb_code/4 (str, map, int, float)`
+- [ ] `verb_code/4 (str, map, int, obj)`
+- [ ] `verb_code/4 (str, map, int, str)`
+- [ ] `verb_code/4 (str, map, int, err)`
+- [ ] `verb_code/4 (str, map, int, list)`
+- [ ] `verb_code/4 (str, map, int, map)`
+- [ ] `verb_code/4 (str, map, float, int)`
+- [ ] `verb_code/4 (str, map, float, float)`
+- [ ] `verb_code/4 (str, map, float, obj)`
+- [ ] `verb_code/4 (str, map, float, str)`
+- [ ] `verb_code/4 (str, map, float, err)`
+- [ ] `verb_code/4 (str, map, float, list)`
+- [ ] `verb_code/4 (str, map, float, map)`
+- [ ] `verb_code/4 (str, map, obj, int)`
+- [ ] `verb_code/4 (str, map, obj, float)`
+- [ ] `verb_code/4 (str, map, obj, obj)`
+- [ ] `verb_code/4 (str, map, obj, str)`
+- [ ] `verb_code/4 (str, map, obj, err)`
+- [ ] `verb_code/4 (str, map, obj, list)`
+- [ ] `verb_code/4 (str, map, obj, map)`
+- [ ] `verb_code/4 (str, map, str, int)`
+- [ ] `verb_code/4 (str, map, str, float)`
+- [ ] `verb_code/4 (str, map, str, obj)`
+- [ ] `verb_code/4 (str, map, str, str)`
+- [ ] `verb_code/4 (str, map, str, err)`
+- [ ] `verb_code/4 (str, map, str, list)`
+- [ ] `verb_code/4 (str, map, str, map)`
+- [ ] `verb_code/4 (str, map, err, int)`
+- [ ] `verb_code/4 (str, map, err, float)`
+- [ ] `verb_code/4 (str, map, err, obj)`
+- [ ] `verb_code/4 (str, map, err, str)`
+- [ ] `verb_code/4 (str, map, err, err)`
+- [ ] `verb_code/4 (str, map, err, list)`
+- [ ] `verb_code/4 (str, map, err, map)`
+- [ ] `verb_code/4 (str, map, list, int)`
+- [ ] `verb_code/4 (str, map, list, float)`
+- [ ] `verb_code/4 (str, map, list, obj)`
+- [ ] `verb_code/4 (str, map, list, str)`
+- [ ] `verb_code/4 (str, map, list, err)`
+- [ ] `verb_code/4 (str, map, list, list)`
+- [ ] `verb_code/4 (str, map, list, map)`
+- [ ] `verb_code/4 (str, map, map, int)`
+- [ ] `verb_code/4 (str, map, map, float)`
+- [ ] `verb_code/4 (str, map, map, obj)`
+- [ ] `verb_code/4 (str, map, map, str)`
+- [ ] `verb_code/4 (str, map, map, err)`
+- [ ] `verb_code/4 (str, map, map, list)`
+- [ ] `verb_code/4 (str, map, map, map)`
+- [ ] `verb_code/4 (err, int, int, int)`
+- [ ] `verb_code/4 (err, int, int, float)`
+- [ ] `verb_code/4 (err, int, int, obj)`
+- [ ] `verb_code/4 (err, int, int, str)`
+- [ ] `verb_code/4 (err, int, int, err)`
+- [ ] `verb_code/4 (err, int, int, list)`
+- [ ] `verb_code/4 (err, int, int, map)`
+- [ ] `verb_code/4 (err, int, float, int)`
+- [ ] `verb_code/4 (err, int, float, float)`
+- [ ] `verb_code/4 (err, int, float, obj)`
+- [ ] `verb_code/4 (err, int, float, str)`
+- [ ] `verb_code/4 (err, int, float, err)`
+- [ ] `verb_code/4 (err, int, float, list)`
+- [ ] `verb_code/4 (err, int, float, map)`
+- [ ] `verb_code/4 (err, int, obj, int)`
+- [ ] `verb_code/4 (err, int, obj, float)`
+- [ ] `verb_code/4 (err, int, obj, obj)`
+- [ ] `verb_code/4 (err, int, obj, str)`
+- [ ] `verb_code/4 (err, int, obj, err)`
+- [ ] `verb_code/4 (err, int, obj, list)`
+- [ ] `verb_code/4 (err, int, obj, map)`
+- [ ] `verb_code/4 (err, int, str, int)`
+- [ ] `verb_code/4 (err, int, str, float)`
+- [ ] `verb_code/4 (err, int, str, obj)`
+- [ ] `verb_code/4 (err, int, str, str)`
+- [ ] `verb_code/4 (err, int, str, err)`
+- [ ] `verb_code/4 (err, int, str, list)`
+- [ ] `verb_code/4 (err, int, str, map)`
+- [ ] `verb_code/4 (err, int, err, int)`
+- [ ] `verb_code/4 (err, int, err, float)`
+- [ ] `verb_code/4 (err, int, err, obj)`
+- [ ] `verb_code/4 (err, int, err, str)`
+- [ ] `verb_code/4 (err, int, err, err)`
+- [ ] `verb_code/4 (err, int, err, list)`
+- [ ] `verb_code/4 (err, int, err, map)`
+- [ ] `verb_code/4 (err, int, list, int)`
+- [ ] `verb_code/4 (err, int, list, float)`
+- [ ] `verb_code/4 (err, int, list, obj)`
+- [ ] `verb_code/4 (err, int, list, str)`
+- [ ] `verb_code/4 (err, int, list, err)`
+- [ ] `verb_code/4 (err, int, list, list)`
+- [ ] `verb_code/4 (err, int, list, map)`
+- [ ] `verb_code/4 (err, int, map, int)`
+- [ ] `verb_code/4 (err, int, map, float)`
+- [ ] `verb_code/4 (err, int, map, obj)`
+- [ ] `verb_code/4 (err, int, map, str)`
+- [ ] `verb_code/4 (err, int, map, err)`
+- [ ] `verb_code/4 (err, int, map, list)`
+- [ ] `verb_code/4 (err, int, map, map)`
+- [ ] `verb_code/4 (err, float, int, int)`
+- [ ] `verb_code/4 (err, float, int, float)`
+- [ ] `verb_code/4 (err, float, int, obj)`
+- [ ] `verb_code/4 (err, float, int, str)`
+- [ ] `verb_code/4 (err, float, int, err)`
+- [ ] `verb_code/4 (err, float, int, list)`
+- [ ] `verb_code/4 (err, float, int, map)`
+- [ ] `verb_code/4 (err, float, float, int)`
+- [ ] `verb_code/4 (err, float, float, float)`
+- [ ] `verb_code/4 (err, float, float, obj)`
+- [ ] `verb_code/4 (err, float, float, str)`
+- [ ] `verb_code/4 (err, float, float, err)`
+- [ ] `verb_code/4 (err, float, float, list)`
+- [ ] `verb_code/4 (err, float, float, map)`
+- [ ] `verb_code/4 (err, float, obj, int)`
+- [ ] `verb_code/4 (err, float, obj, float)`
+- [ ] `verb_code/4 (err, float, obj, obj)`
+- [ ] `verb_code/4 (err, float, obj, str)`
+- [ ] `verb_code/4 (err, float, obj, err)`
+- [ ] `verb_code/4 (err, float, obj, list)`
+- [ ] `verb_code/4 (err, float, obj, map)`
+- [ ] `verb_code/4 (err, float, str, int)`
+- [ ] `verb_code/4 (err, float, str, float)`
+- [ ] `verb_code/4 (err, float, str, obj)`
+- [ ] `verb_code/4 (err, float, str, str)`
+- [ ] `verb_code/4 (err, float, str, err)`
+- [ ] `verb_code/4 (err, float, str, list)`
+- [ ] `verb_code/4 (err, float, str, map)`
+- [ ] `verb_code/4 (err, float, err, int)`
+- [ ] `verb_code/4 (err, float, err, float)`
+- [ ] `verb_code/4 (err, float, err, obj)`
+- [ ] `verb_code/4 (err, float, err, str)`
+- [ ] `verb_code/4 (err, float, err, err)`
+- [ ] `verb_code/4 (err, float, err, list)`
+- [ ] `verb_code/4 (err, float, err, map)`
+- [ ] `verb_code/4 (err, float, list, int)`
+- [ ] `verb_code/4 (err, float, list, float)`
+- [ ] `verb_code/4 (err, float, list, obj)`
+- [ ] `verb_code/4 (err, float, list, str)`
+- [ ] `verb_code/4 (err, float, list, err)`
+- [ ] `verb_code/4 (err, float, list, list)`
+- [ ] `verb_code/4 (err, float, list, map)`
+- [ ] `verb_code/4 (err, float, map, int)`
+- [ ] `verb_code/4 (err, float, map, float)`
+- [ ] `verb_code/4 (err, float, map, obj)`
+- [ ] `verb_code/4 (err, float, map, str)`
+- [ ] `verb_code/4 (err, float, map, err)`
+- [ ] `verb_code/4 (err, float, map, list)`
+- [ ] `verb_code/4 (err, float, map, map)`
+- [ ] `verb_code/4 (err, obj, int, int)`
+- [ ] `verb_code/4 (err, obj, int, float)`
+- [ ] `verb_code/4 (err, obj, int, obj)`
+- [ ] `verb_code/4 (err, obj, int, str)`
+- [ ] `verb_code/4 (err, obj, int, err)`
+- [ ] `verb_code/4 (err, obj, int, list)`
+- [ ] `verb_code/4 (err, obj, int, map)`
+- [ ] `verb_code/4 (err, obj, float, int)`
+- [ ] `verb_code/4 (err, obj, float, float)`
+- [ ] `verb_code/4 (err, obj, float, obj)`
+- [ ] `verb_code/4 (err, obj, float, str)`
+- [ ] `verb_code/4 (err, obj, float, err)`
+- [ ] `verb_code/4 (err, obj, float, list)`
+- [ ] `verb_code/4 (err, obj, float, map)`
+- [ ] `verb_code/4 (err, obj, obj, int)`
+- [ ] `verb_code/4 (err, obj, obj, float)`
+- [ ] `verb_code/4 (err, obj, obj, obj)`
+- [ ] `verb_code/4 (err, obj, obj, str)`
+- [ ] `verb_code/4 (err, obj, obj, err)`
+- [ ] `verb_code/4 (err, obj, obj, list)`
+- [ ] `verb_code/4 (err, obj, obj, map)`
+- [ ] `verb_code/4 (err, obj, str, int)`
+- [ ] `verb_code/4 (err, obj, str, float)`
+- [ ] `verb_code/4 (err, obj, str, obj)`
+- [ ] `verb_code/4 (err, obj, str, str)`
+- [ ] `verb_code/4 (err, obj, str, err)`
+- [ ] `verb_code/4 (err, obj, str, list)`
+- [ ] `verb_code/4 (err, obj, str, map)`
+- [ ] `verb_code/4 (err, obj, err, int)`
+- [ ] `verb_code/4 (err, obj, err, float)`
+- [ ] `verb_code/4 (err, obj, err, obj)`
+- [ ] `verb_code/4 (err, obj, err, str)`
+- [ ] `verb_code/4 (err, obj, err, err)`
+- [ ] `verb_code/4 (err, obj, err, list)`
+- [ ] `verb_code/4 (err, obj, err, map)`
+- [ ] `verb_code/4 (err, obj, list, int)`
+- [ ] `verb_code/4 (err, obj, list, float)`
+- [ ] `verb_code/4 (err, obj, list, obj)`
+- [ ] `verb_code/4 (err, obj, list, str)`
+- [ ] `verb_code/4 (err, obj, list, err)`
+- [ ] `verb_code/4 (err, obj, list, list)`
+- [ ] `verb_code/4 (err, obj, list, map)`
+- [ ] `verb_code/4 (err, obj, map, int)`
+- [ ] `verb_code/4 (err, obj, map, float)`
+- [ ] `verb_code/4 (err, obj, map, obj)`
+- [ ] `verb_code/4 (err, obj, map, str)`
+- [ ] `verb_code/4 (err, obj, map, err)`
+- [ ] `verb_code/4 (err, obj, map, list)`
+- [ ] `verb_code/4 (err, obj, map, map)`
+- [ ] `verb_code/4 (err, str, int, int)`
+- [ ] `verb_code/4 (err, str, int, float)`
+- [ ] `verb_code/4 (err, str, int, obj)`
+- [ ] `verb_code/4 (err, str, int, str)`
+- [ ] `verb_code/4 (err, str, int, err)`
+- [ ] `verb_code/4 (err, str, int, list)`
+- [ ] `verb_code/4 (err, str, int, map)`
+- [ ] `verb_code/4 (err, str, float, int)`
+- [ ] `verb_code/4 (err, str, float, float)`
+- [ ] `verb_code/4 (err, str, float, obj)`
+- [ ] `verb_code/4 (err, str, float, str)`
+- [ ] `verb_code/4 (err, str, float, err)`
+- [ ] `verb_code/4 (err, str, float, list)`
+- [ ] `verb_code/4 (err, str, float, map)`
+- [ ] `verb_code/4 (err, str, obj, int)`
+- [ ] `verb_code/4 (err, str, obj, float)`
+- [ ] `verb_code/4 (err, str, obj, obj)`
+- [ ] `verb_code/4 (err, str, obj, str)`
+- [ ] `verb_code/4 (err, str, obj, err)`
+- [ ] `verb_code/4 (err, str, obj, list)`
+- [ ] `verb_code/4 (err, str, obj, map)`
+- [ ] `verb_code/4 (err, str, str, int)`
+- [ ] `verb_code/4 (err, str, str, float)`
+- [ ] `verb_code/4 (err, str, str, obj)`
+- [ ] `verb_code/4 (err, str, str, str)`
+- [ ] `verb_code/4 (err, str, str, err)`
+- [ ] `verb_code/4 (err, str, str, list)`
+- [ ] `verb_code/4 (err, str, str, map)`
+- [ ] `verb_code/4 (err, str, err, int)`
+- [ ] `verb_code/4 (err, str, err, float)`
+- [ ] `verb_code/4 (err, str, err, obj)`
+- [ ] `verb_code/4 (err, str, err, str)`
+- [ ] `verb_code/4 (err, str, err, err)`
+- [ ] `verb_code/4 (err, str, err, list)`
+- [ ] `verb_code/4 (err, str, err, map)`
+- [ ] `verb_code/4 (err, str, list, int)`
+- [ ] `verb_code/4 (err, str, list, float)`
+- [ ] `verb_code/4 (err, str, list, obj)`
+- [ ] `verb_code/4 (err, str, list, str)`
+- [ ] `verb_code/4 (err, str, list, err)`
+- [ ] `verb_code/4 (err, str, list, list)`
+- [ ] `verb_code/4 (err, str, list, map)`
+- [ ] `verb_code/4 (err, str, map, int)`
+- [ ] `verb_code/4 (err, str, map, float)`
+- [ ] `verb_code/4 (err, str, map, obj)`
+- [ ] `verb_code/4 (err, str, map, str)`
+- [ ] `verb_code/4 (err, str, map, err)`
+- [ ] `verb_code/4 (err, str, map, list)`
+- [ ] `verb_code/4 (err, str, map, map)`
+- [ ] `verb_code/4 (err, err, int, int)`
+- [ ] `verb_code/4 (err, err, int, float)`
+- [ ] `verb_code/4 (err, err, int, obj)`
+- [ ] `verb_code/4 (err, err, int, str)`
+- [ ] `verb_code/4 (err, err, int, err)`
+- [ ] `verb_code/4 (err, err, int, list)`
+- [ ] `verb_code/4 (err, err, int, map)`
+- [ ] `verb_code/4 (err, err, float, int)`
+- [ ] `verb_code/4 (err, err, float, float)`
+- [ ] `verb_code/4 (err, err, float, obj)`
+- [ ] `verb_code/4 (err, err, float, str)`
+- [ ] `verb_code/4 (err, err, float, err)`
+- [ ] `verb_code/4 (err, err, float, list)`
+- [ ] `verb_code/4 (err, err, float, map)`
+- [ ] `verb_code/4 (err, err, obj, int)`
+- [ ] `verb_code/4 (err, err, obj, float)`
+- [ ] `verb_code/4 (err, err, obj, obj)`
+- [ ] `verb_code/4 (err, err, obj, str)`
+- [ ] `verb_code/4 (err, err, obj, err)`
+- [ ] `verb_code/4 (err, err, obj, list)`
+- [ ] `verb_code/4 (err, err, obj, map)`
+- [ ] `verb_code/4 (err, err, str, int)`
+- [ ] `verb_code/4 (err, err, str, float)`
+- [ ] `verb_code/4 (err, err, str, obj)`
+- [ ] `verb_code/4 (err, err, str, str)`
+- [ ] `verb_code/4 (err, err, str, err)`
+- [ ] `verb_code/4 (err, err, str, list)`
+- [ ] `verb_code/4 (err, err, str, map)`
+- [ ] `verb_code/4 (err, err, err, int)`
+- [ ] `verb_code/4 (err, err, err, float)`
+- [ ] `verb_code/4 (err, err, err, obj)`
+- [ ] `verb_code/4 (err, err, err, str)`
+- [ ] `verb_code/4 (err, err, err, err)`
+- [ ] `verb_code/4 (err, err, err, list)`
+- [ ] `verb_code/4 (err, err, err, map)`
+- [ ] `verb_code/4 (err, err, list, int)`
+- [ ] `verb_code/4 (err, err, list, float)`
+- [ ] `verb_code/4 (err, err, list, obj)`
+- [ ] `verb_code/4 (err, err, list, str)`
+- [ ] `verb_code/4 (err, err, list, err)`
+- [ ] `verb_code/4 (err, err, list, list)`
+- [ ] `verb_code/4 (err, err, list, map)`
+- [ ] `verb_code/4 (err, err, map, int)`
+- [ ] `verb_code/4 (err, err, map, float)`
+- [ ] `verb_code/4 (err, err, map, obj)`
+- [ ] `verb_code/4 (err, err, map, str)`
+- [ ] `verb_code/4 (err, err, map, err)`
+- [ ] `verb_code/4 (err, err, map, list)`
+- [ ] `verb_code/4 (err, err, map, map)`
+- [ ] `verb_code/4 (err, list, int, int)`
+- [ ] `verb_code/4 (err, list, int, float)`
+- [ ] `verb_code/4 (err, list, int, obj)`
+- [ ] `verb_code/4 (err, list, int, str)`
+- [ ] `verb_code/4 (err, list, int, err)`
+- [ ] `verb_code/4 (err, list, int, list)`
+- [ ] `verb_code/4 (err, list, int, map)`
+- [ ] `verb_code/4 (err, list, float, int)`
+- [ ] `verb_code/4 (err, list, float, float)`
+- [ ] `verb_code/4 (err, list, float, obj)`
+- [ ] `verb_code/4 (err, list, float, str)`
+- [ ] `verb_code/4 (err, list, float, err)`
+- [ ] `verb_code/4 (err, list, float, list)`
+- [ ] `verb_code/4 (err, list, float, map)`
+- [ ] `verb_code/4 (err, list, obj, int)`
+- [ ] `verb_code/4 (err, list, obj, float)`
+- [ ] `verb_code/4 (err, list, obj, obj)`
+- [ ] `verb_code/4 (err, list, obj, str)`
+- [ ] `verb_code/4 (err, list, obj, err)`
+- [ ] `verb_code/4 (err, list, obj, list)`
+- [ ] `verb_code/4 (err, list, obj, map)`
+- [ ] `verb_code/4 (err, list, str, int)`
+- [ ] `verb_code/4 (err, list, str, float)`
+- [ ] `verb_code/4 (err, list, str, obj)`
+- [ ] `verb_code/4 (err, list, str, str)`
+- [ ] `verb_code/4 (err, list, str, err)`
+- [ ] `verb_code/4 (err, list, str, list)`
+- [ ] `verb_code/4 (err, list, str, map)`
+- [ ] `verb_code/4 (err, list, err, int)`
+- [ ] `verb_code/4 (err, list, err, float)`
+- [ ] `verb_code/4 (err, list, err, obj)`
+- [ ] `verb_code/4 (err, list, err, str)`
+- [ ] `verb_code/4 (err, list, err, err)`
+- [ ] `verb_code/4 (err, list, err, list)`
+- [ ] `verb_code/4 (err, list, err, map)`
+- [ ] `verb_code/4 (err, list, list, int)`
+- [ ] `verb_code/4 (err, list, list, float)`
+- [ ] `verb_code/4 (err, list, list, obj)`
+- [ ] `verb_code/4 (err, list, list, str)`
+- [ ] `verb_code/4 (err, list, list, err)`
+- [ ] `verb_code/4 (err, list, list, list)`
+- [ ] `verb_code/4 (err, list, list, map)`
+- [ ] `verb_code/4 (err, list, map, int)`
+- [ ] `verb_code/4 (err, list, map, float)`
+- [ ] `verb_code/4 (err, list, map, obj)`
+- [ ] `verb_code/4 (err, list, map, str)`
+- [ ] `verb_code/4 (err, list, map, err)`
+- [ ] `verb_code/4 (err, list, map, list)`
+- [ ] `verb_code/4 (err, list, map, map)`
+- [ ] `verb_code/4 (err, map, int, int)`
+- [ ] `verb_code/4 (err, map, int, float)`
+- [ ] `verb_code/4 (err, map, int, obj)`
+- [ ] `verb_code/4 (err, map, int, str)`
+- [ ] `verb_code/4 (err, map, int, err)`
+- [ ] `verb_code/4 (err, map, int, list)`
+- [ ] `verb_code/4 (err, map, int, map)`
+- [ ] `verb_code/4 (err, map, float, int)`
+- [ ] `verb_code/4 (err, map, float, float)`
+- [ ] `verb_code/4 (err, map, float, obj)`
+- [ ] `verb_code/4 (err, map, float, str)`
+- [ ] `verb_code/4 (err, map, float, err)`
+- [ ] `verb_code/4 (err, map, float, list)`
+- [ ] `verb_code/4 (err, map, float, map)`
+- [ ] `verb_code/4 (err, map, obj, int)`
+- [ ] `verb_code/4 (err, map, obj, float)`
+- [ ] `verb_code/4 (err, map, obj, obj)`
+- [ ] `verb_code/4 (err, map, obj, str)`
+- [ ] `verb_code/4 (err, map, obj, err)`
+- [ ] `verb_code/4 (err, map, obj, list)`
+- [ ] `verb_code/4 (err, map, obj, map)`
+- [ ] `verb_code/4 (err, map, str, int)`
+- [ ] `verb_code/4 (err, map, str, float)`
+- [ ] `verb_code/4 (err, map, str, obj)`
+- [ ] `verb_code/4 (err, map, str, str)`
+- [ ] `verb_code/4 (err, map, str, err)`
+- [ ] `verb_code/4 (err, map, str, list)`
+- [ ] `verb_code/4 (err, map, str, map)`
+- [ ] `verb_code/4 (err, map, err, int)`
+- [ ] `verb_code/4 (err, map, err, float)`
+- [ ] `verb_code/4 (err, map, err, obj)`
+- [ ] `verb_code/4 (err, map, err, str)`
+- [ ] `verb_code/4 (err, map, err, err)`
+- [ ] `verb_code/4 (err, map, err, list)`
+- [ ] `verb_code/4 (err, map, err, map)`
+- [ ] `verb_code/4 (err, map, list, int)`
+- [ ] `verb_code/4 (err, map, list, float)`
+- [ ] `verb_code/4 (err, map, list, obj)`
+- [ ] `verb_code/4 (err, map, list, str)`
+- [ ] `verb_code/4 (err, map, list, err)`
+- [ ] `verb_code/4 (err, map, list, list)`
+- [ ] `verb_code/4 (err, map, list, map)`
+- [ ] `verb_code/4 (err, map, map, int)`
+- [ ] `verb_code/4 (err, map, map, float)`
+- [ ] `verb_code/4 (err, map, map, obj)`
+- [ ] `verb_code/4 (err, map, map, str)`
+- [ ] `verb_code/4 (err, map, map, err)`
+- [ ] `verb_code/4 (err, map, map, list)`
+- [ ] `verb_code/4 (err, map, map, map)`
+- [ ] `verb_code/4 (list, int, int, int)`
+- [ ] `verb_code/4 (list, int, int, float)`
+- [ ] `verb_code/4 (list, int, int, obj)`
+- [ ] `verb_code/4 (list, int, int, str)`
+- [ ] `verb_code/4 (list, int, int, err)`
+- [ ] `verb_code/4 (list, int, int, list)`
+- [ ] `verb_code/4 (list, int, int, map)`
+- [ ] `verb_code/4 (list, int, float, int)`
+- [ ] `verb_code/4 (list, int, float, float)`
+- [ ] `verb_code/4 (list, int, float, obj)`
+- [ ] `verb_code/4 (list, int, float, str)`
+- [ ] `verb_code/4 (list, int, float, err)`
+- [ ] `verb_code/4 (list, int, float, list)`
+- [ ] `verb_code/4 (list, int, float, map)`
+- [ ] `verb_code/4 (list, int, obj, int)`
+- [ ] `verb_code/4 (list, int, obj, float)`
+- [ ] `verb_code/4 (list, int, obj, obj)`
+- [ ] `verb_code/4 (list, int, obj, str)`
+- [ ] `verb_code/4 (list, int, obj, err)`
+- [ ] `verb_code/4 (list, int, obj, list)`
+- [ ] `verb_code/4 (list, int, obj, map)`
+- [ ] `verb_code/4 (list, int, str, int)`
+- [ ] `verb_code/4 (list, int, str, float)`
+- [ ] `verb_code/4 (list, int, str, obj)`
+- [ ] `verb_code/4 (list, int, str, str)`
+- [ ] `verb_code/4 (list, int, str, err)`
+- [ ] `verb_code/4 (list, int, str, list)`
+- [ ] `verb_code/4 (list, int, str, map)`
+- [ ] `verb_code/4 (list, int, err, int)`
+- [ ] `verb_code/4 (list, int, err, float)`
+- [ ] `verb_code/4 (list, int, err, obj)`
+- [ ] `verb_code/4 (list, int, err, str)`
+- [ ] `verb_code/4 (list, int, err, err)`
+- [ ] `verb_code/4 (list, int, err, list)`
+- [ ] `verb_code/4 (list, int, err, map)`
+- [ ] `verb_code/4 (list, int, list, int)`
+- [ ] `verb_code/4 (list, int, list, float)`
+- [ ] `verb_code/4 (list, int, list, obj)`
+- [ ] `verb_code/4 (list, int, list, str)`
+- [ ] `verb_code/4 (list, int, list, err)`
+- [ ] `verb_code/4 (list, int, list, list)`
+- [ ] `verb_code/4 (list, int, list, map)`
+- [ ] `verb_code/4 (list, int, map, int)`
+- [ ] `verb_code/4 (list, int, map, float)`
+- [ ] `verb_code/4 (list, int, map, obj)`
+- [ ] `verb_code/4 (list, int, map, str)`
+- [ ] `verb_code/4 (list, int, map, err)`
+- [ ] `verb_code/4 (list, int, map, list)`
+- [ ] `verb_code/4 (list, int, map, map)`
+- [ ] `verb_code/4 (list, float, int, int)`
+- [ ] `verb_code/4 (list, float, int, float)`
+- [ ] `verb_code/4 (list, float, int, obj)`
+- [ ] `verb_code/4 (list, float, int, str)`
+- [ ] `verb_code/4 (list, float, int, err)`
+- [ ] `verb_code/4 (list, float, int, list)`
+- [ ] `verb_code/4 (list, float, int, map)`
+- [ ] `verb_code/4 (list, float, float, int)`
+- [ ] `verb_code/4 (list, float, float, float)`
+- [ ] `verb_code/4 (list, float, float, obj)`
+- [ ] `verb_code/4 (list, float, float, str)`
+- [ ] `verb_code/4 (list, float, float, err)`
+- [ ] `verb_code/4 (list, float, float, list)`
+- [ ] `verb_code/4 (list, float, float, map)`
+- [ ] `verb_code/4 (list, float, obj, int)`
+- [ ] `verb_code/4 (list, float, obj, float)`
+- [ ] `verb_code/4 (list, float, obj, obj)`
+- [ ] `verb_code/4 (list, float, obj, str)`
+- [ ] `verb_code/4 (list, float, obj, err)`
+- [ ] `verb_code/4 (list, float, obj, list)`
+- [ ] `verb_code/4 (list, float, obj, map)`
+- [ ] `verb_code/4 (list, float, str, int)`
+- [ ] `verb_code/4 (list, float, str, float)`
+- [ ] `verb_code/4 (list, float, str, obj)`
+- [ ] `verb_code/4 (list, float, str, str)`
+- [ ] `verb_code/4 (list, float, str, err)`
+- [ ] `verb_code/4 (list, float, str, list)`
+- [ ] `verb_code/4 (list, float, str, map)`
+- [ ] `verb_code/4 (list, float, err, int)`
+- [ ] `verb_code/4 (list, float, err, float)`
+- [ ] `verb_code/4 (list, float, err, obj)`
+- [ ] `verb_code/4 (list, float, err, str)`
+- [ ] `verb_code/4 (list, float, err, err)`
+- [ ] `verb_code/4 (list, float, err, list)`
+- [ ] `verb_code/4 (list, float, err, map)`
+- [ ] `verb_code/4 (list, float, list, int)`
+- [ ] `verb_code/4 (list, float, list, float)`
+- [ ] `verb_code/4 (list, float, list, obj)`
+- [ ] `verb_code/4 (list, float, list, str)`
+- [ ] `verb_code/4 (list, float, list, err)`
+- [ ] `verb_code/4 (list, float, list, list)`
+- [ ] `verb_code/4 (list, float, list, map)`
+- [ ] `verb_code/4 (list, float, map, int)`
+- [ ] `verb_code/4 (list, float, map, float)`
+- [ ] `verb_code/4 (list, float, map, obj)`
+- [ ] `verb_code/4 (list, float, map, str)`
+- [ ] `verb_code/4 (list, float, map, err)`
+- [ ] `verb_code/4 (list, float, map, list)`
+- [ ] `verb_code/4 (list, float, map, map)`
+- [ ] `verb_code/4 (list, obj, int, int)`
+- [ ] `verb_code/4 (list, obj, int, float)`
+- [ ] `verb_code/4 (list, obj, int, obj)`
+- [ ] `verb_code/4 (list, obj, int, str)`
+- [ ] `verb_code/4 (list, obj, int, err)`
+- [ ] `verb_code/4 (list, obj, int, list)`
+- [ ] `verb_code/4 (list, obj, int, map)`
+- [ ] `verb_code/4 (list, obj, float, int)`
+- [ ] `verb_code/4 (list, obj, float, float)`
+- [ ] `verb_code/4 (list, obj, float, obj)`
+- [ ] `verb_code/4 (list, obj, float, str)`
+- [ ] `verb_code/4 (list, obj, float, err)`
+- [ ] `verb_code/4 (list, obj, float, list)`
+- [ ] `verb_code/4 (list, obj, float, map)`
+- [ ] `verb_code/4 (list, obj, obj, int)`
+- [ ] `verb_code/4 (list, obj, obj, float)`
+- [ ] `verb_code/4 (list, obj, obj, obj)`
+- [ ] `verb_code/4 (list, obj, obj, str)`
+- [ ] `verb_code/4 (list, obj, obj, err)`
+- [ ] `verb_code/4 (list, obj, obj, list)`
+- [ ] `verb_code/4 (list, obj, obj, map)`
+- [ ] `verb_code/4 (list, obj, str, int)`
+- [ ] `verb_code/4 (list, obj, str, float)`
+- [ ] `verb_code/4 (list, obj, str, obj)`
+- [ ] `verb_code/4 (list, obj, str, str)`
+- [ ] `verb_code/4 (list, obj, str, err)`
+- [ ] `verb_code/4 (list, obj, str, list)`
+- [ ] `verb_code/4 (list, obj, str, map)`
+- [ ] `verb_code/4 (list, obj, err, int)`
+- [ ] `verb_code/4 (list, obj, err, float)`
+- [ ] `verb_code/4 (list, obj, err, obj)`
+- [ ] `verb_code/4 (list, obj, err, str)`
+- [ ] `verb_code/4 (list, obj, err, err)`
+- [ ] `verb_code/4 (list, obj, err, list)`
+- [ ] `verb_code/4 (list, obj, err, map)`
+- [ ] `verb_code/4 (list, obj, list, int)`
+- [ ] `verb_code/4 (list, obj, list, float)`
+- [ ] `verb_code/4 (list, obj, list, obj)`
+- [ ] `verb_code/4 (list, obj, list, str)`
+- [ ] `verb_code/4 (list, obj, list, err)`
+- [ ] `verb_code/4 (list, obj, list, list)`
+- [ ] `verb_code/4 (list, obj, list, map)`
+- [ ] `verb_code/4 (list, obj, map, int)`
+- [ ] `verb_code/4 (list, obj, map, float)`
+- [ ] `verb_code/4 (list, obj, map, obj)`
+- [ ] `verb_code/4 (list, obj, map, str)`
+- [ ] `verb_code/4 (list, obj, map, err)`
+- [ ] `verb_code/4 (list, obj, map, list)`
+- [ ] `verb_code/4 (list, obj, map, map)`
+- [ ] `verb_code/4 (list, str, int, int)`
+- [ ] `verb_code/4 (list, str, int, float)`
+- [ ] `verb_code/4 (list, str, int, obj)`
+- [ ] `verb_code/4 (list, str, int, str)`
+- [ ] `verb_code/4 (list, str, int, err)`
+- [ ] `verb_code/4 (list, str, int, list)`
+- [ ] `verb_code/4 (list, str, int, map)`
+- [ ] `verb_code/4 (list, str, float, int)`
+- [ ] `verb_code/4 (list, str, float, float)`
+- [ ] `verb_code/4 (list, str, float, obj)`
+- [ ] `verb_code/4 (list, str, float, str)`
+- [ ] `verb_code/4 (list, str, float, err)`
+- [ ] `verb_code/4 (list, str, float, list)`
+- [ ] `verb_code/4 (list, str, float, map)`
+- [ ] `verb_code/4 (list, str, obj, int)`
+- [ ] `verb_code/4 (list, str, obj, float)`
+- [ ] `verb_code/4 (list, str, obj, obj)`
+- [ ] `verb_code/4 (list, str, obj, str)`
+- [ ] `verb_code/4 (list, str, obj, err)`
+- [ ] `verb_code/4 (list, str, obj, list)`
+- [ ] `verb_code/4 (list, str, obj, map)`
+- [ ] `verb_code/4 (list, str, str, int)`
+- [ ] `verb_code/4 (list, str, str, float)`
+- [ ] `verb_code/4 (list, str, str, obj)`
+- [ ] `verb_code/4 (list, str, str, str)`
+- [ ] `verb_code/4 (list, str, str, err)`
+- [ ] `verb_code/4 (list, str, str, list)`
+- [ ] `verb_code/4 (list, str, str, map)`
+- [ ] `verb_code/4 (list, str, err, int)`
+- [ ] `verb_code/4 (list, str, err, float)`
+- [ ] `verb_code/4 (list, str, err, obj)`
+- [ ] `verb_code/4 (list, str, err, str)`
+- [ ] `verb_code/4 (list, str, err, err)`
+- [ ] `verb_code/4 (list, str, err, list)`
+- [ ] `verb_code/4 (list, str, err, map)`
+- [ ] `verb_code/4 (list, str, list, int)`
+- [ ] `verb_code/4 (list, str, list, float)`
+- [ ] `verb_code/4 (list, str, list, obj)`
+- [ ] `verb_code/4 (list, str, list, str)`
+- [ ] `verb_code/4 (list, str, list, err)`
+- [ ] `verb_code/4 (list, str, list, list)`
+- [ ] `verb_code/4 (list, str, list, map)`
+- [ ] `verb_code/4 (list, str, map, int)`
+- [ ] `verb_code/4 (list, str, map, float)`
+- [ ] `verb_code/4 (list, str, map, obj)`
+- [ ] `verb_code/4 (list, str, map, str)`
+- [ ] `verb_code/4 (list, str, map, err)`
+- [ ] `verb_code/4 (list, str, map, list)`
+- [ ] `verb_code/4 (list, str, map, map)`
+- [ ] `verb_code/4 (list, err, int, int)`
+- [ ] `verb_code/4 (list, err, int, float)`
+- [ ] `verb_code/4 (list, err, int, obj)`
+- [ ] `verb_code/4 (list, err, int, str)`
+- [ ] `verb_code/4 (list, err, int, err)`
+- [ ] `verb_code/4 (list, err, int, list)`
+- [ ] `verb_code/4 (list, err, int, map)`
+- [ ] `verb_code/4 (list, err, float, int)`
+- [ ] `verb_code/4 (list, err, float, float)`
+- [ ] `verb_code/4 (list, err, float, obj)`
+- [ ] `verb_code/4 (list, err, float, str)`
+- [ ] `verb_code/4 (list, err, float, err)`
+- [ ] `verb_code/4 (list, err, float, list)`
+- [ ] `verb_code/4 (list, err, float, map)`
+- [ ] `verb_code/4 (list, err, obj, int)`
+- [ ] `verb_code/4 (list, err, obj, float)`
+- [ ] `verb_code/4 (list, err, obj, obj)`
+- [ ] `verb_code/4 (list, err, obj, str)`
+- [ ] `verb_code/4 (list, err, obj, err)`
+- [ ] `verb_code/4 (list, err, obj, list)`
+- [ ] `verb_code/4 (list, err, obj, map)`
+- [ ] `verb_code/4 (list, err, str, int)`
+- [ ] `verb_code/4 (list, err, str, float)`
+- [ ] `verb_code/4 (list, err, str, obj)`
+- [ ] `verb_code/4 (list, err, str, str)`
+- [ ] `verb_code/4 (list, err, str, err)`
+- [ ] `verb_code/4 (list, err, str, list)`
+- [ ] `verb_code/4 (list, err, str, map)`
+- [ ] `verb_code/4 (list, err, err, int)`
+- [ ] `verb_code/4 (list, err, err, float)`
+- [ ] `verb_code/4 (list, err, err, obj)`
+- [ ] `verb_code/4 (list, err, err, str)`
+- [ ] `verb_code/4 (list, err, err, err)`
+- [ ] `verb_code/4 (list, err, err, list)`
+- [ ] `verb_code/4 (list, err, err, map)`
+- [ ] `verb_code/4 (list, err, list, int)`
+- [ ] `verb_code/4 (list, err, list, float)`
+- [ ] `verb_code/4 (list, err, list, obj)`
+- [ ] `verb_code/4 (list, err, list, str)`
+- [ ] `verb_code/4 (list, err, list, err)`
+- [ ] `verb_code/4 (list, err, list, list)`
+- [ ] `verb_code/4 (list, err, list, map)`
+- [ ] `verb_code/4 (list, err, map, int)`
+- [ ] `verb_code/4 (list, err, map, float)`
+- [ ] `verb_code/4 (list, err, map, obj)`
+- [ ] `verb_code/4 (list, err, map, str)`
+- [ ] `verb_code/4 (list, err, map, err)`
+- [ ] `verb_code/4 (list, err, map, list)`
+- [ ] `verb_code/4 (list, err, map, map)`
+- [ ] `verb_code/4 (list, list, int, int)`
+- [ ] `verb_code/4 (list, list, int, float)`
+- [ ] `verb_code/4 (list, list, int, obj)`
+- [ ] `verb_code/4 (list, list, int, str)`
+- [ ] `verb_code/4 (list, list, int, err)`
+- [ ] `verb_code/4 (list, list, int, list)`
+- [ ] `verb_code/4 (list, list, int, map)`
+- [ ] `verb_code/4 (list, list, float, int)`
+- [ ] `verb_code/4 (list, list, float, float)`
+- [ ] `verb_code/4 (list, list, float, obj)`
+- [ ] `verb_code/4 (list, list, float, str)`
+- [ ] `verb_code/4 (list, list, float, err)`
+- [ ] `verb_code/4 (list, list, float, list)`
+- [ ] `verb_code/4 (list, list, float, map)`
+- [ ] `verb_code/4 (list, list, obj, int)`
+- [ ] `verb_code/4 (list, list, obj, float)`
+- [ ] `verb_code/4 (list, list, obj, obj)`
+- [ ] `verb_code/4 (list, list, obj, str)`
+- [ ] `verb_code/4 (list, list, obj, err)`
+- [ ] `verb_code/4 (list, list, obj, list)`
+- [ ] `verb_code/4 (list, list, obj, map)`
+- [ ] `verb_code/4 (list, list, str, int)`
+- [ ] `verb_code/4 (list, list, str, float)`
+- [ ] `verb_code/4 (list, list, str, obj)`
+- [ ] `verb_code/4 (list, list, str, str)`
+- [ ] `verb_code/4 (list, list, str, err)`
+- [ ] `verb_code/4 (list, list, str, list)`
+- [ ] `verb_code/4 (list, list, str, map)`
+- [ ] `verb_code/4 (list, list, err, int)`
+- [ ] `verb_code/4 (list, list, err, float)`
+- [ ] `verb_code/4 (list, list, err, obj)`
+- [ ] `verb_code/4 (list, list, err, str)`
+- [ ] `verb_code/4 (list, list, err, err)`
+- [ ] `verb_code/4 (list, list, err, list)`
+- [ ] `verb_code/4 (list, list, err, map)`
+- [ ] `verb_code/4 (list, list, list, int)`
+- [ ] `verb_code/4 (list, list, list, float)`
+- [ ] `verb_code/4 (list, list, list, obj)`
+- [ ] `verb_code/4 (list, list, list, str)`
+- [ ] `verb_code/4 (list, list, list, err)`
+- [ ] `verb_code/4 (list, list, list, list)`
+- [ ] `verb_code/4 (list, list, list, map)`
+- [ ] `verb_code/4 (list, list, map, int)`
+- [ ] `verb_code/4 (list, list, map, float)`
+- [ ] `verb_code/4 (list, list, map, obj)`
+- [ ] `verb_code/4 (list, list, map, str)`
+- [ ] `verb_code/4 (list, list, map, err)`
+- [ ] `verb_code/4 (list, list, map, list)`
+- [ ] `verb_code/4 (list, list, map, map)`
+- [ ] `verb_code/4 (list, map, int, int)`
+- [ ] `verb_code/4 (list, map, int, float)`
+- [ ] `verb_code/4 (list, map, int, obj)`
+- [ ] `verb_code/4 (list, map, int, str)`
+- [ ] `verb_code/4 (list, map, int, err)`
+- [ ] `verb_code/4 (list, map, int, list)`
+- [ ] `verb_code/4 (list, map, int, map)`
+- [ ] `verb_code/4 (list, map, float, int)`
+- [ ] `verb_code/4 (list, map, float, float)`
+- [ ] `verb_code/4 (list, map, float, obj)`
+- [ ] `verb_code/4 (list, map, float, str)`
+- [ ] `verb_code/4 (list, map, float, err)`
+- [ ] `verb_code/4 (list, map, float, list)`
+- [ ] `verb_code/4 (list, map, float, map)`
+- [ ] `verb_code/4 (list, map, obj, int)`
+- [ ] `verb_code/4 (list, map, obj, float)`
+- [ ] `verb_code/4 (list, map, obj, obj)`
+- [ ] `verb_code/4 (list, map, obj, str)`
+- [ ] `verb_code/4 (list, map, obj, err)`
+- [ ] `verb_code/4 (list, map, obj, list)`
+- [ ] `verb_code/4 (list, map, obj, map)`
+- [ ] `verb_code/4 (list, map, str, int)`
+- [ ] `verb_code/4 (list, map, str, float)`
+- [ ] `verb_code/4 (list, map, str, obj)`
+- [ ] `verb_code/4 (list, map, str, str)`
+- [ ] `verb_code/4 (list, map, str, err)`
+- [ ] `verb_code/4 (list, map, str, list)`
+- [ ] `verb_code/4 (list, map, str, map)`
+- [ ] `verb_code/4 (list, map, err, int)`
+- [ ] `verb_code/4 (list, map, err, float)`
+- [ ] `verb_code/4 (list, map, err, obj)`
+- [ ] `verb_code/4 (list, map, err, str)`
+- [ ] `verb_code/4 (list, map, err, err)`
+- [ ] `verb_code/4 (list, map, err, list)`
+- [ ] `verb_code/4 (list, map, err, map)`
+- [ ] `verb_code/4 (list, map, list, int)`
+- [ ] `verb_code/4 (list, map, list, float)`
+- [ ] `verb_code/4 (list, map, list, obj)`
+- [ ] `verb_code/4 (list, map, list, str)`
+- [ ] `verb_code/4 (list, map, list, err)`
+- [ ] `verb_code/4 (list, map, list, list)`
+- [ ] `verb_code/4 (list, map, list, map)`
+- [ ] `verb_code/4 (list, map, map, int)`
+- [ ] `verb_code/4 (list, map, map, float)`
+- [ ] `verb_code/4 (list, map, map, obj)`
+- [ ] `verb_code/4 (list, map, map, str)`
+- [ ] `verb_code/4 (list, map, map, err)`
+- [ ] `verb_code/4 (list, map, map, list)`
+- [ ] `verb_code/4 (list, map, map, map)`
+- [ ] `verb_code/4 (map, int, int, int)`
+- [ ] `verb_code/4 (map, int, int, float)`
+- [ ] `verb_code/4 (map, int, int, obj)`
+- [ ] `verb_code/4 (map, int, int, str)`
+- [ ] `verb_code/4 (map, int, int, err)`
+- [ ] `verb_code/4 (map, int, int, list)`
+- [ ] `verb_code/4 (map, int, int, map)`
+- [ ] `verb_code/4 (map, int, float, int)`
+- [ ] `verb_code/4 (map, int, float, float)`
+- [ ] `verb_code/4 (map, int, float, obj)`
+- [ ] `verb_code/4 (map, int, float, str)`
+- [ ] `verb_code/4 (map, int, float, err)`
+- [ ] `verb_code/4 (map, int, float, list)`
+- [ ] `verb_code/4 (map, int, float, map)`
+- [ ] `verb_code/4 (map, int, obj, int)`
+- [ ] `verb_code/4 (map, int, obj, float)`
+- [ ] `verb_code/4 (map, int, obj, obj)`
+- [ ] `verb_code/4 (map, int, obj, str)`
+- [ ] `verb_code/4 (map, int, obj, err)`
+- [ ] `verb_code/4 (map, int, obj, list)`
+- [ ] `verb_code/4 (map, int, obj, map)`
+- [ ] `verb_code/4 (map, int, str, int)`
+- [ ] `verb_code/4 (map, int, str, float)`
+- [ ] `verb_code/4 (map, int, str, obj)`
+- [ ] `verb_code/4 (map, int, str, str)`
+- [ ] `verb_code/4 (map, int, str, err)`
+- [ ] `verb_code/4 (map, int, str, list)`
+- [ ] `verb_code/4 (map, int, str, map)`
+- [ ] `verb_code/4 (map, int, err, int)`
+- [ ] `verb_code/4 (map, int, err, float)`
+- [ ] `verb_code/4 (map, int, err, obj)`
+- [ ] `verb_code/4 (map, int, err, str)`
+- [ ] `verb_code/4 (map, int, err, err)`
+- [ ] `verb_code/4 (map, int, err, list)`
+- [ ] `verb_code/4 (map, int, err, map)`
+- [ ] `verb_code/4 (map, int, list, int)`
+- [ ] `verb_code/4 (map, int, list, float)`
+- [ ] `verb_code/4 (map, int, list, obj)`
+- [ ] `verb_code/4 (map, int, list, str)`
+- [ ] `verb_code/4 (map, int, list, err)`
+- [ ] `verb_code/4 (map, int, list, list)`
+- [ ] `verb_code/4 (map, int, list, map)`
+- [ ] `verb_code/4 (map, int, map, int)`
+- [ ] `verb_code/4 (map, int, map, float)`
+- [ ] `verb_code/4 (map, int, map, obj)`
+- [ ] `verb_code/4 (map, int, map, str)`
+- [ ] `verb_code/4 (map, int, map, err)`
+- [ ] `verb_code/4 (map, int, map, list)`
+- [ ] `verb_code/4 (map, int, map, map)`
+- [ ] `verb_code/4 (map, float, int, int)`
+- [ ] `verb_code/4 (map, float, int, float)`
+- [ ] `verb_code/4 (map, float, int, obj)`
+- [ ] `verb_code/4 (map, float, int, str)`
+- [ ] `verb_code/4 (map, float, int, err)`
+- [ ] `verb_code/4 (map, float, int, list)`
+- [ ] `verb_code/4 (map, float, int, map)`
+- [ ] `verb_code/4 (map, float, float, int)`
+- [ ] `verb_code/4 (map, float, float, float)`
+- [ ] `verb_code/4 (map, float, float, obj)`
+- [ ] `verb_code/4 (map, float, float, str)`
+- [ ] `verb_code/4 (map, float, float, err)`
+- [ ] `verb_code/4 (map, float, float, list)`
+- [ ] `verb_code/4 (map, float, float, map)`
+- [ ] `verb_code/4 (map, float, obj, int)`
+- [ ] `verb_code/4 (map, float, obj, float)`
+- [ ] `verb_code/4 (map, float, obj, obj)`
+- [ ] `verb_code/4 (map, float, obj, str)`
+- [ ] `verb_code/4 (map, float, obj, err)`
+- [ ] `verb_code/4 (map, float, obj, list)`
+- [ ] `verb_code/4 (map, float, obj, map)`
+- [ ] `verb_code/4 (map, float, str, int)`
+- [ ] `verb_code/4 (map, float, str, float)`
+- [ ] `verb_code/4 (map, float, str, obj)`
+- [ ] `verb_code/4 (map, float, str, str)`
+- [ ] `verb_code/4 (map, float, str, err)`
+- [ ] `verb_code/4 (map, float, str, list)`
+- [ ] `verb_code/4 (map, float, str, map)`
+- [ ] `verb_code/4 (map, float, err, int)`
+- [ ] `verb_code/4 (map, float, err, float)`
+- [ ] `verb_code/4 (map, float, err, obj)`
+- [ ] `verb_code/4 (map, float, err, str)`
+- [ ] `verb_code/4 (map, float, err, err)`
+- [ ] `verb_code/4 (map, float, err, list)`
+- [ ] `verb_code/4 (map, float, err, map)`
+- [ ] `verb_code/4 (map, float, list, int)`
+- [ ] `verb_code/4 (map, float, list, float)`
+- [ ] `verb_code/4 (map, float, list, obj)`
+- [ ] `verb_code/4 (map, float, list, str)`
+- [ ] `verb_code/4 (map, float, list, err)`
+- [ ] `verb_code/4 (map, float, list, list)`
+- [ ] `verb_code/4 (map, float, list, map)`
+- [ ] `verb_code/4 (map, float, map, int)`
+- [ ] `verb_code/4 (map, float, map, float)`
+- [ ] `verb_code/4 (map, float, map, obj)`
+- [ ] `verb_code/4 (map, float, map, str)`
+- [ ] `verb_code/4 (map, float, map, err)`
+- [ ] `verb_code/4 (map, float, map, list)`
+- [ ] `verb_code/4 (map, float, map, map)`
+- [ ] `verb_code/4 (map, obj, int, int)`
+- [ ] `verb_code/4 (map, obj, int, float)`
+- [ ] `verb_code/4 (map, obj, int, obj)`
+- [ ] `verb_code/4 (map, obj, int, str)`
+- [ ] `verb_code/4 (map, obj, int, err)`
+- [ ] `verb_code/4 (map, obj, int, list)`
+- [ ] `verb_code/4 (map, obj, int, map)`
+- [ ] `verb_code/4 (map, obj, float, int)`
+- [ ] `verb_code/4 (map, obj, float, float)`
+- [ ] `verb_code/4 (map, obj, float, obj)`
+- [ ] `verb_code/4 (map, obj, float, str)`
+- [ ] `verb_code/4 (map, obj, float, err)`
+- [ ] `verb_code/4 (map, obj, float, list)`
+- [ ] `verb_code/4 (map, obj, float, map)`
+- [ ] `verb_code/4 (map, obj, obj, int)`
+- [ ] `verb_code/4 (map, obj, obj, float)`
+- [ ] `verb_code/4 (map, obj, obj, obj)`
+- [ ] `verb_code/4 (map, obj, obj, str)`
+- [ ] `verb_code/4 (map, obj, obj, err)`
+- [ ] `verb_code/4 (map, obj, obj, list)`
+- [ ] `verb_code/4 (map, obj, obj, map)`
+- [ ] `verb_code/4 (map, obj, str, int)`
+- [ ] `verb_code/4 (map, obj, str, float)`
+- [ ] `verb_code/4 (map, obj, str, obj)`
+- [ ] `verb_code/4 (map, obj, str, str)`
+- [ ] `verb_code/4 (map, obj, str, err)`
+- [ ] `verb_code/4 (map, obj, str, list)`
+- [ ] `verb_code/4 (map, obj, str, map)`
+- [ ] `verb_code/4 (map, obj, err, int)`
+- [ ] `verb_code/4 (map, obj, err, float)`
+- [ ] `verb_code/4 (map, obj, err, obj)`
+- [ ] `verb_code/4 (map, obj, err, str)`
+- [ ] `verb_code/4 (map, obj, err, err)`
+- [ ] `verb_code/4 (map, obj, err, list)`
+- [ ] `verb_code/4 (map, obj, err, map)`
+- [ ] `verb_code/4 (map, obj, list, int)`
+- [ ] `verb_code/4 (map, obj, list, float)`
+- [ ] `verb_code/4 (map, obj, list, obj)`
+- [ ] `verb_code/4 (map, obj, list, str)`
+- [ ] `verb_code/4 (map, obj, list, err)`
+- [ ] `verb_code/4 (map, obj, list, list)`
+- [ ] `verb_code/4 (map, obj, list, map)`
+- [ ] `verb_code/4 (map, obj, map, int)`
+- [ ] `verb_code/4 (map, obj, map, float)`
+- [ ] `verb_code/4 (map, obj, map, obj)`
+- [ ] `verb_code/4 (map, obj, map, str)`
+- [ ] `verb_code/4 (map, obj, map, err)`
+- [ ] `verb_code/4 (map, obj, map, list)`
+- [ ] `verb_code/4 (map, obj, map, map)`
+- [ ] `verb_code/4 (map, str, int, int)`
+- [ ] `verb_code/4 (map, str, int, float)`
+- [ ] `verb_code/4 (map, str, int, obj)`
+- [ ] `verb_code/4 (map, str, int, str)`
+- [ ] `verb_code/4 (map, str, int, err)`
+- [ ] `verb_code/4 (map, str, int, list)`
+- [ ] `verb_code/4 (map, str, int, map)`
+- [ ] `verb_code/4 (map, str, float, int)`
+- [ ] `verb_code/4 (map, str, float, float)`
+- [ ] `verb_code/4 (map, str, float, obj)`
+- [ ] `verb_code/4 (map, str, float, str)`
+- [ ] `verb_code/4 (map, str, float, err)`
+- [ ] `verb_code/4 (map, str, float, list)`
+- [ ] `verb_code/4 (map, str, float, map)`
+- [ ] `verb_code/4 (map, str, obj, int)`
+- [ ] `verb_code/4 (map, str, obj, float)`
+- [ ] `verb_code/4 (map, str, obj, obj)`
+- [ ] `verb_code/4 (map, str, obj, str)`
+- [ ] `verb_code/4 (map, str, obj, err)`
+- [ ] `verb_code/4 (map, str, obj, list)`
+- [ ] `verb_code/4 (map, str, obj, map)`
+- [ ] `verb_code/4 (map, str, str, int)`
+- [ ] `verb_code/4 (map, str, str, float)`
+- [ ] `verb_code/4 (map, str, str, obj)`
+- [ ] `verb_code/4 (map, str, str, str)`
+- [ ] `verb_code/4 (map, str, str, err)`
+- [ ] `verb_code/4 (map, str, str, list)`
+- [ ] `verb_code/4 (map, str, str, map)`
+- [ ] `verb_code/4 (map, str, err, int)`
+- [ ] `verb_code/4 (map, str, err, float)`
+- [ ] `verb_code/4 (map, str, err, obj)`
+- [ ] `verb_code/4 (map, str, err, str)`
+- [ ] `verb_code/4 (map, str, err, err)`
+- [ ] `verb_code/4 (map, str, err, list)`
+- [ ] `verb_code/4 (map, str, err, map)`
+- [ ] `verb_code/4 (map, str, list, int)`
+- [ ] `verb_code/4 (map, str, list, float)`
+- [ ] `verb_code/4 (map, str, list, obj)`
+- [ ] `verb_code/4 (map, str, list, str)`
+- [ ] `verb_code/4 (map, str, list, err)`
+- [ ] `verb_code/4 (map, str, list, list)`
+- [ ] `verb_code/4 (map, str, list, map)`
+- [ ] `verb_code/4 (map, str, map, int)`
+- [ ] `verb_code/4 (map, str, map, float)`
+- [ ] `verb_code/4 (map, str, map, obj)`
+- [ ] `verb_code/4 (map, str, map, str)`
+- [ ] `verb_code/4 (map, str, map, err)`
+- [ ] `verb_code/4 (map, str, map, list)`
+- [ ] `verb_code/4 (map, str, map, map)`
+- [ ] `verb_code/4 (map, err, int, int)`
+- [ ] `verb_code/4 (map, err, int, float)`
+- [ ] `verb_code/4 (map, err, int, obj)`
+- [ ] `verb_code/4 (map, err, int, str)`
+- [ ] `verb_code/4 (map, err, int, err)`
+- [ ] `verb_code/4 (map, err, int, list)`
+- [ ] `verb_code/4 (map, err, int, map)`
+- [ ] `verb_code/4 (map, err, float, int)`
+- [ ] `verb_code/4 (map, err, float, float)`
+- [ ] `verb_code/4 (map, err, float, obj)`
+- [ ] `verb_code/4 (map, err, float, str)`
+- [ ] `verb_code/4 (map, err, float, err)`
+- [ ] `verb_code/4 (map, err, float, list)`
+- [ ] `verb_code/4 (map, err, float, map)`
+- [ ] `verb_code/4 (map, err, obj, int)`
+- [ ] `verb_code/4 (map, err, obj, float)`
+- [ ] `verb_code/4 (map, err, obj, obj)`
+- [ ] `verb_code/4 (map, err, obj, str)`
+- [ ] `verb_code/4 (map, err, obj, err)`
+- [ ] `verb_code/4 (map, err, obj, list)`
+- [ ] `verb_code/4 (map, err, obj, map)`
+- [ ] `verb_code/4 (map, err, str, int)`
+- [ ] `verb_code/4 (map, err, str, float)`
+- [ ] `verb_code/4 (map, err, str, obj)`
+- [ ] `verb_code/4 (map, err, str, str)`
+- [ ] `verb_code/4 (map, err, str, err)`
+- [ ] `verb_code/4 (map, err, str, list)`
+- [ ] `verb_code/4 (map, err, str, map)`
+- [ ] `verb_code/4 (map, err, err, int)`
+- [ ] `verb_code/4 (map, err, err, float)`
+- [ ] `verb_code/4 (map, err, err, obj)`
+- [ ] `verb_code/4 (map, err, err, str)`
+- [ ] `verb_code/4 (map, err, err, err)`
+- [ ] `verb_code/4 (map, err, err, list)`
+- [ ] `verb_code/4 (map, err, err, map)`
+- [ ] `verb_code/4 (map, err, list, int)`
+- [ ] `verb_code/4 (map, err, list, float)`
+- [ ] `verb_code/4 (map, err, list, obj)`
+- [ ] `verb_code/4 (map, err, list, str)`
+- [ ] `verb_code/4 (map, err, list, err)`
+- [ ] `verb_code/4 (map, err, list, list)`
+- [ ] `verb_code/4 (map, err, list, map)`
+- [ ] `verb_code/4 (map, err, map, int)`
+- [ ] `verb_code/4 (map, err, map, float)`
+- [ ] `verb_code/4 (map, err, map, obj)`
+- [ ] `verb_code/4 (map, err, map, str)`
+- [ ] `verb_code/4 (map, err, map, err)`
+- [ ] `verb_code/4 (map, err, map, list)`
+- [ ] `verb_code/4 (map, err, map, map)`
+- [ ] `verb_code/4 (map, list, int, int)`
+- [ ] `verb_code/4 (map, list, int, float)`
+- [ ] `verb_code/4 (map, list, int, obj)`
+- [ ] `verb_code/4 (map, list, int, str)`
+- [ ] `verb_code/4 (map, list, int, err)`
+- [ ] `verb_code/4 (map, list, int, list)`
+- [ ] `verb_code/4 (map, list, int, map)`
+- [ ] `verb_code/4 (map, list, float, int)`
+- [ ] `verb_code/4 (map, list, float, float)`
+- [ ] `verb_code/4 (map, list, float, obj)`
+- [ ] `verb_code/4 (map, list, float, str)`
+- [ ] `verb_code/4 (map, list, float, err)`
+- [ ] `verb_code/4 (map, list, float, list)`
+- [ ] `verb_code/4 (map, list, float, map)`
+- [ ] `verb_code/4 (map, list, obj, int)`
+- [ ] `verb_code/4 (map, list, obj, float)`
+- [ ] `verb_code/4 (map, list, obj, obj)`
+- [ ] `verb_code/4 (map, list, obj, str)`
+- [ ] `verb_code/4 (map, list, obj, err)`
+- [ ] `verb_code/4 (map, list, obj, list)`
+- [ ] `verb_code/4 (map, list, obj, map)`
+- [ ] `verb_code/4 (map, list, str, int)`
+- [ ] `verb_code/4 (map, list, str, float)`
+- [ ] `verb_code/4 (map, list, str, obj)`
+- [ ] `verb_code/4 (map, list, str, str)`
+- [ ] `verb_code/4 (map, list, str, err)`
+- [ ] `verb_code/4 (map, list, str, list)`
+- [ ] `verb_code/4 (map, list, str, map)`
+- [ ] `verb_code/4 (map, list, err, int)`
+- [ ] `verb_code/4 (map, list, err, float)`
+- [ ] `verb_code/4 (map, list, err, obj)`
+- [ ] `verb_code/4 (map, list, err, str)`
+- [ ] `verb_code/4 (map, list, err, err)`
+- [ ] `verb_code/4 (map, list, err, list)`
+- [ ] `verb_code/4 (map, list, err, map)`
+- [ ] `verb_code/4 (map, list, list, int)`
+- [ ] `verb_code/4 (map, list, list, float)`
+- [ ] `verb_code/4 (map, list, list, obj)`
+- [ ] `verb_code/4 (map, list, list, str)`
+- [ ] `verb_code/4 (map, list, list, err)`
+- [ ] `verb_code/4 (map, list, list, list)`
+- [ ] `verb_code/4 (map, list, list, map)`
+- [ ] `verb_code/4 (map, list, map, int)`
+- [ ] `verb_code/4 (map, list, map, float)`
+- [ ] `verb_code/4 (map, list, map, obj)`
+- [ ] `verb_code/4 (map, list, map, str)`
+- [ ] `verb_code/4 (map, list, map, err)`
+- [ ] `verb_code/4 (map, list, map, list)`
+- [ ] `verb_code/4 (map, list, map, map)`
+- [ ] `verb_code/4 (map, map, int, int)`
+- [ ] `verb_code/4 (map, map, int, float)`
+- [ ] `verb_code/4 (map, map, int, obj)`
+- [ ] `verb_code/4 (map, map, int, str)`
+- [ ] `verb_code/4 (map, map, int, err)`
+- [ ] `verb_code/4 (map, map, int, list)`
+- [ ] `verb_code/4 (map, map, int, map)`
+- [ ] `verb_code/4 (map, map, float, int)`
+- [ ] `verb_code/4 (map, map, float, float)`
+- [ ] `verb_code/4 (map, map, float, obj)`
+- [ ] `verb_code/4 (map, map, float, str)`
+- [ ] `verb_code/4 (map, map, float, err)`
+- [ ] `verb_code/4 (map, map, float, list)`
+- [ ] `verb_code/4 (map, map, float, map)`
+- [ ] `verb_code/4 (map, map, obj, int)`
+- [ ] `verb_code/4 (map, map, obj, float)`
+- [ ] `verb_code/4 (map, map, obj, obj)`
+- [ ] `verb_code/4 (map, map, obj, str)`
+- [ ] `verb_code/4 (map, map, obj, err)`
+- [ ] `verb_code/4 (map, map, obj, list)`
+- [ ] `verb_code/4 (map, map, obj, map)`
+- [ ] `verb_code/4 (map, map, str, int)`
+- [ ] `verb_code/4 (map, map, str, float)`
+- [ ] `verb_code/4 (map, map, str, obj)`
+- [ ] `verb_code/4 (map, map, str, str)`
+- [ ] `verb_code/4 (map, map, str, err)`
+- [ ] `verb_code/4 (map, map, str, list)`
+- [ ] `verb_code/4 (map, map, str, map)`
+- [ ] `verb_code/4 (map, map, err, int)`
+- [ ] `verb_code/4 (map, map, err, float)`
+- [ ] `verb_code/4 (map, map, err, obj)`
+- [ ] `verb_code/4 (map, map, err, str)`
+- [ ] `verb_code/4 (map, map, err, err)`
+- [ ] `verb_code/4 (map, map, err, list)`
+- [ ] `verb_code/4 (map, map, err, map)`
+- [ ] `verb_code/4 (map, map, list, int)`
+- [ ] `verb_code/4 (map, map, list, float)`
+- [ ] `verb_code/4 (map, map, list, obj)`
+- [ ] `verb_code/4 (map, map, list, str)`
+- [ ] `verb_code/4 (map, map, list, err)`
+- [ ] `verb_code/4 (map, map, list, list)`
+- [ ] `verb_code/4 (map, map, list, map)`
+- [ ] `verb_code/4 (map, map, map, int)`
+- [ ] `verb_code/4 (map, map, map, float)`
+- [ ] `verb_code/4 (map, map, map, obj)`
+- [ ] `verb_code/4 (map, map, map, str)`
+- [ ] `verb_code/4 (map, map, map, err)`
+- [ ] `verb_code/4 (map, map, map, list)`
+- [ ] `verb_code/4 (map, map, map, map)`
+- [?] `verb_code/2` unknown argument types covered by `audit/verb_dispatch_toast_oracle.yaml`, `language/index_and_range.yaml`, `language/looping.yaml` and 11 more
+
+### `verb_info`
+
+- signature: `2..2 (any, any)`
+- source: `verbs.cc`
+- [ ] `verb_info/2 (int, int)`
+- [ ] `verb_info/2 (int, float)`
+- [ ] `verb_info/2 (int, obj)`
+- [ ] `verb_info/2 (int, str)`
+- [ ] `verb_info/2 (int, err)`
+- [ ] `verb_info/2 (int, list)`
+- [ ] `verb_info/2 (int, map)`
+- [ ] `verb_info/2 (float, int)`
+- [ ] `verb_info/2 (float, float)`
+- [ ] `verb_info/2 (float, obj)`
+- [ ] `verb_info/2 (float, str)`
+- [ ] `verb_info/2 (float, err)`
+- [ ] `verb_info/2 (float, list)`
+- [ ] `verb_info/2 (float, map)`
+- [ ] `verb_info/2 (obj, int)`
+- [ ] `verb_info/2 (obj, float)`
+- [ ] `verb_info/2 (obj, obj)`
+- [x] `verb_info/2 (obj, str)` covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 18 more
+- [ ] `verb_info/2 (obj, err)`
+- [ ] `verb_info/2 (obj, list)`
+- [ ] `verb_info/2 (obj, map)`
+- [ ] `verb_info/2 (str, int)`
+- [ ] `verb_info/2 (str, float)`
+- [ ] `verb_info/2 (str, obj)`
+- [ ] `verb_info/2 (str, str)`
+- [ ] `verb_info/2 (str, err)`
+- [ ] `verb_info/2 (str, list)`
+- [ ] `verb_info/2 (str, map)`
+- [ ] `verb_info/2 (err, int)`
+- [ ] `verb_info/2 (err, float)`
+- [ ] `verb_info/2 (err, obj)`
+- [ ] `verb_info/2 (err, str)`
+- [ ] `verb_info/2 (err, err)`
+- [ ] `verb_info/2 (err, list)`
+- [ ] `verb_info/2 (err, map)`
+- [ ] `verb_info/2 (list, int)`
+- [ ] `verb_info/2 (list, float)`
+- [ ] `verb_info/2 (list, obj)`
+- [x] `verb_info/2 (list, str)` covered by `audit/verb_dispatch_toast_oracle.yaml`, `builtins/verbs.yaml`, `builtins/verbs.yaml` and 6 more
+- [ ] `verb_info/2 (list, err)`
+- [ ] `verb_info/2 (list, list)`
+- [ ] `verb_info/2 (list, map)`
+- [ ] `verb_info/2 (map, int)`
+- [ ] `verb_info/2 (map, float)`
+- [ ] `verb_info/2 (map, obj)`
+- [ ] `verb_info/2 (map, str)`
+- [ ] `verb_info/2 (map, err)`
+- [ ] `verb_info/2 (map, list)`
+- [ ] `verb_info/2 (map, map)`
+- [?] `verb_info/2` unknown argument types covered by `audit/verb_dispatch_toast_oracle.yaml`
+
+### `verbs`
+
+- signature: `1..1 (any)`
+- source: `verbs.cc`
+- [ ] `verbs/1 (int)`
+- [ ] `verbs/1 (float)`
+- [ ] `verbs/1 (obj)`
+- [ ] `verbs/1 (str)`
+- [ ] `verbs/1 (err)`
+- [x] `verbs/1 (list)` covered by `builtins/verbs.yaml`, `builtins/verbs.yaml`, `builtins/verbs.yaml` and 2 more
+- [ ] `verbs/1 (map)`
+
+### `waif_stats`
+
+- signature: `0..0 ()`
+- source: `waif.cc`
+- [ ] `waif_stats/0 ()`
+
+### `yin`
+
+- signature: `0..3 (numeric, int, int)`
+- source: `execute.cc`
+- [x] `yin/0 ()` covered by `generated_builtins/yin.yaml`
+- [ ] `yin/1 (int)`
+- [ ] `yin/1 (float)`
+- [ ] `yin/2 (int, int)`
+- [ ] `yin/2 (float, int)`
+- [x] `yin/3 (int, int, int)` covered by `audit/task_scheduling_toast_oracle.yaml`
+- [ ] `yin/3 (float, int, int)`

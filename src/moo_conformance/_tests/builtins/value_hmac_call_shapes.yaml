@@ -1,0 +1,65 @@
+name: value_hmac_call_shapes
+description: Table-driven TYPE_ANY coverage for value_hmac().
+
+requires:
+  builtins:
+    - value_hmac
+
+tests:
+  - name: value_hmac_{case}
+    permission: wizard
+    table:
+      columns: [case, expr]
+      rows:
+        - [int_int, 'value_hmac(1, "key", "sha256", 1)']
+        - [int_float, 'value_hmac(1, "key", "sha256", 1.5)']
+        - [int_obj, 'value_hmac(1, "key", "sha256", #0)']
+        - [int_str, 'value_hmac(1, "key", "sha256", "x")']
+        - [int_err, 'value_hmac(1, "key", "sha256", E_ARGS)']
+        - [int_list, 'value_hmac(1, "key", "sha256", {})']
+        - [int_map, 'value_hmac(1, "key", "sha256", [1 -> 2])']
+        - [float_int, 'value_hmac(1.5, "key", "sha256", 1)']
+        - [float_float, 'value_hmac(1.5, "key", "sha256", 1.5)']
+        - [float_obj, 'value_hmac(1.5, "key", "sha256", #0)']
+        - [float_str, 'value_hmac(1.5, "key", "sha256", "x")']
+        - [float_err, 'value_hmac(1.5, "key", "sha256", E_ARGS)']
+        - [float_list, 'value_hmac(1.5, "key", "sha256", {})']
+        - [float_map, 'value_hmac(1.5, "key", "sha256", [1 -> 2])']
+        - [obj_int, 'value_hmac(#0, "key", "sha256", 1)']
+        - [obj_float, 'value_hmac(#0, "key", "sha256", 1.5)']
+        - [obj_obj, 'value_hmac(#0, "key", "sha256", #0)']
+        - [obj_str, 'value_hmac(#0, "key", "sha256", "x")']
+        - [obj_err, 'value_hmac(#0, "key", "sha256", E_ARGS)']
+        - [obj_list, 'value_hmac(#0, "key", "sha256", {})']
+        - [obj_map, 'value_hmac(#0, "key", "sha256", [1 -> 2])']
+        - [str_int, 'value_hmac("x", "key", "sha256", 1)']
+        - [str_float, 'value_hmac("x", "key", "sha256", 1.5)']
+        - [str_obj, 'value_hmac("x", "key", "sha256", #0)']
+        - [str_str, 'value_hmac("x", "key", "sha256", "x")']
+        - [str_err, 'value_hmac("x", "key", "sha256", E_ARGS)']
+        - [str_list, 'value_hmac("x", "key", "sha256", {})']
+        - [str_map, 'value_hmac("x", "key", "sha256", [1 -> 2])']
+        - [err_int, 'value_hmac(E_ARGS, "key", "sha256", 1)']
+        - [err_float, 'value_hmac(E_ARGS, "key", "sha256", 1.5)']
+        - [err_obj, 'value_hmac(E_ARGS, "key", "sha256", #0)']
+        - [err_str, 'value_hmac(E_ARGS, "key", "sha256", "x")']
+        - [err_err, 'value_hmac(E_ARGS, "key", "sha256", E_ARGS)']
+        - [err_list, 'value_hmac(E_ARGS, "key", "sha256", {})']
+        - [err_map, 'value_hmac(E_ARGS, "key", "sha256", [1 -> 2])']
+        - [list_int, 'value_hmac({1, "x"}, "key", "sha256", 1)']
+        - [list_float, 'value_hmac({1, "x"}, "key", "sha256", 1.5)']
+        - [list_obj, 'value_hmac({1, "x"}, "key", "sha256", #0)']
+        - [list_str, 'value_hmac({1, "x"}, "key", "sha256", "x")']
+        - [list_err, 'value_hmac({1, "x"}, "key", "sha256", E_ARGS)']
+        - [list_list, 'value_hmac({1, "x"}, "key", "sha256", {})']
+        - [list_map, 'value_hmac({1, "x"}, "key", "sha256", [1 -> 2])']
+        - [map_int, 'value_hmac([1 -> "x"], "key", "sha256", 1)']
+        - [map_float, 'value_hmac([1 -> "x"], "key", "sha256", 1.5)']
+        - [map_obj, 'value_hmac([1 -> "x"], "key", "sha256", #0)']
+        - [map_str, 'value_hmac([1 -> "x"], "key", "sha256", "x")']
+        - [map_err, 'value_hmac([1 -> "x"], "key", "sha256", E_ARGS)']
+        - [map_list, 'value_hmac([1 -> "x"], "key", "sha256", {})']
+        - [map_map, 'value_hmac([1 -> "x"], "key", "sha256", [1 -> 2])']
+    code: "{expr}"
+    expect:
+      type: str

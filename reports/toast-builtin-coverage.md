@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T07:27:59Z`
+- generated_at: `2026-06-28T07:29:53Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `758`
-- missing_call_shapes: `6843`
+- covered_call_shapes: `806`
+- missing_call_shapes: `6795`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3989,54 +3989,6 @@ still needs explicit human review.
   - [ ] `value_hmac/3 (err, str, str)`
   - [ ] `value_hmac/3 (list, str, str)`
   - [ ] `value_hmac/3 (map, str, str)`
-  - [ ] `value_hmac/4 (int, str, str, int)`
-  - [ ] `value_hmac/4 (int, str, str, float)`
-  - [ ] `value_hmac/4 (int, str, str, obj)`
-  - [ ] `value_hmac/4 (int, str, str, str)`
-  - [ ] `value_hmac/4 (int, str, str, err)`
-  - [ ] `value_hmac/4 (int, str, str, list)`
-  - [ ] `value_hmac/4 (int, str, str, map)`
-  - [ ] `value_hmac/4 (float, str, str, int)`
-  - [ ] `value_hmac/4 (float, str, str, float)`
-  - [ ] `value_hmac/4 (float, str, str, obj)`
-  - [ ] `value_hmac/4 (float, str, str, str)`
-  - [ ] `value_hmac/4 (float, str, str, err)`
-  - [ ] `value_hmac/4 (float, str, str, list)`
-  - [ ] `value_hmac/4 (float, str, str, map)`
-  - [ ] `value_hmac/4 (obj, str, str, int)`
-  - [ ] `value_hmac/4 (obj, str, str, float)`
-  - [ ] `value_hmac/4 (obj, str, str, obj)`
-  - [ ] `value_hmac/4 (obj, str, str, str)`
-  - [ ] `value_hmac/4 (obj, str, str, err)`
-  - [ ] `value_hmac/4 (obj, str, str, list)`
-  - [ ] `value_hmac/4 (obj, str, str, map)`
-  - [ ] `value_hmac/4 (str, str, str, float)`
-  - [ ] `value_hmac/4 (str, str, str, obj)`
-  - [ ] `value_hmac/4 (str, str, str, str)`
-  - [ ] `value_hmac/4 (str, str, str, err)`
-  - [ ] `value_hmac/4 (str, str, str, list)`
-  - [ ] `value_hmac/4 (str, str, str, map)`
-  - [ ] `value_hmac/4 (err, str, str, int)`
-  - [ ] `value_hmac/4 (err, str, str, float)`
-  - [ ] `value_hmac/4 (err, str, str, obj)`
-  - [ ] `value_hmac/4 (err, str, str, str)`
-  - [ ] `value_hmac/4 (err, str, str, err)`
-  - [ ] `value_hmac/4 (err, str, str, list)`
-  - [ ] `value_hmac/4 (err, str, str, map)`
-  - [ ] `value_hmac/4 (list, str, str, int)`
-  - [ ] `value_hmac/4 (list, str, str, float)`
-  - [ ] `value_hmac/4 (list, str, str, obj)`
-  - [ ] `value_hmac/4 (list, str, str, str)`
-  - [ ] `value_hmac/4 (list, str, str, err)`
-  - [ ] `value_hmac/4 (list, str, str, list)`
-  - [ ] `value_hmac/4 (list, str, str, map)`
-  - [ ] `value_hmac/4 (map, str, str, int)`
-  - [ ] `value_hmac/4 (map, str, str, float)`
-  - [ ] `value_hmac/4 (map, str, str, obj)`
-  - [ ] `value_hmac/4 (map, str, str, str)`
-  - [ ] `value_hmac/4 (map, str, str, err)`
-  - [ ] `value_hmac/4 (map, str, str, list)`
-  - [ ] `value_hmac/4 (map, str, str, map)`
 - `verb_args` signature `2..2 (any, any)`
   - [ ] `verb_args/2 (int, int)`
   - [ ] `verb_args/2 (int, float)`
@@ -12820,55 +12772,55 @@ still needs explicit human review.
 - [ ] `value_hmac/3 (err, str, str)`
 - [ ] `value_hmac/3 (list, str, str)`
 - [ ] `value_hmac/3 (map, str, str)`
-- [ ] `value_hmac/4 (int, str, str, int)`
-- [ ] `value_hmac/4 (int, str, str, float)`
-- [ ] `value_hmac/4 (int, str, str, obj)`
-- [ ] `value_hmac/4 (int, str, str, str)`
-- [ ] `value_hmac/4 (int, str, str, err)`
-- [ ] `value_hmac/4 (int, str, str, list)`
-- [ ] `value_hmac/4 (int, str, str, map)`
-- [ ] `value_hmac/4 (float, str, str, int)`
-- [ ] `value_hmac/4 (float, str, str, float)`
-- [ ] `value_hmac/4 (float, str, str, obj)`
-- [ ] `value_hmac/4 (float, str, str, str)`
-- [ ] `value_hmac/4 (float, str, str, err)`
-- [ ] `value_hmac/4 (float, str, str, list)`
-- [ ] `value_hmac/4 (float, str, str, map)`
-- [ ] `value_hmac/4 (obj, str, str, int)`
-- [ ] `value_hmac/4 (obj, str, str, float)`
-- [ ] `value_hmac/4 (obj, str, str, obj)`
-- [ ] `value_hmac/4 (obj, str, str, str)`
-- [ ] `value_hmac/4 (obj, str, str, err)`
-- [ ] `value_hmac/4 (obj, str, str, list)`
-- [ ] `value_hmac/4 (obj, str, str, map)`
-- [x] `value_hmac/4 (str, str, str, int)` covered by `builtins/algorithms.yaml`
-- [ ] `value_hmac/4 (str, str, str, float)`
-- [ ] `value_hmac/4 (str, str, str, obj)`
-- [ ] `value_hmac/4 (str, str, str, str)`
-- [ ] `value_hmac/4 (str, str, str, err)`
-- [ ] `value_hmac/4 (str, str, str, list)`
-- [ ] `value_hmac/4 (str, str, str, map)`
-- [ ] `value_hmac/4 (err, str, str, int)`
-- [ ] `value_hmac/4 (err, str, str, float)`
-- [ ] `value_hmac/4 (err, str, str, obj)`
-- [ ] `value_hmac/4 (err, str, str, str)`
-- [ ] `value_hmac/4 (err, str, str, err)`
-- [ ] `value_hmac/4 (err, str, str, list)`
-- [ ] `value_hmac/4 (err, str, str, map)`
-- [ ] `value_hmac/4 (list, str, str, int)`
-- [ ] `value_hmac/4 (list, str, str, float)`
-- [ ] `value_hmac/4 (list, str, str, obj)`
-- [ ] `value_hmac/4 (list, str, str, str)`
-- [ ] `value_hmac/4 (list, str, str, err)`
-- [ ] `value_hmac/4 (list, str, str, list)`
-- [ ] `value_hmac/4 (list, str, str, map)`
-- [ ] `value_hmac/4 (map, str, str, int)`
-- [ ] `value_hmac/4 (map, str, str, float)`
-- [ ] `value_hmac/4 (map, str, str, obj)`
-- [ ] `value_hmac/4 (map, str, str, str)`
-- [ ] `value_hmac/4 (map, str, str, err)`
-- [ ] `value_hmac/4 (map, str, str, list)`
-- [ ] `value_hmac/4 (map, str, str, map)`
+- [x] `value_hmac/4 (int, str, str, int)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (int, str, str, float)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (int, str, str, obj)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (int, str, str, str)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (int, str, str, err)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (int, str, str, list)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (int, str, str, map)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (float, str, str, int)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (float, str, str, float)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (float, str, str, obj)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (float, str, str, str)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (float, str, str, err)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (float, str, str, list)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (float, str, str, map)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (obj, str, str, int)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (obj, str, str, float)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (obj, str, str, obj)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (obj, str, str, str)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (obj, str, str, err)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (obj, str, str, list)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (obj, str, str, map)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (str, str, str, int)` covered by `builtins/algorithms.yaml`, `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (str, str, str, float)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (str, str, str, obj)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (str, str, str, str)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (str, str, str, err)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (str, str, str, list)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (str, str, str, map)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (err, str, str, int)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (err, str, str, float)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (err, str, str, obj)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (err, str, str, str)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (err, str, str, err)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (err, str, str, list)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (err, str, str, map)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (list, str, str, int)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (list, str, str, float)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (list, str, str, obj)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (list, str, str, str)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (list, str, str, err)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (list, str, str, list)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (list, str, str, map)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (map, str, str, int)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (map, str, str, float)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (map, str, str, obj)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (map, str, str, str)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (map, str, str, err)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (map, str, str, list)` covered by `builtins/value_hmac_call_shapes.yaml`
+- [x] `value_hmac/4 (map, str, str, map)` covered by `builtins/value_hmac_call_shapes.yaml`
 
 ### `verb_args`
 

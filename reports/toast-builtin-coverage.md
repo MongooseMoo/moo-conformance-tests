@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T06:18:49Z`
+- generated_at: `2026-06-28T06:20:58Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `545`
-- missing_call_shapes: `7056`
+- covered_call_shapes: `546`
+- missing_call_shapes: `7055`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -4156,8 +4156,6 @@ still needs explicit human review.
   - [ ] `task_stack/3 (int, map, err)`
   - [ ] `task_stack/3 (int, map, list)`
   - [ ] `task_stack/3 (int, map, map)`
-- `thread_pool` signature `2..3 (str, str, int)`
-  - [ ] `thread_pool/3 (str, str, int)`
 - `unlisten` signature `1..2 (any, any)`
   - [ ] `unlisten/1 (float)`
   - [ ] `unlisten/1 (obj)`
@@ -12771,7 +12769,7 @@ still needs explicit human review.
 - signature: `2..3 (str, str, int)`
 - source: `background.cc`
 - [x] `thread_pool/2 (str, str)` covered by `generated_builtins/thread_pool.yaml`
-- [ ] `thread_pool/3 (str, str, int)`
+- [x] `thread_pool/3 (str, str, int)` covered by `builtins/thread_pool_call_shapes.yaml`
 
 ### `threads`
 
@@ -12875,7 +12873,7 @@ still needs explicit human review.
 - [x] `typeof/1 (err)` covered by `basic/types.yaml`, `basic/types.yaml`
 - [x] `typeof/1 (list)` covered by `basic/types.yaml`, `basic/value.yaml`, `builtins/pcre.yaml` and 1 more
 - [x] `typeof/1 (map)` covered by `basic/types.yaml`, `basic/types.yaml`
-- [?] `typeof/1` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 161 more
+- [?] `typeof/1` unknown argument types covered by `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml`, `audit/connection_lifecycle_toast_oracle.yaml` and 162 more
 
 ### `unlisten`
 

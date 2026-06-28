@@ -1,0 +1,19 @@
+name: thread_pool_call_shapes
+description: Call-shape coverage for thread_pool().
+
+requires:
+  builtins:
+    - thread_pool
+
+tests:
+  - name: thread_pool_three_args
+    permission: wizard
+    statement: |
+      try
+        result = thread_pool("x", "x", 1);
+        return typeof(result) == INT;
+      except e (E_INVARG, E_PERM)
+        return 1;
+      endtry
+    expect:
+      value: 1

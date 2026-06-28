@@ -1,0 +1,30 @@
+name: hash_output_flag_call_shapes
+description: Table-driven TYPE_ANY output-flag coverage for string_hash() and binary_hash().
+
+requires:
+  builtins:
+    - string_hash
+    - binary_hash
+
+tests:
+  - name: "{builtin}_{case}"
+    permission: wizard
+    table:
+      columns: [builtin, case, expr]
+      rows:
+        - [string_hash, flag_float, 'string_hash("abc", "sha256", 1.5)']
+        - [string_hash, flag_obj, 'string_hash("abc", "sha256", #0)']
+        - [string_hash, flag_str, 'string_hash("abc", "sha256", "x")']
+        - [string_hash, flag_err, 'string_hash("abc", "sha256", E_ARGS)']
+        - [string_hash, flag_list, 'string_hash("abc", "sha256", {1})']
+        - [string_hash, flag_map, 'string_hash("abc", "sha256", [1 -> 2])']
+
+        - [binary_hash, flag_float, 'binary_hash("abc", "sha256", 1.5)']
+        - [binary_hash, flag_obj, 'binary_hash("abc", "sha256", #0)']
+        - [binary_hash, flag_str, 'binary_hash("abc", "sha256", "x")']
+        - [binary_hash, flag_err, 'binary_hash("abc", "sha256", E_ARGS)']
+        - [binary_hash, flag_list, 'binary_hash("abc", "sha256", {1})']
+        - [binary_hash, flag_map, 'binary_hash("abc", "sha256", [1 -> 2])']
+    code: "{expr}"
+    expect:
+      type: str

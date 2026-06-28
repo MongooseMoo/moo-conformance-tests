@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T05:26:08Z`
+- generated_at: `2026-06-28T05:29:22Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `243`
 - required_call_shapes: `7721`
-- covered_call_shapes: `476`
-- missing_call_shapes: `7245`
+- covered_call_shapes: `488`
+- missing_call_shapes: `7233`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -149,13 +149,6 @@ still needs explicit human review.
   - [ ] `background_test/0 ()`
   - [ ] `background_test/1 (str)`
   - [ ] `background_test/2 (str, int)`
-- `binary_hash` signature `1..3 (str, str, any)`
-  - [ ] `binary_hash/3 (str, str, float)`
-  - [ ] `binary_hash/3 (str, str, obj)`
-  - [ ] `binary_hash/3 (str, str, str)`
-  - [ ] `binary_hash/3 (str, str, err)`
-  - [ ] `binary_hash/3 (str, str, list)`
-  - [ ] `binary_hash/3 (str, str, map)`
 - `binary_hmac` signature `2..4 (str, str, str, any)`
   - [ ] `binary_hmac/4 (str, str, str, float)`
   - [ ] `binary_hmac/4 (str, str, str, obj)`
@@ -4278,13 +4271,6 @@ still needs explicit human review.
   - [ ] `sqlite_query/3 (int, str, err)`
   - [ ] `sqlite_query/3 (int, str, list)`
   - [ ] `sqlite_query/3 (int, str, map)`
-- `string_hash` signature `1..3 (str, str, any)`
-  - [ ] `string_hash/3 (str, str, float)`
-  - [ ] `string_hash/3 (str, str, obj)`
-  - [ ] `string_hash/3 (str, str, str)`
-  - [ ] `string_hash/3 (str, str, err)`
-  - [ ] `string_hash/3 (str, str, list)`
-  - [ ] `string_hash/3 (str, str, map)`
 - `string_hmac` signature `2..4 (str, str, str, any)`
   - [ ] `string_hmac/4 (str, str, str, float)`
   - [ ] `string_hmac/4 (str, str, str, obj)`
@@ -7637,12 +7623,12 @@ still needs explicit human review.
 - [x] `binary_hash/1 (str)` covered by `builtins/algorithms.yaml`
 - [x] `binary_hash/2 (str, str)` covered by `builtins/algorithms.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml` and 8 more
 - [x] `binary_hash/3 (str, str, int)` covered by `builtins/algorithms.yaml`
-- [ ] `binary_hash/3 (str, str, float)`
-- [ ] `binary_hash/3 (str, str, obj)`
-- [ ] `binary_hash/3 (str, str, str)`
-- [ ] `binary_hash/3 (str, str, err)`
-- [ ] `binary_hash/3 (str, str, list)`
-- [ ] `binary_hash/3 (str, str, map)`
+- [x] `binary_hash/3 (str, str, float)` covered by `builtins/hash_output_flag_call_shapes.yaml`
+- [x] `binary_hash/3 (str, str, obj)` covered by `builtins/hash_output_flag_call_shapes.yaml`
+- [x] `binary_hash/3 (str, str, str)` covered by `builtins/hash_output_flag_call_shapes.yaml`
+- [x] `binary_hash/3 (str, str, err)` covered by `builtins/hash_output_flag_call_shapes.yaml`
+- [x] `binary_hash/3 (str, str, list)` covered by `builtins/hash_output_flag_call_shapes.yaml`
+- [x] `binary_hash/3 (str, str, map)` covered by `builtins/hash_output_flag_call_shapes.yaml`
 
 ### `binary_hmac`
 
@@ -13005,12 +12991,12 @@ still needs explicit human review.
 - [x] `string_hash/1 (str)` covered by `builtins/algorithms.yaml`
 - [x] `string_hash/2 (str, str)` covered by `builtins/algorithms.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml` and 68 more
 - [x] `string_hash/3 (str, str, int)` covered by `builtins/algorithms.yaml`
-- [ ] `string_hash/3 (str, str, float)`
-- [ ] `string_hash/3 (str, str, obj)`
-- [ ] `string_hash/3 (str, str, str)`
-- [ ] `string_hash/3 (str, str, err)`
-- [ ] `string_hash/3 (str, str, list)`
-- [ ] `string_hash/3 (str, str, map)`
+- [x] `string_hash/3 (str, str, float)` covered by `builtins/hash_output_flag_call_shapes.yaml`
+- [x] `string_hash/3 (str, str, obj)` covered by `builtins/hash_output_flag_call_shapes.yaml`
+- [x] `string_hash/3 (str, str, str)` covered by `builtins/hash_output_flag_call_shapes.yaml`
+- [x] `string_hash/3 (str, str, err)` covered by `builtins/hash_output_flag_call_shapes.yaml`
+- [x] `string_hash/3 (str, str, list)` covered by `builtins/hash_output_flag_call_shapes.yaml`
+- [x] `string_hash/3 (str, str, map)` covered by `builtins/hash_output_flag_call_shapes.yaml`
 
 ### `string_hmac`
 

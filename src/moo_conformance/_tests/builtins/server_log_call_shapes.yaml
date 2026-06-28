@@ -1,0 +1,23 @@
+name: server_log_call_shapes
+description: Table-driven TYPE_ANY coverage for server_log().
+
+requires:
+  builtins:
+    - server_log
+
+tests:
+  - name: server_log_level_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [int, "1"]
+        - [float, "1.5"]
+        - [obj, "#0"]
+        - [str, '"x"']
+        - [err, "E_ARGS"]
+        - [list, "{}"]
+        - [map, "[1 -> 2]"]
+    code: 'server_log("call-shape coverage", {expr})'
+    expect:
+      type: int

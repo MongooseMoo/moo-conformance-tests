@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T07:33:42Z`
+- generated_at: `2026-06-28T07:35:35Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `824`
-- missing_call_shapes: `6777`
+- covered_call_shapes: `829`
+- missing_call_shapes: `6772`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3666,12 +3666,6 @@ still needs explicit human review.
   - [ ] `resume/2 (int, err)`
   - [ ] `resume/2 (int, list)`
   - [ ] `resume/2 (int, map)`
-- `server_log` signature `1..2 (str, any)`
-  - [ ] `server_log/2 (str, float)`
-  - [ ] `server_log/2 (str, obj)`
-  - [ ] `server_log/2 (str, err)`
-  - [ ] `server_log/2 (str, list)`
-  - [ ] `server_log/2 (str, map)`
 - `set_connection_option` signature `3..3 (obj, str, any)`
   - [ ] `set_connection_option/3 (obj, str, float)`
   - [ ] `set_connection_option/3 (obj, str, obj)`
@@ -11846,13 +11840,13 @@ still needs explicit human review.
 - signature: `1..2 (str, any)`
 - source: `log.cc`
 - [x] `server_log/1 (str)` covered by `builtins/server_admin.yaml`, `builtins/server_admin.yaml`, `builtins/server_log.yaml` and 2 more
-- [x] `server_log/2 (str, int)` covered by `builtins/server_admin.yaml`, `builtins/server_admin.yaml`, `builtins/server_log.yaml`
-- [ ] `server_log/2 (str, float)`
-- [ ] `server_log/2 (str, obj)`
-- [x] `server_log/2 (str, str)` covered by `builtins/server_admin.yaml`
-- [ ] `server_log/2 (str, err)`
-- [ ] `server_log/2 (str, list)`
-- [ ] `server_log/2 (str, map)`
+- [x] `server_log/2 (str, int)` covered by `builtins/server_admin.yaml`, `builtins/server_admin.yaml`, `builtins/server_log.yaml` and 1 more
+- [x] `server_log/2 (str, float)` covered by `builtins/server_log_call_shapes.yaml`
+- [x] `server_log/2 (str, obj)` covered by `builtins/server_log_call_shapes.yaml`
+- [x] `server_log/2 (str, str)` covered by `builtins/server_admin.yaml`, `builtins/server_log_call_shapes.yaml`
+- [x] `server_log/2 (str, err)` covered by `builtins/server_log_call_shapes.yaml`
+- [x] `server_log/2 (str, list)` covered by `builtins/server_log_call_shapes.yaml`
+- [x] `server_log/2 (str, map)` covered by `builtins/server_log_call_shapes.yaml`
 
 ### `server_version`
 

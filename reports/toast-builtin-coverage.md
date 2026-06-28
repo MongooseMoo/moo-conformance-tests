@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T05:48:30Z`
+- generated_at: `2026-06-28T05:50:22Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `243`
 - required_call_shapes: `7721`
-- covered_call_shapes: `520`
-- missing_call_shapes: `7201`
+- covered_call_shapes: `525`
+- missing_call_shapes: `7196`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3799,12 +3799,6 @@ still needs explicit human review.
   - [ ] `open_network_connection/3 (str, int, map)`
 - `owned_objects` signature `1..1 (obj)`
   - [ ] `owned_objects/1 (obj)`
-- `parent` signature `1..1 (any)`
-  - [ ] `parent/1 (float)`
-  - [ ] `parent/1 (obj)`
-  - [ ] `parent/1 (err)`
-  - [ ] `parent/1 (list)`
-  - [ ] `parent/1 (map)`
 - `parents` signature `1..1 (any)`
   - [ ] `parents/1 (float)`
   - [ ] `parents/1 (obj)`
@@ -12085,12 +12079,12 @@ still needs explicit human review.
 - signature: `1..1 (any)`
 - source: `objects.cc`
 - [x] `parent/1 (int)` covered by `generated_builtins/parent.yaml`, `server/stress_objects.yaml`
-- [ ] `parent/1 (float)`
-- [ ] `parent/1 (obj)`
+- [x] `parent/1 (float)` covered by `builtins/parent_call_shapes.yaml`
+- [x] `parent/1 (obj)` covered by `builtins/parent_call_shapes.yaml`
 - [x] `parent/1 (str)` covered by `server/stress_objects.yaml`
-- [ ] `parent/1 (err)`
-- [ ] `parent/1 (list)`
-- [ ] `parent/1 (map)`
+- [x] `parent/1 (err)` covered by `builtins/parent_call_shapes.yaml`
+- [x] `parent/1 (list)` covered by `builtins/parent_call_shapes.yaml`
+- [x] `parent/1 (map)` covered by `builtins/parent_call_shapes.yaml`
 - [?] `parent/1` unknown argument types covered by `basic/object.yaml`, `builtins/objects.yaml`, `builtins/objects.yaml` and 44 more
 
 ### `parents`

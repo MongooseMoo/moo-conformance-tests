@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T10:10:18Z`
+- generated_at: `2026-06-28T10:11:56Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `4587`
-- missing_call_shapes: `3014`
+- covered_call_shapes: `4594`
+- missing_call_shapes: `3007`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,14 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `sqlite_query` signature `2..3 (int, str, any)`
-  - [ ] `sqlite_query/3 (int, str, int)`
-  - [ ] `sqlite_query/3 (int, str, float)`
-  - [ ] `sqlite_query/3 (int, str, obj)`
-  - [ ] `sqlite_query/3 (int, str, str)`
-  - [ ] `sqlite_query/3 (int, str, err)`
-  - [ ] `sqlite_query/3 (int, str, list)`
-  - [ ] `sqlite_query/3 (int, str, map)`
 - `task_stack` signature `1..3 (int, any, any)`
   - [ ] `task_stack/2 (int, int)`
   - [ ] `task_stack/2 (int, float)`
@@ -8441,13 +8433,13 @@ still needs explicit human review.
 - signature: `2..3 (int, str, any)`
 - source: `sqlite.cc`
 - [x] `sqlite_query/2 (int, str)` covered by `builtins/sqlite.yaml`
-- [ ] `sqlite_query/3 (int, str, int)`
-- [ ] `sqlite_query/3 (int, str, float)`
-- [ ] `sqlite_query/3 (int, str, obj)`
-- [ ] `sqlite_query/3 (int, str, str)`
-- [ ] `sqlite_query/3 (int, str, err)`
-- [ ] `sqlite_query/3 (int, str, list)`
-- [ ] `sqlite_query/3 (int, str, map)`
+- [x] `sqlite_query/3 (int, str, int)` covered by `builtins/sqlite_query_call_shapes.yaml`
+- [x] `sqlite_query/3 (int, str, float)` covered by `builtins/sqlite_query_call_shapes.yaml`
+- [x] `sqlite_query/3 (int, str, obj)` covered by `builtins/sqlite_query_call_shapes.yaml`
+- [x] `sqlite_query/3 (int, str, str)` covered by `builtins/sqlite_query_call_shapes.yaml`
+- [x] `sqlite_query/3 (int, str, err)` covered by `builtins/sqlite_query_call_shapes.yaml`
+- [x] `sqlite_query/3 (int, str, list)` covered by `builtins/sqlite_query_call_shapes.yaml`
+- [x] `sqlite_query/3 (int, str, map)` covered by `builtins/sqlite_query_call_shapes.yaml`
 
 ### `sqrt`
 

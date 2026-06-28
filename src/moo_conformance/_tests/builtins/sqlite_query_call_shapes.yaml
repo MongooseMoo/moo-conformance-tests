@@ -1,0 +1,23 @@
+name: sqlite_query_call_shapes
+description: TYPE_ANY parameter call-shape coverage for sqlite_query().
+
+requires:
+  builtins:
+    - sqlite_query
+
+tests:
+  - name: sqlite_query_invalid_handle_accepts_parameter_{parameter_kind}
+    permission: wizard
+    table:
+      columns: [parameter_kind, parameter_expr]
+      rows:
+        - [int, "1"]
+        - [float, "1.5"]
+        - [obj, "#0"]
+        - [str, '"x"']
+        - [err, "E_ARGS"]
+        - [list, "{}"]
+        - [map, "[1 -> 2]"]
+    code: 'sqlite_query(999999, "SELECT ?", {parameter_expr})'
+    expect:
+      value: E_INVARG

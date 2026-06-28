@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T07:51:38Z`
+- generated_at: `2026-06-28T07:54:07Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `852`
-- missing_call_shapes: `6749`
+- covered_call_shapes: `853`
+- missing_call_shapes: `6748`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3647,8 +3647,6 @@ still needs explicit human review.
 - `recreate` signature `2..3 (obj, obj, obj)`
   - [ ] `recreate/2 (obj, obj)`
   - [ ] `recreate/3 (obj, obj, obj)`
-- `recycle` signature `1..1 (any)`
-  - [ ] `recycle/1 (err)`
 - `renumber` signature `1..1 (obj)`
   - [ ] `renumber/1 (obj)`
 - `resume` signature `1..2 (int, any)`
@@ -11669,7 +11667,7 @@ still needs explicit human review.
 - [x] `recycle/1 (float)` covered by `builtins/recycle.yaml`
 - [x] `recycle/1 (obj)` covered by `builtins/recycle.yaml`, `builtins/task_local.yaml`
 - [x] `recycle/1 (str)` covered by `builtins/recycle.yaml`
-- [ ] `recycle/1 (err)`
+- [x] `recycle/1 (err)` covered by `builtins/recycle_call_shapes.yaml`
 - [x] `recycle/1 (list)` covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml` and 241 more
 - [x] `recycle/1 (map)` covered by `builtins/recycle.yaml`
 - [?] `recycle/1` unknown argument types covered by `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml`, `audit/command_parser_toast_oracle.yaml` and 369 more

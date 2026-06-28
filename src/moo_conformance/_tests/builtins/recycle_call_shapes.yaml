@@ -1,0 +1,13 @@
+name: recycle_call_shapes
+description: TYPE_ANY coverage for recycle().
+
+requires:
+  builtins:
+    - recycle
+
+tests:
+  - name: recycle_rejects_error_value
+    permission: wizard
+    code: recycle(E_ARGS)
+    expect:
+      error: E_TYPE

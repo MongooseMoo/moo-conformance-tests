@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T06:44:19Z`
+- generated_at: `2026-06-28T06:47:40Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `599`
-- missing_call_shapes: `7002`
+- covered_call_shapes: `611`
+- missing_call_shapes: `6990`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3267,19 +3267,6 @@ still needs explicit human review.
   - [ ] `force_input/3 (obj, str, err)`
   - [ ] `force_input/3 (obj, str, list)`
   - [ ] `force_input/3 (obj, str, map)`
-- `index` signature `2..4 (str, str, any, int)`
-  - [ ] `index/3 (str, str, float)`
-  - [ ] `index/3 (str, str, obj)`
-  - [ ] `index/3 (str, str, str)`
-  - [ ] `index/3 (str, str, err)`
-  - [ ] `index/3 (str, str, list)`
-  - [ ] `index/3 (str, str, map)`
-  - [ ] `index/4 (str, str, float, int)`
-  - [ ] `index/4 (str, str, obj, int)`
-  - [ ] `index/4 (str, str, str, int)`
-  - [ ] `index/4 (str, str, err, int)`
-  - [ ] `index/4 (str, str, list, int)`
-  - [ ] `index/4 (str, str, map, int)`
 - `is_member` signature `2..3 (any, any, int)`
   - [ ] `is_member/2 (int, int)`
   - [ ] `is_member/2 (int, float)`
@@ -11024,19 +11011,19 @@ still needs explicit human review.
 - source: `list.cc`
 - [x] `index/2 (str, str)` covered by `basic/string.yaml`, `basic/string.yaml`, `basic/string.yaml` and 3 more
 - [x] `index/3 (str, str, int)` covered by `basic/string.yaml`, `builtins/string_operations.yaml`, `builtins/string_operations.yaml`
-- [ ] `index/3 (str, str, float)`
-- [ ] `index/3 (str, str, obj)`
-- [ ] `index/3 (str, str, str)`
-- [ ] `index/3 (str, str, err)`
-- [ ] `index/3 (str, str, list)`
-- [ ] `index/3 (str, str, map)`
+- [x] `index/3 (str, str, float)` covered by `builtins/index_call_shapes.yaml`
+- [x] `index/3 (str, str, obj)` covered by `builtins/index_call_shapes.yaml`
+- [x] `index/3 (str, str, str)` covered by `builtins/index_call_shapes.yaml`
+- [x] `index/3 (str, str, err)` covered by `builtins/index_call_shapes.yaml`
+- [x] `index/3 (str, str, list)` covered by `builtins/index_call_shapes.yaml`
+- [x] `index/3 (str, str, map)` covered by `builtins/index_call_shapes.yaml`
 - [x] `index/4 (str, str, int, int)` covered by `builtins/string_operations.yaml`, `builtins/string_operations.yaml`, `builtins/string_operations.yaml` and 2 more
-- [ ] `index/4 (str, str, float, int)`
-- [ ] `index/4 (str, str, obj, int)`
-- [ ] `index/4 (str, str, str, int)`
-- [ ] `index/4 (str, str, err, int)`
-- [ ] `index/4 (str, str, list, int)`
-- [ ] `index/4 (str, str, map, int)`
+- [x] `index/4 (str, str, float, int)` covered by `builtins/index_call_shapes.yaml`
+- [x] `index/4 (str, str, obj, int)` covered by `builtins/index_call_shapes.yaml`
+- [x] `index/4 (str, str, str, int)` covered by `builtins/index_call_shapes.yaml`
+- [x] `index/4 (str, str, err, int)` covered by `builtins/index_call_shapes.yaml`
+- [x] `index/4 (str, str, list, int)` covered by `builtins/index_call_shapes.yaml`
+- [x] `index/4 (str, str, map, int)` covered by `builtins/index_call_shapes.yaml`
 - [?] `index/2` unknown argument types covered by `basic/string.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml` and 8 more
 
 ### `is_clear_property`

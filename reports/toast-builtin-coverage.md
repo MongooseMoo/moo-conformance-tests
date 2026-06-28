@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T07:10:17Z`
+- generated_at: `2026-06-28T07:14:43Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `661`
-- missing_call_shapes: `6940`
+- covered_call_shapes: `668`
+- missing_call_shapes: `6933`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3857,14 +3857,6 @@ still needs explicit human review.
   - [ ] `setadd/2 (list, str)`
   - [ ] `setadd/2 (list, err)`
   - [ ] `setadd/2 (list, map)`
-- `setremove` signature `2..2 (list, any)`
-  - [ ] `setremove/2 (list, int)`
-  - [ ] `setremove/2 (list, float)`
-  - [ ] `setremove/2 (list, obj)`
-  - [ ] `setremove/2 (list, str)`
-  - [ ] `setremove/2 (list, err)`
-  - [ ] `setremove/2 (list, list)`
-  - [ ] `setremove/2 (list, map)`
 - `slice` signature `1..3 (list, any, any)`
   - [ ] `slice/1 (list)`
   - [ ] `slice/2 (list, int)`
@@ -12288,13 +12280,13 @@ still needs explicit human review.
 
 - signature: `2..2 (list, any)`
 - source: `list.cc`
-- [ ] `setremove/2 (list, int)`
-- [ ] `setremove/2 (list, float)`
-- [ ] `setremove/2 (list, obj)`
-- [ ] `setremove/2 (list, str)`
-- [ ] `setremove/2 (list, err)`
-- [ ] `setremove/2 (list, list)`
-- [ ] `setremove/2 (list, map)`
+- [x] `setremove/2 (list, int)` covered by `builtins/setremove_call_shapes.yaml`
+- [x] `setremove/2 (list, float)` covered by `builtins/setremove_call_shapes.yaml`
+- [x] `setremove/2 (list, obj)` covered by `builtins/setremove_call_shapes.yaml`
+- [x] `setremove/2 (list, str)` covered by `builtins/setremove_call_shapes.yaml`
+- [x] `setremove/2 (list, err)` covered by `builtins/setremove_call_shapes.yaml`
+- [x] `setremove/2 (list, list)` covered by `builtins/setremove_call_shapes.yaml`
+- [x] `setremove/2 (list, map)` covered by `builtins/setremove_call_shapes.yaml`
 - [?] `setremove/2` unknown argument types covered by `server/limits.yaml`
 
 ### `sin`

@@ -1,0 +1,23 @@
+name: setremove_call_shapes
+description: Table-driven TYPE_ANY coverage for setremove().
+
+requires:
+  builtins:
+    - setremove
+
+tests:
+  - name: setremove_value_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [int, "1"]
+        - [float, "1.5"]
+        - [obj, "#0"]
+        - [str, '"x"']
+        - [err, "E_ARGS"]
+        - [list, "{}"]
+        - [map, "[1 -> 2]"]
+    code: "setremove({1, 1.5, #0, \"x\", E_ARGS, {}, [1 -> 2]}, {expr})"
+    expect:
+      type: list

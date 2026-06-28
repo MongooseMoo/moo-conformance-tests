@@ -1,0 +1,19 @@
+name: sqlite_open_call_shapes
+description: Two-argument call-shape coverage for sqlite_open().
+
+requires:
+  builtins:
+    - sqlite_close
+    - sqlite_open
+
+tests:
+  - name: sqlite_open_two_args_accepts_options_integer
+    permission: wizard
+    steps:
+      - run: 'sqlite_open(":memory:", 0)'
+        capture: handle
+        expect:
+          range: [1, 2147483647]
+    cleanup:
+      - run: "sqlite_close({handle})"
+        as: wizard

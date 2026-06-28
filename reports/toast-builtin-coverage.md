@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T10:08:32Z`
+- generated_at: `2026-06-28T10:10:18Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `4586`
-- missing_call_shapes: `3015`
+- covered_call_shapes: `4587`
+- missing_call_shapes: `3014`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,8 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `sqlite_open` signature `1..2 (str, int)`
-  - [ ] `sqlite_open/2 (str, int)`
 - `sqlite_query` signature `2..3 (int, str, any)`
   - [ ] `sqlite_query/3 (int, str, int)`
   - [ ] `sqlite_query/3 (int, str, float)`
@@ -8436,7 +8434,7 @@ still needs explicit human review.
 - signature: `1..2 (str, int)`
 - source: `sqlite.cc`
 - [x] `sqlite_open/1 (str)` covered by `builtins/sqlite.yaml`, `builtins/sqlite.yaml`, `builtins/sqlite.yaml` and 15 more
-- [ ] `sqlite_open/2 (str, int)`
+- [x] `sqlite_open/2 (str, int)` covered by `builtins/sqlite_open_call_shapes.yaml`
 
 ### `sqlite_query`
 

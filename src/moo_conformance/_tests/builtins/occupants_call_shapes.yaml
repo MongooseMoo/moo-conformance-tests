@@ -1,0 +1,82 @@
+name: occupants_call_shapes
+description: TYPE_ANY parent call-shape coverage for occupants().
+
+requires:
+  builtins:
+    - occupants
+
+tests:
+  - name: occupants_two_args_accepts_parent_{parent_kind}
+    permission: wizard
+    table:
+      columns: [parent_kind, parent_expr]
+      rows:
+        - [obj, "#0"]
+        - [list, "{#0}"]
+    code: "occupants({}, {parent_expr})"
+    expect:
+      type: list
+
+  - name: occupants_two_args_rejects_parent_{parent_kind}
+    permission: wizard
+    table:
+      columns: [parent_kind, parent_expr]
+      rows:
+        - [int, "1"]
+        - [float, "1.5"]
+        - [str, '"x"']
+        - [err, "E_ARGS"]
+        - [map, "[1 -> 2]"]
+    code: "occupants({}, {parent_expr})"
+    expect:
+      error: E_TYPE
+
+  - name: occupants_three_args_accepts_parent_{parent_kind}
+    permission: wizard
+    table:
+      columns: [parent_kind, parent_expr]
+      rows:
+        - [obj, "#0"]
+        - [list, "{#0}"]
+    code: "occupants({}, {parent_expr}, 1)"
+    expect:
+      type: list
+
+  - name: occupants_three_args_rejects_parent_{parent_kind}
+    permission: wizard
+    table:
+      columns: [parent_kind, parent_expr]
+      rows:
+        - [int, "1"]
+        - [float, "1.5"]
+        - [str, '"x"']
+        - [err, "E_ARGS"]
+        - [map, "[1 -> 2]"]
+    code: "occupants({}, {parent_expr}, 1)"
+    expect:
+      error: E_TYPE
+
+  - name: occupants_four_args_accepts_parent_{parent_kind}
+    permission: wizard
+    table:
+      columns: [parent_kind, parent_expr]
+      rows:
+        - [obj, "#0"]
+        - [list, "{#0}"]
+    code: "occupants({}, {parent_expr}, 1, 1)"
+    expect:
+      type: list
+
+  - name: occupants_four_args_rejects_parent_{parent_kind}
+    permission: wizard
+    table:
+      columns: [parent_kind, parent_expr]
+      rows:
+        - [int, "1"]
+        - [float, "1.5"]
+        - [str, '"x"']
+        - [err, "E_ARGS"]
+        - [map, "[1 -> 2]"]
+    code: "occupants({}, {parent_expr}, 1, 1)"
+    expect:
+      error: E_TYPE

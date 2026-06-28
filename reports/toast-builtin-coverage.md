@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T09:34:10Z`
+- generated_at: `2026-06-28T09:36:21Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `4329`
-- missing_call_shapes: `3272`
+- covered_call_shapes: `4349`
+- missing_call_shapes: `3252`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,27 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `occupants` signature `1..4 (list, any, int, int)`
-  - [ ] `occupants/2 (list, int)`
-  - [ ] `occupants/2 (list, float)`
-  - [ ] `occupants/2 (list, obj)`
-  - [ ] `occupants/2 (list, err)`
-  - [ ] `occupants/2 (list, list)`
-  - [ ] `occupants/2 (list, map)`
-  - [ ] `occupants/3 (list, int, int)`
-  - [ ] `occupants/3 (list, float, int)`
-  - [ ] `occupants/3 (list, obj, int)`
-  - [ ] `occupants/3 (list, str, int)`
-  - [ ] `occupants/3 (list, err, int)`
-  - [ ] `occupants/3 (list, list, int)`
-  - [ ] `occupants/3 (list, map, int)`
-  - [ ] `occupants/4 (list, int, int, int)`
-  - [ ] `occupants/4 (list, float, int, int)`
-  - [ ] `occupants/4 (list, obj, int, int)`
-  - [ ] `occupants/4 (list, str, int, int)`
-  - [ ] `occupants/4 (list, err, int, int)`
-  - [ ] `occupants/4 (list, list, int, int)`
-  - [ ] `occupants/4 (list, map, int, int)`
 - `open_network_connection` signature `2..3 (str, int, map)`
   - [ ] `open_network_connection/3 (str, int, map)`
 - `pass` signature `0..* ()`
@@ -7854,27 +7833,27 @@ still needs explicit human review.
 - signature: `1..4 (list, any, int, int)`
 - source: `objects.cc`
 - [x] `occupants/1 (list)` covered by `builtins/object_hierarchy.yaml`, `builtins/object_hierarchy.yaml`
-- [ ] `occupants/2 (list, int)`
-- [ ] `occupants/2 (list, float)`
-- [ ] `occupants/2 (list, obj)`
-- [x] `occupants/2 (list, str)` covered by `builtins/object_hierarchy.yaml`
-- [ ] `occupants/2 (list, err)`
-- [ ] `occupants/2 (list, list)`
-- [ ] `occupants/2 (list, map)`
-- [ ] `occupants/3 (list, int, int)`
-- [ ] `occupants/3 (list, float, int)`
-- [ ] `occupants/3 (list, obj, int)`
-- [ ] `occupants/3 (list, str, int)`
-- [ ] `occupants/3 (list, err, int)`
-- [ ] `occupants/3 (list, list, int)`
-- [ ] `occupants/3 (list, map, int)`
-- [ ] `occupants/4 (list, int, int, int)`
-- [ ] `occupants/4 (list, float, int, int)`
-- [ ] `occupants/4 (list, obj, int, int)`
-- [ ] `occupants/4 (list, str, int, int)`
-- [ ] `occupants/4 (list, err, int, int)`
-- [ ] `occupants/4 (list, list, int, int)`
-- [ ] `occupants/4 (list, map, int, int)`
+- [x] `occupants/2 (list, int)` covered by `builtins/occupants_call_shapes.yaml`
+- [x] `occupants/2 (list, float)` covered by `builtins/occupants_call_shapes.yaml`
+- [x] `occupants/2 (list, obj)` covered by `builtins/occupants_call_shapes.yaml`
+- [x] `occupants/2 (list, str)` covered by `builtins/object_hierarchy.yaml`, `builtins/occupants_call_shapes.yaml`
+- [x] `occupants/2 (list, err)` covered by `builtins/occupants_call_shapes.yaml`
+- [x] `occupants/2 (list, list)` covered by `builtins/occupants_call_shapes.yaml`
+- [x] `occupants/2 (list, map)` covered by `builtins/occupants_call_shapes.yaml`
+- [x] `occupants/3 (list, int, int)` covered by `builtins/occupants_call_shapes.yaml`
+- [x] `occupants/3 (list, float, int)` covered by `builtins/occupants_call_shapes.yaml`
+- [x] `occupants/3 (list, obj, int)` covered by `builtins/occupants_call_shapes.yaml`
+- [x] `occupants/3 (list, str, int)` covered by `builtins/occupants_call_shapes.yaml`
+- [x] `occupants/3 (list, err, int)` covered by `builtins/occupants_call_shapes.yaml`
+- [x] `occupants/3 (list, list, int)` covered by `builtins/occupants_call_shapes.yaml`
+- [x] `occupants/3 (list, map, int)` covered by `builtins/occupants_call_shapes.yaml`
+- [x] `occupants/4 (list, int, int, int)` covered by `builtins/occupants_call_shapes.yaml`
+- [x] `occupants/4 (list, float, int, int)` covered by `builtins/occupants_call_shapes.yaml`
+- [x] `occupants/4 (list, obj, int, int)` covered by `builtins/occupants_call_shapes.yaml`
+- [x] `occupants/4 (list, str, int, int)` covered by `builtins/occupants_call_shapes.yaml`
+- [x] `occupants/4 (list, err, int, int)` covered by `builtins/occupants_call_shapes.yaml`
+- [x] `occupants/4 (list, list, int, int)` covered by `builtins/occupants_call_shapes.yaml`
+- [x] `occupants/4 (list, map, int, int)` covered by `builtins/occupants_call_shapes.yaml`
 - [?] `occupants/1` unknown argument types covered by `builtins/object_hierarchy.yaml`
 - [?] `occupants/2` unknown argument types covered by `builtins/object_hierarchy.yaml`
 - [?] `occupants/3` unknown argument types covered by `builtins/object_hierarchy.yaml`

@@ -1,0 +1,47 @@
+name: min_call_shapes
+description: Table-driven numeric coverage for min().
+
+requires:
+  builtins:
+    - min
+
+tests:
+  - name: min_float_unary
+    permission: wizard
+    code: "min(1.5) == 1.5"
+    expect:
+      value: 1
+
+  - name: min_float_int
+    permission: wizard
+    code: "min(1.5, 1)"
+    expect:
+      error: E_TYPE
+
+  - name: min_int_invalid_second_arg_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [obj, "min(1, #0)"]
+        - [str, 'min(1, "x")']
+        - [err, "min(1, E_ARGS)"]
+        - [list, "min(1, {})"]
+        - [map, "min(1, [1 -> 2])"]
+    code: "{expr}"
+    expect:
+      error: E_TYPE
+
+  - name: min_float_invalid_second_arg_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [obj, "min(1.5, #0)"]
+        - [str, 'min(1.5, "x")']
+        - [err, "min(1.5, E_ARGS)"]
+        - [list, "min(1.5, {})"]
+        - [map, "min(1.5, [1 -> 2])"]
+    code: "{expr}"
+    expect:
+      error: E_TYPE

@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T06:26:13Z`
+- generated_at: `2026-06-28T06:28:32Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `564`
-- missing_call_shapes: `7037`
+- covered_call_shapes: `576`
+- missing_call_shapes: `7025`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3558,19 +3558,6 @@ still needs explicit human review.
   - [ ] `match/3 (str, str, err)`
   - [ ] `match/3 (str, str, list)`
   - [ ] `match/3 (str, str, map)`
-- `min` signature `1..* (numeric)`
-  - [ ] `min/1 (float)`
-  - [ ] `min/2 (int, obj)`
-  - [ ] `min/2 (int, str)`
-  - [ ] `min/2 (int, err)`
-  - [ ] `min/2 (int, list)`
-  - [ ] `min/2 (int, map)`
-  - [ ] `min/2 (float, int)`
-  - [ ] `min/2 (float, obj)`
-  - [ ] `min/2 (float, str)`
-  - [ ] `min/2 (float, err)`
-  - [ ] `min/2 (float, list)`
-  - [ ] `min/2 (float, map)`
 - `move` signature `2..3 (obj, obj, int)`
   - [ ] `move/2 (obj, obj)`
   - [ ] `move/3 (obj, obj, int)`
@@ -11571,21 +11558,21 @@ still needs explicit human review.
 - signature: `1..* (numeric)`
 - source: `numbers.cc`
 - [x] `min/1 (int)` covered by `builtins/math.yaml`
-- [ ] `min/1 (float)`
+- [x] `min/1 (float)` covered by `builtins/min_call_shapes.yaml`
 - [x] `min/2 (int, int)` covered by `builtins/math.yaml`
 - [x] `min/2 (int, float)` covered by `builtins/math.yaml`
-- [ ] `min/2 (int, obj)`
-- [ ] `min/2 (int, str)`
-- [ ] `min/2 (int, err)`
-- [ ] `min/2 (int, list)`
-- [ ] `min/2 (int, map)`
-- [ ] `min/2 (float, int)`
+- [x] `min/2 (int, obj)` covered by `builtins/min_call_shapes.yaml`
+- [x] `min/2 (int, str)` covered by `builtins/min_call_shapes.yaml`
+- [x] `min/2 (int, err)` covered by `builtins/min_call_shapes.yaml`
+- [x] `min/2 (int, list)` covered by `builtins/min_call_shapes.yaml`
+- [x] `min/2 (int, map)` covered by `builtins/min_call_shapes.yaml`
+- [x] `min/2 (float, int)` covered by `builtins/min_call_shapes.yaml`
 - [x] `min/2 (float, float)` covered by `builtins/math.yaml`
-- [ ] `min/2 (float, obj)`
-- [ ] `min/2 (float, str)`
-- [ ] `min/2 (float, err)`
-- [ ] `min/2 (float, list)`
-- [ ] `min/2 (float, map)`
+- [x] `min/2 (float, obj)` covered by `builtins/min_call_shapes.yaml`
+- [x] `min/2 (float, str)` covered by `builtins/min_call_shapes.yaml`
+- [x] `min/2 (float, err)` covered by `builtins/min_call_shapes.yaml`
+- [x] `min/2 (float, list)` covered by `builtins/min_call_shapes.yaml`
+- [x] `min/2 (float, map)` covered by `builtins/min_call_shapes.yaml`
 
 ### `move`
 

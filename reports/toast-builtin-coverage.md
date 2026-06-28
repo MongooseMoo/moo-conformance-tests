@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T09:24:48Z`
+- generated_at: `2026-06-28T09:26:16Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `4264`
-- missing_call_shapes: `3337`
+- covered_call_shapes: `4270`
+- missing_call_shapes: `3331`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,13 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `listeners` signature `0..1 (any)`
-  - [ ] `listeners/1 (int)`
-  - [ ] `listeners/1 (float)`
-  - [ ] `listeners/1 (str)`
-  - [ ] `listeners/1 (err)`
-  - [ ] `listeners/1 (list)`
-  - [ ] `listeners/1 (map)`
 - `locations` signature `1..3 (obj, obj, int)`
   - [ ] `locations/1 (obj)`
   - [ ] `locations/2 (obj, obj)`
@@ -7612,13 +7605,13 @@ still needs explicit human review.
 - signature: `0..1 (any)`
 - source: `server.cc`
 - [x] `listeners/0 ()` covered by `builtins/server_admin.yaml`, `builtins/server_admin.yaml`, `builtins/server_admin.yaml` and 8 more
-- [ ] `listeners/1 (int)`
-- [ ] `listeners/1 (float)`
+- [x] `listeners/1 (int)` covered by `builtins/listeners_call_shapes.yaml`
+- [x] `listeners/1 (float)` covered by `builtins/listeners_call_shapes.yaml`
 - [x] `listeners/1 (obj)` covered by `builtins/server_admin.yaml`, `builtins/server_admin.yaml`
-- [ ] `listeners/1 (str)`
-- [ ] `listeners/1 (err)`
-- [ ] `listeners/1 (list)`
-- [ ] `listeners/1 (map)`
+- [x] `listeners/1 (str)` covered by `builtins/listeners_call_shapes.yaml`
+- [x] `listeners/1 (err)` covered by `builtins/listeners_call_shapes.yaml`
+- [x] `listeners/1 (list)` covered by `builtins/listeners_call_shapes.yaml`
+- [x] `listeners/1 (map)` covered by `builtins/listeners_call_shapes.yaml`
 - [?] `listeners/1` unknown argument types covered by `builtins/server_admin.yaml`
 
 ### `listinsert`

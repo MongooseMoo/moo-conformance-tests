@@ -1,0 +1,22 @@
+name: listeners_call_shapes
+description: TYPE_ANY filter call-shape coverage for listeners().
+
+requires:
+  builtins:
+    - listeners
+
+tests:
+  - name: listeners_accepts_filter_{filter_kind}
+    permission: wizard
+    table:
+      columns: [filter_kind, filter_expr]
+      rows:
+        - [int, "0"]
+        - [float, "1.5"]
+        - [str, '"listener"']
+        - [err, "E_ARGS"]
+        - [list, "{}"]
+        - [map, "[1 -> 2]"]
+    code: "listeners({filter_expr})"
+    expect:
+      type: list

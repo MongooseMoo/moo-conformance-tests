@@ -1,0 +1,22 @@
+name: floatstr_call_shapes
+description: Table-driven TYPE_ANY coverage for floatstr().
+
+requires:
+  builtins:
+    - floatstr
+
+tests:
+  - name: floatstr_third_arg_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [float, "1.5"]
+        - [obj, "#0"]
+        - [str, '"x"']
+        - [err, "E_ARGS"]
+        - [list, "{}"]
+        - [map, "[1 -> 2]"]
+    code: "floatstr(3.14159, 2, {expr})"
+    expect:
+      type: str

@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T06:20:58Z`
+- generated_at: `2026-06-28T06:23:14Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `546`
-- missing_call_shapes: `7055`
+- covered_call_shapes: `552`
+- missing_call_shapes: `7049`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3251,13 +3251,6 @@ still needs explicit human review.
   - [ ] `file_type/1 (err)`
   - [ ] `file_type/1 (list)`
   - [ ] `file_type/1 (map)`
-- `floatstr` signature `2..3 (float, int, any)`
-  - [ ] `floatstr/3 (float, int, float)`
-  - [ ] `floatstr/3 (float, int, obj)`
-  - [ ] `floatstr/3 (float, int, str)`
-  - [ ] `floatstr/3 (float, int, err)`
-  - [ ] `floatstr/3 (float, int, list)`
-  - [ ] `floatstr/3 (float, int, map)`
 - `flush_input` signature `1..2 (obj, any)`
   - [ ] `flush_input/2 (obj, int)`
   - [ ] `flush_input/2 (obj, float)`
@@ -10995,12 +10988,12 @@ still needs explicit human review.
 - source: `numbers.cc`
 - [x] `floatstr/2 (float, int)` covered by `builtins/math.yaml`, `builtins/math.yaml`, `builtins/math.yaml` and 1 more
 - [x] `floatstr/3 (float, int, int)` covered by `builtins/math.yaml`
-- [ ] `floatstr/3 (float, int, float)`
-- [ ] `floatstr/3 (float, int, obj)`
-- [ ] `floatstr/3 (float, int, str)`
-- [ ] `floatstr/3 (float, int, err)`
-- [ ] `floatstr/3 (float, int, list)`
-- [ ] `floatstr/3 (float, int, map)`
+- [x] `floatstr/3 (float, int, float)` covered by `builtins/floatstr_call_shapes.yaml`
+- [x] `floatstr/3 (float, int, obj)` covered by `builtins/floatstr_call_shapes.yaml`
+- [x] `floatstr/3 (float, int, str)` covered by `builtins/floatstr_call_shapes.yaml`
+- [x] `floatstr/3 (float, int, err)` covered by `builtins/floatstr_call_shapes.yaml`
+- [x] `floatstr/3 (float, int, list)` covered by `builtins/floatstr_call_shapes.yaml`
+- [x] `floatstr/3 (float, int, map)` covered by `builtins/floatstr_call_shapes.yaml`
 
 ### `floor`
 

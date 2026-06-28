@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T09:04:20Z`
+- generated_at: `2026-06-28T09:07:09Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `4040`
-- missing_call_shapes: `3561`
+- covered_call_shapes: `4044`
+- missing_call_shapes: `3557`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,13 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `file_count_lines` signature `1..1 (int)`
-  - [ ] `file_count_lines/1 (int)`
-- `file_flush` signature `1..1 (int)`
-  - [ ] `file_flush/1 (int)`
-- `file_grep` signature `2..3 (int, str, int)`
-  - [ ] `file_grep/2 (int, str)`
-  - [ ] `file_grep/3 (int, str, int)`
 - `flush_input` signature `1..2 (obj, any)`
   - [ ] `flush_input/2 (obj, int)`
   - [ ] `flush_input/2 (obj, float)`
@@ -7217,7 +7210,7 @@ still needs explicit human review.
 
 - signature: `1..1 (int)`
 - source: `fileio.cc`
-- [ ] `file_count_lines/1 (int)`
+- [x] `file_count_lines/1 (int)` covered by `builtins/file_handle_call_shapes.yaml`
 
 ### `file_eof`
 
@@ -7230,14 +7223,14 @@ still needs explicit human review.
 
 - signature: `1..1 (int)`
 - source: `fileio.cc`
-- [ ] `file_flush/1 (int)`
+- [x] `file_flush/1 (int)` covered by `builtins/file_handle_call_shapes.yaml`
 
 ### `file_grep`
 
 - signature: `2..3 (int, str, int)`
 - source: `fileio.cc`
-- [ ] `file_grep/2 (int, str)`
-- [ ] `file_grep/3 (int, str, int)`
+- [x] `file_grep/2 (int, str)` covered by `builtins/file_handle_call_shapes.yaml`
+- [x] `file_grep/3 (int, str, int)` covered by `builtins/file_handle_call_shapes.yaml`
 
 ### `file_handles`
 

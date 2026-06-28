@@ -1,0 +1,33 @@
+name: file_handle_call_shapes
+description: Literal FHANDLE call-shape coverage for file handle builtins.
+
+requires:
+  builtins:
+    - file_count_lines
+    - file_flush
+    - file_grep
+
+tests:
+  - name: file_count_lines_rejects_invalid_literal_handle
+    permission: wizard
+    code: "file_count_lines(0)"
+    expect:
+      error: E_INVARG
+
+  - name: file_flush_rejects_invalid_literal_handle
+    permission: wizard
+    code: "file_flush(0)"
+    expect:
+      error: E_INVARG
+
+  - name: file_grep_two_args_rejects_invalid_literal_handle
+    permission: wizard
+    code: 'file_grep(0, "needle")'
+    expect:
+      error: E_INVARG
+
+  - name: file_grep_three_args_rejects_invalid_literal_handle
+    permission: wizard
+    code: 'file_grep(0, "needle", 1)'
+    expect:
+      error: E_INVARG

@@ -1,0 +1,15 @@
+name: exec_call_shapes
+description: Call-shape coverage for exec().
+
+requires:
+  builtins:
+    - exec
+  features:
+    - exec_support
+
+tests:
+  - name: exec_three_arguments_rejects_missing_command
+    permission: wizard
+    code: 'exec({"test_does_not_exist"}, "", {})'
+    expect:
+      error: E_INVARG

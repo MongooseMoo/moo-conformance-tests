@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T08:57:31Z`
+- generated_at: `2026-06-28T09:00:11Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `3997`
-- missing_call_shapes: `3604`
+- covered_call_shapes: `3998`
+- missing_call_shapes: `3603`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,8 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `exec` signature `1..3 (list, str, list)`
-  - [ ] `exec/3 (list, str, list)`
 - `file_count_lines` signature `1..1 (int)`
   - [ ] `file_count_lines/1 (int)`
 - `file_flush` signature `1..1 (int)`
@@ -7236,7 +7234,7 @@ still needs explicit human review.
 - source: `exec.cc`
 - [x] `exec/1 (list)` covered by `server/exec.yaml`, `server/exec.yaml`, `server/exec.yaml` and 8 more
 - [x] `exec/2 (list, str)` covered by `server/exec.yaml`, `server/exec.yaml`, `server/exec.yaml` and 2 more
-- [ ] `exec/3 (list, str, list)`
+- [x] `exec/3 (list, str, list)` covered by `builtins/exec_call_shapes.yaml`
 
 ### `exp`
 

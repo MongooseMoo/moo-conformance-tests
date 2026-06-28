@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T07:26:19Z`
+- generated_at: `2026-06-28T07:27:59Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `752`
-- missing_call_shapes: `6849`
+- covered_call_shapes: `758`
+- missing_call_shapes: `6843`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -135,13 +135,6 @@ still needs explicit human review.
 - `argon2` signature `2..5 (str, str, int, int, int)`
   - [ ] `argon2/3 (str, str, int)`
   - [ ] `argon2/4 (str, str, int, int)`
-- `binary_hmac` signature `2..4 (str, str, str, any)`
-  - [ ] `binary_hmac/4 (str, str, str, float)`
-  - [ ] `binary_hmac/4 (str, str, str, obj)`
-  - [ ] `binary_hmac/4 (str, str, str, str)`
-  - [ ] `binary_hmac/4 (str, str, str, err)`
-  - [ ] `binary_hmac/4 (str, str, str, list)`
-  - [ ] `binary_hmac/4 (str, str, str, map)`
 - `call_function` signature `1..* (str)`
   - [ ] `call_function/2 (str, float)`
   - [ ] `call_function/2 (str, obj)`
@@ -7178,13 +7171,13 @@ still needs explicit human review.
 - source: `crypto.cc`
 - [x] `binary_hmac/2 (str, str)` covered by `builtins/algorithms.yaml`, `builtins/algorithms.yaml`
 - [x] `binary_hmac/3 (str, str, str)` covered by `builtins/algorithms.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml` and 8 more
-- [x] `binary_hmac/4 (str, str, str, int)` covered by `builtins/algorithms.yaml`
-- [ ] `binary_hmac/4 (str, str, str, float)`
-- [ ] `binary_hmac/4 (str, str, str, obj)`
-- [ ] `binary_hmac/4 (str, str, str, str)`
-- [ ] `binary_hmac/4 (str, str, str, err)`
-- [ ] `binary_hmac/4 (str, str, str, list)`
-- [ ] `binary_hmac/4 (str, str, str, map)`
+- [x] `binary_hmac/4 (str, str, str, int)` covered by `builtins/algorithms.yaml`, `builtins/binary_hmac_call_shapes.yaml`
+- [x] `binary_hmac/4 (str, str, str, float)` covered by `builtins/binary_hmac_call_shapes.yaml`
+- [x] `binary_hmac/4 (str, str, str, obj)` covered by `builtins/binary_hmac_call_shapes.yaml`
+- [x] `binary_hmac/4 (str, str, str, str)` covered by `builtins/binary_hmac_call_shapes.yaml`
+- [x] `binary_hmac/4 (str, str, str, err)` covered by `builtins/binary_hmac_call_shapes.yaml`
+- [x] `binary_hmac/4 (str, str, str, list)` covered by `builtins/binary_hmac_call_shapes.yaml`
+- [x] `binary_hmac/4 (str, str, str, map)` covered by `builtins/binary_hmac_call_shapes.yaml`
 
 ### `boot_player`
 

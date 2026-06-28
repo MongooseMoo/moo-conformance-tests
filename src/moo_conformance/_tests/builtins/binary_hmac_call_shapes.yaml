@@ -1,0 +1,23 @@
+name: binary_hmac_call_shapes
+description: Table-driven TYPE_ANY coverage for binary_hmac().
+
+requires:
+  builtins:
+    - binary_hmac
+
+tests:
+  - name: binary_hmac_binary_flag_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [int, "1"]
+        - [float, "1.5"]
+        - [obj, "#0"]
+        - [str, '"x"']
+        - [err, "E_ARGS"]
+        - [list, "{}"]
+        - [map, "[1 -> 2]"]
+    code: 'binary_hmac("abc", "key", "sha256", {expr})'
+    expect:
+      type: str

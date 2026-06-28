@@ -1,0 +1,13 @@
+name: connection_name_call_shapes
+description: Arity coverage for connection_name().
+
+requires:
+  builtins:
+    - connection_name
+
+tests:
+  - name: connection_name_ip_mode_invalid_connection
+    permission: wizard
+    code: "connection_name(#999999, 1)"
+    expect:
+      error: E_INVARG

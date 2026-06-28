@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T07:31:30Z`
+- generated_at: `2026-06-28T07:33:42Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `818`
-- missing_call_shapes: `6783`
+- covered_call_shapes: `824`
+- missing_call_shapes: `6777`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3672,13 +3672,6 @@ still needs explicit human review.
   - [ ] `server_log/2 (str, err)`
   - [ ] `server_log/2 (str, list)`
   - [ ] `server_log/2 (str, map)`
-- `server_version` signature `0..1 (any)`
-  - [ ] `server_version/1 (int)`
-  - [ ] `server_version/1 (float)`
-  - [ ] `server_version/1 (obj)`
-  - [ ] `server_version/1 (err)`
-  - [ ] `server_version/1 (list)`
-  - [ ] `server_version/1 (map)`
 - `set_connection_option` signature `3..3 (obj, str, any)`
   - [ ] `set_connection_option/3 (obj, str, float)`
   - [ ] `set_connection_option/3 (obj, str, obj)`
@@ -11866,13 +11859,13 @@ still needs explicit human review.
 - signature: `0..1 (any)`
 - source: `server.cc`
 - [x] `server_version/0 ()` covered by `builtins/server_admin.yaml`, `builtins/server_admin.yaml`
-- [ ] `server_version/1 (int)`
-- [ ] `server_version/1 (float)`
-- [ ] `server_version/1 (obj)`
-- [x] `server_version/1 (str)` covered by `builtins/server_admin.yaml`, `builtins/server_admin.yaml`, `builtins/server_admin.yaml`
-- [ ] `server_version/1 (err)`
-- [ ] `server_version/1 (list)`
-- [ ] `server_version/1 (map)`
+- [x] `server_version/1 (int)` covered by `builtins/server_version_call_shapes.yaml`
+- [x] `server_version/1 (float)` covered by `builtins/server_version_call_shapes.yaml`
+- [x] `server_version/1 (obj)` covered by `builtins/server_version_call_shapes.yaml`
+- [x] `server_version/1 (str)` covered by `builtins/server_admin.yaml`, `builtins/server_admin.yaml`, `builtins/server_admin.yaml` and 1 more
+- [x] `server_version/1 (err)` covered by `builtins/server_version_call_shapes.yaml`
+- [x] `server_version/1 (list)` covered by `builtins/server_version_call_shapes.yaml`
+- [x] `server_version/1 (map)` covered by `builtins/server_version_call_shapes.yaml`
 
 ### `set_connection_option`
 

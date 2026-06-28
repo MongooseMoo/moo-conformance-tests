@@ -1,0 +1,13 @@
+name: crypt_call_shapes
+description: Call-shape coverage for crypt().
+
+requires:
+  builtins:
+    - crypt
+
+tests:
+  - name: crypt_one_arg_string_returns_string
+    permission: wizard
+    code: 'crypt("password")'
+    expect:
+      type: str

@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T08:38:34Z`
+- generated_at: `2026-06-28T08:43:03Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `3827`
-- missing_call_shapes: `3774`
+- covered_call_shapes: `3828`
+- missing_call_shapes: `3773`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,8 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `crypt` signature `1..2 (str, str)`
-  - [ ] `crypt/1 (str)`
 - `decode_base64` signature `1..2 (str, any)`
   - [ ] `decode_base64/2 (str, float)`
   - [ ] `decode_base64/2 (str, obj)`
@@ -7069,7 +7067,7 @@ still needs explicit human review.
 
 - signature: `1..2 (str, str)`
 - source: `crypto.cc`
-- [ ] `crypt/1 (str)`
+- [x] `crypt/1 (str)` covered by `builtins/crypt_call_shapes.yaml`
 - [x] `crypt/2 (str, str)` covered by `basic/string.yaml`, `builtins/algorithms.yaml`, `builtins/algorithms.yaml` and 8 more
 
 ### `ctime`

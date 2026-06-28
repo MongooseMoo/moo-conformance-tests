@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T07:07:12Z`
+- generated_at: `2026-06-28T07:10:17Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `649`
-- missing_call_shapes: `6952`
+- covered_call_shapes: `661`
+- missing_call_shapes: `6940`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3484,19 +3484,6 @@ still needs explicit human review.
   - [ ] `listeners/1 (err)`
   - [ ] `listeners/1 (list)`
   - [ ] `listeners/1 (map)`
-- `listinsert` signature `2..3 (list, any, int)`
-  - [ ] `listinsert/2 (list, int)`
-  - [ ] `listinsert/2 (list, float)`
-  - [ ] `listinsert/2 (list, obj)`
-  - [ ] `listinsert/2 (list, str)`
-  - [ ] `listinsert/2 (list, err)`
-  - [ ] `listinsert/2 (list, map)`
-  - [ ] `listinsert/3 (list, float, int)`
-  - [ ] `listinsert/3 (list, obj, int)`
-  - [ ] `listinsert/3 (list, str, int)`
-  - [ ] `listinsert/3 (list, err, int)`
-  - [ ] `listinsert/3 (list, list, int)`
-  - [ ] `listinsert/3 (list, map, int)`
 - `locations` signature `1..3 (obj, obj, int)`
   - [ ] `locations/1 (obj)`
   - [ ] `locations/2 (obj, obj)`
@@ -11297,20 +11284,20 @@ still needs explicit human review.
 
 - signature: `2..3 (list, any, int)`
 - source: `list.cc`
-- [ ] `listinsert/2 (list, int)`
-- [ ] `listinsert/2 (list, float)`
-- [ ] `listinsert/2 (list, obj)`
-- [ ] `listinsert/2 (list, str)`
-- [ ] `listinsert/2 (list, err)`
+- [x] `listinsert/2 (list, int)` covered by `builtins/listinsert_call_shapes.yaml`
+- [x] `listinsert/2 (list, float)` covered by `builtins/listinsert_call_shapes.yaml`
+- [x] `listinsert/2 (list, obj)` covered by `builtins/listinsert_call_shapes.yaml`
+- [x] `listinsert/2 (list, str)` covered by `builtins/listinsert_call_shapes.yaml`
+- [x] `listinsert/2 (list, err)` covered by `builtins/listinsert_call_shapes.yaml`
 - [x] `listinsert/2 (list, list)` covered by `server/limits.yaml`, `server/limits.yaml`
-- [ ] `listinsert/2 (list, map)`
+- [x] `listinsert/2 (list, map)` covered by `builtins/listinsert_call_shapes.yaml`
 - [x] `listinsert/3 (list, int, int)` covered by `basic/list.yaml`, `basic/list.yaml`
-- [ ] `listinsert/3 (list, float, int)`
-- [ ] `listinsert/3 (list, obj, int)`
-- [ ] `listinsert/3 (list, str, int)`
-- [ ] `listinsert/3 (list, err, int)`
-- [ ] `listinsert/3 (list, list, int)`
-- [ ] `listinsert/3 (list, map, int)`
+- [x] `listinsert/3 (list, float, int)` covered by `builtins/listinsert_call_shapes.yaml`
+- [x] `listinsert/3 (list, obj, int)` covered by `builtins/listinsert_call_shapes.yaml`
+- [x] `listinsert/3 (list, str, int)` covered by `builtins/listinsert_call_shapes.yaml`
+- [x] `listinsert/3 (list, err, int)` covered by `builtins/listinsert_call_shapes.yaml`
+- [x] `listinsert/3 (list, list, int)` covered by `builtins/listinsert_call_shapes.yaml`
+- [x] `listinsert/3 (list, map, int)` covered by `builtins/listinsert_call_shapes.yaml`
 - [?] `listinsert/2` unknown argument types covered by `server/limits.yaml`, `server/limits.yaml`
 
 ### `listset`

@@ -1,0 +1,13 @@
+name: sqlite_last_insert_row_id_call_shapes
+description: Integer handle call-shape coverage for sqlite_last_insert_row_id().
+
+requires:
+  builtins:
+    - sqlite_last_insert_row_id
+
+tests:
+  - name: sqlite_last_insert_row_id_rejects_invalid_handle
+    permission: wizard
+    code: "sqlite_last_insert_row_id(999999)"
+    expect:
+      error: E_INVARG

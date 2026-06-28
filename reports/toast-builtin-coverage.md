@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T10:04:50Z`
+- generated_at: `2026-06-28T10:06:49Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `4578`
-- missing_call_shapes: `3023`
+- covered_call_shapes: `4579`
+- missing_call_shapes: `3022`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -20,8 +20,6 @@ still needs explicit human review.
 
 ## Missing Call-Shape Checklist
 
-- `sqlite_last_insert_row_id` signature `1..1 (int)`
-  - [ ] `sqlite_last_insert_row_id/1 (int)`
 - `sqlite_limit` signature `3..3 (int, any, int)`
   - [ ] `sqlite_limit/3 (int, int, int)`
   - [ ] `sqlite_limit/3 (int, float, int)`
@@ -8426,7 +8424,7 @@ still needs explicit human review.
 
 - signature: `1..1 (int)`
 - source: `sqlite.cc`
-- [ ] `sqlite_last_insert_row_id/1 (int)`
+- [x] `sqlite_last_insert_row_id/1 (int)` covered by `builtins/sqlite_last_insert_row_id_call_shapes.yaml`
 
 ### `sqlite_limit`
 

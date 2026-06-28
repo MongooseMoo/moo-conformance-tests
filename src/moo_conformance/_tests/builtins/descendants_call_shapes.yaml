@@ -1,0 +1,83 @@
+name: descendants_call_shapes
+description: Table-driven TYPE_ANY coverage for descendants().
+
+requires:
+  builtins:
+    - descendants
+
+tests:
+  - name: descendants_one_arg_invalid_object
+    permission: wizard
+    code: "descendants(#999999)"
+    expect:
+      error: E_INVARG
+
+  - name: descendants_one_arg_rejects_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [err, "E_ARGS"]
+        - [list, "{}"]
+        - [map, "[1 -> 2]"]
+    code: "descendants({expr})"
+    expect:
+      error: E_TYPE
+
+  - name: descendants_two_args_{case}
+    permission: wizard
+    table:
+      columns: [case, expr, error]
+      rows:
+        - [int_int, "descendants(1, 1)", E_TYPE]
+        - [int_float, "descendants(1, 1.5)", E_TYPE]
+        - [int_obj, "descendants(1, #0)", E_TYPE]
+        - [int_str, 'descendants(1, "x")', E_TYPE]
+        - [int_err, "descendants(1, E_ARGS)", E_TYPE]
+        - [int_list, "descendants(1, {})", E_TYPE]
+        - [int_map, "descendants(1, [1 -> 2])", E_TYPE]
+        - [float_int, "descendants(1.5, 1)", E_TYPE]
+        - [float_float, "descendants(1.5, 1.5)", E_TYPE]
+        - [float_obj, "descendants(1.5, #0)", E_TYPE]
+        - [float_str, 'descendants(1.5, "x")', E_TYPE]
+        - [float_err, "descendants(1.5, E_ARGS)", E_TYPE]
+        - [float_list, "descendants(1.5, {})", E_TYPE]
+        - [float_map, "descendants(1.5, [1 -> 2])", E_TYPE]
+        - [obj_int, "descendants(#999999, 1)", E_INVARG]
+        - [obj_float, "descendants(#999999, 1.5)", E_INVARG]
+        - [obj_obj, "descendants(#999999, #0)", E_INVARG]
+        - [obj_str, 'descendants(#999999, "x")', E_INVARG]
+        - [obj_err, "descendants(#999999, E_ARGS)", E_INVARG]
+        - [obj_list, "descendants(#999999, {})", E_INVARG]
+        - [obj_map, "descendants(#999999, [1 -> 2])", E_INVARG]
+        - [str_int, 'descendants("x", 1)', E_TYPE]
+        - [str_float, 'descendants("x", 1.5)', E_TYPE]
+        - [str_obj, 'descendants("x", #0)', E_TYPE]
+        - [str_str, 'descendants("x", "x")', E_TYPE]
+        - [str_err, 'descendants("x", E_ARGS)', E_TYPE]
+        - [str_list, 'descendants("x", {})', E_TYPE]
+        - [str_map, 'descendants("x", [1 -> 2])', E_TYPE]
+        - [err_int, "descendants(E_ARGS, 1)", E_TYPE]
+        - [err_float, "descendants(E_ARGS, 1.5)", E_TYPE]
+        - [err_obj, "descendants(E_ARGS, #0)", E_TYPE]
+        - [err_str, 'descendants(E_ARGS, "x")', E_TYPE]
+        - [err_err, "descendants(E_ARGS, E_ARGS)", E_TYPE]
+        - [err_list, "descendants(E_ARGS, {})", E_TYPE]
+        - [err_map, "descendants(E_ARGS, [1 -> 2])", E_TYPE]
+        - [list_int, "descendants({}, 1)", E_TYPE]
+        - [list_float, "descendants({}, 1.5)", E_TYPE]
+        - [list_obj, "descendants({}, #0)", E_TYPE]
+        - [list_str, 'descendants({}, "x")', E_TYPE]
+        - [list_err, "descendants({}, E_ARGS)", E_TYPE]
+        - [list_list, "descendants({}, {})", E_TYPE]
+        - [list_map, "descendants({}, [1 -> 2])", E_TYPE]
+        - [map_int, "descendants([1 -> 2], 1)", E_TYPE]
+        - [map_float, "descendants([1 -> 2], 1.5)", E_TYPE]
+        - [map_obj, "descendants([1 -> 2], #0)", E_TYPE]
+        - [map_str, 'descendants([1 -> 2], "x")', E_TYPE]
+        - [map_err, "descendants([1 -> 2], E_ARGS)", E_TYPE]
+        - [map_list, "descendants([1 -> 2], {})", E_TYPE]
+        - [map_map, "descendants([1 -> 2], [1 -> 2])", E_TYPE]
+    code: "{expr}"
+    expect:
+      error: "{error}"

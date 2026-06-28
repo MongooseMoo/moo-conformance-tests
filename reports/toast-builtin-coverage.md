@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T08:14:07Z`
+- generated_at: `2026-06-28T08:17:01Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `925`
-- missing_call_shapes: `6676`
+- covered_call_shapes: `978`
+- missing_call_shapes: `6623`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -2937,60 +2937,6 @@ still needs explicit human review.
   - [ ] `delete_verb/2 (map, err)`
   - [ ] `delete_verb/2 (map, list)`
   - [ ] `delete_verb/2 (map, map)`
-- `descendants` signature `1..2 (any, any)`
-  - [ ] `descendants/1 (obj)`
-  - [ ] `descendants/1 (err)`
-  - [ ] `descendants/1 (list)`
-  - [ ] `descendants/1 (map)`
-  - [ ] `descendants/2 (int, int)`
-  - [ ] `descendants/2 (int, float)`
-  - [ ] `descendants/2 (int, obj)`
-  - [ ] `descendants/2 (int, str)`
-  - [ ] `descendants/2 (int, err)`
-  - [ ] `descendants/2 (int, list)`
-  - [ ] `descendants/2 (int, map)`
-  - [ ] `descendants/2 (float, int)`
-  - [ ] `descendants/2 (float, float)`
-  - [ ] `descendants/2 (float, obj)`
-  - [ ] `descendants/2 (float, str)`
-  - [ ] `descendants/2 (float, err)`
-  - [ ] `descendants/2 (float, list)`
-  - [ ] `descendants/2 (float, map)`
-  - [ ] `descendants/2 (obj, int)`
-  - [ ] `descendants/2 (obj, float)`
-  - [ ] `descendants/2 (obj, obj)`
-  - [ ] `descendants/2 (obj, str)`
-  - [ ] `descendants/2 (obj, err)`
-  - [ ] `descendants/2 (obj, list)`
-  - [ ] `descendants/2 (obj, map)`
-  - [ ] `descendants/2 (str, int)`
-  - [ ] `descendants/2 (str, float)`
-  - [ ] `descendants/2 (str, obj)`
-  - [ ] `descendants/2 (str, str)`
-  - [ ] `descendants/2 (str, err)`
-  - [ ] `descendants/2 (str, list)`
-  - [ ] `descendants/2 (str, map)`
-  - [ ] `descendants/2 (err, int)`
-  - [ ] `descendants/2 (err, float)`
-  - [ ] `descendants/2 (err, obj)`
-  - [ ] `descendants/2 (err, str)`
-  - [ ] `descendants/2 (err, err)`
-  - [ ] `descendants/2 (err, list)`
-  - [ ] `descendants/2 (err, map)`
-  - [ ] `descendants/2 (list, int)`
-  - [ ] `descendants/2 (list, float)`
-  - [ ] `descendants/2 (list, obj)`
-  - [ ] `descendants/2 (list, str)`
-  - [ ] `descendants/2 (list, err)`
-  - [ ] `descendants/2 (list, list)`
-  - [ ] `descendants/2 (list, map)`
-  - [ ] `descendants/2 (map, int)`
-  - [ ] `descendants/2 (map, float)`
-  - [ ] `descendants/2 (map, obj)`
-  - [ ] `descendants/2 (map, str)`
-  - [ ] `descendants/2 (map, err)`
-  - [ ] `descendants/2 (map, list)`
-  - [ ] `descendants/2 (map, map)`
 - `disassemble` signature `2..2 (any, any)`
   - [ ] `disassemble/2 (int, int)`
   - [ ] `disassemble/2 (int, float)`
@@ -10095,60 +10041,60 @@ still needs explicit human review.
 - source: `objects.cc`
 - [x] `descendants/1 (int)` covered by `server/stress_objects.yaml`
 - [x] `descendants/1 (float)` covered by `server/stress_objects.yaml`
-- [ ] `descendants/1 (obj)`
+- [x] `descendants/1 (obj)` covered by `builtins/descendants_call_shapes.yaml`
 - [x] `descendants/1 (str)` covered by `server/stress_objects.yaml`
-- [ ] `descendants/1 (err)`
-- [ ] `descendants/1 (list)`
-- [ ] `descendants/1 (map)`
-- [ ] `descendants/2 (int, int)`
-- [ ] `descendants/2 (int, float)`
-- [ ] `descendants/2 (int, obj)`
-- [ ] `descendants/2 (int, str)`
-- [ ] `descendants/2 (int, err)`
-- [ ] `descendants/2 (int, list)`
-- [ ] `descendants/2 (int, map)`
-- [ ] `descendants/2 (float, int)`
-- [ ] `descendants/2 (float, float)`
-- [ ] `descendants/2 (float, obj)`
-- [ ] `descendants/2 (float, str)`
-- [ ] `descendants/2 (float, err)`
-- [ ] `descendants/2 (float, list)`
-- [ ] `descendants/2 (float, map)`
-- [ ] `descendants/2 (obj, int)`
-- [ ] `descendants/2 (obj, float)`
-- [ ] `descendants/2 (obj, obj)`
-- [ ] `descendants/2 (obj, str)`
-- [ ] `descendants/2 (obj, err)`
-- [ ] `descendants/2 (obj, list)`
-- [ ] `descendants/2 (obj, map)`
-- [ ] `descendants/2 (str, int)`
-- [ ] `descendants/2 (str, float)`
-- [ ] `descendants/2 (str, obj)`
-- [ ] `descendants/2 (str, str)`
-- [ ] `descendants/2 (str, err)`
-- [ ] `descendants/2 (str, list)`
-- [ ] `descendants/2 (str, map)`
-- [ ] `descendants/2 (err, int)`
-- [ ] `descendants/2 (err, float)`
-- [ ] `descendants/2 (err, obj)`
-- [ ] `descendants/2 (err, str)`
-- [ ] `descendants/2 (err, err)`
-- [ ] `descendants/2 (err, list)`
-- [ ] `descendants/2 (err, map)`
-- [ ] `descendants/2 (list, int)`
-- [ ] `descendants/2 (list, float)`
-- [ ] `descendants/2 (list, obj)`
-- [ ] `descendants/2 (list, str)`
-- [ ] `descendants/2 (list, err)`
-- [ ] `descendants/2 (list, list)`
-- [ ] `descendants/2 (list, map)`
-- [ ] `descendants/2 (map, int)`
-- [ ] `descendants/2 (map, float)`
-- [ ] `descendants/2 (map, obj)`
-- [ ] `descendants/2 (map, str)`
-- [ ] `descendants/2 (map, err)`
-- [ ] `descendants/2 (map, list)`
-- [ ] `descendants/2 (map, map)`
+- [x] `descendants/1 (err)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/1 (list)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/1 (map)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (int, int)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (int, float)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (int, obj)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (int, str)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (int, err)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (int, list)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (int, map)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (float, int)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (float, float)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (float, obj)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (float, str)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (float, err)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (float, list)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (float, map)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (obj, int)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (obj, float)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (obj, obj)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (obj, str)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (obj, err)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (obj, list)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (obj, map)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (str, int)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (str, float)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (str, obj)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (str, str)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (str, err)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (str, list)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (str, map)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (err, int)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (err, float)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (err, obj)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (err, str)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (err, err)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (err, list)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (err, map)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (list, int)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (list, float)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (list, obj)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (list, str)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (list, err)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (list, list)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (list, map)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (map, int)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (map, float)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (map, obj)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (map, str)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (map, err)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (map, list)` covered by `builtins/descendants_call_shapes.yaml`
+- [x] `descendants/2 (map, map)` covered by `builtins/descendants_call_shapes.yaml`
 - [?] `descendants/1` unknown argument types covered by `builtins/objects.yaml`, `builtins/objects.yaml`, `builtins/objects.yaml` and 16 more
 - [?] `descendants/2` unknown argument types covered by `builtins/objects.yaml`, `builtins/objects.yaml`, `server/stress_objects.yaml` and 3 more
 

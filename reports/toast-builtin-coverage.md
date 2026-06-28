@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T07:48:51Z`
+- generated_at: `2026-06-28T07:51:38Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `846`
-- missing_call_shapes: `6755`
+- covered_call_shapes: `852`
+- missing_call_shapes: `6749`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3651,13 +3651,6 @@ still needs explicit human review.
   - [ ] `recycle/1 (err)`
 - `renumber` signature `1..1 (obj)`
   - [ ] `renumber/1 (obj)`
-- `respond_to` signature `2..2 (any, str)`
-  - [ ] `respond_to/2 (int, str)`
-  - [ ] `respond_to/2 (float, str)`
-  - [ ] `respond_to/2 (obj, str)`
-  - [ ] `respond_to/2 (str, str)`
-  - [ ] `respond_to/2 (err, str)`
-  - [ ] `respond_to/2 (map, str)`
 - `resume` signature `1..2 (int, any)`
   - [ ] `resume/2 (int, int)`
   - [ ] `resume/2 (int, float)`
@@ -11722,13 +11715,13 @@ still needs explicit human review.
 
 - signature: `2..2 (any, str)`
 - source: `verbs.cc`
-- [ ] `respond_to/2 (int, str)`
-- [ ] `respond_to/2 (float, str)`
-- [ ] `respond_to/2 (obj, str)`
-- [ ] `respond_to/2 (str, str)`
-- [ ] `respond_to/2 (err, str)`
-- [x] `respond_to/2 (list, str)` covered by `builtins/verbs.yaml`, `builtins/verbs.yaml`, `builtins/verbs.yaml` and 5 more
-- [ ] `respond_to/2 (map, str)`
+- [x] `respond_to/2 (int, str)` covered by `builtins/respond_to_call_shapes.yaml`
+- [x] `respond_to/2 (float, str)` covered by `builtins/respond_to_call_shapes.yaml`
+- [x] `respond_to/2 (obj, str)` covered by `builtins/respond_to_call_shapes.yaml`
+- [x] `respond_to/2 (str, str)` covered by `builtins/respond_to_call_shapes.yaml`
+- [x] `respond_to/2 (err, str)` covered by `builtins/respond_to_call_shapes.yaml`
+- [x] `respond_to/2 (list, str)` covered by `builtins/respond_to_call_shapes.yaml`, `builtins/verbs.yaml`, `builtins/verbs.yaml` and 6 more
+- [x] `respond_to/2 (map, str)` covered by `builtins/respond_to_call_shapes.yaml`
 
 ### `resume`
 

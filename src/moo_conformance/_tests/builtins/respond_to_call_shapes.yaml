@@ -1,0 +1,28 @@
+name: respond_to_call_shapes
+description: Table-driven TYPE_ANY coverage for respond_to().
+
+requires:
+  builtins:
+    - respond_to
+
+tests:
+  - name: respond_to_invalid_object
+    permission: wizard
+    code: 'respond_to(#999999, "call_shape_missing")'
+    expect:
+      error: E_INVARG
+
+  - name: respond_to_non_object_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [int, "1"]
+        - [float, "1.5"]
+        - [str, '"x"']
+        - [err, "E_ARGS"]
+        - [list, "{}"]
+        - [map, "[1 -> 2]"]
+    code: 'respond_to({expr}, "call_shape_missing")'
+    expect:
+      error: E_TYPE

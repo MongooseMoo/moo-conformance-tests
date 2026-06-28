@@ -1,0 +1,13 @@
+name: file_handles_call_shapes
+description: Call-shape coverage for file_handles().
+
+requires:
+  builtins:
+    - file_handles
+
+tests:
+  - name: file_handles_no_args
+    permission: wizard
+    code: "file_handles()"
+    expect:
+      type: list

@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T06:08:49Z`
+- generated_at: `2026-06-28T06:11:18Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `243`
 - required_call_shapes: `7721`
-- covered_call_shapes: `565`
-- missing_call_shapes: `7156`
+- covered_call_shapes: `566`
+- missing_call_shapes: `7155`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3245,8 +3245,6 @@ still needs explicit human review.
 - `file_grep` signature `2..3 (int, str, int)`
   - [ ] `file_grep/2 (int, str)`
   - [ ] `file_grep/3 (int, str, int)`
-- `file_handles` signature `0..0 ()`
-  - [ ] `file_handles/0 ()`
 - `file_last_access` signature `1..1 (any)`
   - [ ] `file_last_access/1 (float)`
   - [ ] `file_last_access/1 (obj)`
@@ -10984,7 +10982,7 @@ still needs explicit human review.
 
 - signature: `0..0 ()`
 - source: `fileio.cc`
-- [ ] `file_handles/0 ()`
+- [x] `file_handles/0 ()` covered by `builtins/file_handles_call_shapes.yaml`
 
 ### `file_last_access`
 

@@ -1,0 +1,13 @@
+name: is_player_call_shapes
+description: Concrete object-argument call-shape coverage for is_player().
+
+requires:
+  builtins:
+    - is_player
+
+tests:
+  - name: is_player_accepts_object_argument
+    permission: wizard
+    code: "is_player(#0)"
+    expect:
+      type: int

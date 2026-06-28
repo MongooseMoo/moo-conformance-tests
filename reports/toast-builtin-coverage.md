@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T06:23:14Z`
+- generated_at: `2026-06-28T06:26:13Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `552`
-- missing_call_shapes: `7049`
+- covered_call_shapes: `564`
+- missing_call_shapes: `7037`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3558,19 +3558,6 @@ still needs explicit human review.
   - [ ] `match/3 (str, str, err)`
   - [ ] `match/3 (str, str, list)`
   - [ ] `match/3 (str, str, map)`
-- `max` signature `1..* (numeric)`
-  - [ ] `max/1 (float)`
-  - [ ] `max/2 (int, obj)`
-  - [ ] `max/2 (int, str)`
-  - [ ] `max/2 (int, err)`
-  - [ ] `max/2 (int, list)`
-  - [ ] `max/2 (int, map)`
-  - [ ] `max/2 (float, int)`
-  - [ ] `max/2 (float, obj)`
-  - [ ] `max/2 (float, str)`
-  - [ ] `max/2 (float, err)`
-  - [ ] `max/2 (float, list)`
-  - [ ] `max/2 (float, map)`
 - `min` signature `1..* (numeric)`
   - [ ] `min/1 (float)`
   - [ ] `min/2 (int, obj)`
@@ -11549,21 +11536,21 @@ still needs explicit human review.
 - signature: `1..* (numeric)`
 - source: `numbers.cc`
 - [x] `max/1 (int)` covered by `builtins/math.yaml`
-- [ ] `max/1 (float)`
+- [x] `max/1 (float)` covered by `builtins/max_call_shapes.yaml`
 - [x] `max/2 (int, int)` covered by `builtins/math.yaml`
 - [x] `max/2 (int, float)` covered by `builtins/math.yaml`
-- [ ] `max/2 (int, obj)`
-- [ ] `max/2 (int, str)`
-- [ ] `max/2 (int, err)`
-- [ ] `max/2 (int, list)`
-- [ ] `max/2 (int, map)`
-- [ ] `max/2 (float, int)`
+- [x] `max/2 (int, obj)` covered by `builtins/max_call_shapes.yaml`
+- [x] `max/2 (int, str)` covered by `builtins/max_call_shapes.yaml`
+- [x] `max/2 (int, err)` covered by `builtins/max_call_shapes.yaml`
+- [x] `max/2 (int, list)` covered by `builtins/max_call_shapes.yaml`
+- [x] `max/2 (int, map)` covered by `builtins/max_call_shapes.yaml`
+- [x] `max/2 (float, int)` covered by `builtins/max_call_shapes.yaml`
 - [x] `max/2 (float, float)` covered by `builtins/math.yaml`
-- [ ] `max/2 (float, obj)`
-- [ ] `max/2 (float, str)`
-- [ ] `max/2 (float, err)`
-- [ ] `max/2 (float, list)`
-- [ ] `max/2 (float, map)`
+- [x] `max/2 (float, obj)` covered by `builtins/max_call_shapes.yaml`
+- [x] `max/2 (float, str)` covered by `builtins/max_call_shapes.yaml`
+- [x] `max/2 (float, err)` covered by `builtins/max_call_shapes.yaml`
+- [x] `max/2 (float, list)` covered by `builtins/max_call_shapes.yaml`
+- [x] `max/2 (float, map)` covered by `builtins/max_call_shapes.yaml`
 - [?] `max/1` unknown argument types covered by `language/splice.yaml`
 - [?] `max/2` unknown argument types covered by `language/index_and_range.yaml`
 

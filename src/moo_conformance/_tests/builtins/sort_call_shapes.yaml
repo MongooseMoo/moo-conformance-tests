@@ -1,0 +1,31 @@
+name: sort_call_shapes
+description: Arity coverage for sort().
+
+requires:
+  builtins:
+    - sort
+
+tests:
+  - name: sort_one_arg
+    permission: wizard
+    code: "sort({3, 1, 2})"
+    expect:
+      value: [1, 2, 3]
+
+  - name: sort_two_args
+    permission: wizard
+    code: "sort({3, 1, 2}, {})"
+    expect:
+      value: [1, 2, 3]
+
+  - name: sort_three_args
+    permission: wizard
+    code: "sort({3, 1, 2}, {}, 0)"
+    expect:
+      value: [1, 2, 3]
+
+  - name: sort_four_args
+    permission: wizard
+    code: "sort({3, 1, 2}, {}, 0, 1)"
+    expect:
+      value: [3, 2, 1]

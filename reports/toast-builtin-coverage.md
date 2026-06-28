@@ -1,13 +1,13 @@
 # Toast Builtin Call-Shape Coverage
 
-- generated_at: `2026-06-28T07:19:22Z`
+- generated_at: `2026-06-28T07:20:45Z`
 - toast_source: `/root/src/toaststunt`
 - conformance_tests: `src/moo_conformance/_tests`
 - generator_command: `uv run moo-conformance --generate-builtin-coverage-report --toast-src <toast> --tests-dir <tests> --out <report>`
 - builtins: `229`
 - required_call_shapes: `7601`
-- covered_call_shapes: `730`
-- missing_call_shapes: `6871`
+- covered_call_shapes: `734`
+- missing_call_shapes: `6867`
 
 A call shape is a builtin arity plus concrete argument types. `TYPE_ANY`
 and `TYPE_NUMERIC` registrations expand into concrete type permutations.
@@ -3851,11 +3851,6 @@ still needs explicit human review.
   - [ ] `set_verb_info/3 (map, err, list)`
   - [ ] `set_verb_info/3 (map, list, list)`
   - [ ] `set_verb_info/3 (map, map, list)`
-- `sort` signature `1..4 (list, list, int, int)`
-  - [ ] `sort/1 (list)`
-  - [ ] `sort/2 (list, list)`
-  - [ ] `sort/3 (list, list, int)`
-  - [ ] `sort/4 (list, list, int, int)`
 - `sqlite_last_insert_row_id` signature `1..1 (int)`
   - [ ] `sqlite_last_insert_row_id/1 (int)`
 - `sqlite_limit` signature `3..3 (int, any, int)`
@@ -12304,10 +12299,10 @@ still needs explicit human review.
 
 - signature: `1..4 (list, list, int, int)`
 - source: `list.cc`
-- [ ] `sort/1 (list)`
-- [ ] `sort/2 (list, list)`
-- [ ] `sort/3 (list, list, int)`
-- [ ] `sort/4 (list, list, int, int)`
+- [x] `sort/1 (list)` covered by `builtins/sort_call_shapes.yaml`
+- [x] `sort/2 (list, list)` covered by `builtins/sort_call_shapes.yaml`
+- [x] `sort/3 (list, list, int)` covered by `builtins/sort_call_shapes.yaml`
+- [x] `sort/4 (list, list, int, int)` covered by `builtins/sort_call_shapes.yaml`
 
 ### `sqlite_close`
 

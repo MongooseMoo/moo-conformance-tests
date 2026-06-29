@@ -232,6 +232,38 @@ tests:
     return {before, inherited_value, after, local_value, final};
   expect:
     error: E_TYPE
+- name: caller_type_is_anon_inside_anonymous
+  permission: programmer
+  description: typeof(caller) == ANON when an anon object's verb calls another verb on itself
+  statement: |
+    x = create($nothing);
+    add_verb(x, {player, "xd", "check_type"}, {"this", "none", "this"});
+    set_verb_code(x, "check_type", {"return typeof(caller) == ANON;"});
+    add_verb(x, {player, "xd", "run"}, {"this", "none", "this"});
+    set_verb_code(x, "run", {"return this:check_type();"});
+    a = create(x, 1);
+    result = a:run();
+    recycle(a);
+    recycle(x);
+    return result;
+  expect:
+    value: 1
+- name: caller_equals_this_inside_anonymous
+  permission: programmer
+  description: caller == this is true when an anon object's verb calls another verb on itself
+  statement: |
+    x = create($nothing);
+    add_verb(x, {player, "xd", "check_caller"}, {"this", "none", "this"});
+    set_verb_code(x, "check_caller", {"return caller == this;"});
+    add_verb(x, {player, "xd", "run"}, {"this", "none", "this"});
+    set_verb_code(x, "run", {"return this:check_caller();"});
+    a = create(x, 1);
+    result = a:run();
+    recycle(a);
+    recycle(x);
+    return result;
+  expect:
+    value: 1
 - name: verb_calls_work
   permission: programmer
   description: Anonymous objects can call verbs inherited from each ancestor

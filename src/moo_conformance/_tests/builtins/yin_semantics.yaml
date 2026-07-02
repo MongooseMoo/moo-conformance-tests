@@ -1,0 +1,103 @@
+name: yin_semantics
+description: >
+  Full semantics of yin() (yield-if-needed): return value, argument validation
+  against the fg_ticks/fg_seconds server options, and the core behavior that a
+  yin() suspend refreshes the task's tick budget so long loops complete.
+  Oracle: ToastStunt bf_yield_if_needed (execute.cc) — suspends for <seconds>
+  (default 0) iff ticks_left() < min_ticks (default 2000) or the task timer is
+  below min_seconds (default 2). E_INVARG iff any arg is given and (seconds < 0
+  || min_ticks <= 0 || min_seconds <= 0 || min_ticks >= fg_ticks || min_seconds
+  >= fg_seconds).
+
+requires:
+  builtins:
+    - yin
+
+tests:
+  - name: yin_no_args_returns_zero
+    permission: wizard
+    code: "yin()"
+    expect:
+      value: 0
+
+  - name: yin_zero_seconds_returns_zero
+    permission: wizard
+    code: "yin(0)"
+    expect:
+      value: 0
+
+  - name: yin_float_seconds_returns_zero
+    permission: wizard
+    code: "yin(1.5)"
+    expect:
+      value: 0
+
+  - name: yin_min_ticks_zero_invarg
+    permission: wizard
+    code: "yin(0, 0)"
+    expect:
+      error: E_INVARG
+
+  - name: yin_min_ticks_at_fg_ticks_invarg
+    description: min_ticks must be strictly below the fg_ticks limit (default 60000).
+    permission: wizard
+    code: "yin(0, 60000)"
+    expect:
+      error: E_INVARG
+
+  - name: yin_min_ticks_below_fg_ticks_ok
+    permission: wizard
+    code: "yin(0, 59999)"
+    expect:
+      value: 0
+
+  - name: yin_min_seconds_zero_invarg
+    permission: wizard
+    code: "yin(0, 2000, 0)"
+    expect:
+      error: E_INVARG
+
+  - name: yin_min_seconds_at_fg_seconds_invarg
+    description: min_seconds must be strictly below the fg_seconds limit (default 5).
+    permission: wizard
+    code: "yin(0, 2000, 5)"
+    expect:
+      error: E_INVARG
+
+  - name: yin_min_seconds_below_fg_seconds_ok
+    permission: wizard
+    code: "yin(0, 2000, 4)"
+    expect:
+      value: 0
+
+  - name: yin_loop_without_yin_exhausts_ticks
+    description: >
+      Control for the refresh test below: this loop costs far more than the
+      default 60000-tick foreground budget, so without yin() it must abort.
+    steps:
+      - run: |
+          count = 0;
+          for i in [1..300000]
+            count = count + 1;
+          endfor
+          return count;
+        as: wizard
+        expect:
+          match: "Task ran out of ticks"
+
+  - name: yin_refreshes_tick_budget
+    description: >
+      yin() must actually suspend when ticks run low, and the suspend must
+      refresh the tick budget: the same over-budget loop completes when it
+      calls yin() each iteration.
+    steps:
+      - run: |
+          count = 0;
+          for i in [1..300000]
+            count = count + 1;
+            yin();
+          endfor
+          return count;
+        as: wizard
+        expect:
+          value: 300000

@@ -1,0 +1,63 @@
+name: connection_name_semantics
+description: >
+  Result shape of connection_name(player [, method]). Oracle: ToastStunt
+  bf_connection_name (server.cc) — with no method argument it returns the
+  bare resolved connection name (no spaces); with method 1 it returns the
+  numeric IP address; with any other method value it returns the full legacy
+  string "port <listen-port> from <hostname> [<ip>], port <remote-port>".
+  Assertions check shape, not exact hosts, so they are environment-robust.
+
+requires:
+  builtins:
+    - connection_name
+
+tests:
+  - name: connection_name_default_is_bare_name
+    description: No-method form returns a bare host with no spaces.
+    permission: wizard
+    code: "index(connection_name(player), \" \") == 0"
+    expect:
+      value: 1
+
+  - name: connection_name_method1_is_bare_ip
+    description: Method 1 returns the numeric IP (no spaces, has . or :).
+    steps:
+      - run: |
+          cn = connection_name(player, 1);
+          return index(cn, " ") == 0 && (index(cn, ".") > 0 || index(cn, ":") > 0);
+        as: wizard
+        expect:
+          value: 1
+
+  - name: connection_name_other_methods_full_legacy_format
+    description: >
+      Any method other than 1 (including 0, 2, 3, -1) returns the full legacy
+      string "port L from HOST [IP], port R".
+    steps:
+      - run: |
+          result = {};
+          for m in ({0, 2, 3, -1})
+            cn = connection_name(player, m);
+            ok = index(cn, "port ") == 1 && index(cn, " from ") > 0 && index(cn, ", port ") > 0 && index(cn, "[") > 0;
+            result = {@result, ok};
+          endfor
+          return result;
+        as: wizard
+        expect:
+          value: [1, 1, 1, 1]
+
+  - name: connection_name_bare_name_appears_in_full_format
+    description: The bare name is the HOST segment of the full legacy string.
+    steps:
+      - run: |
+          return index(connection_name(player, 0), connection_name(player)) > 0;
+        as: wizard
+        expect:
+          value: 1
+
+  - name: connection_name_self_allowed_for_programmer
+    description: A non-wizard may query their own connection.
+    permission: programmer
+    code: "index(connection_name(player), \" \") == 0"
+    expect:
+      value: 1

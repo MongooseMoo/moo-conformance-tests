@@ -1,0 +1,174 @@
+name: network_matrix
+description: Stateful local network, listener, outbound connection, and connection-state coverage.
+requires:
+  builtins:
+    - boot_player
+    - buffered_output_length
+    - connected_players
+    - connection_info
+    - connection_name
+    - connection_name_lookup
+    - listen
+    - listeners
+    - notify
+    - open_network_connection
+    - unlisten
+
+tests:
+  - name: listener_ipv4_options_are_visible_and_unlisten_uses_ipv6_flag
+    description: listen() records stable option-map fields and unlisten(desc, ipv6) uses the IPv6 discriminator.
+    permission: wizard
+    steps:
+      - allocate_port:
+          capture: listener_port
+      - run: |
+          return listen(#0, {listener_port}, ["ipv6" -> 0, "print-messages" -> 1]);
+        capture: port
+        expect:
+          type: int
+      - run: |
+          entries = listeners({listener_port});
+          if (length(entries) != 1)
+            return 0;
+          endif
+          entry = entries[1];
+          return entry["object"] == #0
+                 && entry["port"] == {listener_port}
+                 && entry["ipv6"] == 0
+                 && entry["print-messages"] == 1
+                 && typeof(entry["interface"]) == STR
+                 && length(entry["interface"]) > 0;
+        expect:
+          value: 1
+      - run: |
+          try
+            unlisten({listener_port}, 1);
+            return 0;
+          except (E_INVARG)
+            return length(listeners({listener_port})) == 1;
+          endtry
+        expect:
+          value: 1
+      - run: |
+          unlisten({listener_port}, 0);
+          return length(listeners({listener_port})) == 0;
+        expect:
+          value: 1
+    cleanup:
+      - run: |
+          try
+            unlisten({listener_port}, 0);
+          except (ANY)
+          endtry
+          try
+            unlisten({listener_port}, 1);
+          except (ANY)
+          endtry
+          return 1;
+        as: wizard
+
+  - name: open_network_connection_loopback_records_outbound_state_and_boots_cleanly
+    description: A local outbound connection exposes connection_info fields, queues output, and leaves connected_players(1) after boot.
+    skip_if: "not option.OUTBOUND_NETWORK"
+    permission: wizard
+    steps:
+      - allocate_port:
+          capture: listener_port
+      - run: |
+          return listen(#0, {listener_port}, ["ipv6" -> 0, "print-messages" -> 0]);
+        capture: port
+        expect:
+          type: int
+      - run: |
+          return open_network_connection("127.0.0.1", {listener_port}, ["ipv6" -> 0, "listener" -> #0]);
+        capture: conn
+        expect:
+          type: obj
+      - wait: 200
+      - run: |
+          info = connection_info({conn});
+          required = {"destination_address", "destination_ip", "destination_port", "outbound", "protocol", "source_address", "source_ip", "source_port"};
+          for key in (required)
+            if (!(key in mapkeys(info)))
+              return 0;
+            endif
+          endfor
+          return info["outbound"] == 1
+                 && info["protocol"] == "IPv4"
+                 && info["destination_port"] == {listener_port}
+                 && typeof(info["source_port"]) == INT
+                 && typeof(info["source_ip"]) == STR
+                 && typeof(info["destination_ip"]) == STR
+                 && length(info["destination_ip"]) > 0
+                 && ({conn} in connected_players(1)) > 0;
+        expect:
+          value: 1
+      - run: |
+          before = buffered_output_length({conn});
+          notify({conn}, "network matrix queued output", 1, 1);
+          after = buffered_output_length({conn});
+          return after > before;
+        expect:
+          value: 1
+      - run: |
+          before = connection_name({conn});
+          lookup = connection_name_lookup({conn}, 0);
+          after = connection_name({conn});
+          return typeof(lookup) == STR && length(lookup) > 0 && before == after;
+        expect:
+          value: 1
+      - run: |
+          boot_player({conn});
+          return 1;
+        expect:
+          value: 1
+      - wait: 200
+      - run: |
+          return ({conn} in connected_players(1)) == 0;
+        expect:
+          value: 1
+      - run: |
+          try
+            connection_info({conn});
+            return 0;
+          except (E_INVARG)
+            return 1;
+          endtry
+        expect:
+          value: 1
+    cleanup:
+      - run: |
+          try
+            boot_player({conn});
+          except (ANY)
+          endtry
+          try
+            unlisten({listener_port}, 0);
+          except (ANY)
+          endtry
+          return 1;
+        as: wizard
+
+  - name: open_network_connection_ipv6_option_rejects_ipv4_numeric_host
+    description: The ipv6 option switches address-family lookup instead of silently falling back to IPv4.
+    skip_if: "not option.OUTBOUND_NETWORK"
+    permission: wizard
+    code: 'open_network_connection("127.0.0.1", 1, ["ipv6" -> 1])'
+    expect:
+      error: E_INVARG
+
+  - name: open_network_connection_disabled_two_arg_loopback_returns_perm
+    description: Disabled outbound-network profiles reject the two-argument local form at the builtin boundary.
+    skip_if: "option.OUTBOUND_NETWORK"
+    permission: wizard
+    code: 'open_network_connection("127.0.0.1", 1)'
+    expect:
+      error: E_PERM
+
+  - name: open_network_connection_disabled_options_map_returns_perm
+    description: Disabled outbound-network profiles still accept the options-map shape before returning E_PERM.
+    skip_if: "option.OUTBOUND_NETWORK"
+    permission: wizard
+    code: 'open_network_connection("127.0.0.1", 1, ["ipv6" -> 0, "listener" -> #0])'
+    expect:
+      error: E_PERM

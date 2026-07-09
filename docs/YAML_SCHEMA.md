@@ -241,6 +241,7 @@ Each step must have exactly ONE action field. The common fields (`capture`, `as`
 | `assert_log` | Verify server log contains expected text |
 | `assert_file` | Verify file existence and contents on disk |
 | `write_file` | Create a file on the test host |
+| `write_stdin` | Write text to the managed server process stdin |
 | `restart_server` | Restart managed server process in-place (managed mode only) |
 
 **Common fields** (optional, on any step):
@@ -367,6 +368,35 @@ steps:
 |-------|------|-------------|
 | `write_file.path` | `str` | File path relative to `server_dir` |
 | `write_file.content` | `str` | Content to write to the file |
+
+#### `write_stdin` - Write to Managed Server Stdin
+
+Writes text to the stdin pipe of the managed server process. This is for
+server builtins that read from process stdin rather than from a player socket.
+The runner writes the exact string supplied; include `\n` when the target
+server waits for a full line.
+
+Requires: `--server-command`. Suites should declare
+`requires.config: [managed_server]`.
+
+```yaml
+steps:
+  - run: |
+      fork (0)
+        #0.stdin_result = read_stdin();
+      endfork
+      return 1;
+  - write_stdin: "payload\n"
+  - wait: 200
+  - run: "return #0.stdin_result;"
+    expect:
+      value: "payload"
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `write_stdin` | `str` | Text to write to process stdin |
+| `write_stdin.text` | `str` | Alternate mapping form for the same text |
 
 #### `restart_server` - Restart Managed Server
 

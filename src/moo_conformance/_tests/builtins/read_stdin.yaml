@@ -1,0 +1,103 @@
+name: read_stdin
+description: |
+  Tests for the ToastStunt example read_stdin() extension builtin. The builtin
+  suspends the current task on process stdin, not on the player socket, so
+  behavioral tests require managed-server stdin.
+
+requires:
+  config:
+    - managed_server
+  builtins:
+    - function_info
+    - read_stdin
+
+setup:
+  permission: wizard
+  code: |
+    try
+      add_property(#0, "read_stdin_result", "__unset__", {#0, "rc"});
+    except (E_INVARG)
+      #0.read_stdin_result = "__unset__";
+    endtry
+    try
+      add_property(#0, "read_stdin_ready", 0, {#0, "rc"});
+    except (E_INVARG)
+      #0.read_stdin_ready = 0;
+    endtry
+
+tests:
+  - name: read_stdin_function_info_signature_matches_source
+    skip_if: "missing builtin.read_stdin"
+    permission: wizard
+    code: function_info("read_stdin")
+    expect:
+      value:
+        - read_stdin
+        - 0
+        - 0
+        - []
+
+  - name: read_stdin_rejects_arguments
+    skip_if: "missing builtin.read_stdin"
+    permission: wizard
+    code: read_stdin(1)
+    expect:
+      error: E_ARGS
+
+  - name: read_stdin_blocks_until_process_stdin_arrives
+    skip_if: "missing builtin.read_stdin"
+    permission: wizard
+    steps:
+      - run: |
+          #0.read_stdin_result = "__unset__";
+          #0.read_stdin_ready = 0;
+          fork (0)
+            try
+              #0.read_stdin_result = read_stdin();
+            except (err)
+              #0.read_stdin_result = err;
+            endtry
+            #0.read_stdin_ready = 1;
+          endfork
+          return 1;
+        expect:
+          value: 1
+      - wait: 200
+      - run: "#0.read_stdin_ready"
+        expect:
+          value: 0
+      - write_stdin: "stdin_payload\n"
+      - wait: 300
+      - run: "#0.read_stdin_ready"
+        expect:
+          value: 1
+      - run: "#0.read_stdin_result"
+        expect:
+          value: "stdin_payloadX"
+
+  - name: read_stdin_a_prefixed_input_returns_e_nacc
+    skip_if: "missing builtin.read_stdin"
+    permission: wizard
+    steps:
+      - run: |
+          #0.read_stdin_result = "__unset__";
+          #0.read_stdin_ready = 0;
+          fork (0)
+            try
+              #0.read_stdin_result = read_stdin();
+            except (err)
+              #0.read_stdin_result = err;
+            endtry
+            #0.read_stdin_ready = 1;
+          endfork
+          return 1;
+        expect:
+          value: 1
+      - write_stdin: "alpha\n"
+      - wait: 300
+      - run: "#0.read_stdin_ready"
+        expect:
+          value: 1
+      - run: "#0.read_stdin_result"
+        expect:
+          value: E_NACC

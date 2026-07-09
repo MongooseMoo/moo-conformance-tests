@@ -1,5 +1,7 @@
 from pathlib import Path
+from io import BytesIO
 import os
+import subprocess
 import stat
 
 import pytest
@@ -12,6 +14,7 @@ from moo_conformance.transport import SocketTransport
 class _FakeProcess:
     def __init__(self):
         self.returncode = None
+        self.stdin = BytesIO()
 
     def poll(self):
         return None
@@ -98,6 +101,44 @@ def test_managed_server_installs_exec_fixtures(monkeypatch, tmp_path: Path):
             assert fixture.stat().st_mode & stat.S_IXUSR
     finally:
         server.stop()
+
+
+def test_managed_server_opens_process_stdin_pipe(monkeypatch, tmp_path: Path):
+    baseline = tmp_path / "baseline.db"
+    baseline.write_text("baseline", encoding="utf-8")
+
+    created = []
+
+    def fake_popen(*args, **kwargs):
+        created.append((args, kwargs))
+        return _FakeProcess()
+
+    monkeypatch.setattr("moo_conformance.server.subprocess.Popen", fake_popen)
+    monkeypatch.setattr(ManagedServer, "_find_free_port", lambda self: 17777)
+    monkeypatch.setattr(ManagedServer, "_wait_for_port", lambda self, timeout=30.0: None)
+
+    server = ManagedServer("fake-server {db} {port}", baseline)
+    server.start()
+
+    assert created[0][1]["stdin"] == subprocess.PIPE
+
+
+def test_managed_server_write_stdin(monkeypatch, tmp_path: Path):
+    baseline = tmp_path / "baseline.db"
+    baseline.write_text("baseline", encoding="utf-8")
+
+    process = _FakeProcess()
+
+    monkeypatch.setattr("moo_conformance.server.subprocess.Popen", lambda *args, **kwargs: process)
+    monkeypatch.setattr(ManagedServer, "_find_free_port", lambda self: 17777)
+    monkeypatch.setattr(ManagedServer, "_wait_for_port", lambda self, timeout=30.0: None)
+
+    server = ManagedServer("fake-server {db} {port}", baseline)
+    server.start()
+    server.write_stdin("payload\n")
+
+    assert process.stdin.getvalue() == b"payload\n"
+
 
 class _FakeConfig:
     def __init__(self, env_name):

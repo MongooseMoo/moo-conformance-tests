@@ -124,6 +124,7 @@ class ManagedServer:
         # Start server process
         self._process = subprocess.Popen(
             shlex.split(command),
+            stdin=subprocess.PIPE,
             stdout=self._log_file,
             stderr=subprocess.STDOUT,
             cwd=self._temp_dir,
@@ -159,6 +160,20 @@ class ManagedServer:
             self._temp_dir = None
             self._db_copy_path = None
             self._manifest_path = None
+
+    def write_stdin(self, text: str) -> None:
+        """Write text to the managed server process stdin."""
+        if self._process is None:
+            raise RuntimeError("Server not started")
+        if self._process.stdin is None:
+            raise RuntimeError("Server process stdin is not writable")
+        if self._process.poll() is not None:
+            raise RuntimeError(
+                f"Server process exited with code {self._process.returncode}"
+            )
+
+        self._process.stdin.write(text.encode("utf-8"))
+        self._process.stdin.flush()
 
     def restart(self, db_path: Path | None = None, wait_for_port: bool = True, down_ms: int = 0) -> None:
         """Restart the server process in-place, preserving the working database.

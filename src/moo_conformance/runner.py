@@ -371,6 +371,14 @@ class YamlTestRunner:
                     self._execute_write_file(step.write_file, test.name)
                     continue
 
+                # Handle write_stdin step
+                if step.write_stdin:
+                    self._execute_write_stdin(
+                        self._substitute_variables(step.write_stdin.text, variables),
+                        test.name,
+                    )
+                    continue
+
                 # Handle restart_server step
                 if step.restart_server:
                     self._execute_restart_server(
@@ -481,6 +489,18 @@ class YamlTestRunner:
 
         if wait_ms > 0:
             time.sleep(wait_ms / 1000.0)
+
+    def _execute_write_stdin(self, text: str, test_name: str) -> None:
+        """Write text to the managed server process stdin."""
+        if self.managed_server is None:
+            raise AssertionError(
+                f"Test '{test_name}' uses write_stdin but no managed server is configured "
+                f"(use --server-command)"
+            )
+        try:
+            self.managed_server.write_stdin(text)
+        except RuntimeError as exc:
+            raise AssertionError(f"Test '{test_name}' write_stdin failed: {exc}") from exc
 
     def _substitute_variables(self, code: str, variables: dict[str, Any]) -> str:
         """Substitute {varname} placeholders with captured values.

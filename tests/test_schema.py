@@ -172,6 +172,46 @@ def test_table_expands_steps_and_cleanup() -> None:
     assert test.cleanup[0].run == "typeof(1)"
 
 
+def test_write_stdin_step_accepts_scalar_text() -> None:
+    suite = validate_test_suite(
+        {
+            "name": "stdin_suite",
+            "tests": [
+                {
+                    "name": "send_process_stdin",
+                    "steps": [
+                        {"write_stdin": "hello\n"},
+                    ],
+                }
+            ],
+        }
+    )
+
+    step = suite.tests[0].steps[0]
+    assert step.write_stdin is not None
+    assert step.write_stdin.text == "hello\n"
+
+
+def test_write_stdin_step_accepts_mapping_text() -> None:
+    suite = validate_test_suite(
+        {
+            "name": "stdin_suite",
+            "tests": [
+                {
+                    "name": "send_process_stdin",
+                    "steps": [
+                        {"write_stdin": {"text": "mapped\n"}},
+                    ],
+                }
+            ],
+        }
+    )
+
+    step = suite.tests[0].steps[0]
+    assert step.write_stdin is not None
+    assert step.write_stdin.text == "mapped\n"
+
+
 def test_table_product_rejects_duplicate_variables() -> None:
     with pytest.raises(ValueError, match="Product table variables must be unique: kind"):
         validate_test_suite(

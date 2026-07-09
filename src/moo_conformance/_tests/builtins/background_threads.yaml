@@ -1,0 +1,177 @@
+name: background_threads
+description: Behavioral coverage for Toast background/thread runtime builtins.
+
+tests:
+  - name: set_thread_mode_round_trips_current_activation
+    description: set_thread_mode() reports the current activation mode and one-arg calls update it.
+    skip_if: "missing builtin.set_thread_mode"
+    permission: wizard
+    statement: |
+      old = set_thread_mode();
+      set_thread_mode(0);
+      disabled = set_thread_mode();
+      set_thread_mode(1);
+      enabled = set_thread_mode();
+      set_thread_mode(old);
+      return {disabled, enabled};
+    expect:
+      value:
+        - 0
+        - 1
+
+  - name: set_thread_mode_uses_moo_truthiness
+    description: Non-zero integer arguments enable threaded mode; zero disables it.
+    skip_if: "missing builtin.set_thread_mode"
+    permission: wizard
+    statement: |
+      old = set_thread_mode();
+      set_thread_mode(42);
+      truthy = set_thread_mode();
+      set_thread_mode(0);
+      falsey = set_thread_mode();
+      set_thread_mode(old);
+      return {truthy, falsey};
+    expect:
+      value:
+        - 1
+        - 0
+
+  - name: set_thread_mode_does_not_leak_to_next_task
+    description: A mode change in one eval activation does not change the default mode of a later eval.
+    skip_if: "missing builtin.set_thread_mode"
+    steps:
+      - run: |
+          old = set_thread_mode();
+          set_thread_mode(0);
+          return {old, set_thread_mode()};
+        as: wizard
+        expect:
+          value:
+            - 1
+            - 0
+      - run: "return set_thread_mode();"
+        as: wizard
+        expect:
+          value: 1
+
+  - name: thread_pool_programmer_denied
+    description: thread_pool() is wizard-only even for a valid MAIN/INIT request.
+    skip_if: "missing builtin.thread_pool"
+    permission: programmer
+    code: 'thread_pool("INIT", "MAIN", 2)'
+    expect:
+      error: E_PERM
+
+  - name: thread_pool_rejects_unknown_pool_without_mutation
+    description: The only Toast pool name accepted by thread_pool() is MAIN.
+    skip_if: "missing builtin.thread_pool"
+    permission: wizard
+    code: 'thread_pool("INIT", "NOPE", 1)'
+    expect:
+      error: E_INVARG
+
+  - name: thread_pool_rejects_unknown_function_without_mutation
+    description: Toast accepts INIT as the database-visible thread_pool() operation.
+    skip_if: "missing builtin.thread_pool"
+    permission: wizard
+    code: 'thread_pool("RESET", "MAIN", 1)'
+    expect:
+      error: E_INVARG
+
+  - name: thread_pool_rejects_negative_size
+    description: MAIN pool initialization rejects negative thread counts.
+    skip_if: "missing builtin.thread_pool"
+    permission: wizard
+    code: 'thread_pool("INIT", "MAIN", -1)'
+    expect:
+      error: E_INVARG
+
+  - name: thread_pool_can_disable_and_restore_main_pool
+    description: INIT MAIN accepts zero to destroy the pool and a positive count to recreate it.
+    skip_if: "missing builtin.thread_pool"
+    permission: wizard
+    statement: |
+      disabled = thread_pool("INIT", "MAIN", 0);
+      restored = thread_pool("INIT", "MAIN", 2);
+      return {disabled, restored};
+    expect:
+      value:
+        - 1
+        - 1
+
+  - name: threads_programmer_denied
+    description: threads() exposes background handles only to wizards.
+    skip_if: "missing builtin.threads"
+    permission: programmer
+    code: "threads()"
+    expect:
+      error: E_PERM
+
+  - name: threads_reports_active_background_test_handle
+    description: A threaded background_test() call appears in threads() while it is suspended.
+    skip_if: "missing builtin.background_test"
+    timeout_ms: 8000
+    steps:
+      - run: |
+          try
+            add_property(#0, "background_threads_result", "unset", {#0, "rw"});
+          except (E_INVARG)
+            #0.background_threads_result = "unset";
+          endtry
+          thread_pool("INIT", "MAIN", 2);
+          fork id (0)
+            #0.background_threads_result = background_test("done", 1);
+          endfork
+          suspend(0);
+          return id;
+        capture: task_id
+        as: wizard
+      - run: |
+          handles = threads();
+          return {length(handles) > 0, typeof(handles[1]) == INT, #0.background_threads_result};
+        as: wizard
+        expect:
+          value:
+            - 1
+            - 1
+            - unset
+      - wait: 1500
+      - run: "return #0.background_threads_result;"
+        as: wizard
+        expect:
+          value: done
+    cleanup:
+      - run: |
+          try
+            kill_task({task_id});
+          except (ANY)
+          endtry
+          try
+            delete_property(#0, "background_threads_result");
+          except (ANY)
+          endtry
+        as: wizard
+
+  - name: background_test_zero_delay_returns_requested_string
+    description: background_test(str, 0) returns the supplied string without requiring a real-time delay.
+    skip_if: "missing builtin.background_test"
+    permission: wizard
+    code: 'background_test("threaded echo", 0)'
+    expect:
+      value: threaded echo
+
+  - name: background_test_unthreaded_mode_runs_callback_synchronously
+    description: With thread mode disabled, background_test() still runs the callback and returns its value.
+    skip_if: "missing builtin.background_test"
+    permission: wizard
+    statement: |
+      old = set_thread_mode();
+      set_thread_mode(0);
+      result = background_test("sync echo", 0);
+      mode = set_thread_mode();
+      set_thread_mode(old);
+      return {result, mode};
+    expect:
+      value:
+        - sync echo
+        - 0

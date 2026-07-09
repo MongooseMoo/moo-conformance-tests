@@ -20,6 +20,24 @@ tests:
     expect:
       value: "a%20b%2Fc%3Fd%3De%26f"
 
+  - name: url_encode_plus_and_space_are_distinct
+    skip_if: "missing builtin.url_encode"
+    code: 'url_encode("a+b c")'
+    expect:
+      value: "a%2Bb%20c"
+
+  - name: url_encode_unreserved_characters_pass_through
+    skip_if: "missing builtin.url_encode"
+    code: 'url_encode("AZaz09-_.~")'
+    expect:
+      value: "AZaz09-_.~"
+
+  - name: url_encode_rejects_high_raw_bytes
+    skip_if: "missing builtin.url_encode"
+    code: 'url_encode(chr(127) + chr(128) + chr(255))'
+    expect:
+      error: E_INVARG
+
   - name: url_decode_no_args
     skip_if: "missing builtin.url_decode"
     code: 'url_decode()'
@@ -37,6 +55,36 @@ tests:
     code: 'url_decode("a%20b%2Fc%3Fd%3De%26f")'
     expect:
       value: "a b/c?d=e&f"
+
+  - name: url_decode_plus_is_literal
+    skip_if: "missing builtin.url_decode"
+    code: 'url_decode("a+b%20c")'
+    expect:
+      value: "a+b c"
+
+  - name: url_decode_encoded_plus
+    skip_if: "missing builtin.url_decode"
+    code: 'url_decode("%2B+%20")'
+    expect:
+      value: "++ "
+
+  - name: url_decode_malformed_percent_is_literal
+    skip_if: "missing builtin.url_decode"
+    code: 'url_decode("bad%zz%4")'
+    expect:
+      value: "bad%zz%4"
+
+  - name: url_decode_binary_bytes
+    skip_if: "missing builtin.url_decode"
+    code: 'encode_binary(url_decode("%7F%80%FF"))'
+    expect:
+      value: "~7F~80~FF"
+
+  - name: url_decode_nul_truncates_string
+    skip_if: "missing builtin.url_decode"
+    code: 'url_decode("%00after")'
+    expect:
+      value: ""
 
   - name: curl_non_wizard_denied
     skip_if: "missing builtin.curl"
@@ -63,5 +111,39 @@ tests:
     skip_if: "missing builtin.curl"
     permission: wizard
     code: 'curl("http://example.com", 0, "nope")'
+    expect:
+      error: E_TYPE
+
+  - name: curl_rejects_file_protocol_with_error_map
+    skip_if: "missing builtin.curl"
+    permission: wizard
+    statement: |
+      result = curl("file:///etc/passwd", 0, 1);
+      return typeof(result) == MAP && length(result) > 0;
+    expect:
+      value: 1
+
+  - name: curl_rejects_ftp_protocol_with_error_map
+    skip_if: "missing builtin.curl"
+    permission: wizard
+    statement: |
+      result = curl("ftp://example.invalid/", 0, 1);
+      return typeof(result) == MAP && length(result) > 0;
+    expect:
+      value: 1
+
+  - name: curl_header_flag_accepts_any_truthy_value
+    skip_if: "missing builtin.curl"
+    permission: wizard
+    statement: |
+      result = curl("ftp://example.invalid/", "include headers", 1);
+      return typeof(result) == MAP && length(result) > 0;
+    expect:
+      value: 1
+
+  - name: curl_timeout_argument_must_be_int
+    skip_if: "missing builtin.curl"
+    permission: wizard
+    code: 'curl("ftp://example.invalid/", 0, 1.5)'
     expect:
       error: E_TYPE

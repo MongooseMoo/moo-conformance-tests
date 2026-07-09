@@ -1,0 +1,71 @@
+name: optional_extensions
+description: Deterministic behavior coverage for optional extension builtins.
+
+tests:
+  - name: spellcheck_correct_word_returns_true
+    skip_if: "missing builtin.spellcheck"
+    code: 'spellcheck("the")'
+    expect:
+      value: 1
+
+  - name: spellcheck_misspelled_word_returns_suggestions
+    skip_if: "missing builtin.spellcheck"
+    statement: |
+      suggestions = spellcheck("teh");
+      return typeof(suggestions) == LIST && length(suggestions) > 0;
+    expect:
+      value: 1
+
+  - name: simplex_noise_requires_float_members
+    skip_if: "missing builtin.simplex_noise"
+    code: 'simplex_noise({1})'
+    expect:
+      error: E_TYPE
+
+  - name: simplex_noise_rejects_empty_coordinate_list
+    skip_if: "missing builtin.simplex_noise"
+    code: 'simplex_noise({})'
+    expect:
+      value: E_TYPE
+
+  - name: simplex_noise_rejects_five_dimensions
+    skip_if: "missing builtin.simplex_noise"
+    code: 'simplex_noise({0.0, 0.0, 0.0, 0.0, 0.0})'
+    expect:
+      value: E_TYPE
+
+  - name: simplex_noise_one_dimension_is_deterministic_float
+    skip_if: "missing builtin.simplex_noise"
+    statement: |
+      first = simplex_noise({0.25});
+      second = simplex_noise({0.25});
+      return typeof(first) == FLOAT && first == second;
+    expect:
+      value: 1
+
+  - name: simplex_noise_four_dimensions_returns_float
+    skip_if: "missing builtin.simplex_noise"
+    code: 'typeof(simplex_noise({0.0, 0.0, 0.0, 0.0})) == FLOAT'
+    expect:
+      value: 1
+
+  - name: malloc_stats_returns_seven_element_list
+    skip_if: "missing builtin.malloc_stats"
+    statement: |
+      stats = malloc_stats();
+      return typeof(stats) == LIST && length(stats) == 7;
+    expect:
+      value: 1
+
+  - name: malloc_stats_entries_are_ints
+    skip_if: "missing builtin.malloc_stats"
+    statement: |
+      stats = malloc_stats();
+      for value in (stats)
+        if (typeof(value) != INT)
+          return 0;
+        endif
+      endfor
+      return 1;
+    expect:
+      value: 1

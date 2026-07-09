@@ -1,0 +1,39 @@
+name: dump_persistence
+description: >
+  Verifies that dump_database() preserves inherited-property overrides across
+  a managed server restart.
+requires:
+  builtins:
+    - dump_database
+    - add_property
+    - delete_property
+    - create
+  config: [managed_server]
+tests:
+  - name: inherited_override_survives_dump_and_restart
+    permission: wizard
+    steps:
+      - run: |
+          try delete_property(#1, "persist_prop"); except (ANY) endtry
+          add_property(#1, "persist_prop", "base", {player, ""});
+          return 0;
+        expect:
+          value: 0
+      - run: |
+          #0.persist_prop = "child-override";
+          return #0.persist_prop;
+        expect:
+          value: "child-override"
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+          wait_ms: 300
+      - run: "return #0.persist_prop;"
+        expect:
+          value: "child-override"
+    cleanup:
+      - run: |
+          try delete_property(#1, "persist_prop"); except (ANY) endtry
+          return 0;

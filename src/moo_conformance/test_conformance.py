@@ -11,6 +11,7 @@ import pytest
 
 _builtin_cache: dict[str, bool] = {}
 _feature_cache: set[str] | None = None
+_dynamic_feature_cache: dict[str, bool] = {}
 
 
 def _moo_string_literal(value: str) -> str:
@@ -42,7 +43,36 @@ def _has_feature(runner, feature: str) -> bool:
     if feature == "64bit":
         result = runner.transport.execute("return typeof(2147483648) == INT;")
         return result.success and result.value == 1
+    if feature == "connectable_listener_port":
+        return _dynamic_feature(feature, runner, """
+            try
+              port = listeners()[1]["port"];
+              conn = open_network_connection("localhost", port);
+              boot_player(conn);
+              return 1;
+            except (ANY)
+              return 0;
+            endtry
+        """)
+    if feature == "ephemeral_listen":
+        return _dynamic_feature(feature, runner, """
+            try
+              port = listen(player, 0, ["print-messages" -> 1]);
+              unlisten(port);
+              return 1;
+            except (ANY)
+              return 0;
+            endtry
+        """)
     return feature in _server_features(runner)
+
+
+def _dynamic_feature(feature: str, runner, statement: str) -> bool:
+    """Probe runtime capabilities that are not advertised by server_version()."""
+    if feature not in _dynamic_feature_cache:
+        result = runner.transport.execute(statement)
+        _dynamic_feature_cache[feature] = result.success and result.value == 1
+    return _dynamic_feature_cache[feature]
 
 
 def _has_option(runner, option: str) -> bool:

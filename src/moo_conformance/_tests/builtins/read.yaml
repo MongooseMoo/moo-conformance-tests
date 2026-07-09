@@ -1,0 +1,72 @@
+name: read
+description: |
+  Tests for the read() builtin function.
+  read([player [, non_blocking]]) suspends the current task until a line of
+  input arrives from the connection associated with the player argument (default: the
+  calling player). If non_blocking is truthy, returns 0 immediately when no
+  input is available instead of suspending.
+
+requires:
+  builtins:
+    - read
+    - force_input
+
+tests:
+  # =================================================================
+  # Error / argument validation
+  # =================================================================
+
+  - name: read_type_error_string_arg
+    permission: wizard
+    code: 'read("string")'
+    expect:
+      error: E_TYPE
+
+  - name: read_too_many_args
+    permission: wizard
+    code: 'read(1, 2, 3)'
+    expect:
+      error: E_ARGS
+
+  - name: read_invarg_not_connected
+    permission: wizard
+    code: 'read(#-999)'
+    expect:
+      error: E_INVARG
+
+  # =================================================================
+  # Non-blocking mode (2nd arg truthy)
+  # =================================================================
+
+  - name: read_non_blocking_no_input
+    description: "Non-blocking read returns 0 when no input is queued"
+    permission: wizard
+    code: 'read(player, 1)'
+    expect:
+      value: 0
+
+  # =================================================================
+  # Blocking read with force_input
+  # =================================================================
+
+  - name: read_returns_forced_input
+    description: "read() suspends until force_input provides a line"
+    permission: wizard
+    statement: |
+      fork (0)
+        force_input(player, "test_read_line");
+      endfork
+      return read();
+    expect:
+      value: "test_read_line"
+
+  - name: read_with_explicit_player
+    description: "read(player) suspends until force_input provides a line"
+    permission: wizard
+    statement: |
+      fork (0)
+        force_input(player, "hello_world");
+      endfork
+      return read(player);
+    expect:
+      value: "hello_world"

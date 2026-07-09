@@ -1,0 +1,93 @@
+name: verb_cache
+description: Tests for verb cache behavior with object renumbering
+
+requires:
+  builtins:
+    - create
+    - recycle
+    - renumber
+    - verb_cache_stats
+
+tests:
+  - name: renumbering_object_does_not_affect_verb_cache
+    description: |
+      Tests that renumbering an object (swapping object numbers) does not
+      clear the verb cache, but recycling does. This ensures verb lookups
+      by cached object numbers remain stable after renumber operations.
+    permission: wizard
+    steps:
+      # Create two objects and capture their object numbers
+      - run: "a = create($nothing); return renumber(a);"
+        capture: a
+
+      - run: "b = create($nothing); return renumber(b);"
+        capture: b
+
+      # Add a test verb to object b using verb_setup
+      - verb_setup:
+          object: "{b}"
+          name: "test"
+          args: ["this", "none", "this"]
+          code: "return \"test\";"
+
+      # Recycle a (should clear the cache)
+      - run: "recycle({a})"
+
+      # Get verb cache stats before any verb calls
+      - run: "verb_cache_stats()"
+        capture: x
+
+      # Call verb on a (should be E_INVIND since a was recycled)
+      - run: "{a}:test()"
+        expect:
+          error: E_INVIND
+
+      # Call verb on b (should work)
+      - run: "{b}:test()"
+        expect:
+          value: "test"
+
+      # Now renumber b to a (should not clear the cache)
+      - run: "renumber({b})"
+
+      # Get verb cache stats after renumber
+      - run: "verb_cache_stats()"
+        capture: y
+
+      # After renumber, a should have the verb, b should not
+      - run: "{a}:test()"
+        expect:
+          value: "test"
+
+      - run: "{b}:test()"
+        expect:
+          error: E_INVIND
+
+      # Get final verb cache stats
+      - run: "verb_cache_stats()"
+        capture: z
+
+      # Verify cache behavior: recycle caused cache changes, renumber did not
+      # x vs y: recycle should show [1, -1, 0, 0, ...] difference (one clear, one miss)
+      - run: |
+          x = {x};
+          y = {y};
+          subtract = {};
+          for i in [1..17]
+            subtract = {@subtract, x[5][i] - y[5][i]};
+          endfor
+          return subtract;
+        expect:
+          value: [1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+      # y vs z: renumber should show [0, 0, 0, ...] difference (no cache changes)
+      - run: |
+          y = {y};
+          z = {z};
+          subtract = {};
+          for i in [1..17]
+            subtract = {@subtract, y[5][i] - z[5][i]};
+          endfor
+          return subtract;
+        expect:
+          value: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]

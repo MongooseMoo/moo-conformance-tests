@@ -15,8 +15,9 @@ tests:
       error: E_PERM
 
   - name: open_network_connection_enabled_three_args_accepts_options_map
+    description: Exercises the options-map form only when the managed listener is reachable.
     permission: wizard
-    skip_if: not option.OUTBOUND_NETWORK
+    skip_if: not feature.connectable_listener_port
     statement: |
       port = listeners()[1]["port"];
       conn = open_network_connection("localhost", port, ["ipv6" -> 0]);

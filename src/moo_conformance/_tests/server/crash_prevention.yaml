@@ -1,0 +1,45 @@
+name: crash_prevention
+description: Tests for scenarios that historically crashed MOO servers
+
+requires:
+  builtins:
+    - add_property
+    - delete_property
+    - load_server_options
+
+setup:
+  permission: wizard
+  code: |
+    add_property($server_options, "max_concat_catchable", 1, {player, "r"});
+    load_server_options();
+
+teardown:
+  permission: wizard
+  code: |
+    delete_property($server_options, "max_concat_catchable");
+    load_server_options();
+
+tests:
+  - name: building_long_nested_list_does_not_crash
+    description: "Building deeply nested lists should trigger E_QUOTA, not crash"
+    permission: programmer
+    statement: |
+      x = {};
+      while (1)
+        ticks_left() < 2000 || seconds_left() < 2 && suspend(0);
+        x = {x, x, x, x, x, x, x, x, x, x};
+      endwhile;
+    expect:
+      error: E_QUOTA
+
+  - name: building_long_nested_map_does_not_crash
+    description: "Building deeply nested maps should trigger E_QUOTA, not crash"
+    permission: programmer
+    statement: |
+      x = [];
+      while (1)
+        ticks_left() < 2000 || seconds_left() < 2 && suspend(0);
+        x[1] = {x, x, x, x, x, x, x, x, x, x};
+      endwhile;
+    expect:
+      error: E_QUOTA

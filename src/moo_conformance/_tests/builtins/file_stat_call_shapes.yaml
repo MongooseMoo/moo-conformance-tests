@@ -52,6 +52,7 @@ tests:
       error: E_INVARG
 
   - name: file_list_detail_flag_type_{kind}
+    description: Missing directories return an empty listing before detail flag validation.
     permission: wizard
     table:
       columns: [kind, expr]
@@ -64,4 +65,4 @@ tests:
         - [map, "[1 -> 2]"]
     code: 'file_list(".", {expr})'
     expect:
-      error: E_FILE
+      value: []

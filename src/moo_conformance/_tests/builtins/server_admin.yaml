@@ -376,7 +376,7 @@ tests:
     value: 1
 - name: connection_name_lookup_records_result
   description: connection_name_lookup() can rewrite the saved connection name
-  skip_if: "not option.OUTBOUND_NETWORK"
+  skip_if: "not feature.connectable_listener_port"
   permission: wizard
   steps:
     - run: |
@@ -399,7 +399,7 @@ tests:
 
 - name: connection_name_lookup_no_rewrite_preserves_saved_name
   description: connection_name_lookup() with rewrite disabled should not mutate connection_name()
-  skip_if: "not option.OUTBOUND_NETWORK"
+  skip_if: "not feature.connectable_listener_port"
   permission: wizard
   steps:
     - run: |
@@ -564,7 +564,8 @@ tests:
   expect:
     value: 1
 - name: listeners_listen_unlisten_roundtrip
-  description: Creating a listener should add exactly one entry and unlisten should remove it
+  description: Creating an ephemeral listener should add exactly one entry and unlisten should remove it
+  skip_if: "not feature.ephemeral_listen"
   permission: wizard
   steps:
     - run: |
@@ -675,7 +676,7 @@ tests:
     value: 0
 - name: buffered_output_length_increases_after_notify
   description: Notifying the current connection should increase its pending output
-  skip_if: "not option.OUTBOUND_NETWORK"
+  skip_if: "not feature.connectable_listener_port"
   permission: wizard
   steps:
     - run: |
@@ -715,7 +716,7 @@ tests:
     error: E_ARGS
 - name: boot_player_disconnects_open_connection
   description: boot_player() should disconnect a separately opened connection
-  skip_if: "not option.OUTBOUND_NETWORK"
+  skip_if: "not feature.connectable_listener_port"
   permission: wizard
   steps:
     - run: |
@@ -969,6 +970,7 @@ tests:
 
 - name: listen_duplicate_description_rejected
   description: listen() rejects a second listener with the same description
+  skip_if: "not feature.ephemeral_listen"
   permission: wizard
   steps:
     - run: |
@@ -1002,6 +1004,7 @@ tests:
 
 - name: unlisten_missing_listener_rejected
   description: unlisten() rejects a description that is no longer registered
+  skip_if: "not feature.ephemeral_listen"
   permission: wizard
   steps:
     - run: |

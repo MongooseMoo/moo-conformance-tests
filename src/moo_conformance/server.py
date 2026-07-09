@@ -96,6 +96,8 @@ class ManagedServer:
         if self._db_copy_path is None:
             raise RuntimeError("Managed server DB copy path is missing")
         self._manifest_path = Path(self._temp_dir, "profile.json")
+        # ToastStunt resolves file I/O paths under FILE_SUBDIR, which is "files".
+        Path(self._temp_dir, "files").mkdir(exist_ok=True)
         self._install_exec_fixtures()
 
         # On the initial start, or when explicitly switching suites to a
@@ -196,7 +198,7 @@ class ManagedServer:
         """Adopt common external checkpoint outputs back into the input DB path.
 
         Some servers (e.g., ToastStunt) write checkpoints to a separate output
-        file (often `{db}.new`) rather than replacing the input DB in-place.
+        file (often `{db}.out` or `{db}.new`) rather than replacing the input DB in-place.
         For restart-based persistence tests, promote the newest known output
         file to the managed input DB path if present.
         """
@@ -205,6 +207,7 @@ class ManagedServer:
 
         src = self._db_copy_path
         candidates = [
+            Path(str(src) + ".out"),
             Path(str(src) + ".new"),
             src.with_suffix(src.suffix + ".new"),
             src.with_suffix(".out.db"),

@@ -54,7 +54,7 @@ tests:
           fork (0)
             try
               #0.read_stdin_result = read_stdin();
-            except (err)
+            except err (ANY)
               #0.read_stdin_result = err;
             endtry
             #0.read_stdin_ready = 1;
@@ -85,7 +85,7 @@ tests:
           fork (0)
             try
               #0.read_stdin_result = read_stdin();
-            except (err)
+            except err (ANY)
               #0.read_stdin_result = err;
             endtry
             #0.read_stdin_ready = 1;

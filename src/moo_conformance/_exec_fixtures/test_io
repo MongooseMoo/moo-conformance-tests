@@ -1,0 +1,4 @@
+#!/bin/sh
+IFS= read -r input
+printf '%s' "$input"
+printf '%s' "$input" >&2

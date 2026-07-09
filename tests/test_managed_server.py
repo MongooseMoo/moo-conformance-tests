@@ -1,4 +1,6 @@
 from pathlib import Path
+import os
+import stat
 
 import pytest
 
@@ -76,6 +78,26 @@ def test_command_template_supports_manifest_and_server_dir(monkeypatch, tmp_path
     server_dir_arg = command_args[command_args.index("--dir") + 1]
     assert server_dir_arg == server.manifest_path.parent.as_posix()
 
+
+def test_managed_server_installs_exec_fixtures(monkeypatch, tmp_path: Path):
+    baseline = tmp_path / "baseline.db"
+    baseline.write_text("baseline", encoding="utf-8")
+
+    monkeypatch.setattr("moo_conformance.server.subprocess.Popen", lambda *args, **kwargs: _FakeProcess())
+    monkeypatch.setattr(ManagedServer, "_find_free_port", lambda self: 17777)
+    monkeypatch.setattr(ManagedServer, "_wait_for_port", lambda self, timeout=30.0: None)
+
+    server = ManagedServer("fake-server {db} {port}", baseline)
+    try:
+        server.start()
+
+        assert server._temp_dir is not None
+        fixture = Path(server._temp_dir) / "executables" / "test_io"
+        assert fixture.read_text(encoding="utf-8").startswith("#!/bin/sh")
+        if os.name != "nt":
+            assert fixture.stat().st_mode & stat.S_IXUSR
+    finally:
+        server.stop()
 
 class _FakeConfig:
     def __init__(self, env_name):

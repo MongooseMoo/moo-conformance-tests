@@ -43,7 +43,6 @@ tests:
   expect:
     error: E_INVARG
 - name: exec_io_works
-  skip: "test_io is a bash script; not executable on Windows"
   permission: wizard
   code: exec({"test_io"}, "Hello, world!")
   expect:
@@ -52,7 +51,6 @@ tests:
     - Hello, world!
     - Hello, world!
 - name: exec_args_works
-  skip: "test_args is a bash script; not executable on Windows"
   permission: wizard
   code: exec({"test_args", "one", "two", "three"}, "")
   expect:
@@ -61,7 +59,6 @@ tests:
     - one two three
     - ''
 - name: exec_exit_status_works
-  skip: "test_exit_status is a bash script; not executable on Windows"
   permission: wizard
   code: exec({"test_exit_status", "2"}, "")
   expect:
@@ -71,7 +68,6 @@ tests:
     - ''
 - name: exec_with_sleep_works
   permission: wizard
-  skip: Test binary test_with_sleep not available on all servers
   code: exec({"test_with_sleep"}, "")
   expect:
     value:
@@ -84,39 +80,47 @@ tests:
   expect:
     error: E_INVARG
 - name: queued_tasks_shows_suspended_exec
-  skip: "Requires 'sleep' binary in executables/ directory"
   permission: wizard
-  statement: "task_id = 0;\nfork go (0)\n  exec({\"sleep\", \"5\"});\nendfork\nsuspend(0);\n\
-    return queued_tasks();\n"
+  statement: "fork go (0)\n  exec({\"sleep\", \"1\"});\nendfork\nsuspend(0.1);\n\
+    queued = queued_tasks();\ntry\n  kill_task(go);\nexcept e (ANY)\nendtry\nreturn\
+    \ length(queued) == 1 && queued[1][1] == go && queued[1][2] == \"executables/sleep\";\n"
   expect:
-    type: list
+    value: 1
 - name: kill_task_works_on_suspended_exec
-  skip: "Requires 'sleep' binary in executables/ directory"
   permission: wizard
-  statement: "task_id = 0;\nfork go (0)\n  exec({\"sleep\", \"5\"});\nendfork\nsuspend(0);\n\
+  statement: "fork go (0)\n  exec({\"sleep\", \"1\"});\nendfork\nsuspend(0.1);\n\
     result = kill_task(go);\nreturn result;\n"
   expect:
     value: 0
 - name: kill_task_fails_on_already_killed
   permission: wizard
-  statement: "task_id = 0;\nfork go (0)\n  exec({\"sleep\", \"5\"});\nendfork\nsuspend(0);\n\
+  statement: "fork go (0)\n  exec({\"sleep\", \"1\"});\nendfork\nsuspend(0.1);\n\
     kill_task(go);\nreturn kill_task(go);\n"
   expect:
     error: E_INVARG
 - name: resume_fails_on_suspended_exec
   permission: wizard
-  statement: "task_id = 0;\nfork go (0)\n  exec({\"sleep\", \"5\"});\nendfork\nsuspend(0);\n\
-    return resume(go);\n"
+  statement: "fork go (0)\n  exec({\"sleep\", \"1\"});\nendfork\nsuspend(0.1);\n\
+    try\n  resume(go);\nexcept e (E_INVARG)\n  kill_task(go);\n  return e[1];\nendtry\n\
+    kill_task(go);\nreturn \"resume unexpectedly succeeded\";\n"
   expect:
-    error: E_INVARG
+    value: E_INVARG
 - name: suspended_exec_task_stack_matches_suspended_task
-  skip: "Requires 'sleep' binary in executables/ directory"
   permission: wizard
-  statement: "task_id1 = 0;\ntask_id2 = 0;\nfork go1 (0)\n  suspend(5);\nendfork\n\
-    fork go2 (0)\n  exec({\"sleep\", \"5\"});\nendfork\nsuspend(0);\nstack1 = task_stack(go1);\n\
-    stack2 = task_stack(go2);\nreturn stack1 == stack2;\n"
+  statement: "fork go1 (0)\n  suspend(1);\nendfork\nfork go2 (0)\n  exec({\"sleep\"\
+    , \"1\"});\nendfork\nsuspend(0.1);\nstack1 = task_stack(go1);\nstack2 = task_stack(go2);\n\
+    try\n  kill_task(go1);\nexcept e (ANY)\nendtry\ntry\n  kill_task(go2);\nexcept\
+    \ e (ANY)\nendtry\nreturn stack1 == stack2 && go1 != go2;\n"
   expect:
     value: 1
 - name: multiple_simultaneous_execs_work
   permission: wizard
-  skip: 'TODO: implement test code'
+  statement: "task_ids = {};\nfor n in ({1, 2, 3, 4})\n  fork go (0)\n    exec({\"\
+    sleep\", \"1\"});\n  endfork\n  task_ids = listappend(task_ids, go);\nendfor\n\
+    suspend(0.1);\nqueued_before = queued_tasks();\nkill_task(task_ids[1]);\nkill_task(task_ids[3]);\n\
+    queued_after_kill = queued_tasks();\nkill_task(task_ids[2]);\nkill_task(task_ids[4]);\n\
+    return length(queued_before) == 4 && queued_before[1][1] == task_ids[1] && queued_before[1][2]\
+    \ == \"executables/sleep\" && length(queued_after_kill) == 2 && queued_after_kill[1][1]\
+    \ == task_ids[2] && queued_after_kill[2][1] == task_ids[4];\n"
+  expect:
+    value: 1

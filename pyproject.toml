@@ -57,6 +57,7 @@ packages = ["moo_conformance"]
 moo_conformance = [
     "_tests/**/*.yaml",
     "_db/*.db",
+    "_exec_fixtures/*",
 ]
 
 [tool.pytest.ini_options]

@@ -9,9 +9,11 @@ import os
 import shlex
 import shutil
 import socket
+import stat
 import subprocess
 import tempfile
 import time
+from importlib import resources
 from pathlib import Path
 
 
@@ -94,6 +96,7 @@ class ManagedServer:
         if self._db_copy_path is None:
             raise RuntimeError("Managed server DB copy path is missing")
         self._manifest_path = Path(self._temp_dir, "profile.json")
+        self._install_exec_fixtures()
 
         # On the initial start, or when explicitly switching suites to a
         # different source database, refresh the managed working copy from the
@@ -211,6 +214,26 @@ class ManagedServer:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.bind(("", 0))
             return s.getsockname()[1]
+
+    def _install_exec_fixtures(self) -> None:
+        """Install packaged exec() fixtures into the managed server directory."""
+        if self._temp_dir is None:
+            raise RuntimeError("Managed server temp directory is missing")
+
+        fixture_root = resources.files("moo_conformance") / "_exec_fixtures"
+        if not fixture_root.is_dir():
+            return
+
+        exec_dir = Path(self._temp_dir, "executables")
+        exec_dir.mkdir(exist_ok=True)
+
+        for fixture in fixture_root.iterdir():
+            if not fixture.is_file():
+                continue
+            target = exec_dir / fixture.name
+            with fixture.open("rb") as source, target.open("wb") as dest:
+                shutil.copyfileobj(source, dest)
+            target.chmod(target.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
     def _wait_for_port(self, timeout: float = 30.0) -> None:
         """Poll until the server port accepts connections."""

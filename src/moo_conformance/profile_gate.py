@@ -11,8 +11,9 @@ class ProfileGateError(RuntimeError):
     """Raised when two profile manifests cannot be compared."""
 
 
-REQUIRED_FEATURE_KEYS = ("option.OUTBOUND_NETWORK",)
-REQUIRED_TOP_LEVEL_KEYS = ("database_fixture", "runtime_os")
+REQUIRED_FEATURE_KEYS = ("option.OUTBOUND_NETWORK", "option.PROMOTE_NUMBERS")
+REQUIRED_TOP_LEVEL_KEYS = ("database_fixture", "database_checksum", "runtime_os")
+ACCEPTED_SUPPORT_STATUSES = frozenset({"supported", "diagnostic"})
 
 
 def load_manifest(path: str | Path) -> dict[str, Any]:
@@ -29,10 +30,17 @@ def load_manifest(path: str | Path) -> dict[str, Any]:
 
 
 def validate_profile_pair(oracle: dict[str, Any], target: dict[str, Any]) -> None:
-    status = target.get("support_status")
-    if status == "unsupported":
-        reason = target.get("unsupported_reason") or "no reason provided"
-        raise ProfileGateError(f"unsupported-profile: {target.get('profile_id', '<unknown>')}: {reason}")
+    for manifest, label in ((oracle, "oracle"), (target, "target")):
+        status = manifest.get("support_status")
+        if status == "unsupported":
+            reason = manifest.get("unsupported_reason") or "no reason provided"
+            raise ProfileGateError(
+                f"unsupported-profile: {manifest.get('profile_id', '<unknown>')}: {reason}"
+            )
+        if status not in ACCEPTED_SUPPORT_STATUSES:
+            raise ProfileGateError(
+                f"invalid-comparison: {label} manifest has invalid support_status {status!r}"
+            )
 
     oracle_features = _features(oracle, "oracle")
     target_features = _features(target, "target")
@@ -40,6 +48,10 @@ def validate_profile_pair(oracle: dict[str, Any], target: dict[str, Any]) -> Non
     for key in REQUIRED_FEATURE_KEYS:
         oracle_value = _required_feature(oracle_features, key, "oracle")
         target_value = _required_feature(target_features, key, "target")
+        if not isinstance(oracle_value, bool):
+            raise ProfileGateError(f"oracle manifest feature {key} must be a JSON boolean")
+        if not isinstance(target_value, bool):
+            raise ProfileGateError(f"target manifest feature {key} must be a JSON boolean")
         if oracle_value != target_value:
             raise ProfileGateError(
                 "invalid-comparison: feature "

@@ -485,10 +485,11 @@ class YamlTestRunner:
         # Update transport endpoint in case a dynamic port changed.
         self.transport.host = self.managed_server.host
         self.transport.port = self.managed_server.port
-        self.transport.connect(current_user)
 
         if wait_ms > 0:
             time.sleep(wait_ms / 1000.0)
+
+        self.transport.connect(current_user)
 
     def _execute_write_stdin(self, text: str, test_name: str) -> None:
         """Write text to the managed server process stdin."""

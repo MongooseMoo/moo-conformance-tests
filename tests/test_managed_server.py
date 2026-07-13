@@ -3,10 +3,12 @@ from io import BytesIO
 import os
 import subprocess
 import stat
+from unittest.mock import Mock
 
 import pytest
 
 from moo_conformance.plugin import _load_login_script
+from moo_conformance.runner import YamlTestRunner
 from moo_conformance.server import ManagedServer
 from moo_conformance.transport import SocketTransport
 
@@ -51,6 +53,32 @@ def test_restart_preserves_working_db_copy(monkeypatch, tmp_path: Path):
 
     assert server._db_copy_path.read_text(encoding="utf-8") == "checkpointed"
     assert len(created) == 2
+
+
+def test_restart_waits_before_transport_reconnect(monkeypatch):
+    events = []
+    transport = Mock()
+    transport.current_user = "wizard"
+    transport.disconnect.side_effect = lambda: events.append("disconnect")
+    transport.connect.side_effect = lambda user: events.append(("connect", user))
+    server = Mock()
+    server.host = "localhost"
+    server.port = 17777
+    server.restart.side_effect = lambda down_ms=0: events.append(("restart", down_ms))
+    monkeypatch.setattr(
+        "moo_conformance.runner.time.sleep",
+        lambda seconds: events.append(("sleep", seconds)),
+    )
+
+    runner = YamlTestRunner(transport, managed_server=server)
+    runner._execute_restart_server(wait_ms=500, test_name="restart", down_ms=250)
+
+    assert events == [
+        "disconnect",
+        ("restart", 250),
+        ("sleep", 0.5),
+        ("connect", "wizard"),
+    ]
 
 
 def test_command_template_supports_manifest_and_server_dir(monkeypatch, tmp_path: Path):

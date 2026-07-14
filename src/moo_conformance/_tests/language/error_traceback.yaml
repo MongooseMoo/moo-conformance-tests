@@ -474,6 +474,36 @@ tests:
           delete_property(#0, "audit_uncaught_saved_code");
         as: wizard
 
+  - name: uncaught_forked_handler_preserves_custom_message_and_value
+    description: >
+      The code, custom message, and custom value from raise() are passed
+      unchanged to handle_uncaught_error for an uncaught forked error.
+    steps:
+      - run: |
+          add_property(#0, "audit_uncaught_saved_code", verb_code(#0, "handle_uncaught_error"), {#0, "rw"});
+          add_property(#0, "audit_uncaught_args", {}, {#0, "rw"});
+          set_verb_code(#0, "handle_uncaught_error", {"#0.audit_uncaught_args = args;", "return 1;"});
+          add_verb(player, {player, "xd", "forkpayload"}, {"any", "none", "none"});
+          set_verb_code(player, "forkpayload", {"fork (0)", "  raise(E_INVARG, \"custom uncaught message\", {7, 8});", "endfork", "notify(player, \"fork-payload-started\");"});
+          return 1;
+        as: wizard
+      - command: forkpayload
+        expect:
+          output:
+            contains: fork-payload-started
+      - wait: 500
+      - run: 'return #0.audit_uncaught_args[1..3];'
+        as: wizard
+        expect:
+          value: [E_INVARG, custom uncaught message, [7, 8]]
+    cleanup:
+      - run: |
+          set_verb_code(#0, "handle_uncaught_error", #0.audit_uncaught_saved_code);
+          delete_verb(player, "forkpayload");
+          delete_property(#0, "audit_uncaught_args");
+          delete_property(#0, "audit_uncaught_saved_code");
+        as: wizard
+
   # --- Eval frames in a server-printed traceback (error through eval()) ---
 
   - name: eval_frame_labeled_input_to_eval

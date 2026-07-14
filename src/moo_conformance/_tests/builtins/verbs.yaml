@@ -416,6 +416,46 @@ tests:
       value: 4
   cleanup:
   - run: recycle({obj})
+- name: verb_getters_restore_canonical_source
+  description: Verb getters preserve canonical source and restore unchanged values through setters
+  permission: programmer
+  steps:
+  - run: create($nothing)
+    capture: obj
+  - run: add_verb({obj}, {player, "rxd", "foobar"}, {"this", "none", "this"})
+  - run: set_verb_code({obj}, "foobar", {"1   ;"})
+    expect:
+      value: []
+  - run: |
+      saved_info = verb_info({obj}, "foobar");
+      saved_args = verb_args({obj}, "foobar");
+      saved_code = verb_code({obj}, "foobar");
+      owner_matches = saved_info[1] == player;
+      perms_match = saved_info[2] == "rxd";
+      names_match = saved_info[3] == "foobar";
+      args_match = saved_args == {"this", "none", "this"};
+      code_matches = saved_code == {"1;"};
+      set_verb_info({obj}, "foobar", {player, "rw", "foobar"});
+      set_verb_args({obj}, "foobar", {"any", "any", "any"});
+      set_verb_code({obj}, "foobar", {"return 2;"});
+      set_verb_info({obj}, "foobar", saved_info);
+      set_verb_args({obj}, "foobar", saved_args);
+      set_verb_code({obj}, "foobar", saved_code);
+      result = {obj}:foobar();
+      return {owner_matches, perms_match, names_match, args_match, code_matches, result, verb_info({obj}, "foobar") == saved_info, verb_args({obj}, "foobar") == saved_args, verb_code({obj}, "foobar") == saved_code};
+    expect:
+      value:
+      - 1
+      - 1
+      - 1
+      - 1
+      - 1
+      - 0
+      - 1
+      - 1
+      - 1
+  cleanup:
+  - run: recycle({obj})
 - name: set_verb_info_basic
   description: set_verb_info changes verb owner, perms, and names
   permission: programmer

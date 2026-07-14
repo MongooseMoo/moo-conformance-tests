@@ -406,3 +406,28 @@ tests:
     cleanup:
       - run: 'chparent(player, {old_parent}); recycle({ancestor});'
         as: wizard
+
+  - name: audit_deep_inherited_command_caller_is_player
+    description: A player-entered command defined above an intervening ancestor still sees caller equal to player.
+    steps:
+      - run: 'return parent(player);'
+        capture: old_parent
+        as: wizard
+      - run: 'return create({old_parent});'
+        capture: defining_ancestor
+        as: wizard
+      - run: 'return create({defining_ancestor});'
+        capture: middle_ancestor
+        as: wizard
+      - run: |
+          add_verb({defining_ancestor}, {player, "xd", "audit_deep_inherited_caller"}, {"any", "any", "any"});
+          set_verb_code({defining_ancestor}, "audit_deep_inherited_caller", {"notify(player, \"CALLER_IS_PLAYER:\" + tostr(caller == player));"});
+          chparent(player, {middle_ancestor});
+          return 1;
+        as: wizard
+      - command: audit_deep_inherited_caller
+        expect:
+          output: "CALLER_IS_PLAYER:1"
+    cleanup:
+      - run: 'chparent(player, {old_parent}); recycle({middle_ancestor}); recycle({defining_ancestor});'
+        as: wizard

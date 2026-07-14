@@ -8,3 +8,11 @@ tests:
     code: "1 in {1.0}"
     expect:
       value: 1
+
+  - name: sort_rejects_mixed_integer_and_float_values
+    description: PROMOTE_NUMBERS does not extend to sort() comparisons
+    skip_if: not option.PROMOTE_NUMBERS
+    permission: wizard
+    code: "sort({2.0, 1})"
+    expect:
+      error: E_TYPE

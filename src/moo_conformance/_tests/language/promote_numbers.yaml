@@ -16,3 +16,12 @@ tests:
     code: "sort({2.0, 1})"
     expect:
       error: E_TYPE
+
+  - name: map_keys_keep_integer_and_float_identity
+    description: PROMOTE_NUMBERS does not merge integer and float map keys
+    skip_if: not option.PROMOTE_NUMBERS
+    statement: |
+      values = [1 -> "integer", 1.0 -> "float"];
+      return {length(mapkeys(values)), values[1], values[1.0], maphaskey([1.0 -> 1], 1)};
+    expect:
+      value: [2, "integer", "float", 0]

@@ -3,6 +3,7 @@ description: Table-driven TYPE_ANY coverage for mapdelete().
 
 requires:
   builtins:
+    - call_function
     - mapdelete
 
 tests:
@@ -16,5 +17,11 @@ tests:
         - [obj, "mapdelete([], #0)"]
         - [err, "mapdelete([], E_ARGS)"]
     code: "{expr}"
+    expect:
+      error: E_RANGE
+
+  - name: mapdelete_missing_object_key_through_call_function
+    permission: wizard
+    code: 'call_function("mapdelete", [#0 -> ["client" -> "client", "version" -> "0.1"]], #1)'
     expect:
       error: E_RANGE

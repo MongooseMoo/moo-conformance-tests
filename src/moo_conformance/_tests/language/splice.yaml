@@ -41,6 +41,11 @@ tests:
     expect:
       value: 3
 
+  - name: splice_non_list_in_function_call
+    code: 'max(@5)'
+    expect:
+      error: E_TYPE
+
   - name: splice_non_list_error
     description: Splicing a non-list value raises E_TYPE
     statement: |
@@ -132,6 +137,37 @@ tests:
     expect:
       error: E_PROPNF
 
+  - name: computed_property_non_string_name
+    code: '#0.(1)'
+    expect:
+      error: E_TYPE
+
+  - name: computed_property_assignment_returns_rhs
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_property(o, "foo", 0, {player, ""});
+      result = (o.("foo") = 99);
+      value = o.foo;
+      recycle(o);
+      return {result, value};
+    expect:
+      value: [99, 99]
+
+  - name: computed_property_assignment_evaluation_order
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_property(o, "first", "initial", {player, ""});
+      add_property(o, "second", "unchanged", {player, ""});
+      name = "first";
+      o.(name) = (name = "second");
+      result = {o.first, o.second, name};
+      recycle(o);
+      return result;
+    expect:
+      value: ["second", "unchanged", "second"]
+
   - name: computed_property_write
     description: "obj.(name) = value writes a property by computed name"
     permission: wizard
@@ -159,3 +195,37 @@ tests:
       return result;
     expect:
       value: 42
+
+  - name: computed_verb_non_string_name
+    code: '#0:(1)()'
+    expect:
+      error: E_TYPE
+
+  - name: computed_verb_uses_callable_dispatch
+    permission: wizard
+    statement: |
+      parent = create($nothing);
+      child = create(parent);
+      add_verb(parent, {player, "xd", "MiXeD"}, {"this", "none", "this"});
+      set_verb_code(parent, "MiXeD", {"return 42;"});
+      add_verb(child, {player, "rd", "mixed"}, {"this", "none", "this"});
+      set_verb_code(child, "mixed", {"return 0;"});
+      result = child:("MIXED")();
+      recycle(child);
+      recycle(parent);
+      return result;
+    expect:
+      value: 42
+
+  - name: computed_verb_evaluation_order
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "target"}, {"this", "none", "this"});
+      set_verb_code(o, "target", {"return args[1];"});
+      name = "target";
+      result = o:(name)((name = "missing"));
+      recycle(o);
+      return {result, name};
+    expect:
+      value: ["missing", "missing"]

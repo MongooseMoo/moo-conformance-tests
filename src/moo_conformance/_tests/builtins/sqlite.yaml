@@ -15,6 +15,7 @@ requires:
     - sqlite_last_insert_row_id
     - sqlite_limit
     - sqlite_interrupt
+    - call_function
 
 tests:
   - name: sqlite_exists_in_runtime
@@ -207,6 +208,13 @@ tests:
     permission: wizard
     assumes: [sqlite]
     code: "sqlite_info(999999)"
+    expect:
+      error: E_INVARG
+
+  - name: sqlite_info_invalid_handle_through_call_function
+    description: call_function preserves sqlite_info's invalid-handle error.
+    permission: wizard
+    code: 'call_function("sqlite_info", 2)'
     expect:
       error: E_INVARG
 

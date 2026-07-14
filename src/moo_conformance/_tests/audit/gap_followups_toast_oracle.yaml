@@ -106,6 +106,84 @@ tests:
           endfor
         as: wizard
 
+  - name: audit_telnet_escaped_iac_stripped_from_login_input
+    description: Toast strips IAC IAC split across reads from ordinary login text.
+    steps:
+      - run: |
+          for prop in ({"audit_iac_literal_seen", "audit_iac_literal_login_saved"})
+            try
+              add_property(#0, prop, {}, {#0, "rw"});
+            except (E_INVARG)
+            endtry
+          endfor
+          old_login_exists = 1;
+          try
+            old_login_info = verb_info(#0, "do_login_command");
+            old_login_args = verb_args(#0, "do_login_command");
+            old_login_code = verb_code(#0, "do_login_command");
+          except (E_VERBNF)
+            old_login_exists = 0;
+            old_login_info = {};
+            old_login_args = {};
+            old_login_code = {};
+          endtry
+          #0.audit_iac_literal_login_saved = {old_login_exists, old_login_info, old_login_args, old_login_code};
+          try
+            add_verb(#0, {#0, "rxd", "do_login_command"}, {"this", "none", "this"});
+          except (E_INVARG)
+          endtry
+          set_verb_info(#0, "do_login_command", {player, "rxd", "do_login_command"});
+          set_verb_args(#0, "do_login_command", {"this", "none", "this"});
+          set_verb_code(#0, "do_login_command", {
+            "#0.audit_iac_literal_seen = {args, argstr};",
+            "return 0;"
+          });
+          return 1;
+        as: wizard
+      - new_connection:
+          capture: conn1
+      - send_bytes:
+          connection: conn1
+          hex: "6961632d"
+      - send_bytes:
+          connection: conn1
+          hex: "ff"
+      - send_bytes:
+          connection: conn1
+          hex: "ff"
+      - send_bytes:
+          connection: conn1
+          hex: "2d6c6f67696e0d0a"
+      - wait: 500
+      - run: "return #0.audit_iac_literal_seen;"
+        as: wizard
+        expect:
+          value:
+            -
+              - "iac--login"
+            - "iac--login"
+      - close_connection: conn1
+    cleanup:
+      - run: |
+          try
+            saved = #0.audit_iac_literal_login_saved;
+            if (saved[1])
+              set_verb_info(#0, "do_login_command", saved[2]);
+              set_verb_args(#0, "do_login_command", saved[3]);
+              set_verb_code(#0, "do_login_command", saved[4]);
+            else
+              delete_verb(#0, "do_login_command");
+            endif
+          except (ANY)
+          endtry
+          for prop in ({"audit_iac_literal_seen", "audit_iac_literal_login_saved"})
+            try
+              delete_property(#0, prop);
+            except (ANY)
+            endtry
+          endfor
+        as: wizard
+
   - name: audit_telnet_iac_delivered_as_oob_command
     description: Toast preserves telnet parser state across reads and delivers complete IAC negotiation commands to do_out_of_band_command as binary-escaped OOB input.
     steps:

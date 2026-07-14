@@ -685,10 +685,10 @@ tests:
         as: wizard
 
   - name: audit_user_connected_confunc_calls_continue_after_fork_and_setting_task_perms
-    description: Toast completes location and user confunc calls after user_connected forks and changes task permissions to the login player.
+    description: Toast resumes user_connected after a nested zero-delay suspend with a pending fork, then completes location and user confunc calls after changing task permissions to the login player.
     steps:
       - run: |
-          for prop in ({"audit_connected_confunc_player", "audit_connected_confunc_location", "audit_connected_confunc_child", "audit_connected_confunc_location_seen", "audit_connected_confunc_user_seen", "audit_connected_confunc_parent", "audit_connected_confunc_login_saved", "audit_connected_confunc_hook_saved"})
+          for prop in ({"audit_connected_confunc_player", "audit_connected_confunc_location", "audit_connected_confunc_child", "audit_connected_confunc_after_suspend", "audit_connected_confunc_location_seen", "audit_connected_confunc_user_seen", "audit_connected_confunc_parent", "audit_connected_confunc_login_saved", "audit_connected_confunc_hook_saved"})
             try
               add_property(#0, prop, {}, {#0, "rw"});
             except (E_INVARG)
@@ -703,6 +703,12 @@ tests:
           add_verb(location, {login_player, "rxd", "confunc"}, {"this", "none", "this"});
           set_verb_code(location, "confunc", {
             "#0.audit_connected_confunc_location_seen = {this, args[1], task_perms()};",
+            "return 1;"
+          });
+          add_verb(location, {login_player, "rxd", "yield_once"}, {"this", "none", "this"});
+          set_verb_code(location, "yield_once", {
+            "suspend(0);",
+            "#0.audit_connected_confunc_after_suspend = this;",
             "return 1;"
           });
           add_verb(login_player, {login_player, "rxd", "confunc"}, {"this", "none", "this"});
@@ -752,6 +758,7 @@ tests:
             "fork (0)",
             "  #0.audit_connected_confunc_child = {user, task_perms()};",
             "endfork",
+            "user.location:yield_once();",
             "set_task_perms(user);",
             "user.location:confunc(user);",
             "user:confunc();",
@@ -771,6 +778,7 @@ tests:
           l = #0.audit_connected_confunc_location;
           return {
             #0.audit_connected_confunc_child[1] == p,
+            #0.audit_connected_confunc_after_suspend == l,
             #0.audit_connected_confunc_location_seen == {l, p, p},
             #0.audit_connected_confunc_user_seen == {p, {}, p},
             #0.audit_connected_confunc_parent == {p, p}
@@ -778,6 +786,7 @@ tests:
         as: wizard
         expect:
           value:
+            - 1
             - 1
             - 1
             - 1
@@ -823,7 +832,7 @@ tests:
             recycle(#0.audit_connected_confunc_location);
           except (ANY)
           endtry
-          for prop in ({"audit_connected_confunc_player", "audit_connected_confunc_location", "audit_connected_confunc_child", "audit_connected_confunc_location_seen", "audit_connected_confunc_user_seen", "audit_connected_confunc_parent", "audit_connected_confunc_login_saved", "audit_connected_confunc_hook_saved"})
+          for prop in ({"audit_connected_confunc_player", "audit_connected_confunc_location", "audit_connected_confunc_child", "audit_connected_confunc_after_suspend", "audit_connected_confunc_location_seen", "audit_connected_confunc_user_seen", "audit_connected_confunc_parent", "audit_connected_confunc_login_saved", "audit_connected_confunc_hook_saved"})
             try
               delete_property(#0, prop);
             except (ANY)

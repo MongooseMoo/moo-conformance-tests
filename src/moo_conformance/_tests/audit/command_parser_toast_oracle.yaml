@@ -384,3 +384,25 @@ tests:
     cleanup:
       - run: "recycle({obj});"
         as: wizard
+
+  - name: audit_inherited_command_caller_is_player
+    description: A player-entered command inherited from an ancestor sees caller equal to player, not the defining ancestor.
+    steps:
+      - run: 'return parent(player);'
+        capture: old_parent
+        as: wizard
+      - run: 'return create({old_parent});'
+        capture: ancestor
+        as: wizard
+      - run: |
+          add_verb({ancestor}, {player, "xd", "audit_inherited_caller"}, {"any", "any", "any"});
+          set_verb_code({ancestor}, "audit_inherited_caller", {"notify(player, \"CALLER_IS_PLAYER:\" + tostr(caller == player));"});
+          chparent(player, {ancestor});
+          return 1;
+        as: wizard
+      - command: audit_inherited_caller
+        expect:
+          output: "CALLER_IS_PLAYER:1"
+    cleanup:
+      - run: 'chparent(player, {old_parent}); recycle({ancestor});'
+        as: wizard

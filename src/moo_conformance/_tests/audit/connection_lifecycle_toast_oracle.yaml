@@ -965,14 +965,14 @@ tests:
         as: wizard
 
   - name: audit_user_reconnected_cross_listener_hooks
-    description: Toast cross-listener reconnect calls old user_client_disconnected and new user_connected, not user_reconnected.
+    description: Toast cross-listener reconnect calls old user_client_disconnected before new user_connected with the replacement connection, not user_reconnected.
     steps:
       - allocate_port:
           capture: old_port
       - allocate_port:
           capture: new_port
       - run: |
-          for prop in ({"audit_cross_player", "audit_cross_old_handler", "audit_cross_new_handler", "audit_cross_old_port", "audit_cross_new_port", "audit_cross_old_client", "audit_cross_new_connected", "audit_cross_new_reconnected"})
+          for prop in ({"audit_cross_player", "audit_cross_old_handler", "audit_cross_new_handler", "audit_cross_old_port", "audit_cross_new_port", "audit_cross_order", "audit_cross_old_client", "audit_cross_new_connected", "audit_cross_new_reconnected"})
             try
               add_property(#0, prop, {}, {#0, "rw"});
             except (E_INVARG)
@@ -987,19 +987,29 @@ tests:
           #0.audit_cross_new_handler = new_handler;
           #0.audit_cross_old_port = {old_port};
           #0.audit_cross_new_port = {new_port};
+          #0.audit_cross_order = {};
           #0.audit_cross_new_reconnected = {};
           add_verb(old_handler, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
           set_verb_code(old_handler, "do_login_command", {"return #0.audit_cross_player;"});
           add_verb(old_handler, {player, "rxd", "user_client_disconnected"}, {"this", "none", "this"});
           set_verb_code(old_handler, "user_client_disconnected", {
-            "#0.audit_cross_old_client = args[1];",
+            "connection_info_succeeds = 1;",
+            "try",
+            "  connection_info(args[1]);",
+            "except (E_INVARG)",
+            "  connection_info_succeeds = 0;",
+            "endtry",
+            "#0.audit_cross_old_client = {@#0.audit_cross_old_client, {this, player, caller, args, argstr, connection_info_succeeds}};",
+            "#0.audit_cross_order = {@#0.audit_cross_order, \"old_client\"};",
             "return 1;"
           });
           add_verb(new_handler, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
           set_verb_code(new_handler, "do_login_command", {"return #0.audit_cross_player;"});
           add_verb(new_handler, {player, "rxd", "user_connected"}, {"this", "none", "this"});
           set_verb_code(new_handler, "user_connected", {
-            "#0.audit_cross_new_connected = args[1];",
+            "info = connection_info(args[1]);",
+            "#0.audit_cross_new_connected = {@#0.audit_cross_new_connected, {this, player, caller, args, argstr, info[\"source_port\"]}};",
+            "#0.audit_cross_order = {@#0.audit_cross_order, \"new_connected\"};",
             "return 1;"
           });
           add_verb(new_handler, {player, "rxd", "user_reconnected"}, {"this", "none", "this"});
@@ -1026,13 +1036,25 @@ tests:
           text: "login-new-listener"
       - wait: 500
       - run: |
-          return {#0.audit_cross_old_client == #0.audit_cross_player, #0.audit_cross_new_connected == #0.audit_cross_player, typeof(#0.audit_cross_new_reconnected)};
+          p = #0.audit_cross_player;
+          old_handler = #0.audit_cross_old_handler;
+          new_handler = #0.audit_cross_new_handler;
+          new_port = #0.audit_cross_new_port;
+          return {
+            #0.audit_cross_old_client == {{old_handler, p, #-1, {p}, "", 0}},
+            #0.audit_cross_new_connected == {{new_handler, p, #-1, {p}, "", new_port}},
+            #0.audit_cross_order == {"old_client", "new_connected"},
+            #0.audit_cross_new_reconnected == {},
+            connection_info(p)["source_port"] == new_port
+          };
         as: wizard
         expect:
           value:
             - 1
             - 1
-            - 4
+            - 1
+            - 1
+            - 1
       - close_connection: conn2
     cleanup:
       - run: |
@@ -1060,7 +1082,7 @@ tests:
             recycle(#0.audit_cross_new_handler);
           except (ANY)
           endtry
-          for prop in ({"audit_cross_player", "audit_cross_old_handler", "audit_cross_new_handler", "audit_cross_old_port", "audit_cross_new_port", "audit_cross_old_client", "audit_cross_new_connected", "audit_cross_new_reconnected"})
+          for prop in ({"audit_cross_player", "audit_cross_old_handler", "audit_cross_new_handler", "audit_cross_old_port", "audit_cross_new_port", "audit_cross_order", "audit_cross_old_client", "audit_cross_new_connected", "audit_cross_new_reconnected"})
             try
               delete_property(#0, prop);
             except (ANY)

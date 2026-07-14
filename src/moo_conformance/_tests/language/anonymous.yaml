@@ -254,6 +254,25 @@ tests:
     return result;
   expect:
     value: [123, abc, 1]
+- name: anonymous_nested_this_call_preserves_caller_identity
+  permission: programmer
+  description: A nested this-call on an anonymous receiver preserves that receiver as caller
+  steps:
+  - run: |
+      a = create($object);
+      add_verb(a, {player, "xd", "inner"}, {"this", "none", "this"});
+      set_verb_code(a, "inner", {"return {typeof(this) == ANON, typeof(caller) == ANON, caller == this};"});
+      add_verb(a, {player, "xd", "outer"}, {"this", "none", "this"});
+      set_verb_code(a, "outer", {"return this:inner();"});
+      return a;
+    capture: anon_class
+  - run: |
+      anon = create({anon_class}, 1);
+      return anon:outer();
+    expect:
+      value: [1, 1, 1]
+  cleanup:
+  - run: recycle({anon_class})
 - name: valid_returns_true_for_valid_anonymous
   statement: 'a = create($anonymous, 1);
 

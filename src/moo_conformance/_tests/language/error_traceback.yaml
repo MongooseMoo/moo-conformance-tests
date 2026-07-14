@@ -378,6 +378,28 @@ tests:
       - run: 'delete_verb(player, "boomcmd");'
         as: wizard
 
+  - name: uncaught_command_call_function_error_preserves_call_chain
+    description: >
+      An error raised by a builtin invoked through call_function propagates
+      through nested command verbs and prints the complete call chain.
+    steps:
+      - run: |
+          add_verb(player, {player, "xd", "boominner"}, {"any", "none", "none"});
+          set_verb_code(player, "boominner", {"return call_function(\"typeof\");"});
+          add_verb(player, {player, "xd", "boomouter"}, {"any", "none", "none"});
+          set_verb_code(player, "boomouter", {"return this:boominner();"});
+          return 1;
+        as: wizard
+      - command: boomouter
+        expect:
+          output:
+            match: '(?s):boominner .* called from #\d+:boomouter .*\(End of traceback\)'
+    cleanup:
+      - run: |
+          delete_verb(player, "boomouter");
+          delete_verb(player, "boominner");
+        as: wizard
+
   # --- Eval frames in a server-printed traceback (error through eval()) ---
 
   - name: eval_frame_labeled_input_to_eval

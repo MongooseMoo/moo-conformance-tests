@@ -445,6 +445,119 @@ tests:
           endfor
         as: wizard
 
+  - name: audit_user_connected_continues_after_zero_delay_fork
+    description: Toast continues the parent user_connected hook after creating a zero-delay child and runs both activations.
+    steps:
+      - run: |
+          for prop in ({"audit_connected_fork_player", "audit_connected_fork_child", "audit_connected_fork_parent", "audit_connected_fork_login_saved", "audit_connected_fork_hook_saved"})
+            try
+              add_property(#0, prop, {}, {#0, "rw"});
+            except (E_INVARG)
+            endtry
+          endfor
+          login_player = create($nothing);
+          set_player_flag(login_player, 1);
+          #0.audit_connected_fork_player = login_player;
+          old_login_exists = 1;
+          try
+            old_login_info = verb_info(#0, "do_login_command");
+            old_login_args = verb_args(#0, "do_login_command");
+            old_login_code = verb_code(#0, "do_login_command");
+          except (E_VERBNF)
+            old_login_exists = 0;
+            old_login_info = {};
+            old_login_args = {};
+            old_login_code = {};
+          endtry
+          #0.audit_connected_fork_login_saved = {old_login_exists, old_login_info, old_login_args, old_login_code};
+          try
+            add_verb(#0, {#0, "rxd", "do_login_command"}, {"this", "none", "this"});
+          except (E_INVARG)
+          endtry
+          set_verb_info(#0, "do_login_command", {player, "rxd", "do_login_command"});
+          set_verb_args(#0, "do_login_command", {"this", "none", "this"});
+          set_verb_code(#0, "do_login_command", {"return #0.audit_connected_fork_player;"});
+          old_hook_exists = 1;
+          try
+            old_hook_info = verb_info(#0, "user_connected");
+            old_hook_args = verb_args(#0, "user_connected");
+            old_hook_code = verb_code(#0, "user_connected");
+          except (E_VERBNF)
+            old_hook_exists = 0;
+            old_hook_info = {};
+            old_hook_args = {};
+            old_hook_code = {};
+          endtry
+          #0.audit_connected_fork_hook_saved = {old_hook_exists, old_hook_info, old_hook_args, old_hook_code};
+          try
+            add_verb(#0, {#0, "rxd", "user_connected"}, {"this", "none", "this"});
+          except (E_INVARG)
+          endtry
+          set_verb_info(#0, "user_connected", {player, "rxd", "user_connected"});
+          set_verb_args(#0, "user_connected", {"this", "none", "this"});
+          set_verb_code(#0, "user_connected", {
+            "fork (0)",
+            "  #0.audit_connected_fork_child = args[1];",
+            "endfork",
+            "#0.audit_connected_fork_parent = args[1];",
+            "return 1;"
+          });
+          return 1;
+        as: wizard
+      - new_connection:
+          capture: conn1
+      - send:
+          connection: conn1
+          text: "login-user-connected-fork"
+      - wait: 500
+      - run: |
+          return {#0.audit_connected_fork_parent == #0.audit_connected_fork_player, #0.audit_connected_fork_child == #0.audit_connected_fork_player};
+        as: wizard
+        expect:
+          value:
+            - 1
+            - 1
+      - close_connection: conn1
+    cleanup:
+      - run: |
+          try
+            saved = #0.audit_connected_fork_login_saved;
+            if (saved[1])
+              set_verb_info(#0, "do_login_command", saved[2]);
+              set_verb_args(#0, "do_login_command", saved[3]);
+              set_verb_code(#0, "do_login_command", saved[4]);
+            else
+              delete_verb(#0, "do_login_command");
+            endif
+          except (ANY)
+          endtry
+          try
+            saved = #0.audit_connected_fork_hook_saved;
+            if (saved[1])
+              set_verb_info(#0, "user_connected", saved[2]);
+              set_verb_args(#0, "user_connected", saved[3]);
+              set_verb_code(#0, "user_connected", saved[4]);
+            else
+              delete_verb(#0, "user_connected");
+            endif
+          except (ANY)
+          endtry
+          try
+            boot_player(#0.audit_connected_fork_player);
+          except (ANY)
+          endtry
+          try
+            recycle(#0.audit_connected_fork_player);
+          except (ANY)
+          endtry
+          for prop in ({"audit_connected_fork_player", "audit_connected_fork_child", "audit_connected_fork_parent", "audit_connected_fork_login_saved", "audit_connected_fork_hook_saved"})
+            try
+              delete_property(#0, prop);
+            except (ANY)
+            endtry
+          endfor
+        as: wizard
+
   - name: audit_user_client_disconnected_hook
     description: Toast calls user_client_disconnected when the client closes a logged-in connection.
     steps:

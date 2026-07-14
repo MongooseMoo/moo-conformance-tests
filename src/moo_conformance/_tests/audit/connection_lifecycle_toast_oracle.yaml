@@ -26,6 +26,9 @@ requires:
     - listen
     - unlisten
     - suspend
+    - move
+    - task_perms
+    - set_task_perms
 
 tests:
   - name: audit_listener_handler_do_login_command
@@ -674,6 +677,153 @@ tests:
           except (ANY)
           endtry
           for prop in ({"audit_connected_dynamic_player", "audit_connected_dynamic_handler", "audit_connected_dynamic_seen", "audit_connected_dynamic_parent", "audit_connected_dynamic_login_saved", "audit_connected_dynamic_hook_saved"})
+            try
+              delete_property(#0, prop);
+            except (ANY)
+            endtry
+          endfor
+        as: wizard
+
+  - name: audit_user_connected_confunc_calls_continue_after_fork_and_setting_task_perms
+    description: Toast completes location and user confunc calls after user_connected forks and changes task permissions to the login player.
+    steps:
+      - run: |
+          for prop in ({"audit_connected_confunc_player", "audit_connected_confunc_location", "audit_connected_confunc_child", "audit_connected_confunc_location_seen", "audit_connected_confunc_user_seen", "audit_connected_confunc_parent", "audit_connected_confunc_login_saved", "audit_connected_confunc_hook_saved"})
+            try
+              add_property(#0, prop, {}, {#0, "rw"});
+            except (E_INVARG)
+            endtry
+          endfor
+          login_player = create($nothing);
+          location = create($nothing);
+          set_player_flag(login_player, 1);
+          move(login_player, location);
+          #0.audit_connected_confunc_player = login_player;
+          #0.audit_connected_confunc_location = location;
+          add_verb(location, {login_player, "rxd", "confunc"}, {"this", "none", "this"});
+          set_verb_code(location, "confunc", {
+            "#0.audit_connected_confunc_location_seen = {this, args[1], task_perms()};",
+            "return 1;"
+          });
+          add_verb(login_player, {login_player, "rxd", "confunc"}, {"this", "none", "this"});
+          set_verb_code(login_player, "confunc", {
+            "#0.audit_connected_confunc_user_seen = {this, args, task_perms()};",
+            "return 1;"
+          });
+          old_login_exists = 1;
+          try
+            old_login_info = verb_info(#0, "do_login_command");
+            old_login_args = verb_args(#0, "do_login_command");
+            old_login_code = verb_code(#0, "do_login_command");
+          except (E_VERBNF)
+            old_login_exists = 0;
+            old_login_info = {};
+            old_login_args = {};
+            old_login_code = {};
+          endtry
+          #0.audit_connected_confunc_login_saved = {old_login_exists, old_login_info, old_login_args, old_login_code};
+          try
+            add_verb(#0, {#0, "rxd", "do_login_command"}, {"this", "none", "this"});
+          except (E_INVARG)
+          endtry
+          set_verb_info(#0, "do_login_command", {player, "rxd", "do_login_command"});
+          set_verb_args(#0, "do_login_command", {"this", "none", "this"});
+          set_verb_code(#0, "do_login_command", {"return #0.audit_connected_confunc_player;"});
+          old_hook_exists = 1;
+          try
+            old_hook_info = verb_info(#0, "user_connected");
+            old_hook_args = verb_args(#0, "user_connected");
+            old_hook_code = verb_code(#0, "user_connected");
+          except (E_VERBNF)
+            old_hook_exists = 0;
+            old_hook_info = {};
+            old_hook_args = {};
+            old_hook_code = {};
+          endtry
+          #0.audit_connected_confunc_hook_saved = {old_hook_exists, old_hook_info, old_hook_args, old_hook_code};
+          try
+            add_verb(#0, {#0, "rxd", "user_connected"}, {"this", "none", "this"});
+          except (E_INVARG)
+          endtry
+          set_verb_info(#0, "user_connected", {player, "rxd", "user_connected"});
+          set_verb_args(#0, "user_connected", {"this", "none", "this"});
+          set_verb_code(#0, "user_connected", {
+            "user = args[1];",
+            "fork (0)",
+            "  #0.audit_connected_confunc_child = {user, task_perms()};",
+            "endfork",
+            "set_task_perms(user);",
+            "user.location:confunc(user);",
+            "user:confunc();",
+            "#0.audit_connected_confunc_parent = {user, task_perms()};",
+            "return 1;"
+          });
+          return 1;
+        as: wizard
+      - new_connection:
+          capture: conn1
+      - send:
+          connection: conn1
+          text: "login-user-connected-confunc"
+      - wait: 500
+      - run: |
+          p = #0.audit_connected_confunc_player;
+          l = #0.audit_connected_confunc_location;
+          return {
+            #0.audit_connected_confunc_child[1] == p,
+            #0.audit_connected_confunc_location_seen == {l, p, p},
+            #0.audit_connected_confunc_user_seen == {p, {}, p},
+            #0.audit_connected_confunc_parent == {p, p}
+          };
+        as: wizard
+        expect:
+          value:
+            - 1
+            - 1
+            - 1
+            - 1
+      - close_connection: conn1
+    cleanup:
+      - run: |
+          try
+            saved = #0.audit_connected_confunc_login_saved;
+            if (saved[1])
+              set_verb_info(#0, "do_login_command", saved[2]);
+              set_verb_args(#0, "do_login_command", saved[3]);
+              set_verb_code(#0, "do_login_command", saved[4]);
+            else
+              delete_verb(#0, "do_login_command");
+            endif
+          except (ANY)
+          endtry
+          try
+            saved = #0.audit_connected_confunc_hook_saved;
+            if (saved[1])
+              set_verb_info(#0, "user_connected", saved[2]);
+              set_verb_args(#0, "user_connected", saved[3]);
+              set_verb_code(#0, "user_connected", saved[4]);
+            else
+              delete_verb(#0, "user_connected");
+            endif
+          except (ANY)
+          endtry
+          try
+            boot_player(#0.audit_connected_confunc_player);
+          except (ANY)
+          endtry
+          try
+            move(#0.audit_connected_confunc_player, $nothing);
+          except (ANY)
+          endtry
+          try
+            recycle(#0.audit_connected_confunc_player);
+          except (ANY)
+          endtry
+          try
+            recycle(#0.audit_connected_confunc_location);
+          except (ANY)
+          endtry
+          for prop in ({"audit_connected_confunc_player", "audit_connected_confunc_location", "audit_connected_confunc_child", "audit_connected_confunc_location_seen", "audit_connected_confunc_user_seen", "audit_connected_confunc_parent", "audit_connected_confunc_login_saved", "audit_connected_confunc_hook_saved"})
             try
               delete_property(#0, prop);
             except (ANY)

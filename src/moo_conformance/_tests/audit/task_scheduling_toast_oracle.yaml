@@ -21,6 +21,7 @@ requires:
     - load_server_options
     - ticks_left
     - seconds_left
+    - task_id
     - suspend
     - fork
     - queued_tasks
@@ -238,6 +239,55 @@ tests:
             - main-after
     cleanup:
       - run: 'delete_property(#0, "audit_suspend_order");'
+        as: wizard
+
+  - name: audit_background_task_id_stable_across_suspend_and_fork
+    description: A background task keeps its task id across suspension and resumes after its ready child fork.
+    steps:
+      - run: |
+          for prop in ({"audit_heartbeat_task_id", "audit_heartbeat_same_id", "audit_heartbeat_forks", "audit_heartbeat_result"})
+            try
+              add_property(#0, prop, 0, {#0, "rw"});
+            except (E_INVARG)
+            endtry
+          endfor
+          #0.audit_heartbeat_task_id = 0;
+          #0.audit_heartbeat_same_id = 0;
+          #0.audit_heartbeat_forks = 0;
+          #0.audit_heartbeat_result = {};
+          fork heartbeat_id (0)
+            original_id = task_id();
+            #0.audit_heartbeat_task_id = original_id;
+            suspend(0);
+            #0.audit_heartbeat_same_id = task_id() == original_id;
+            fork (0)
+              #0.audit_heartbeat_forks = #0.audit_heartbeat_forks + 1;
+            endfork
+            suspend(0);
+            #0.audit_heartbeat_result = {task_id() == original_id, #0.audit_heartbeat_forks};
+          endfork
+          return heartbeat_id;
+        capture: heartbeat_id
+        as: wizard
+      - wait: 500
+      - run: |
+          return {#0.audit_heartbeat_task_id == {heartbeat_id}, #0.audit_heartbeat_same_id, #0.audit_heartbeat_result};
+        as: wizard
+        expect:
+          value:
+            - 1
+            - 1
+            -
+              - 1
+              - 1
+    cleanup:
+      - run: |
+          for prop in ({"audit_heartbeat_task_id", "audit_heartbeat_same_id", "audit_heartbeat_forks", "audit_heartbeat_result"})
+            try
+              delete_property(#0, prop);
+            except (ANY)
+            endtry
+          endfor
         as: wizard
 
   - name: audit_forked_try_except_rebases_handler_ip

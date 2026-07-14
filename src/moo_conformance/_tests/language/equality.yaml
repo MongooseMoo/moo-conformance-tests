@@ -101,7 +101,7 @@ tests:
     expect:
       value: [3, "second", "int", "float"]
 
-  - name: string_equality_folds_latin1_case
+  - name: string_equality_folds_valid_utf8_case
     code: '{"A" == "a", "À" == "à"}'
     expect:
       value: [1, 1]

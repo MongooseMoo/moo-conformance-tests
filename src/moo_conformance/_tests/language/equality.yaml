@@ -87,3 +87,21 @@ tests:
       };
     expect:
       value: [1, 1, 1, 0, "0.0", 1, "negative", "negative", 0, 2, "one", "next"]
+
+  - name: nested_collection_equality
+    code: '{{1, ["Key" -> {"Alpha"}]} == {1, ["key" -> {"alpha"}]}, {1, {2}} == {1, {3}}}'
+    expect:
+      value: [1, 0]
+
+  - name: map_scalar_key_identity
+    statement: |
+      keys = ["Key" -> "first", 1 -> "int", 1.0 -> "float"];
+      keys["kEY"] = "second";
+      return {length(mapkeys(keys)), keys["KEY"], keys[1], keys[1.0]};
+    expect:
+      value: [3, "second", "int", "float"]
+
+  - name: string_equality_folds_latin1_case
+    code: '{"A" == "a", "À" == "à"}'
+    expect:
+      value: [1, 1]

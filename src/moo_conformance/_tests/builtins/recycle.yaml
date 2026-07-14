@@ -179,10 +179,27 @@ tests:
       value: 0
   cleanup:
   - run: recycle({parent})
-- name: programmer_cannot_recycle_non_wizard_others_object
-  description: Programmer cannot recycle non-wizard object owned by someone else
-  permission: programmer
-  skip: Multi-user permission tests require complex test infrastructure
+- name: programmer_cannot_recycle_object_owned_by_another_programmer
+  permission: wizard
+  steps:
+  - run: create($nothing)
+    capture: target
+  - run: create($nothing)
+    capture: other
+  - run: |
+      {other}.programmer = 1;
+      {other}.owner = {other};
+      return 1;
+    expect:
+      value: 1
+  - run: |
+      set_task_perms({other});
+      return `recycle({target}) ! E_PERM => 1';
+    expect:
+      value: 1
+  cleanup:
+  - run: recycle({target})
+  - run: recycle({other})
 - name: recycle_returns_zero
   description: recycle() returns 0 on success
   permission: programmer
@@ -224,6 +241,23 @@ tests:
       value: 1
   cleanup:
   - run: recycle({a})
+- name: recycle_hook_error_propagates_after_recycling_permanent_object
+  permission: programmer
+  steps:
+  - run: create($object)
+    capture: parent
+  - run: add_verb({parent}, {player, "xd", "recycle"}, {"this", "none", "this"})
+  - run: set_verb_code({parent}, "recycle", {"raise(E_DIV);"})
+  - run: create({parent})
+    capture: child
+  - run: |
+      return {`recycle({child}) ! E_DIV => 1', valid({child})};
+    expect:
+      value: [1, 0]
+  cleanup:
+  - run: delete_verb({parent}, "recycle")
+  - run: recycle({child})
+  - run: recycle({parent})
 - name: recycling_anonymous_calls_recycle_verb
   description: Recycling an anonymous object calls its :recycle verb
   permission: programmer

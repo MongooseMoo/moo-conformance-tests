@@ -229,3 +229,13 @@ tests:
       return {result, name};
     expect:
       value: ["missing", "missing"]
+
+  - name: caught_error_discards_partial_guarded_expression_operands
+    statement: |
+      return {
+        `max(1, @5) ! E_TYPE => 11',
+        `#0.(max(@5)) ! E_TYPE => 22',
+        {1, @`max(@5) ! E_TYPE => {2, 3}', 4}
+      };
+    expect:
+      value: [11, 22, [1, 2, 3, 4]]

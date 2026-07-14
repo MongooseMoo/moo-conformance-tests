@@ -1,0 +1,10 @@
+name: promote_numbers
+description: Mixed numeric semantics when PROMOTE_NUMBERS is enabled
+
+tests:
+  - name: list_membership_promotes_integer_to_float
+    description: Mixed integer and float list membership uses numeric equality
+    skip_if: not option.PROMOTE_NUMBERS
+    code: "1 in {1.0}"
+    expect:
+      value: 1

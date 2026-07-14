@@ -31,7 +31,7 @@ from .schema import validate_test_suite, MooTestSuite, MooTestCase
 from .runner import YamlTestRunner
 from .capabilities import CapabilityManager, CapabilityState
 from .server import ManagedServer
-from .profile_gate import ProfileGateError, validate_manifest_paths
+from .profile_gate import ProfileGateError, load_manifest, validate_manifest_paths
 
 # Global capability manager (session-scoped)
 capability_manager = CapabilityManager()
@@ -187,11 +187,11 @@ def managed_server(request) -> Iterator[ManagedServer | None]:
 
 
 @pytest.fixture(scope="session", autouse=True)
-def profile_metadata_gate(request, managed_server) -> None:
+def profile_metadata_gate(request, managed_server) -> dict[str, object]:
     """Reject invalid profile comparisons before any tests execute."""
     oracle_manifest = request.config.getoption("--oracle-profile-manifest")
     if oracle_manifest is None:
-        return
+        return {}
 
     target_manifest = request.config.getoption("--target-profile-manifest")
     if target_manifest is None:
@@ -206,6 +206,9 @@ def profile_metadata_gate(request, managed_server) -> None:
         validate_manifest_paths(oracle_manifest, target_manifest)
     except ProfileGateError as exc:
         raise pytest.UsageError(str(exc)) from exc
+
+    features = load_manifest(target_manifest).get("features")
+    return features if isinstance(features, dict) else {}
 
 
 @pytest.fixture(scope="session")

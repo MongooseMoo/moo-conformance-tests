@@ -75,7 +75,11 @@ def _dynamic_feature(feature: str, runner, statement: str) -> bool:
     return _dynamic_feature_cache[feature]
 
 
-def _has_option(runner, option: str) -> bool:
+def _has_option(runner, option: str, profile_features: dict[str, object] | None = None) -> bool:
+    profile_key = f"option.{option}"
+    if profile_features is not None and profile_key in profile_features:
+        return profile_features[profile_key] is True
+
     for key in (f"options.{option}", f"options/{option}"):
         result = runner.transport.execute(f'return server_version({_moo_string_literal(key)});')
         if not result.success:
@@ -91,7 +95,7 @@ def _uses_managed_restart(test) -> bool:
 
 
 @pytest.mark.conformance
-def test_yaml_conformance(runner, yaml_test_case, moo_config):
+def test_yaml_conformance(runner, yaml_test_case, moo_config, profile_metadata_gate):
     """Run a single YAML test case.
 
     Args:
@@ -123,11 +127,11 @@ def test_yaml_conformance(runner, yaml_test_case, moo_config):
                 pytest.skip(f"Requires builtin: {builtin}")
         elif condition.startswith("not option."):
             option = condition[11:]
-            if not _has_option(runner, option):
+            if not _has_option(runner, option, profile_metadata_gate):
                 pytest.skip(f"Requires option: {option}")
         elif condition.startswith("option."):
             option = condition[7:]
-            if _has_option(runner, option):
+            if _has_option(runner, option, profile_metadata_gate):
                 pytest.skip(f"Incompatible with option: {option}")
         else:
             pytest.skip(f"Skip condition: {condition}")

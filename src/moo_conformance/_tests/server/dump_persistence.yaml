@@ -37,3 +37,41 @@ tests:
       - run: |
           try delete_property(#1, "persist_prop"); except (ANY) endtry
           return 0;
+
+  - name: adjacent_floats_survive_dump_and_restart
+    permission: wizard
+    steps:
+      - run: |
+          try delete_property(#1, "float_persist_edges"); except (ANY) endtry
+          add_property(
+            #1,
+            "float_persist_edges",
+            {1.0000000000000002,
+             [1.0 -> "one", 1.0000000000000002 -> "next"]},
+            {player, ""}
+          );
+          return 0;
+        expect:
+          value: 0
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+          wait_ms: 300
+      - run: |
+          value = #1.float_persist_edges;
+          mapping = value[2];
+          return {
+            value[1] == 1.0000000000000002,
+            value[1] == 1.0,
+            length(mapkeys(mapping)),
+            mapping[1.0],
+            mapping[1.0000000000000002]
+          };
+        expect:
+          value: [1, 0, 2, "one", "next"]
+    cleanup:
+      - run: |
+          try delete_property(#1, "float_persist_edges"); except (ANY) endtry
+          return 0;

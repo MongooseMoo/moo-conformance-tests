@@ -1,0 +1,14 @@
+name: float_literals
+description: Float literal forms and values
+
+tests:
+  - name: float_literal_forms
+    statement: |
+      return {
+        typeof(.5), .5,
+        typeof(1.), 1.,
+        typeof(1e2), 1e2,
+        typeof(1E+2), 1E+2
+      };
+    expect:
+      value: [9, 0.5, 9, 1.0, 9, 100.0, 9, 100.0]

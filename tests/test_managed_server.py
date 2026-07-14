@@ -125,6 +125,8 @@ def test_managed_server_installs_exec_fixtures(monkeypatch, tmp_path: Path):
         assert server._temp_dir is not None
         fixture = Path(server._temp_dir) / "executables" / "test_io"
         assert fixture.read_text(encoding="utf-8").startswith("#!/bin/sh")
+        windows_fixture = Path(server._temp_dir) / "executables" / "test_io.bat"
+        assert windows_fixture.read_text(encoding="utf-8").startswith("@echo off")
         if os.name != "nt":
             assert fixture.stat().st_mode & stat.S_IXUSR
     finally:

@@ -106,6 +106,86 @@ tests:
           endfor
         as: wizard
 
+  - name: audit_crlf_split_across_reads_dispatches_blank_lf
+    description: Toast dispatches both a CR-terminated login line and a blank line when the following LF arrives in a separate read.
+    steps:
+      - run: |
+          for prop in ({"audit_crlf_line", "audit_crlf_empty_count", "audit_crlf_login_saved"})
+            try
+              add_property(#0, prop, {}, {#0, "rw"});
+            except (E_INVARG)
+            endtry
+          endfor
+          #0.audit_crlf_line = "";
+          #0.audit_crlf_empty_count = 0;
+          old_login_exists = 1;
+          try
+            old_login_info = verb_info(#0, "do_login_command");
+            old_login_args = verb_args(#0, "do_login_command");
+            old_login_code = verb_code(#0, "do_login_command");
+          except (E_VERBNF)
+            old_login_exists = 0;
+            old_login_info = {};
+            old_login_args = {};
+            old_login_code = {};
+          endtry
+          #0.audit_crlf_login_saved = {old_login_exists, old_login_info, old_login_args, old_login_code};
+          try
+            add_verb(#0, {#0, "rxd", "do_login_command"}, {"this", "none", "this"});
+          except (E_INVARG)
+          endtry
+          set_verb_info(#0, "do_login_command", {player, "rxd", "do_login_command"});
+          set_verb_args(#0, "do_login_command", {"this", "none", "this"});
+          set_verb_code(#0, "do_login_command", {
+            "if (argstr == \"\")",
+            "  #0.audit_crlf_empty_count = #0.audit_crlf_empty_count + 1;",
+            "else",
+            "  #0.audit_crlf_line = argstr;",
+            "endif",
+            "return 0;"
+          });
+          return 1;
+        as: wizard
+      - new_connection:
+          capture: conn1
+      - send_bytes:
+          connection: conn1
+          hex: "7061636b65742d626f756e64617279"
+      - send_bytes:
+          connection: conn1
+          hex: "0d"
+      - send_bytes:
+          connection: conn1
+          hex: "0a"
+      - wait: 500
+      - run: "return {#0.audit_crlf_line, #0.audit_crlf_empty_count};"
+        as: wizard
+        expect:
+          value:
+            - packet-boundary
+            - 1
+      - close_connection: conn1
+    cleanup:
+      - run: |
+          try
+            saved = #0.audit_crlf_login_saved;
+            if (saved[1])
+              set_verb_info(#0, "do_login_command", saved[2]);
+              set_verb_args(#0, "do_login_command", saved[3]);
+              set_verb_code(#0, "do_login_command", saved[4]);
+            else
+              delete_verb(#0, "do_login_command");
+            endif
+          except (ANY)
+          endtry
+          for prop in ({"audit_crlf_line", "audit_crlf_empty_count", "audit_crlf_login_saved"})
+            try
+              delete_property(#0, prop);
+            except (ANY)
+            endtry
+          endfor
+        as: wizard
+
   - name: audit_telnet_escaped_iac_stripped_from_login_input
     description: Toast strips IAC IAC split across reads from ordinary login text.
     steps:

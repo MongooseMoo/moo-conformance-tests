@@ -101,6 +101,15 @@ tests:
     expect:
       value: [3, "second", "int", "float"]
 
+  - name: map_equal_key_replacement_preserves_new_key
+    statement: |
+      literal = ["Key" -> 1, "kEY" -> 2];
+      updated = ["First" -> 1];
+      updated["fIRST"] = 2;
+      return {mapkeys(literal)[1], mapkeys(updated)[1]};
+    expect:
+      value: ["kEY", "fIRST"]
+
   - name: string_equality_folds_valid_utf8_case
     code: '{"A" == "a", "À" == "à"}'
     expect:

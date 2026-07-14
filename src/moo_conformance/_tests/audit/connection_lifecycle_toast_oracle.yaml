@@ -849,7 +849,7 @@ tests:
         as: wizard
 
   - name: audit_user_client_disconnected_hook
-    description: Toast calls user_client_disconnected when the client closes a logged-in connection.
+    description: Toast calls user_client_disconnected exactly once with the disconnected player frame after logical disassociation.
     steps:
       - run: |
           for prop in ({"audit_client_player", "audit_client_seen", "audit_client_login_saved", "audit_client_hook_saved"})
@@ -899,7 +899,13 @@ tests:
           set_verb_info(#0, "user_client_disconnected", {player, "rxd", "user_client_disconnected"});
           set_verb_args(#0, "user_client_disconnected", {"this", "none", "this"});
           set_verb_code(#0, "user_client_disconnected", {
-            "#0.audit_client_seen = args[1];",
+            "connection_info_succeeds = 1;",
+            "try",
+            "  connection_info(args[1]);",
+            "except (E_INVARG)",
+            "  connection_info_succeeds = 0;",
+            "endtry",
+            "#0.audit_client_seen = {@#0.audit_client_seen, {this, player, caller, args, argstr, connection_info_succeeds}};",
             "return 1;"
           });
           return 1;
@@ -912,7 +918,9 @@ tests:
       - wait: 500
       - close_connection: conn1
       - wait: 500
-      - run: "return #0.audit_client_seen == #0.audit_client_player;"
+      - run: |
+          p = #0.audit_client_player;
+          return #0.audit_client_seen == {{#0, p, #-1, {p}, "", 0}};
         as: wizard
         expect:
           value: 1

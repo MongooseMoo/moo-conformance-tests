@@ -427,6 +427,53 @@ tests:
           delete_verb(player, "forkboominner");
         as: wizard
 
+  - name: uncaught_forked_handler_stack_frames_are_complete
+    description: >
+      The structured stack passed to handle_uncaught_error contains complete
+      six-field inner and outer verb frames for a forked call_function error.
+    steps:
+      - run: |
+          add_property(#0, "audit_uncaught_saved_code", verb_code(#0, "handle_uncaught_error"), {#0, "rw"});
+          add_property(#0, "audit_uncaught_args", {}, {#0, "rw"});
+          set_verb_code(#0, "handle_uncaught_error", {"#0.audit_uncaught_args = args;", "return 1;"});
+          add_verb(player, {player, "xd", "forkframeinner"}, {"this", "none", "this"});
+          set_verb_code(player, "forkframeinner", {"return call_function(\"typeof\");"});
+          add_verb(player, {player, "xd", "forkframe"}, {"any", "none", "none"});
+          set_verb_code(player, "forkframe", {"fork (0)", "  this:forkframeinner();", "endfork", "notify(player, \"fork-frame-started\");"});
+          return 1;
+        as: wizard
+      - command: forkframe
+        expect:
+          output:
+            contains: fork-frame-started
+      - wait: 500
+      - run: |
+          inner = outer = {};
+          for frame in (#0.audit_uncaught_args[4])
+            if (frame[2] == "forkframeinner")
+              inner = frame;
+            elseif (frame[2] == "forkframe")
+              outer = frame;
+            endif
+          endfor
+          return {
+            length(inner), inner[1] == player, inner[3] == player,
+            inner[4] == player, inner[5] == player, inner[6] > 0,
+            length(outer), outer[1] == player, outer[3] == player,
+            outer[4] == player, outer[5] == player, outer[6] > 0
+          };
+        as: wizard
+        expect:
+          value: [6, 1, 1, 1, 1, 1, 6, 1, 1, 1, 1, 1]
+    cleanup:
+      - run: |
+          set_verb_code(#0, "handle_uncaught_error", #0.audit_uncaught_saved_code);
+          delete_verb(player, "forkframe");
+          delete_verb(player, "forkframeinner");
+          delete_property(#0, "audit_uncaught_args");
+          delete_property(#0, "audit_uncaught_saved_code");
+        as: wizard
+
   # --- Eval frames in a server-printed traceback (error through eval()) ---
 
   - name: eval_frame_labeled_input_to_eval

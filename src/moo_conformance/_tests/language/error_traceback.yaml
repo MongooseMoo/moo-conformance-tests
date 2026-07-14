@@ -400,6 +400,33 @@ tests:
           delete_verb(player, "boominner");
         as: wizard
 
+  - name: uncaught_forked_call_function_error_reaches_server_handler
+    description: >
+      An error raised through call_function in a zero-delay fork reaches the
+      server's handle_uncaught_error hook with the complete verb call chain.
+    steps:
+      - run: |
+          add_verb(player, {player, "xd", "forkboominner"}, {"this", "none", "this"});
+          set_verb_code(player, "forkboominner", {"return call_function(\"typeof\");"});
+          add_verb(player, {player, "xd", "forkboom"}, {"any", "none", "none"});
+          set_verb_code(player, "forkboom", {"fork (0)", "  this:forkboominner();", "endfork", "notify(player, \"fork-started\");"});
+          return 1;
+        as: wizard
+      - command: forkboom
+        expect:
+          output:
+            contains: fork-started
+      - wait: 500
+      - assert_log:
+          contains: forkboominner
+      - assert_log:
+          contains: forkboom
+    cleanup:
+      - run: |
+          delete_verb(player, "forkboom");
+          delete_verb(player, "forkboominner");
+        as: wizard
+
   # --- Eval frames in a server-printed traceback (error through eval()) ---
 
   - name: eval_frame_labeled_input_to_eval

@@ -218,6 +218,18 @@ tests:
       - foobar
   cleanup:
   - run: recycle({obj})
+- name: verb_info_numeric_index_past_end
+  description: verb_info raises E_VERBNF when a numeric index is past the last verb
+  permission: programmer
+  steps:
+  - run: create($nothing)
+    capture: obj
+  - run: add_verb({obj}, {player, "rw", "foobar"}, {"this", "none", "this"})
+  - run: verb_info({obj}, 2)
+    expect:
+      error: E_VERBNF
+  cleanup:
+  - run: recycle({obj})
 - name: verb_info_recycled_object
   description: verb_info fails with E_INVARG if object is not valid
   permission: programmer

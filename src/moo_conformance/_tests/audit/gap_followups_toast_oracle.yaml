@@ -66,7 +66,16 @@ tests:
           capture: conn1
       - send_bytes:
           connection: conn1
-          hex: "6961632dfffb016c6f67696e0d0a"
+          hex: "6961632d"
+      - send_bytes:
+          connection: conn1
+          hex: "ff"
+      - send_bytes:
+          connection: conn1
+          hex: "fb01"
+      - send_bytes:
+          connection: conn1
+          hex: "6c6f67696e0d0a"
       - wait: 500
       - run: "return #0.audit_iac_seen;"
         as: wizard

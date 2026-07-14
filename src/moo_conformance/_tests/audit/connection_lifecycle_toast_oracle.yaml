@@ -192,7 +192,7 @@ tests:
             add_property(#6, "trusted_proxies", {}, {#0, "rw"});
           except (E_INVARG)
           endtry
-          #6.trusted_proxies = {"::1", "127.0.0.1"};
+          #6.trusted_proxies = {connection_info(player)["destination_ip"]};
           handler = create($nothing);
           #0.audit_blank_handler = handler;
           #0.audit_blank_port = {listener_port};
@@ -270,7 +270,7 @@ tests:
             add_property(#6, "trusted_proxies", {}, {#0, "rw"});
           except (E_INVARG)
           endtry
-          #6.trusted_proxies = {"::1", "127.0.0.1"};
+          #6.trusted_proxies = {connection_info(player)["destination_ip"]};
           old_login_exists = 1;
           try
             old_login_info = verb_info(#0, "do_login_command");

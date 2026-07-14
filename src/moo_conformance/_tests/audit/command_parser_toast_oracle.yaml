@@ -431,3 +431,35 @@ tests:
     cleanup:
       - run: 'chparent(player, {old_parent}); recycle({middle_ancestor}); recycle({defining_ancestor});'
         as: wizard
+
+  - name: audit_inherited_command_pass_preserves_player_caller
+    description: An inherited player command and its pass target both preserve caller equal to the player.
+    steps:
+      - run: 'return parent(player);'
+        capture: old_parent
+        as: wizard
+      - run: 'return create({old_parent});'
+        capture: pass_target
+        as: wizard
+      - run: 'return create({pass_target});'
+        capture: pass_gap
+        as: wizard
+      - run: 'return create({pass_gap});'
+        capture: command_definer
+        as: wizard
+      - run: |
+          add_verb({pass_target}, {player, "xd", "audit_pass_caller"}, {"any", "any", "any"});
+          set_verb_code({pass_target}, "audit_pass_caller", {"notify(player, \"PASS_CALLER_IS_PLAYER:\" + tostr(caller == player));"});
+          add_verb({command_definer}, {player, "xd", "audit_pass_caller"}, {"any", "any", "any"});
+          set_verb_code({command_definer}, "audit_pass_caller", {"notify(player, \"COMMAND_CALLER_IS_PLAYER:\" + tostr(caller == player));", "return pass(@args);"});
+          chparent(player, {command_definer});
+          return 1;
+        as: wizard
+      - command: audit_pass_caller
+        expect:
+          output:
+            - "COMMAND_CALLER_IS_PLAYER:1"
+            - "PASS_CALLER_IS_PLAYER:1"
+    cleanup:
+      - run: 'chparent(player, {old_parent}); recycle({command_definer}); recycle({pass_gap}); recycle({pass_target});'
+        as: wizard

@@ -392,7 +392,7 @@ tests:
           set_verb_info(#0, "user_connected", {player, "rxd", "user_connected"});
           set_verb_args(#0, "user_connected", {"this", "none", "this"});
           set_verb_code(#0, "user_connected", {
-            "#0.audit_connected_seen = args[1];",
+            "#0.audit_connected_seen = {this, player, caller, args, argstr};",
             "return 1;"
           });
           return 1;
@@ -403,7 +403,7 @@ tests:
           connection: conn1
           text: "login-user-connected"
       - wait: 500
-      - run: "return #0.audit_connected_seen == #0.audit_connected_player;"
+      - run: "return #0.audit_connected_seen == {#0, #0.audit_connected_player, #-1, {#0.audit_connected_player}, \"\"};"
         as: wizard
         expect:
           value: 1

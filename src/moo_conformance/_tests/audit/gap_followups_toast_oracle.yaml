@@ -184,6 +184,78 @@ tests:
           endfor
         as: wizard
 
+  - name: audit_telnet_two_byte_command_delivered_across_reads
+    description: Toast preserves parser state across reads and delivers a complete IAC NOP command as binary-escaped OOB input.
+    steps:
+      - run: |
+          for prop in ({"audit_nop_oob_seen", "audit_nop_oob_saved"})
+            try
+              add_property(#0, prop, {}, {#0, "rw"});
+            except (E_INVARG)
+            endtry
+          endfor
+          old_oob_exists = 1;
+          try
+            old_oob_info = verb_info(#0, "do_out_of_band_command");
+            old_oob_args = verb_args(#0, "do_out_of_band_command");
+            old_oob_code = verb_code(#0, "do_out_of_band_command");
+          except (E_VERBNF)
+            old_oob_exists = 0;
+            old_oob_info = {};
+            old_oob_args = {};
+            old_oob_code = {};
+          endtry
+          #0.audit_nop_oob_saved = {old_oob_exists, old_oob_info, old_oob_args, old_oob_code};
+          try
+            add_verb(#0, {#0, "rxd", "do_out_of_band_command"}, {"this", "none", "this"});
+          except (E_INVARG)
+          endtry
+          set_verb_info(#0, "do_out_of_band_command", {#0, "rxd", "do_out_of_band_command"});
+          set_verb_args(#0, "do_out_of_band_command", {"this", "none", "this"});
+          set_verb_code(#0, "do_out_of_band_command", {
+            "#0.audit_nop_oob_seen = {args, argstr};",
+            "return 1;"
+          });
+          return 1;
+        as: wizard
+      - new_connection:
+          capture: conn1
+      - send_bytes:
+          connection: conn1
+          hex: "ff"
+      - send_bytes:
+          connection: conn1
+          hex: "f1"
+      - wait: 500
+      - run: "return #0.audit_nop_oob_seen;"
+        as: wizard
+        expect:
+          value:
+            -
+              - "~FF~F1"
+            - "~FF~F1"
+      - close_connection: conn1
+    cleanup:
+      - run: |
+          try
+            saved = #0.audit_nop_oob_saved;
+            if (saved[1])
+              set_verb_info(#0, "do_out_of_band_command", saved[2]);
+              set_verb_args(#0, "do_out_of_band_command", saved[3]);
+              set_verb_code(#0, "do_out_of_band_command", saved[4]);
+            else
+              delete_verb(#0, "do_out_of_band_command");
+            endif
+          except (ANY)
+          endtry
+          for prop in ({"audit_nop_oob_seen", "audit_nop_oob_saved"})
+            try
+              delete_property(#0, prop);
+            except (ANY)
+            endtry
+          endfor
+        as: wizard
+
   - name: audit_telnet_iac_delivered_as_oob_command
     description: Toast preserves telnet parser state across reads and delivers complete IAC negotiation commands to do_out_of_band_command as binary-escaped OOB input.
     steps:

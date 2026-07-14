@@ -162,11 +162,11 @@ def managed_server(request) -> Iterator[ManagedServer | None]:
         yield None
         return
 
+    # A managed server is not always reachable at localhost: a server the
+    # harness launches inside WSL must be dialed at the WSL NAT address when
+    # Windows->WSL localhost forwarding is unavailable. The explicit
+    # --moo-host value names where to reach the server this command starts.
     host = request.config.getoption("--moo-host")
-    if host != "localhost":
-        raise pytest.UsageError(
-            "--server-command cannot be used with a non-localhost --moo-host"
-        )
 
     port = request.config.getoption("--moo-port")
 

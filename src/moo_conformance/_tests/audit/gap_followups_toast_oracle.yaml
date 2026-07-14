@@ -487,6 +487,88 @@ tests:
           endfor
         as: wizard
 
+  - name: audit_gmcp_subnegotiation_delivered_across_reads
+    description: Toast preserves GMCP option-201 parser state across reads and delivers the complete Core.Hello command as binary-escaped OOB input.
+    steps:
+      - run: |
+          for prop in ({"audit_gmcp_seen", "audit_gmcp_saved"})
+            try
+              add_property(#0, prop, {}, {#0, "rw"});
+            except (E_INVARG)
+            endtry
+          endfor
+          old_oob_exists = 1;
+          try
+            old_oob_info = verb_info(#0, "do_out_of_band_command");
+            old_oob_args = verb_args(#0, "do_out_of_band_command");
+            old_oob_code = verb_code(#0, "do_out_of_band_command");
+          except (E_VERBNF)
+            old_oob_exists = 0;
+            old_oob_info = {};
+            old_oob_args = {};
+            old_oob_code = {};
+          endtry
+          #0.audit_gmcp_saved = {old_oob_exists, old_oob_info, old_oob_args, old_oob_code};
+          try
+            add_verb(#0, {#0, "rxd", "do_out_of_band_command"}, {"this", "none", "this"});
+          except (E_INVARG)
+          endtry
+          set_verb_info(#0, "do_out_of_band_command", {#0, "rxd", "do_out_of_band_command"});
+          set_verb_args(#0, "do_out_of_band_command", {"this", "none", "this"});
+          set_verb_code(#0, "do_out_of_band_command", {
+            "#0.audit_gmcp_seen = {args, argstr};",
+            "return 1;"
+          });
+          return 1;
+        as: wizard
+      - new_connection:
+          capture: conn1
+      - send_bytes:
+          connection: conn1
+          hex: "ff"
+      - send_bytes:
+          connection: conn1
+          hex: "fac9"
+      - send_bytes:
+          connection: conn1
+          hex: "436f72652e48656c6c6f207b22636c69656e74223a226175646974227d"
+      - send_bytes:
+          connection: conn1
+          hex: "ff"
+      - send_bytes:
+          connection: conn1
+          hex: "f0"
+      - wait: 500
+      - run: "return #0.audit_gmcp_seen;"
+        as: wizard
+        expect:
+          value:
+            -
+              - "~FF~FA~C9Core.Hello"
+              - "{client:audit}~FF~F0"
+            - '~FF~FA~C9Core.Hello {"client":"audit"}~FF~F0'
+      - close_connection: conn1
+    cleanup:
+      - run: |
+          try
+            saved = #0.audit_gmcp_saved;
+            if (saved[1])
+              set_verb_info(#0, "do_out_of_band_command", saved[2]);
+              set_verb_args(#0, "do_out_of_band_command", saved[3]);
+              set_verb_code(#0, "do_out_of_band_command", saved[4]);
+            else
+              delete_verb(#0, "do_out_of_band_command");
+            endif
+          except (ANY)
+          endtry
+          for prop in ({"audit_gmcp_seen", "audit_gmcp_saved"})
+            try
+              delete_property(#0, prop);
+            except (ANY)
+            endtry
+          endfor
+        as: wizard
+
   - name: audit_binary_mode_dispatches_raw_chunk_without_newline
     description: Toast binary connection mode dispatches an ASCII byte chunk without waiting for CR or LF.
     steps:

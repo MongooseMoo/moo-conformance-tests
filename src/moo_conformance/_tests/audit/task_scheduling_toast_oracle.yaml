@@ -240,6 +240,33 @@ tests:
       - run: 'delete_property(#0, "audit_suspend_order");'
         as: wizard
 
+  - name: audit_forked_try_except_rebases_handler_ip
+    description: A forked try/except handles its exception within the extracted fork body.
+    steps:
+      - run: |
+          try
+            add_property(#0, "audit_fork_except_result", 0, {#0, "rw"});
+          except (E_INVARG)
+            #0.audit_fork_except_result = 0;
+          endtry
+          fork (0)
+            try
+              raise(E_INVARG);
+            except e (ANY)
+              #0.audit_fork_except_result = e[1];
+            endtry
+          endfork
+          suspend(0);
+          return #0.audit_fork_except_result;
+        as: wizard
+        expect:
+          value: E_INVARG
+      - assert_log:
+          not_contains: "panic in task"
+    cleanup:
+      - run: 'delete_property(#0, "audit_fork_except_result");'
+        as: wizard
+
   - name: audit_input_admitted_between_ready_background_tasks
     description: A fresh input task is admitted before an existing batch of ready background tasks is drained.
     timeout_ms: 15000

@@ -693,7 +693,7 @@ tests:
         as: wizard
 
   - name: audit_user_connected_confunc_calls_continue_after_fork_and_setting_task_perms
-    description: Toast resumes user_connected after a nested zero-delay suspend with a pending fork, then completes location and user confunc calls after changing task permissions to the login player.
+    description: Toast resumes user_connected after a nested zero-delay suspend while the pending fork child retains current programmer permissions, then completes location and user confunc calls with login-player permissions.
     steps:
       - run: |
           for prop in ({"audit_connected_confunc_player", "audit_connected_confunc_location", "audit_connected_confunc_child", "audit_connected_confunc_after_suspend", "audit_connected_confunc_location_seen", "audit_connected_confunc_user_seen", "audit_connected_confunc_parent", "audit_connected_confunc_login_saved", "audit_connected_confunc_hook_saved"})
@@ -785,7 +785,7 @@ tests:
           p = #0.audit_connected_confunc_player;
           l = #0.audit_connected_confunc_location;
           return {
-            #0.audit_connected_confunc_child[1] == p,
+            #0.audit_connected_confunc_child == {p, player},
             #0.audit_connected_confunc_after_suspend == l,
             #0.audit_connected_confunc_location_seen == {l, p, p},
             #0.audit_connected_confunc_user_seen == {p, {}, p},

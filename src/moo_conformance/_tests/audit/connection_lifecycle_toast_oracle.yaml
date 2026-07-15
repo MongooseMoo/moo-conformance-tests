@@ -1222,7 +1222,7 @@ tests:
           #0.audit_flush_seen = {};
           add_verb(login_player, {player, "rxd", "auditflush"}, {"none", "none", "none"});
           set_verb_code(login_player, "auditflush", {
-            "#0.audit_flush_seen = listappend(#0.audit_flush_seen, argstr);",
+            "#0.audit_flush_seen = {@#0.audit_flush_seen, argstr};",
             "return 1;"
           });
           old_login_exists = 1;

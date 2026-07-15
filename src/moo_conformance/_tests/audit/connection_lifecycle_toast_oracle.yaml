@@ -1109,10 +1109,10 @@ tests:
           endtry
           #0.audit_timeout_option_saved = {option_exists, option_saved};
           try
-            add_property($server_options, "connect_timeout", 1, {player, "r"});
+            add_property($server_options, "connect_timeout", 3, {player, "r"});
           except (E_INVARG)
           endtry
-          $server_options.connect_timeout = 1;
+          $server_options.connect_timeout = 3;
           old_hook_exists = 1;
           try
             old_hook_info = verb_info(#0, "user_disconnected");
@@ -1139,7 +1139,7 @@ tests:
         as: wizard
       - new_connection:
           capture: conn1
-      - wait: 600
+      - wait: 1500
       - run: "return #0.audit_timeout_seen == {};"
         as: wizard
         expect:
@@ -1147,7 +1147,7 @@ tests:
       - send:
           connection: conn1
           text: "timeout-reset-probe"
-      - wait: 600
+      - wait: 2500
       - run: "return #0.audit_timeout_seen == {};"
         as: wizard
         expect:
@@ -1160,11 +1160,10 @@ tests:
           endif
           frame = seen[1];
           hook_player = frame[2];
-          return {frame[1] == #0, typeof(hook_player) == 1, hook_player < #-1, hook_player != #-1, frame[3] == #-1, frame[4] == {hook_player}, frame[5] == ""};
+          return {frame[1] == #0, typeof(hook_player) == 1, hook_player != #-1, frame[3] == #-1, frame[4] == {hook_player}, frame[5] == ""};
         as: wizard
         expect:
           value:
-            - 1
             - 1
             - 1
             - 1

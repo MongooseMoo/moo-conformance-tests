@@ -1091,7 +1091,7 @@ tests:
         as: wizard
 
   - name: audit_connect_timeout_server_option
-    description: Toast honors $server_options.connect_timeout for unauthenticated connections.
+    description: Toast resets $server_options.connect_timeout on unauthenticated activity and calls user_disconnected exactly once with the connection frame.
     steps:
       - run: |
           for prop in ({"audit_timeout_seen", "audit_timeout_option_saved", "audit_timeout_hook_saved"})
@@ -1132,15 +1132,47 @@ tests:
           set_verb_info(#0, "user_disconnected", {player, "rxd", "user_disconnected"});
           set_verb_args(#0, "user_disconnected", {"this", "none", "this"});
           set_verb_code(#0, "user_disconnected", {
-            "#0.audit_timeout_seen = args[1];",
+            "#0.audit_timeout_seen = {@#0.audit_timeout_seen, {this, player, caller, args, argstr}};",
             "return 1;"
           });
           return 1;
         as: wizard
       - new_connection:
           capture: conn1
-      - wait: 2500
-      - run: "return typeof(#0.audit_timeout_seen);"
+      - wait: 600
+      - run: "return #0.audit_timeout_seen == {};"
+        as: wizard
+        expect:
+          value: 1
+      - send:
+          connection: conn1
+          text: "timeout-reset-probe"
+      - wait: 600
+      - run: "return #0.audit_timeout_seen == {};"
+        as: wizard
+        expect:
+          value: 1
+      - wait: 2000
+      - run: |
+          seen = #0.audit_timeout_seen;
+          if (length(seen) != 1)
+            return 0;
+          endif
+          frame = seen[1];
+          hook_player = frame[2];
+          return {frame[1] == #0, typeof(hook_player) == OBJ, index(tostr(hook_player), "#-") == 1, hook_player != #-1, frame[3] == #-1, frame[4] == {hook_player}, frame[5] == ""};
+        as: wizard
+        expect:
+          value:
+            - 1
+            - 1
+            - 1
+            - 1
+            - 1
+            - 1
+            - 1
+      - wait: 500
+      - run: "return length(#0.audit_timeout_seen) == 1;"
         as: wizard
         expect:
           value: 1

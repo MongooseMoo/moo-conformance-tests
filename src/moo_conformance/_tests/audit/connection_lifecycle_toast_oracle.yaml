@@ -1160,7 +1160,7 @@ tests:
           endif
           frame = seen[1];
           hook_player = frame[2];
-          return {frame[1] == #0, typeof(hook_player) == OBJ, index(tostr(hook_player), "#-") == 1, hook_player != #-1, frame[3] == #-1, frame[4] == {hook_player}, frame[5] == ""};
+          return {frame[1] == #0, typeof(hook_player) == 1, index(tostr(hook_player), "#-") == 1, hook_player != #-1, frame[3] == #-1, frame[4] == {hook_player}, frame[5] == ""};
         as: wizard
         expect:
           value:

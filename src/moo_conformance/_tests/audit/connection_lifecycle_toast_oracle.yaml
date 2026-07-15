@@ -1468,6 +1468,8 @@ tests:
       - wait: 500
       - run: "boot_player(#0.audit_boot_player); return 1;"
         as: wizard
+        expect:
+          value: 1
       - wait: 500
       - read_connection:
           connection: conn1

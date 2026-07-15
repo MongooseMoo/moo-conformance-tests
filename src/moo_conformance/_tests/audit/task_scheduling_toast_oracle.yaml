@@ -194,14 +194,17 @@ tests:
     steps:
       - run: |
           obj = create($nothing);
+          add_property(obj, "audit_depth_count", 0, {player, "rw"});
           add_verb(obj, {player, "xd", "audit_depth"}, {"this", "none", "this"});
-          set_verb_code(obj, "audit_depth", {"return this:audit_depth();"});
+          set_verb_code(obj, "audit_depth", {
+            "this.audit_depth_count = this.audit_depth_count + 1;",
+            "return this:audit_depth();"
+          });
           try
-            add_property($server_options, "max_stack_depth", 8, {player, "r"});
+            add_property($server_options, "max_stack_depth", 60, {player, "r"});
           except (E_INVARG)
-            $server_options.max_stack_depth = 8;
+            $server_options.max_stack_depth = 60;
           endtry
-          load_server_options();
           return obj;
         capture: obj
         as: wizard
@@ -209,11 +212,14 @@ tests:
         as: wizard
         expect:
           error: E_MAXREC
+      - run: "return {obj}.audit_depth_count;"
+        as: wizard
+        expect:
+          value: 58
     cleanup:
       - run: |
           recycle({obj});
           delete_property($server_options, "max_stack_depth");
-          load_server_options();
         as: wizard
 
   - name: audit_suspend_zero_yields_to_ready_task

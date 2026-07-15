@@ -1259,14 +1259,21 @@ tests:
         as: wizard
       - send:
           connection: conn1
-          text: "auditflush"
+          text: "auditflush first"
       - send:
           connection: conn1
-          text: "auditflush"
+          text: "auditflush second"
       - wait: 500
       - send:
           connection: conn1
-          text: ".flush"
+          text: ".FlUsH"
+        expect:
+          output:
+            exact:
+              - ">> Flushing the following pending input:"
+              - ">>     auditflush first"
+              - ">>     auditflush second"
+              - ">> (Done flushing)"
       - wait: 500
       - run: |
           set_connection_option(#0.audit_flush_player, "hold-input", 0);

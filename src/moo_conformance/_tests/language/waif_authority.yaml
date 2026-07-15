@@ -1,0 +1,243 @@
+name: waif_authority
+description: Toast-authoritative primitive semantics for lightweight objects.
+requires:
+  builtins:
+    - add_property
+    - add_verb
+    - create
+    - mapkeys
+    - new_waif
+    - recycle
+    - set_verb_code
+    - sort
+    - toliteral
+    - tostr
+    - typeof
+tests:
+  - name: waif_is_false
+    statement: |
+      class = create($waif);
+      waif = class:new();
+      truth = 1;
+      if (waif)
+        truth = 1;
+      else
+        truth = 0;
+      endif
+      result = {truth, !waif};
+      recycle(class);
+      return result;
+    expect:
+      value: [0, 1]
+
+  - name: waif_string_and_literal_forms
+    statement: |
+      class = create($waif);
+      waif = class:new();
+      expected_literal = "[[class = " + tostr(class) + ", owner = " + tostr(player) + "]]";
+      result = {tostr(waif), toliteral(waif) == expected_literal};
+      recycle(class);
+      return result;
+    expect:
+      value: ["[[waif]]", 1]
+
+  - name: waif_equality_uses_reference_identity
+    statement: |
+      class = create($waif);
+      first = class:new();
+      alias = first;
+      second = class:new();
+      result = {first == alias, first != alias, first == second, first != second};
+      recycle(class);
+      return result;
+    expect:
+      value: [1, 0, 0, 1]
+
+  - name: waif_relational_comparisons_use_default_zero_and_sort_rejects_values
+    statement: |
+      class = create($waif);
+      first = class:new();
+      second = class:new();
+      try
+        ignored = sort({first, second});
+        sorting = E_NONE;
+      except error (ANY)
+        sorting = error[1];
+      endtry
+      result = {first < second, first <= second, first > second, first >= second, sorting};
+      recycle(class);
+      return result;
+    expect:
+      value: [0, 1, 0, 1, E_TYPE]
+
+  - name: waifs_are_reference_identity_map_keys
+    statement: |
+      class = create($waif);
+      first = class:new();
+      alias = first;
+      second = class:new();
+      mapping = [];
+      mapping[first] = "first";
+      mapping[second] = "second";
+      result = {mapping[alias], mapping[second], length(mapkeys(mapping))};
+      recycle(class);
+      return result;
+    expect:
+      value: [first, second, 2]
+
+  - name: recycled_class_cannot_construct_waif
+    permission: wizard
+    statement: |
+      class = create($waif);
+      add_verb(class, {player, "xd", "destroy_and_new"}, {"this", "none", "this"});
+      set_verb_code(class, "destroy_and_new", {
+        "recycle(this);",
+        "return new_waif();"
+      });
+      return class:destroy_and_new();
+    expect:
+      error: E_INVIND
+
+  - name: waif_intrinsic_reads_and_class_write
+    statement: |
+      class = create($waif);
+      waif = class:new();
+      try
+        waif.class = class;
+        class_write = E_NONE;
+      except error (ANY)
+        class_write = error[1];
+      endtry
+      result = {waif.wizard, waif.programmer, class_write};
+      recycle(class);
+      return result;
+    expect:
+      value: [0, 0, E_PERM]
+
+  - name: waif_aliases_share_property_mutation
+    statement: |
+      class = create($waif);
+      add_property(class, ":value", 1, {player, ""});
+      waif = class:new();
+      alias = waif;
+      alias.value = 42;
+      result = {waif == alias, waif.value, alias.value};
+      recycle(class);
+      return result;
+    expect:
+      value: [1, 42, 42]
+
+  - name: waif_rejects_direct_and_collection_recursion
+    statement: |
+      class = create($waif);
+      add_property(class, ":value", 0, {player, ""});
+      waif = class:new();
+      try
+        waif.value = waif;
+        direct = E_NONE;
+      except error (ANY)
+        direct = error[1];
+      endtry
+      try
+        waif.value = {waif};
+        list_recursion = E_NONE;
+      except error (ANY)
+        list_recursion = error[1];
+      endtry
+      try
+        waif.value = ["self" -> waif];
+        map_recursion = E_NONE;
+      except error (ANY)
+        map_recursion = error[1];
+      endtry
+      result = {direct, list_recursion, map_recursion};
+      recycle(class);
+      return result;
+    expect:
+      value: [E_RECMOVE, E_RECMOVE, E_RECMOVE]
+
+  - name: wizard_owned_waif_class_dispatches_index_handlers
+    permission: wizard
+    statement: |
+      class = create($waif);
+      add_property(class, ":last_key", "", {player, ""});
+      add_property(class, ":last_value", 0, {player, ""});
+      add_verb(class, {player, "xd", ":_index"}, {"this", "none", "this"});
+      set_verb_code(class, ":_index", {
+        "return {args[1], this.last_key, this.last_value, typeof(this) == WAIF};"
+      });
+      add_verb(class, {player, "xd", ":_set_index"}, {"this", "none", "this"});
+      set_verb_code(class, ":_set_index", {
+        "this.last_key = args[1];",
+        "this.last_value = args[2];",
+        "return this;"
+      });
+      waif = class:new();
+      try
+        waif["answer"] = 42;
+        write_result = E_NONE;
+      except error (ANY)
+        write_result = error[1];
+      endtry
+      try
+        read_result = waif["answer"];
+      except error (ANY)
+        read_result = error[1];
+      endtry
+      result = {
+        waif.class == class,
+        class.owner == player,
+        class.owner.wizard,
+        write_result,
+        read_result
+      };
+      recycle(class);
+      return result;
+    expect:
+      value: [1, 1, 1, E_NONE, [answer, answer, 42, 1]]
+
+  - name: waif_index_without_handler_is_type_error
+    permission: wizard
+    statement: |
+      class = create($waif);
+      waif = class:new();
+      try
+        result = waif["missing"];
+      except error (ANY)
+        result = error[1];
+      endtry
+      recycle(class);
+      return result;
+    expect:
+      value: E_TYPE
+
+  - name: nonwizard_owned_waif_class_cannot_dispatch_index
+    permission: programmer
+    statement: |
+      class = create($waif);
+      add_verb(class, {player, "xd", ":_index"}, {"this", "none", "this"});
+      set_verb_code(class, ":_index", {"return args[1];"});
+      waif = class:new();
+      try
+        result = waif["key"];
+      except error (ANY)
+        result = error[1];
+      endtry
+      recycle(class);
+      return result;
+    expect:
+      value: E_TYPE
+
+  - name: invalid_class_waif_index_is_invalid_indirection
+    permission: wizard
+    statement: |
+      class = create($waif);
+      waif = class:new();
+      recycle(class);
+      try
+        return waif["key"];
+      except error (ANY)
+        return error[1];
+      endtry
+    expect:
+      value: E_INVIND

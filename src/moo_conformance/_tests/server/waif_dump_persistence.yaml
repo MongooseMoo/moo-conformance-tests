@@ -1,0 +1,48 @@
+name: waif_dump_persistence
+description: Verifies v17 WAIF backreferences across a managed server restart.
+requires:
+  builtins:
+    - add_property
+    - create
+    - delete_property
+    - dump_database
+    - new_waif
+    - recycle
+  config: [managed_server]
+tests:
+  - name: waif_backreference_identity_survives_dump_and_restart
+    permission: wizard
+    steps:
+      - run: |
+          try delete_property(#1, "waif_persist_alias"); except (ANY) endtry
+          class = create($waif);
+          add_property(class, ":marker", 0, {player, ""});
+          waif = class:new();
+          waif.marker = 7;
+          add_property(#1, "waif_persist_alias", {class, waif, waif}, {player, ""});
+          return 0;
+        expect:
+          value: 0
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+          wait_ms: 300
+      - run: |
+          values = #1.waif_persist_alias;
+          values[2].marker = 42;
+          return {
+            values[2] == values[3],
+            values[3].marker,
+            values[2].class == values[1]
+          };
+        expect:
+          value: [1, 42, 1]
+    cleanup:
+      - run: |
+          values = #1.waif_persist_alias;
+          class = values[1];
+          delete_property(#1, "waif_persist_alias");
+          recycle(class);
+          return 0;

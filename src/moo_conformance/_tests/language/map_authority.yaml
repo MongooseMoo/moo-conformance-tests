@@ -1,0 +1,144 @@
+name: map_authority
+description: >
+  Pinned-Toast authority for unresolved MAP comparator, key-surface,
+  literal-evaluation, and multi-delete error behavior.
+requires:
+  builtins:
+    - create
+    - equal
+    - length
+    - mapdelete
+    - maphaskey
+    - mapkeys
+    - mapvalues
+    - new_waif
+    - recycle
+    - toliteral
+tests:
+  - name: int_keys_separated_by_2_to_32_collide_and_replace
+    statement: |
+      mapping = [0 -> "zero", 4294967296 -> "wide"];
+      before = {
+        length(mapping), mapping[0], mapping[4294967296], mapkeys(mapping)
+      };
+      mapping[0] = "replacement";
+      return {
+        before,
+        length(mapping), mapping[0], mapping[4294967296], mapkeys(mapping)
+      };
+    expect:
+      value:
+        - [1, "wide", "wide", [4294967296]]
+        - 1
+        - "replacement"
+        - "replacement"
+        - [0]
+
+  - name: anon_keys_work_in_vm_and_mapvalues_but_not_key_builtins
+    statement: |
+      anon = create($anonymous, 1);
+      literal = [anon -> "literal"];
+      indexed = [];
+      indexed[anon] = "indexed";
+      try
+        ignored = maphaskey(literal, anon);
+        haskey_error = E_NONE;
+      except error (ANY)
+        haskey_error = error[1];
+      endtry
+      try
+        ignored = mapdelete(literal, anon);
+        delete_error = E_NONE;
+      except error (ANY)
+        delete_error = error[1];
+      endtry
+      result = {
+        literal[anon], indexed[anon], mapvalues(literal, anon),
+        haskey_error, delete_error
+      };
+      recycle(anon);
+      return result;
+    expect:
+      value: ["literal", "indexed", ["literal"], E_TYPE, E_TYPE]
+
+  - name: reverse_inserted_bool_key_maps_expose_reverse_topology
+    statement: |
+      false_first = [false -> 0, true -> 1];
+      true_first = [true -> 1, false -> 0];
+      return {
+        mapkeys(false_first) == {true, false},
+        mapkeys(true_first) == {false, true},
+        toliteral(false_first) == "[true -> 1, false -> 0]",
+        toliteral(true_first) == "[false -> 0, true -> 1]",
+        false_first == true_first,
+        equal(false_first, true_first)
+      };
+    expect:
+      value: [1, 1, 1, 1, 0, 0]
+
+  - name: reverse_inserted_waif_key_maps_expose_reverse_topology
+    statement: |
+      class = create($waif);
+      first = class:new();
+      second = class:new();
+      first_first = [first -> 1, second -> 2];
+      second_first = [second -> 2, first -> 1];
+      result = {
+        mapkeys(first_first) == {second, first},
+        mapkeys(second_first) == {first, second},
+        toliteral(first_first) ==
+          "[" + toliteral(second) + " -> 2, " + toliteral(first) + " -> 1]",
+        toliteral(second_first) ==
+          "[" + toliteral(first) + " -> 1, " + toliteral(second) + " -> 2]",
+        first_first == second_first,
+        equal(first_first, second_first)
+      };
+      recycle(class);
+      return result;
+    expect:
+      value: [1, 1, 1, 1, 0, 0]
+
+  - name: reverse_inserted_anon_key_maps_expose_reverse_topology
+    statement: |
+      first = create($anonymous, 1);
+      second = create($anonymous, 1);
+      first_first = [first -> 1, second -> 2];
+      second_first = [second -> 2, first -> 1];
+      result = {
+        mapkeys(first_first) == {second, first},
+        mapkeys(second_first) == {first, second},
+        toliteral(first_first) ==
+          "[" + toliteral(second) + " -> 2, " + toliteral(first) + " -> 1]",
+        toliteral(second_first) ==
+          "[" + toliteral(first) + " -> 1, " + toliteral(second) + " -> 2]",
+        first_first == second_first,
+        equal(first_first, second_first)
+      };
+      recycle(first);
+      recycle(second);
+      return result;
+    expect:
+      value: [1, 1, 1, 1, 0, 0]
+
+  - name: map_literal_evaluates_each_value_before_its_key
+    statement: |
+      trace = {};
+      mapping = [
+        ((trace = {@trace, "key"}) ? "key" | "unreachable")
+        ->
+        ((trace = {@trace, "value"}) ? "value" | "unreachable")
+      ];
+      return {trace, mapping["key"]};
+    expect:
+      value: [["value", "key"], "value"]
+
+  - name: multi_key_mapdelete_raises_missing_key_detail
+    statement: |
+      mapping = [1 -> "one", 2 -> "two", 3 -> "three"];
+      try
+        return mapdelete(mapping, {1, 99, 3});
+      except error (ANY)
+        return {error[1], error[2], error[3]};
+      endtry
+    expect:
+      value: [E_RANGE, "Key 99 not found in map", 99]

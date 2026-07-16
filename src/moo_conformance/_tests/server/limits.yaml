@@ -412,62 +412,59 @@ tests:
     expect:
       value: [[1, 2], [1, 2], 1, 1]
 
-  - name: mapdelete_fails_if_result_too_large
+  - name: mapdelete_uses_list_not_map_max_value_bytes
     permission: wizard
     statement: |
-      a = create($nothing);
-      add_property(a, "foo", 0, {a, ""});
       x = [];
       for i in [1..1000]
         x[i] = i;
       endfor
-      a.foo = x;
-      $server_options.max_map_value_bytes = 1000;
+      $server_options.max_list_value_bytes = 1000;
+      $server_options.max_map_value_bytes = 1000000;
       load_server_options();
-      result = mapdelete(a.foo, 1);
-      recycle(a);
-      return result;
+      result = mapdelete(x, 1);
+      return value_bytes(result);
     expect:
       error: E_QUOTA
 
-  - name: indexset_on_map_checks_max_value_bytes
+  - name: indexset_on_map_uses_list_not_map_max_value_bytes
     permission: wizard
     statement: |
       n = 90;
-      $server_options.max_map_value_bytes = 1000000;
+      $server_options.max_list_value_bytes = 1000000;
+      $server_options.max_map_value_bytes = 1;
       load_server_options();
       x = [];
       for i in [1..n]
-        x[1] = {x};
+        x[i] = i;
       endfor
       size = value_bytes(x);
-      $server_options.max_map_value_bytes = size + 1;
+      x[1] = 0;
+      $server_options.max_list_value_bytes = size - 1;
+      $server_options.max_map_value_bytes = 1000000;
       load_server_options();
-      x = [];
-      for i in [1..(n + 1)]
-        x[1] = {x};
-      endfor
+      x[1] = 1;
       return value_bytes(x);
     expect:
       error: E_QUOTA
 
-  - name: rangeset_on_map_checks_max_value_bytes
+  - name: rangeset_on_map_uses_list_not_map_max_value_bytes
     permission: wizard
     statement: |
       n = 90;
-      $server_options.max_map_value_bytes = 1000000;
+      $server_options.max_list_value_bytes = 1000000;
+      $server_options.max_map_value_bytes = 1;
       load_server_options();
-      x = [1 -> 1];
+      x = [];
       for i in [1..n]
-        x[1..1] = [1 -> x];
+        x[i] = i;
       endfor
       size = value_bytes(x);
-      $server_options.max_map_value_bytes = size + 1;
+      x[1..1] = [1 -> 0];
+      $server_options.max_list_value_bytes = size - 1;
+      $server_options.max_map_value_bytes = 1000000;
       load_server_options();
-      x = [1 -> 1];
-      for i in [1..(n + 1)]
-        x[1..1] = [1 -> x];
-      endfor
+      x[1..1] = [1 -> 1];
       return value_bytes(x);
     expect:
       error: E_QUOTA
@@ -489,11 +486,9 @@ tests:
     expect:
       error: E_QUOTA
 
-  - name: map_literal_checks_max_value_bytes
+  - name: map_literal_bypasses_map_value_bytes
     permission: wizard
     statement: |
-      $server_options.max_map_value_bytes = 2000;
-      load_server_options();
       s = "return [";
       for i in [0..1000]
         if (i > 0)
@@ -502,9 +497,17 @@ tests:
         s = s + tostr(i) + "->" + tostr(i);
       endfor
       s = s + "];";
-      return eval(s);
+      $server_options.max_list_value_bytes = 1000000;
+      $server_options.max_map_value_bytes = 1;
+      load_server_options();
+      size = value_bytes(eval(s));
+      $server_options.max_list_value_bytes = size - 1;
+      $server_options.max_map_value_bytes = 1000000;
+      load_server_options();
+      result = eval(s);
+      return value_bytes(result) > (size - 1);
     expect:
-      error: E_QUOTA
+      value: 1
 
   - name: string_concat_limit
     permission: wizard

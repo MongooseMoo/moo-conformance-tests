@@ -1,0 +1,147 @@
+name: map_dump_persistence
+description: Verifies MAP ordering and non-total key topology transformation across a managed v17 restart.
+requires:
+  builtins:
+    - add_property
+    - chr
+    - create
+    - delete_property
+    - dump_database
+    - encode_binary
+    - equal
+    - mapkeys
+    - new_waif
+    - recycle
+    - toliteral
+  config: [managed_server]
+tests:
+  - name: ordering_spelling_bytes_and_non_total_topology_round_trip
+    permission: wizard
+    steps:
+      - run: |
+          try delete_property(#1, "map_persist_authority"); except (ANY) endtry
+
+          class = create($waif);
+          first_waif = class:new();
+          second_waif = class:new();
+          first_anon = create($anonymous, 1);
+          second_anon = create($anonymous, 1);
+
+          ordered = ["tail" -> "str", E_TYPE -> "err", 1.5 -> "float",
+                     #1 -> "obj", 2 -> "int"];
+          replaced = ["Key" -> "first"];
+          replaced["kEY"] = "second";
+          high = [chr(200) -> "high"];
+
+          bool_forward = [];
+          bool_forward[false] = "false";
+          bool_forward[true] = "true";
+          bool_reverse = [];
+          bool_reverse[true] = "true";
+          bool_reverse[false] = "false";
+
+          waif_forward = [];
+          waif_forward[first_waif] = "first";
+          waif_forward[second_waif] = "second";
+          waif_reverse = [];
+          waif_reverse[second_waif] = "second";
+          waif_reverse[first_waif] = "first";
+
+          anon_forward = [];
+          anon_forward[first_anon] = "first";
+          anon_forward[second_anon] = "second";
+          anon_reverse = [];
+          anon_reverse[second_anon] = "second";
+          anon_reverse[first_anon] = "first";
+
+          baseline = {
+            mapkeys(bool_forward), toliteral(bool_forward),
+            mapkeys(bool_reverse), toliteral(bool_reverse),
+            mapkeys(waif_forward), toliteral(waif_forward),
+            mapkeys(waif_reverse), toliteral(waif_reverse),
+            mapkeys(anon_forward), toliteral(anon_forward),
+            mapkeys(anon_reverse), toliteral(anon_reverse),
+            bool_forward == bool_reverse, equal(bool_forward, bool_reverse),
+            waif_forward == waif_reverse, equal(waif_forward, waif_reverse),
+            anon_forward == anon_reverse, equal(anon_forward, anon_reverse)
+          };
+          add_property(
+            #1,
+            "map_persist_authority",
+            {class, first_waif, second_waif, first_anon, second_anon,
+             ordered, replaced, high, bool_forward, bool_reverse,
+             waif_forward, waif_reverse, anon_forward, anon_reverse, baseline},
+            {player, ""}
+          );
+          return 0;
+        expect:
+          value: 0
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+          wait_ms: 300
+      - run: |
+          state = #1.map_persist_authority;
+          baseline = state[15];
+          return {
+            equal(mapkeys(state[6]), {2, #1, E_TYPE, 1.5, "tail"}),
+            {mapkeys(state[7])[1], state[7]["KEY"]},
+            {encode_binary(mapkeys(state[8])[1]), state[8][chr(200)]},
+            {
+              equal(mapkeys(state[9]), {false, true}),
+              equal(mapkeys(state[10]), {true, false}),
+              toliteral(state[9]) == "[false -> \"false\", true -> \"true\"]",
+              toliteral(state[10]) == "[true -> \"true\", false -> \"false\"]",
+              equal(mapkeys(state[11]), {state[2], state[3]}),
+              equal(mapkeys(state[12]), {state[3], state[2]}),
+              state[11][state[2]] == "first" && state[11][state[3]] == "second",
+              state[12][state[2]] == "first" && state[12][state[3]] == "second",
+              equal(mapkeys(state[13]), {state[4], state[5]}),
+              equal(mapkeys(state[14]), {state[5], state[4]}),
+              state[13][state[4]] == "first" && state[13][state[5]] == "second",
+              state[14][state[4]] == "first" && state[14][state[5]] == "second"
+            },
+            {
+              !equal(mapkeys(state[9]), baseline[1]),
+              !equal(toliteral(state[9]), baseline[2]),
+              !equal(mapkeys(state[10]), baseline[3]),
+              !equal(toliteral(state[10]), baseline[4]),
+              !equal(mapkeys(state[11]), baseline[5]),
+              !equal(toliteral(state[11]), baseline[6]),
+              !equal(mapkeys(state[12]), baseline[7]),
+              !equal(toliteral(state[12]), baseline[8]),
+              !equal(mapkeys(state[13]), baseline[9]),
+              !equal(toliteral(state[13]), baseline[10]),
+              !equal(mapkeys(state[14]), baseline[11]),
+              !equal(toliteral(state[14]), baseline[12])
+            },
+            {
+              (state[9] == state[10]) == baseline[13],
+              equal(state[9], state[10]) == baseline[14],
+              (state[11] == state[12]) == baseline[15],
+              equal(state[11], state[12]) == baseline[16],
+              (state[13] == state[14]) == baseline[17],
+              equal(state[13], state[14]) == baseline[18]
+            }
+          };
+        expect:
+          value:
+            - 1
+            - ["kEY", "second"]
+            - ["~C8", "high"]
+            - [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+            - [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+            - [1, 1, 1, 1, 1, 1]
+    cleanup:
+      - run: |
+          state = {};
+          try state = #1.map_persist_authority; except (ANY) endtry
+          try delete_property(#1, "map_persist_authority"); except (ANY) endtry
+          if (state)
+            try recycle(state[4]); except (ANY) endtry
+            try recycle(state[5]); except (ANY) endtry
+            try recycle(state[1]); except (ANY) endtry
+          endif
+          return 0;

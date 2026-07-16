@@ -1,0 +1,69 @@
+name: float_boundary_dump_persistence
+description: Verifies finite binary64 boundary identity across a managed v17 restart.
+requires:
+  builtins:
+    - add_property
+    - delete_property
+    - dump_database
+    - mapkeys
+    - toliteral
+    - typeof
+  config: [managed_server]
+tests:
+  - name: maximum_normal_and_subnormal_values_survive_dump_and_restart
+    permission: wizard
+    steps:
+      - run: |
+          try delete_property(#1, "float_boundary_persist"); except (ANY) endtry
+          maximum = 1.7976931348623157e308;
+          normal = 2.2250738585072014e-308;
+          subnormal = 4.9406564584124654e-324;
+          add_property(
+            #1,
+            "float_boundary_persist",
+            {maximum,
+             normal,
+             subnormal,
+             [maximum -> "maximum", normal -> "normal", subnormal -> "subnormal"]},
+            {player, ""}
+          );
+          return 0;
+        expect:
+          value: 0
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+          wait_ms: 300
+      - run: |
+          values = #1.float_boundary_persist;
+          mapping = values[4];
+          maximum = 1.7976931348623157e308;
+          normal = 2.2250738585072014e-308;
+          subnormal = 4.9406564584124654e-324;
+          return {
+            {typeof(values[1]) == FLOAT,
+             typeof(values[2]) == FLOAT,
+             typeof(values[3]) == FLOAT},
+            {values[1] == maximum,
+             values[2] == normal,
+             values[3] == subnormal},
+            {length(mapkeys(mapping)),
+             mapping[maximum],
+             mapping[normal],
+             mapping[subnormal]},
+            {toliteral(values[1]),
+             toliteral(values[2]),
+             toliteral(values[3])}
+          };
+        expect:
+          value:
+            - [1, 1, 1]
+            - [1, 1, 1]
+            - [3, "maximum", "normal", "subnormal"]
+            - ["1.79769313486232e+308", "2.2250738585072e-308", "4.94065645841247e-324"]
+    cleanup:
+      - run: |
+          delete_property(#1, "float_boundary_persist");
+          return 0;

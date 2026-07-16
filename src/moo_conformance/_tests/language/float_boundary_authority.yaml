@@ -1,0 +1,48 @@
+name: float_boundary_authority
+description: Verifies finite normal, subnormal, and underflow-to-zero behavior.
+requires:
+  builtins:
+    - toliteral
+    - typeof
+tests:
+  - name: finite_subnormal_results_and_underflow_remain_float
+    statement: |
+      normal = 2.2250738585072014e-308;
+      subnormal = normal / 2.0;
+      smallest = 4.9406564584124654e-324;
+      arithmetic_zero = smallest / 2.0;
+      literal_zero = 1.0e-324;
+      return {
+        typeof(normal),
+        typeof(subnormal),
+        subnormal > 0.0,
+        subnormal < normal,
+        typeof(smallest),
+        smallest > 0.0,
+        smallest < subnormal,
+        typeof(arithmetic_zero),
+        arithmetic_zero == 0.0,
+        arithmetic_zero && 1 || 0,
+        typeof(literal_zero),
+        literal_zero == 0.0,
+        toliteral(subnormal),
+        toliteral(smallest),
+        toliteral(arithmetic_zero)
+      };
+    expect:
+      value:
+        - 9
+        - 9
+        - 1
+        - 1
+        - 9
+        - 1
+        - 1
+        - 9
+        - 1
+        - 0
+        - 9
+        - 1
+        - "1.1125369292536e-308"
+        - "4.94065645841247e-324"
+        - "0.0"

@@ -390,6 +390,28 @@ tests:
     expect:
       error: E_QUOTA
 
+  - name: list_plus_bypasses_max_list_value_bytes
+    permission: wizard
+    statement: |
+      original = $server_options.max_list_value_bytes;
+      base = {1};
+      unrestricted_append = base + 2;
+      low = value_bytes(unrestricted_append) - 1;
+      $server_options.max_list_value_bytes = low;
+      load_server_options();
+      try
+        appended = base + 2;
+        concatenated = base + {2};
+        appended_over_limit = value_bytes(appended) > low;
+        concatenated_over_limit = value_bytes(concatenated) > low;
+      finally
+        $server_options.max_list_value_bytes = original;
+        load_server_options();
+      endtry
+      return {appended, concatenated, appended_over_limit, concatenated_over_limit};
+    expect:
+      value: [[1, 2], [1, 2], 1, 1]
+
   - name: mapdelete_fails_if_result_too_large
     permission: wizard
     statement: |

@@ -1,0 +1,67 @@
+name: list_dump_persistence
+description: Verifies nested heterogeneous LIST values and copy-on-write isolation across a managed v17 restart.
+requires:
+  builtins:
+    - add_property
+    - delete_property
+    - dump_database
+    - toliteral
+    - typeof
+  config: [managed_server]
+tests:
+  - name: nested_heterogeneous_lists_survive_dump_and_restart
+    permission: wizard
+    steps:
+      - run: |
+          try delete_property(#1, "list_persist_values"); except (ANY) endtry
+          nested = {1, "Two", #-1, E_INTRPT, true, 0.5, ["Key" -> {3, 4}]};
+          add_property(#1, "list_persist_values", {{}, nested, nested}, {player, ""});
+          return 0;
+        expect:
+          value: 0
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+          wait_ms: 300
+      - run: |
+          before = #1.list_persist_values;
+          updated = before;
+          updated[2][2] = "changed";
+          return {
+            typeof(before) == LIST,
+            typeof(before[2][1]) == INT,
+            typeof(before[2][2]) == STR,
+            typeof(before[2][3]) == OBJ,
+            typeof(before[2][4]) == ERR,
+            typeof(before[2][5]) == BOOL,
+            typeof(before[2][6]) == FLOAT,
+            typeof(before[2][7]) == MAP,
+            toliteral(before),
+            before[2] == before[3],
+            before[2][7]["key"] == {3, 4},
+            toliteral(updated),
+            updated[2] != updated[3],
+            before[2][2] == "Two"
+          };
+        expect:
+          value:
+            - 1
+            - 1
+            - 1
+            - 1
+            - 1
+            - 1
+            - 1
+            - 1
+            - '{{}, {1, "Two", #-1, E_INTRPT, true, 0.5, ["Key" -> {3, 4}]}, {1, "Two", #-1, E_INTRPT, true, 0.5, ["Key" -> {3, 4}]}}'
+            - 1
+            - 1
+            - '{{}, {1, "changed", #-1, E_INTRPT, true, 0.5, ["Key" -> {3, 4}]}, {1, "Two", #-1, E_INTRPT, true, 0.5, ["Key" -> {3, 4}]}}'
+            - 1
+            - 1
+    cleanup:
+      - run: |
+          delete_property(#1, "list_persist_values");
+          return 0;

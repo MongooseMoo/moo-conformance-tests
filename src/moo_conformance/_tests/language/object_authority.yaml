@@ -1,0 +1,88 @@
+name: object_authority
+description: >
+  Toast-authoritative object-reference boundaries, ordering, map comparator,
+  scalar copy, and indexed-base errors.
+requires:
+  builtins:
+    - length
+    - toliteral
+    - toobj
+    - typeof
+
+tests:
+  - name: object_literal_boundaries_follow_pinned_64_bit_lexer
+    code: |
+      return {
+        {typeof(#-9223372036854775807),
+         typeof(#9223372036854775807),
+         typeof(#-9223372036854775808),
+         typeof(#9223372036854775808),
+         typeof(#-9223372036854775809),
+         typeof(#9223372036854775809)},
+        {toliteral(#-9223372036854775807),
+         toliteral(#9223372036854775807),
+         toliteral(#-9223372036854775808),
+         toliteral(#9223372036854775808),
+         toliteral(#-9223372036854775809),
+         toliteral(#9223372036854775809)},
+        {!#-9223372036854775807,
+         !#9223372036854775807,
+         !#-9223372036854775808}
+      };
+    expect:
+      value:
+        - [1, 1, 1, 1, 1, 1]
+        - ["#-9223372036854775807", "#9223372036854775807",
+           "#-9223372036854775808", "#-9223372036854775808",
+           "#9223372036854775807", "#-9223372036854775807"]
+        - [1, 1, 1]
+
+  - name: toobj_string_boundaries_clamp_on_native_overflow
+    code: |
+      return {
+        toliteral(toobj("-9223372036854775807")),
+        toliteral(toobj("9223372036854775807")),
+        toliteral(toobj("-9223372036854775808")),
+        toliteral(toobj("9223372036854775808")),
+        toliteral(toobj("-9223372036854775809")),
+        toliteral(toobj("9223372036854775809"))
+      };
+    expect:
+      value:
+        - "#-9223372036854775807"
+        - "#9223372036854775807"
+        - "#-9223372036854775808"
+        - "#9223372036854775807"
+        - "#-9223372036854775808"
+        - "#9223372036854775807"
+
+  - name: scalar_equality_order_and_narrowed_map_comparator_are_distinct
+    statement: |
+      small = #0;
+      copied = small;
+      large = #4294967296;
+      values = [small -> "small", large -> "large"];
+      return {
+        copied == small,
+        small != large,
+        small < large,
+        large > small,
+        length(values),
+        values[small],
+        values[large]
+      };
+    expect:
+      value: [1, 1, 1, 1, 1, "large", "large"]
+
+  - name: object_scalar_index_read_is_type_error
+    code: '#1[1]'
+    expect:
+      error: E_TYPE
+
+  - name: object_scalar_index_write_is_type_error
+    statement: |
+      value = #1;
+      value[1] = 2;
+      return value;
+    expect:
+      error: E_TYPE

@@ -1,0 +1,65 @@
+name: object_dump_persistence
+description: Verifies signed object-reference values and Toast map identity across a managed v17 restart.
+requires:
+  builtins:
+    - add_property
+    - delete_property
+    - dump_database
+    - length
+    - toliteral
+    - typeof
+  config: [managed_server]
+tests:
+  - name: boundary_and_invalid_object_references_survive_dump_and_restart
+    permission: wizard
+    steps:
+      - run: |
+          try delete_property(#1, "object_persist_edges"); except (ANY) endtry
+          refs = {
+            #-9223372036854775807,
+            #-9223372036854775808,
+            #-1,
+            #0,
+            #4294967296,
+            #9223372036854775807
+          };
+          identity_map = [#0 -> "small", #4294967296 -> "large"];
+          add_property(
+            #1,
+            "object_persist_edges",
+            {refs, identity_map},
+            {player, ""}
+          );
+          return 0;
+        expect:
+          value: 0
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+          wait_ms: 300
+      - run: |
+          stored = #1.object_persist_edges;
+          refs = stored[1];
+          identity_map = stored[2];
+          return {
+            {typeof(refs[1]), typeof(refs[2]), typeof(refs[3]),
+             typeof(refs[4]), typeof(refs[5]), typeof(refs[6])},
+            refs,
+            {toliteral(refs[1]), toliteral(refs[2]), toliteral(refs[3]),
+             toliteral(refs[4]), toliteral(refs[5]), toliteral(refs[6])},
+            {length(identity_map), identity_map[#0], identity_map[#4294967296]}
+          };
+        expect:
+          value:
+            - [1, 1, 1, 1, 1, 1]
+            - ["#-9223372036854775807", "#-9223372036854775808", "#-1",
+               "#0", "#4294967296", "#9223372036854775807"]
+            - ["#-9223372036854775807", "#-9223372036854775808", "#-1",
+               "#0", "#4294967296", "#9223372036854775807"]
+            - [1, "large", "large"]
+    cleanup:
+      - run: |
+          delete_property(#1, "object_persist_edges");
+          return 0;

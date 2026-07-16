@@ -1,0 +1,76 @@
+name: boolean_authority
+description: Toast-authoritative edge semantics for boolean values.
+requires:
+  builtins:
+    - mapkeys
+    - maphaskey
+    - toliteral
+tests:
+  - name: boolean_relational_comparisons_use_default_zero
+    code: >-
+      {false < true, false <= true, false > true, false >= true,
+       true < false, true <= false, true > false, true >= false}
+    expect:
+      value: [0, 1, 0, 1, 0, 1, 0, 1]
+
+  - name: boolean_integer_relational_comparisons_raise_type
+    statement: |
+      return {
+        `true < 1 ! ANY',
+        `1 < true ! ANY',
+        `false >= 0 ! ANY',
+        `0 >= false ! ANY'
+      };
+    expect:
+      value: [E_TYPE, E_TYPE, E_TYPE, E_TYPE]
+
+  - name: distinct_boolean_keys_survive_both_insertion_orders
+    statement: |
+      false_first = [];
+      false_first[false] = "false";
+      false_first[true] = "true";
+      true_first = [];
+      true_first[true] = "true";
+      true_first[false] = "false";
+      return {
+        length(mapkeys(false_first)), false_first[false], false_first[true],
+        length(mapkeys(true_first)), true_first[false], true_first[true]
+      };
+    expect:
+      value: [2, "false", "true", 2, "false", "true"]
+
+  - name: boolean_and_equal_integer_mixed_map_reachability
+    statement: |
+      values = [];
+      values[true] = "boolean one";
+      values[1] = "integer one";
+      values[false] = "boolean zero";
+      values[0] = "integer zero";
+      return {
+        toliteral(mapkeys(values)),
+        maphaskey(values, true),
+        maphaskey(values, 1),
+        maphaskey(values, false),
+        maphaskey(values, 0)
+      };
+    expect:
+      value: ["{0, 1, false, true}", 0, 1, 1, 1]
+
+  - name: boolean_indexed_read_and_write_raise_type
+    statement: |
+      value = true;
+      try
+        ignored = value[1];
+        read_error = E_NONE;
+      except error (ANY)
+        read_error = error[1];
+      endtry
+      try
+        value[1] = 2;
+        write_error = E_NONE;
+      except error (ANY)
+        write_error = error[1];
+      endtry
+      return {read_error, write_error};
+    expect:
+      value: [E_TYPE, E_TYPE]

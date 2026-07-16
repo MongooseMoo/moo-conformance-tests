@@ -1,0 +1,39 @@
+name: boolean_dump_persistence
+description: Verifies boolean type and value preservation across a managed v17 restart.
+requires:
+  builtins:
+    - add_property
+    - delete_property
+    - dump_database
+    - typeof
+  config: [managed_server]
+tests:
+  - name: boolean_type_and_values_survive_dump_and_restart
+    permission: wizard
+    steps:
+      - run: |
+          try delete_property(#1, "boolean_persist_values"); except (ANY) endtry
+          add_property(#1, "boolean_persist_values", {true, false}, {player, ""});
+          return 0;
+        expect:
+          value: 0
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+          wait_ms: 300
+      - run: |
+          values = #1.boolean_persist_values;
+          return {
+            typeof(values[1]) == BOOL,
+            typeof(values[2]) == BOOL,
+            values[1],
+            values[2]
+          };
+        expect:
+          value: [1, 1, "true", "false"]
+    cleanup:
+      - run: |
+          delete_property(#1, "boolean_persist_values");
+          return 0;

@@ -1,0 +1,53 @@
+name: integer_dump_persistence
+description: Verifies full-range integer type, value, and literal preservation across a managed v17 restart.
+requires:
+  builtins:
+    - add_property
+    - delete_property
+    - dump_database
+    - toliteral
+    - typeof
+  config: [managed_server]
+tests:
+  - name: full_range_integers_survive_dump_and_restart
+    permission: wizard
+    steps:
+      - run: |
+          try delete_property(#1, "integer_persist_edges"); except (ANY) endtry
+          add_property(
+            #1,
+            "integer_persist_edges",
+            {-9223372036854775807, 0, 9223372036854775807, -9223372036854775808},
+            {player, ""}
+          );
+          return 0;
+        expect:
+          value: 0
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+          wait_ms: 300
+      - run: |
+          values = #1.integer_persist_edges;
+          return {
+            {typeof(values[1]) == INT,
+             typeof(values[2]) == INT,
+             typeof(values[3]) == INT,
+             typeof(values[4]) == INT},
+            values,
+            {toliteral(values[1]),
+             toliteral(values[2]),
+             toliteral(values[3]),
+             toliteral(values[4])}
+          };
+        expect:
+          value:
+            - [1, 1, 1, 1]
+            - [-9223372036854775807, 0, 9223372036854775807, -9223372036854775808]
+            - ["-9223372036854775807", "0", "9223372036854775807", "-9223372036854775808"]
+    cleanup:
+      - run: |
+          delete_property(#1, "integer_persist_edges");
+          return 0;

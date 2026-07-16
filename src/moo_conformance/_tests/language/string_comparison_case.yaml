@@ -1,10 +1,10 @@
 name: string_comparison_case
 description: >
   In MOO the string relational operators <, <=, >, >= compare case-INSENSITIVELY
-  (folding case before ordering), while == / != and strcmp() remain
-  case-SENSITIVE. So "a" < "B" is true (a before b) even though 'a' (97) sorts
-  after 'B' (66) in ASCII. Verified against ToastStunt; Barn currently uses a
-  raw case-sensitive byte comparison for the relational operators.
+  (folding case before ordering), and == / != use the same case-insensitive
+  equality. The equal() and strcmp() builtins remain case-SENSITIVE. So "a" <
+  "B" is true (a before b) even though 'a' (97) sorts after 'B' (66) in ASCII.
+  Verified against ToastStunt; Barn's normative text does not state this split.
 
 requires:
   builtins: [strcmp, equal]

@@ -1,0 +1,69 @@
+name: string_dump_persistence
+description: Verifies empty, escaped, and raw high-byte strings across a managed v17 restart.
+requires:
+  builtins:
+    - add_property
+    - chr
+    - delete_property
+    - dump_database
+    - encode_binary
+    - mapkeys
+    - toliteral
+    - typeof
+  config: [managed_server]
+tests:
+  - name: raw_bytes_identity_and_copy_survive_dump_and_restart
+    permission: wizard
+    steps:
+      - run: |
+          try delete_property(#1, "string_persist_values"); except (ANY) endtry
+          escaped = "quote:\" slash:\\";
+          raw = chr(128) + chr(200) + chr(254);
+          mapping = ["Alpha" -> "first"];
+          mapping["aLPHA"] = "second";
+          add_property(
+            #1,
+            "string_persist_values",
+            {"", escaped, raw, mapping},
+            {player, ""}
+          );
+          return 0;
+        expect:
+          value: 0
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+          wait_ms: 300
+      - run: |
+          values = #1.string_persist_values;
+          original = values[3];
+          mutated = original;
+          mutated[2] = "X";
+          return {
+            {typeof(values[1]) == STR,
+             typeof(values[2]) == STR,
+             typeof(values[3]) == STR},
+            {length(values[1]), length(values[2]), length(values[3])},
+            values[2] == "quote:\" slash:\\",
+            encode_binary(values[3]),
+            toliteral(values[3]) == "\"" + values[3] + "\"",
+            {length(mapkeys(values[4])), values[4]["ALPHA"]},
+            encode_binary(original),
+            encode_binary(mutated)
+          };
+        expect:
+          value:
+            - [1, 1, 1]
+            - [0, 15, 3]
+            - 1
+            - "~80~C8~FE"
+            - 1
+            - [1, "second"]
+            - "~80~C8~FE"
+            - "~80X~FE"
+    cleanup:
+      - run: |
+          delete_property(#1, "string_persist_values");
+          return 0;

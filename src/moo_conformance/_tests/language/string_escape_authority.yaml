@@ -1,0 +1,8 @@
+name: string_escape_authority
+description: Verifies that a backslash generically quotes the next source byte.
+tests:
+  - name: c_style_escape_spellings_are_not_decoded
+    statement: |
+      return {"\n", "\t", "\r", "\x41"};
+    expect:
+      value: ["n", "t", "r", "x41"]

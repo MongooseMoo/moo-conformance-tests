@@ -1,0 +1,64 @@
+name: error_authority
+description: Toast-authoritative ERR enumeration and nonzero scalar semantics.
+requires:
+  builtins:
+    - equal
+    - tofloat
+    - toint
+    - toobj
+    - toliteral
+    - typeof
+
+tests:
+  - name: complete_named_error_table_and_nonzero_scalar_semantics
+    statement: |
+      errors = {
+        E_NONE, E_TYPE, E_DIV, E_PERM, E_PROPNF, E_VERBNF, E_VARNF,
+        E_INVIND, E_RECMOVE, E_MAXREC, E_RANGE, E_ARGS, E_NACC, E_INVARG,
+        E_QUOTA, E_FLOAT, E_FILE, E_EXEC, E_INTRPT
+      };
+      ordinals = {};
+      literals = {};
+      for error in (errors)
+        ordinals = {@ordinals, toint(error)};
+        literals = {@literals, toliteral(error)};
+      endfor
+      copied = E_INTRPT;
+      return {
+        ordinals,
+        literals,
+        {!E_TYPE, !E_INTRPT},
+        {tofloat(E_INTRPT), toliteral(toobj(E_INTRPT))},
+        {typeof(copied), copied == E_INTRPT, toint(copied)}
+      };
+    expect:
+      value:
+        - [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+        - ["E_NONE", "E_TYPE", "E_DIV", "E_PERM", "E_PROPNF", "E_VERBNF",
+           "E_VARNF", "E_INVIND", "E_RECMOVE", "E_MAXREC", "E_RANGE",
+           "E_ARGS", "E_NACC", "E_INVARG", "E_QUOTA", "E_FLOAT",
+           "E_FILE", "E_EXEC", "E_INTRPT"]
+        - [1, 1]
+        - [18.0, "#18"]
+        - [3, 1, 18]
+
+  - name: reversed_error_key_maps_are_equal
+    statement: |
+      forward = [E_TYPE -> "type", E_DIV -> "div"];
+      reversed = [E_DIV -> "div", E_TYPE -> "type"];
+      return {forward == reversed, equal(forward, reversed)};
+    expect:
+      value: [1, 1]
+
+  - name: error_scalar_index_read_is_type_error
+    code: 'E_TYPE[1]'
+    expect:
+      error: E_TYPE
+
+  - name: error_scalar_index_write_is_type_error
+    statement: |
+      value = E_TYPE;
+      value[1] = 2;
+      return value;
+    expect:
+      error: E_TYPE

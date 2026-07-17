@@ -89,7 +89,7 @@ tests:
       m = ["a" -> 1, "b" -> 2, "c" -> 3];
       return 2 in m;
     expect:
-      type: int
+      value: 2
 
   - name: in_empty_map
     description: Value in empty map returns 0

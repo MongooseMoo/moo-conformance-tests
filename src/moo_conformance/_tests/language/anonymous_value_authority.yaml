@@ -1,0 +1,85 @@
+name: anonymous_value_authority
+description: >
+  Pinned-Toast authority for ANON scalar, object-query, direct-index, and
+  range-endpoint behavior.
+requires:
+  features:
+    - anonymous
+  builtins:
+    - add_property
+    - add_verb
+    - create
+    - length
+    - properties
+    - recycle
+    - tofloat
+    - toint
+    - toliteral
+    - toobj
+    - tostr
+    - value_hash
+    - verbs
+tests:
+  - name: anon_scalar_truth_identity_relations_conversions_text_and_hash
+    permission: programmer
+    statement: |
+      first = create($anonymous, 1);
+      second = create($anonymous, 1);
+      copied = first;
+      try
+        result = {
+          !first,
+          {first == copied, first == second},
+          {
+            first < second, first <= second, first > second, first >= second,
+            second < first, second <= first, second > first, second >= first
+          },
+          {`toint(first) ! ANY', `toobj(first) ! ANY', `tofloat(first) ! ANY'},
+          {tostr(first), toliteral(first)},
+          value_hash(first) == value_hash(second)
+        };
+      finally
+        recycle(first);
+        recycle(second);
+      endtry
+      return result;
+    expect:
+      value:
+        - 1
+        - [1, 0]
+        - [0, 1, 0, 1, 0, 1, 0, 1]
+        - [E_TYPE, E_TYPE, E_TYPE]
+        - ["*anonymous*", "*anonymous*"]
+        - 1
+
+  - name: anon_queries_direct_index_and_map_range_endpoint
+    permission: programmer
+    statement: |
+      parent = create($nothing);
+      add_property(parent, "authority_property", 17, {player, "r"});
+      add_verb(parent, {player, "rxd", "authority_verb"}, {"this", "none", "this"});
+      anon = create(parent, 1);
+      try
+        property_names = properties(anon);
+        verb_names = verbs(anon);
+        read_error = `anon[1] ! ANY';
+        write_error = `anon[1] = 2 ! ANY';
+        mapping = [anon -> "value"];
+        ranged = mapping[anon..anon];
+        result = {
+          property_names, verb_names, read_error, write_error,
+          length(ranged), ranged[anon]
+        };
+      finally
+        recycle(anon);
+        recycle(parent);
+      endtry
+      return result;
+    expect:
+      value:
+        - []
+        - []
+        - E_TYPE
+        - E_TYPE
+        - 1
+        - value

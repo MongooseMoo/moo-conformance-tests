@@ -1,0 +1,247 @@
+name: anonymous_task_authority
+description: >-
+  Pinned-Toast authority for ANON references exposed through task and
+  error-stack introspection.
+requires:
+  builtins:
+    - add_property
+    - add_verb
+    - callers
+    - create
+    - kill_task
+    - queued_tasks
+    - recycle
+    - set_verb_code
+    - suspend
+    - task_stack
+    - toliteral
+    - typeof
+    - valid
+
+tests:
+  - name: callers_preserves_owner_and_wizard_but_redacts_other_viewer
+    description: >-
+      callers() preserves an ANON this for its owner and a wizard, but gives
+      another viewer an invalid ANON with the same public type and literal.
+    steps:
+      - run: |
+          class = create($object);
+          observer = create($nothing);
+          add_property(class, "anon", 0, {player, "r"});
+          add_property(class, "observer", observer, {player, "r"});
+          add_verb(class, {player, "xd", "entry_owner"}, {"this", "none", "this"});
+          set_verb_code(class, "entry_owner", {"return this.observer:probe_owner();"});
+          add_verb(observer, {player, "xd", "probe_owner"}, {"this", "none", "this"});
+          set_verb_code(observer, "probe_owner", {
+            "frames = callers();",
+            "value = frames[1][1];",
+            "return {typeof(value), valid(value), toliteral(value)};"
+          });
+          class.anon = create(class, 1);
+          return {class, observer};
+        capture: state
+        as: programmer
+      - run: |
+          class = {state}[1];
+          return class.anon:entry_owner();
+        as: programmer
+        expect:
+          value: [12, 1, "*anonymous*"]
+      - run: |
+          class = {state}[1];
+          observer = {state}[2];
+          add_verb(class, {player, "xd", "entry_wizard"}, {"this", "none", "this"});
+          set_verb_code(class, "entry_wizard", {"return this.observer:probe_wizard();"});
+          add_verb(observer, {player, "xd", "probe_wizard"}, {"this", "none", "this"});
+          set_verb_code(observer, "probe_wizard", {
+            "frames = callers();",
+            "value = frames[1][1];",
+            "return {typeof(value), valid(value), toliteral(value)};"
+          });
+          return class.anon:entry_wizard();
+        as: wizard
+        expect:
+          value: [12, 1, "*anonymous*"]
+      - run: |
+          class = {state}[1];
+          class.anon.owner = player;
+          return 1;
+        as: wizard
+        expect:
+          value: 1
+      - run: |
+          class = {state}[1];
+          return class.anon:entry_owner();
+        as: programmer
+        expect:
+          value: [12, 0, "*anonymous*"]
+    cleanup:
+      - run: |
+          class = {state}[1];
+          recycle(class.anon);
+          recycle({state}[2]);
+          recycle(class);
+        as: wizard
+
+  - name: suspended_task_views_preserve_owner_and_wizard_but_hide_from_other
+    description: >-
+      task_stack() and queued_tasks() preserve ANON this for its owner and a
+      wizard. For another viewer task_stack() denies access before redaction,
+      while queued_tasks() omits the delayed fork entirely.
+    steps:
+      - run: |
+          class = create($object);
+          add_property(class, "anon", 0, {player, "r"});
+          add_verb(class, {player, "xd", "sleeper"}, {"this", "none", "this"});
+          set_verb_code(class, "sleeper", {"suspend(100);"});
+          add_verb(class, {player, "xd", "queue_delay"}, {"this", "none", "this"});
+          set_verb_code(class, "queue_delay", {
+            "fork id (100)",
+            "  0;",
+            "endfork",
+            "return id;"
+          });
+          anon = create(class, 1);
+          class.anon = anon;
+          queue_id = anon:queue_delay();
+          fork suspended_id (0)
+            anon:sleeper();
+          endfork
+          suspend(0);
+          return {class, suspended_id, queue_id};
+        capture: state
+        as: programmer
+      - run: |
+          id = {state}[2];
+          queue_id = {state}[3];
+          stack_this = task_stack(id)[1][1];
+          queue_this = #-1;
+          for task in (queued_tasks())
+            if (task[1] == queue_id)
+              queue_this = task[9];
+            endif
+          endfor
+          return {
+            {typeof(stack_this), valid(stack_this), toliteral(stack_this)},
+            {typeof(queue_this), valid(queue_this), toliteral(queue_this)}
+          };
+        as: programmer
+        expect:
+          value:
+            - [12, 1, "*anonymous*"]
+            - [12, 1, "*anonymous*"]
+      - run: |
+          id = {state}[2];
+          queue_id = {state}[3];
+          stack_this = task_stack(id)[1][1];
+          queue_this = #-1;
+          for task in (queued_tasks())
+            if (task[1] == queue_id)
+              queue_this = task[9];
+            endif
+          endfor
+          return {
+            {typeof(stack_this), valid(stack_this), toliteral(stack_this)},
+            {typeof(queue_this), valid(queue_this), toliteral(queue_this)}
+          };
+        as: wizard
+        expect:
+          value:
+            - [12, 1, "*anonymous*"]
+            - [12, 1, "*anonymous*"]
+      - run: |
+          class = {state}[1];
+          class.anon.owner = player;
+          return 1;
+        as: wizard
+        expect:
+          value: 1
+      - run: |
+          id = {state}[2];
+          try
+            task_stack(id);
+            stack_result = E_NONE;
+          except error (ANY)
+            stack_result = error[1];
+          endtry
+          queue_id = {state}[3];
+          matching_tasks = 0;
+          for task in (queued_tasks())
+            if (task[1] == queue_id)
+              matching_tasks = matching_tasks + 1;
+            endif
+          endfor
+          return {stack_result, matching_tasks};
+        as: programmer
+        expect:
+          value: [E_PERM, 0]
+    cleanup:
+      - run: |
+          try
+            kill_task({state}[2]);
+          except (ANY)
+          endtry
+          try
+            kill_task({state}[3]);
+          except (ANY)
+          endtry
+          class = {state}[1];
+          recycle(class.anon);
+          recycle(class);
+        as: wizard
+
+  - name: error_tracebacks_redact_anon_for_owner_wizard_and_other_viewer
+    description: >-
+      Caught error tracebacks expose an invalid ANON this to the owner, a
+      wizard, and another viewer, while preserving ANON type and literal form.
+    steps:
+      - run: |
+          class = create($object);
+          add_property(class, "anon", 0, {player, "r"});
+          add_verb(class, {player, "xd", "boom"}, {"this", "none", "this"});
+          set_verb_code(class, "boom", {"return 1 / 0;"});
+          class.anon = create(class, 1);
+          return class;
+        capture: class
+        as: programmer
+      - run: |
+          try
+            {class}.anon:boom();
+          except error (ANY)
+            value = error[4][1][1];
+            return {typeof(value), valid(value), toliteral(value)};
+          endtry
+        as: programmer
+        expect:
+          value: [12, 0, "*anonymous*"]
+      - run: |
+          try
+            {class}.anon:boom();
+          except error (ANY)
+            value = error[4][1][1];
+            return {typeof(value), valid(value), toliteral(value)};
+          endtry
+        as: wizard
+        expect:
+          value: [12, 0, "*anonymous*"]
+      - run: |
+          {class}.anon.owner = player;
+          return 1;
+        as: wizard
+        expect:
+          value: 1
+      - run: |
+          try
+            {class}.anon:boom();
+          except error (ANY)
+            value = error[4][1][1];
+            return {typeof(value), valid(value), toliteral(value)};
+          endtry
+        as: programmer
+        expect:
+          value: [12, 0, "*anonymous*"]
+    cleanup:
+      - run: |
+          recycle({class}.anon);
+          recycle({class});
+        as: wizard

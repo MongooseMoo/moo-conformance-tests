@@ -133,6 +133,17 @@ def pytest_addoption(parser):
         action="store_true",
         help="Skip automatic Test.db standard property initialization on connect.",
     )
+    parser.addoption(
+        "--moo-suite-path",
+        action="append",
+        default=[],
+        help="Internal packaged-suite path selected by the moo-conformance CLI.",
+    )
+    parser.addoption(
+        "--fail-on-unexpected-skip",
+        action="store_true",
+        help="Fail any skip not declared by a literal YAML skip field.",
+    )
 
 
 def _load_login_script(request) -> list[str] | None:
@@ -302,11 +313,15 @@ def runner(transport, moo_log_file, moo_server_dir, managed_server, moo_server_d
                           server_db_dir=moo_server_db_dir)
 
 
-def discover_yaml_tests(test_dir: Path | None = None) -> list[tuple[Path, MooTestSuite, MooTestCase]]:
+def discover_yaml_tests(
+    test_dir: Path | None = None,
+    selected_paths: list[str] | None = None,
+) -> list[tuple[Path, MooTestSuite, MooTestCase]]:
     """Discover all YAML test files and their test cases.
 
     Args:
         test_dir: Directory containing YAML tests. If None, uses bundled tests.
+        selected_paths: Paths relative to test_dir. If empty, discovers all tests.
 
     Returns:
         List of (yaml_path, suite, test_case) tuples
@@ -319,7 +334,22 @@ def discover_yaml_tests(test_dir: Path | None = None) -> list[tuple[Path, MooTes
     if not test_dir.exists():
         return test_cases
 
-    for yaml_file in sorted(test_dir.rglob("*.yaml")):
+    yaml_files: set[Path] = set()
+    for selected_path in selected_paths or ["."]:
+        candidate = (test_dir / selected_path).resolve()
+        try:
+            candidate.relative_to(test_dir.resolve())
+        except ValueError as exc:
+            raise pytest.UsageError(f"Suite path escapes packaged tests: {selected_path}") from exc
+
+        if candidate.is_file() and candidate.suffix == ".yaml":
+            yaml_files.add(candidate)
+        elif candidate.is_dir():
+            yaml_files.update(candidate.rglob("*.yaml"))
+        else:
+            raise pytest.UsageError(f"Conformance suite path not found: {selected_path}")
+
+    for yaml_file in sorted(yaml_files):
         try:
             with open(yaml_file, encoding="utf-8") as f:
                 data = yaml.safe_load(f)
@@ -351,7 +381,8 @@ def pytest_generate_tests(metafunc):
     parametrized test instances from YAML test definitions.
     """
     if "yaml_test_case" in metafunc.fixturenames:
-        test_cases = discover_yaml_tests()
+        selected_paths = metafunc.config.getoption("--moo-suite-path")
+        test_cases = discover_yaml_tests(selected_paths=selected_paths)
 
         # Create IDs for each test case
         ids = []
@@ -430,6 +461,9 @@ def pytest_runtest_makereport(item, call):
     outcome = yield
     report = outcome.get_result()
 
+    if item.config.getoption("--fail-on-unexpected-skip"):
+        _reject_unexpected_runtime_skip(item, report)
+
     if call.when == "call":
         if hasattr(item, 'callspec') and 'yaml_test_case' in item.callspec.params:
             suite, test = item.callspec.params['yaml_test_case']
@@ -442,9 +476,43 @@ def pytest_runtest_makereport(item, call):
                     capability_manager.mark_failed(provides, item.nodeid)
 
 
+def _reject_unexpected_runtime_skip(item, report) -> None:
+    if not report.skipped:
+        return
+
+    literal_skip = False
+    if hasattr(item, "callspec") and "yaml_test_case" in item.callspec.params:
+        suite, test = item.callspec.params["yaml_test_case"]
+        literal_skip = bool(suite.skip or test.skip)
+    if literal_skip:
+        return
+
+    report.outcome = "failed"
+    report.longrepr = (
+        "Unexpected skip rejected by --fail-on-unexpected-skip: "
+        f"{report.longrepr}"
+    )
+
+
+class _UnexpectedCollectionSkipPlugin:
+    def pytest_collectreport(self, report) -> None:
+        if not report.skipped:
+            return
+        report.outcome = "failed"
+        report.longrepr = (
+            "Unexpected collection skip rejected by --fail-on-unexpected-skip: "
+            f"{report.longrepr}"
+        )
+
+
 # Register markers
 def pytest_configure(config):
     """Register custom markers."""
     config.addinivalue_line(
         "markers", "conformance: mark test as a MOO conformance test"
     )
+    if config.getoption("--fail-on-unexpected-skip"):
+        config.pluginmanager.register(
+            _UnexpectedCollectionSkipPlugin(),
+            "moo-conformance-unexpected-collection-skip",
+        )

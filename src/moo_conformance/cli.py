@@ -2,6 +2,7 @@
 
 import argparse
 import sys
+from pathlib import PurePosixPath
 
 import pytest
 
@@ -16,8 +17,37 @@ def main(args: list[str] | None = None) -> int:
     if "--generate-builtin-coverage-report" in args:
         return _run_builtin_coverage_report(args)
 
-    pytest_args = ["--pyargs", "moo_conformance"] + list(args)
+    selectors, forwarded_args = _split_suite_selectors(args)
+    pytest_args = ["--pyargs", "moo_conformance"]
+    pytest_args.extend(f"--moo-suite-path={selector}" for selector in selectors)
+    pytest_args.extend(forwarded_args)
     return pytest.main(pytest_args)
+
+
+def _split_suite_selectors(args: list[str]) -> tuple[list[str], list[str]]:
+    """Separate advertised YAML FILE_OR_DIR selectors from pytest arguments."""
+    selectors: list[str] = []
+    forwarded: list[str] = []
+    for arg in args:
+        selector = _normalize_suite_selector(arg)
+        if selector is None:
+            forwarded.append(arg)
+        else:
+            selectors.append(selector)
+    return selectors, forwarded
+
+
+def _normalize_suite_selector(arg: str) -> str | None:
+    normalized = arg.replace("\\", "/")
+    parts = PurePosixPath(normalized).parts
+    if "_tests" not in parts:
+        return None
+
+    marker = parts.index("_tests")
+    relative_parts = parts[marker + 1 :]
+    if any(part in ("", ".", "..") for part in relative_parts):
+        raise SystemExit(f"invalid conformance suite path: {arg}")
+    return PurePosixPath(*relative_parts).as_posix() if relative_parts else "."
 
 
 def _run_builtin_io_generator(args: list[str]) -> int:

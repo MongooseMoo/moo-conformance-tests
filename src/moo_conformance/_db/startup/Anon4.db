@@ -104,8 +104,9 @@ server_log("again.  On load, there should be no reference to either object.");
 server_log("----------------------------------------------------------------------");
 suspend(0);
 if (!("one" in properties(#0)))
-add_property(#0, "one", create(#-1, 1), {$owner, ""});
-add_property($one, "two", create(#-1, 1), {$one.owner, ""});
+add_property(#1, "two", 0, {$owner, ""});
+add_property(#0, "one", create(#1, 1), {$owner, ""});
+$one.two = create(#-1, 1);
 $one.name = "One One One!";
 $one.two.name = "Two Two Two!";
 server_log(tostr("$one is ", `valid($one) ! E_PROPNF, E_TYPE' ? "valid" | "invalid"));
@@ -127,6 +128,7 @@ else
 server_log(tostr("$one is ", `valid($one) ! E_PROPNF, E_TYPE' ? "valid" | "invalid"));
 server_log(tostr("$one.two is ", `valid($one.two) ! E_PROPNF, E_TYPE' ? "valid" | "invalid"));
 delete_property(#0, "one");
+delete_property(#1, "two");
 run_gc();
 suspend(0);
 shutdown();

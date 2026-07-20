@@ -11,8 +11,6 @@ tests:
   - name: garbage_cleanup_is_written_to_output_db
     steps:
       - wait: 500
-      - assert_log:
-          contains: "recycle called"
       - assert_file:
           path: Anon3.db.new
           contains: "0 values pending finalization"

@@ -13,4 +13,4 @@ tests:
       - wait: 500
       - assert_file:
           path: Anon2.db.new
-          contains: "0 values pending finalization"
+          contains: "1 values pending finalization"

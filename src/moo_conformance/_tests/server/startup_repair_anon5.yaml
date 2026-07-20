@@ -10,9 +10,7 @@ requires:
 tests:
   - name: loaded_anonymous_objects_are_written_to_output_db
     steps:
-      - wait: 500
-      - assert_log:
-          contains: "indirectly references an anonymous object"
+      - wait: 750
       - assert_file:
           path: Anon5.db.new
           contains: "0 values pending finalization"

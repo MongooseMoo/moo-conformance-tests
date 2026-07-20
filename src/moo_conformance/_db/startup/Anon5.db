@@ -104,9 +104,10 @@ suspend(0);
 try
 try
 if (!("one" in properties(#0)))
+add_property(#1, "foo", 0, {$owner, ""});
 add_property(#0, "one", create(#-1, 0), {$owner, ""});
-add_property($one, "two", ["foo" -> create(#-1, 1)], {$one.owner, ""});
-add_property($one.two["foo"], "foo", $one.two["foo"], {$one.owner, ""});
+add_property($one, "two", ["foo" -> create(#1, 1)], {$one.owner, ""});
+$one.two["foo"].foo = $one.two["foo"];
 else
 "take references and lose them, to make the object purple";
 a = $one.two["foo"];

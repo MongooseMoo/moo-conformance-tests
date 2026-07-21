@@ -14,20 +14,26 @@ teardown:
     endtry
 
 tests:
-  - name: location_huh_works_without_player_huh_option
-    description: Without player_huh, the location huh verb handles unknown commands
+  - name: location_huh_default_without_player_huh_option
+    description: Without player_huh, Toast's compiled default selects the location huh verb
     permission: wizard
     steps:
       - run: |
+          try
+            delete_property($server_options, "player_huh");
+          except (ANY)
+          endtry
           room = player.location;
           add_verb(room, {player, "xd", "huh"}, {"none", "none", "none"});
           set_verb_code(room, "huh", {
-            "notify(player, \"LOCATION_HUH\");"
+            "notify(player, \"LOCATION_HUH_DEFAULT\");"
           });
           return 1;
+        expect:
+          value: 1
       - command: "zip"
         expect:
-          output: "LOCATION_HUH"
+          output: "LOCATION_HUH_DEFAULT"
     cleanup:
       - run: |
           try

@@ -701,7 +701,10 @@ tests:
           set_verb_args(#0, "do_login_command", {"this", "none", "this"});
           set_verb_code(#0, "do_login_command", {
             "#0.audit_force_login_seen = {!valid(player), args, argstr};",
-            "return #0.audit_force_login_player;"
+            "if (argstr == \"audit-force-login\")",
+            "  return #0.audit_force_login_player;",
+            "endif",
+            "return $nothing;"
           });
           return 1;
         as: wizard
@@ -714,9 +717,16 @@ tests:
               neg = conn;
             endif
           endfor
+          if (neg == #-1)
+            raise(E_INVARG);
+          endif
           force_input(neg, "audit-force-login");
           suspend(0);
-          return {#0.audit_force_login_seen, (neg in connected_players(1)) > 0};
+          return {
+            #0.audit_force_login_seen,
+            (neg in connected_players(1)) > 0,
+            (#0.audit_force_login_player in connected_players(1)) > 0
+          };
         as: wizard
         expect:
           value:
@@ -726,6 +736,7 @@ tests:
                 - audit-force-login
               - audit-force-login
             - 0
+            - 1
       - close_connection: conn1
     cleanup:
       - run: |

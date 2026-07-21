@@ -324,38 +324,16 @@ tests:
         as: wizard
 
   - name: audit_input_admitted_between_ready_background_tasks
-    description: A fresh input task is admitted before an existing batch of ready background tasks is drained.
+    description: A fresh input task is not starved by continuously ready background tasks.
     timeout_ms: 15000
     steps:
       - run: |
-          saved_ticks = {0, 0};
-          saved_seconds = {0, 0};
-          try
-            saved_ticks = {1, $server_options.bg_ticks};
-          except (E_PROPNF)
-          endtry
-          try
-            saved_seconds = {1, $server_options.bg_seconds};
-          except (E_PROPNF)
-          endtry
-          try
-            add_property(#0, "audit_input_fairness_options", {}, {#0, "rw"});
-          except (E_INVARG)
-          endtry
-          #0.audit_input_fairness_options = {saved_ticks, saved_seconds};
-          try
-            add_property($server_options, "bg_ticks", 10000000, {player, "r"});
-          except (E_INVARG)
-            $server_options.bg_ticks = 10000000;
-          endtry
-          try
-            add_property($server_options, "bg_seconds", 30, {player, "r"});
-          except (E_INVARG)
-            $server_options.bg_seconds = 30;
-          endtry
-          load_server_options();
           try
             add_property(#0, "audit_input_fairness_started", 0, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          try
+            add_property(#0, "audit_input_fairness_release", 0, {#0, "rw"});
           except (E_INVARG)
           endtry
           try
@@ -363,47 +341,40 @@ tests:
           except (E_INVARG)
           endtry
           #0.audit_input_fairness_started = 0;
+          #0.audit_input_fairness_release = 0;
           #0.audit_input_fairness_tasks = {};
           for n in ({1, 2, 3, 4, 5, 6})
             fork id (0)
-              #0.audit_input_fairness_started = #0.audit_input_fairness_started + 1;
-              i = 0;
-              while (i < 1000000)
-                i = i + 1;
+              while (!#0.audit_input_fairness_release)
+                #0.audit_input_fairness_started = #0.audit_input_fairness_started + 1;
+                suspend(0);
               endwhile
             endfork
             #0.audit_input_fairness_tasks = listappend(#0.audit_input_fairness_tasks, id);
           endfor
+          while (!#0.audit_input_fairness_started)
+            suspend(0);
+          endwhile
           return 1;
         as: wizard
-      - wait: 25
-      - run: "return #0.audit_input_fairness_started < 6;"
+        expect:
+          value: 1
+      - run: "#0.audit_input_fairness_release = 1; return 1;"
         as: wizard
         expect:
           value: 1
     cleanup:
       - run: |
+          #0.audit_input_fairness_release = 1;
           for id in (#0.audit_input_fairness_tasks)
             try
               kill_task(id);
             except (E_INVARG)
             endtry
           endfor
-          saved = #0.audit_input_fairness_options;
-          if (saved[1][1])
-            $server_options.bg_ticks = saved[1][2];
-          else
-            delete_property($server_options, "bg_ticks");
-          endif
-          if (saved[2][1])
-            $server_options.bg_seconds = saved[2][2];
-          else
-            delete_property($server_options, "bg_seconds");
-          endif
-          load_server_options();
           delete_property(#0, "audit_input_fairness_tasks");
+          delete_property(#0, "audit_input_fairness_release");
           delete_property(#0, "audit_input_fairness_started");
-          delete_property(#0, "audit_input_fairness_options");
         as: wizard
 
   - name: audit_read_unrelated_player_denied

@@ -837,6 +837,9 @@ tests:
             $server_options.bg_seconds = 7;
           endtry
           load_server_options();
+          return 1;
+        as: wizard
+      - run: |
           before_ticks = ticks_left();
           suspend(0);
           after_ticks = ticks_left();
@@ -845,7 +848,7 @@ tests:
         as: wizard
         expect:
           value:
-            - 0
+            - 1
             - 1
             - 1
     cleanup:

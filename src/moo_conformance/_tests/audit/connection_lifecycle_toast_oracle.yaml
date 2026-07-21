@@ -1756,15 +1756,19 @@ tests:
           delete_property(#0, "audit_oob_args");
         as: wizard
 
-  - name: audit_connection_name_method0_hostname
-    description: connection_name(player, 0) returns Toast's saved hostname/address string.
+  - name: audit_connection_name_method0_legacy_format
+    description: connection_name(player, 0) returns Toast's full legacy connection string.
     permission: wizard
     statement: |
       name = connection_name(player, 0);
-      return {typeof(name), length(name) > 0};
+      return {typeof(name), index(name, "port ") == 1, index(name, " from ") > 0, index(name, connection_name(player)) > 0, index(name, connection_name(player, 1)) > 0, index(name, ", port ") > 0};
     expect:
       value:
         - 2
+        - 1
+        - 1
+        - 1
+        - 1
         - 1
 
   - name: audit_connection_info_source_fields

@@ -10,7 +10,7 @@ requires:
 tests:
   - name: invalid_pending_values_are_removed
     steps:
-      - wait: 500
+      - wait: 750
       - assert_log:
           contains: "shazam"
       - assert_file:

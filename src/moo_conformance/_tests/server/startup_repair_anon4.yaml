@@ -10,7 +10,7 @@ requires:
 tests:
   - name: anonymous_object_chain_is_written_to_output_db
     steps:
-      - wait: 500
+      - wait: 750
       - assert_file:
           path: Anon4.db.new
           contains: "0 values pending finalization"

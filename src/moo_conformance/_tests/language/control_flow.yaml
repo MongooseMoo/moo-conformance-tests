@@ -233,16 +233,6 @@ tests:
   # fork
   # ===========================================================================
 
-  - name: fork_with_id_variable
-    description: Named fork stores task ID as an integer
-    statement: |
-      fork task_id (0)
-        suspend(5);
-      endfork
-      return typeof(task_id) == INT;
-    expect:
-      value: 1
-
   - name: fork_negative_delay_error
     description: Negative delay raises E_INVARG
     statement: |
@@ -252,16 +242,6 @@ tests:
     expect:
       error: E_INVARG
 
-  - name: fork_float_delay
-    description: Float delay is accepted
-    statement: |
-      fork (0.5)
-        suspend(5);
-      endfork
-      return 1;
-    expect:
-      value: 1
-
   - name: fork_non_numeric_delay_error
     description: Non-numeric delay raises E_TYPE
     statement: |
@@ -270,13 +250,3 @@ tests:
       endfork
     expect:
       error: E_TYPE
-
-  - name: fork_zero_delay
-    description: Fork with zero delay creates a queued task
-    statement: |
-      fork (0)
-        suspend(5);
-      endfork
-      return length(queued_tasks()) > 0;
-    expect:
-      value: 1

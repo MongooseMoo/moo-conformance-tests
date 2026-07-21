@@ -778,20 +778,29 @@ tests:
     steps:
       - run: |
           try
-            add_property(#0, "audit_yin_order", {}, {#0, "rw"});
-          except (E_INVARG)
-          endtry
-          try
             add_property($server_options, "fg_ticks", 60000, {player, "r"});
           except (E_INVARG)
             $server_options.fg_ticks = 60000;
           endtry
+          try
+            add_property($server_options, "fg_seconds", 60, {player, "r"});
+          except (E_INVARG)
+            $server_options.fg_seconds = 60;
+          endtry
           load_server_options();
+          return 1;
+        as: wizard
+      - run: |
+          try
+            add_property(#0, "audit_yin_order", {}, {#0, "rw"});
+          except (E_INVARG)
+          endtry
           #0.audit_yin_order = {"main-before"};
+          threshold = ticks_left();
           fork (0)
             #0.audit_yin_order = listappend(#0.audit_yin_order, "fork");
           endfork
-          yin(0, 59999, 4);
+          yin(0, threshold, 1);
           #0.audit_yin_order = listappend(#0.audit_yin_order, "main-after");
           return #0.audit_yin_order;
         as: wizard
@@ -804,6 +813,7 @@ tests:
       - run: |
           delete_property(#0, "audit_yin_order");
           delete_property($server_options, "fg_ticks");
+          delete_property($server_options, "fg_seconds");
           load_server_options();
         as: wizard
 

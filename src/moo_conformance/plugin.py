@@ -481,11 +481,29 @@ def _reject_unexpected_runtime_skip(item, report) -> None:
         return
 
     literal_skip = False
+    test = None
     if hasattr(item, "callspec") and "yaml_test_case" in item.callspec.params:
         suite, test = item.callspec.params["yaml_test_case"]
         literal_skip = bool(suite.skip or test.skip)
     if literal_skip:
         return
+
+    condition = getattr(test, "skip_if", None)
+    if condition:
+        if condition.startswith("not feature."):
+            expected_reason = f"Requires feature: {condition[12:]}"
+        elif condition.startswith("feature."):
+            expected_reason = f"Incompatible with feature: {condition[8:]}"
+        elif condition.startswith("missing builtin."):
+            expected_reason = f"Requires builtin: {condition[16:]}"
+        elif condition.startswith("not option."):
+            expected_reason = f"Requires option: {condition[11:]}"
+        elif condition.startswith("option."):
+            expected_reason = f"Incompatible with option: {condition[7:]}"
+        else:
+            expected_reason = f"Skip condition: {condition}"
+        if f"Skipped: {expected_reason}" in str(report.longrepr):
+            return
 
     report.outcome = "failed"
     report.longrepr = (

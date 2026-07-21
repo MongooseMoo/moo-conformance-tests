@@ -90,6 +90,40 @@ def test_literal_yaml_skip_remains_allowed(tmp_path: Path) -> None:
     assert report.outcome == "skipped"
 
 
+def test_matching_declared_conditional_skip_remains_allowed() -> None:
+    suite = SimpleNamespace(skip=False)
+    test = SimpleNamespace(skip=False, skip_if="missing builtin.background_test")
+    item = SimpleNamespace(
+        callspec=SimpleNamespace(params={"yaml_test_case": (suite, test)})
+    )
+    report = SimpleNamespace(
+        skipped=True,
+        outcome="skipped",
+        longrepr=("test_conformance.py", 127, "Skipped: Requires builtin: background_test"),
+    )
+
+    plugin._reject_unexpected_runtime_skip(item, report)
+
+    assert report.outcome == "skipped"
+
+
+def test_declared_conditional_skip_does_not_allow_unrelated_runtime_skip() -> None:
+    suite = SimpleNamespace(skip=False)
+    test = SimpleNamespace(skip=False, skip_if="missing builtin.background_test")
+    item = SimpleNamespace(
+        callspec=SimpleNamespace(params={"yaml_test_case": (suite, test)})
+    )
+    report = SimpleNamespace(
+        skipped=True,
+        outcome="skipped",
+        longrepr=("runner.py", 1, "Skipped: runtime condition"),
+    )
+
+    plugin._reject_unexpected_runtime_skip(item, report)
+
+    assert report.outcome == "failed"
+
+
 @pytest.mark.parametrize(
     ("reason", "when"),
     [
@@ -101,7 +135,7 @@ def test_literal_yaml_skip_remains_allowed(tmp_path: Path) -> None:
 )
 def test_nonliteral_skip_categories_fail(reason: str, when: str) -> None:
     suite = SimpleNamespace(skip=False)
-    test = SimpleNamespace(skip=False)
+    test = SimpleNamespace(skip=False, skip_if=None)
     item = SimpleNamespace(
         callspec=SimpleNamespace(params={"yaml_test_case": (suite, test)})
     )

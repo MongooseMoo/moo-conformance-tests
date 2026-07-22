@@ -829,6 +829,7 @@ class SocketTransport(MooTransport):
             'Illegal object': 'E_INVARG',
             'Maximum object recursion reached': 'E_MAXREC',
             'Number of seconds must be non-negative': 'E_INVARG',
+            'Incorrect number of arguments': 'E_ARGS',
             'Wrong number of arguments': 'E_ARGS',
             'Too many arguments': 'E_ARGS',
             'Not enough arguments': 'E_ARGS',

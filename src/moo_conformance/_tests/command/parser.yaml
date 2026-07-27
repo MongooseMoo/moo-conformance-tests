@@ -654,6 +654,68 @@ tests:
       - run: "recycle({objs}[1]);"
         as: wizard
 
+  - name: do_command_sees_command_verb_and_argstr
+    description: inside #0:do_command the verb variable is the hook name, argstr is the full typed line, and caller is #-1 (server-initiated)
+    steps:
+      - run: |
+          try
+            add_property(#0, "cmdlog", {}, {#0, "w"});
+          except (E_INVARG)
+          endtry
+          try
+            add_verb(#0, {#0, "rxd", "do_command"}, {"this", "none", "this"});
+          except (E_INVARG)
+          endtry
+          set_verb_code(#0, "do_command", {
+            "if (args[1] != \";\")",
+            "  #0.cmdlog = {verb, argstr, caller == player, caller == #-1};",
+            "endif",
+            "return 0;"
+          });
+
+          box = create($nothing);
+          box.name = "box";
+          move(box, player);
+
+          ball = create($nothing);
+          ball.name = "ball";
+          move(ball, player);
+
+          add_verb(box, {player, "xd", "put"}, {"any", "in", "this"});
+          set_verb_code(box, "put", {
+            "notify(player, \"PUT-RAN\");"
+          });
+          return {box, ball};
+        capture: objs
+        as: wizard
+      - command: 'put ball in box'
+        expect:
+          output:
+            - "PUT-RAN"
+      - run: "return #0.cmdlog;"
+        as: wizard
+        expect:
+          value: ["do_command", "put ball in box", 0, 1]
+    cleanup:
+      - run: |
+          try
+            delete_verb(#0, "do_command");
+          except (ANY)
+          endtry
+        as: wizard
+      - run: |
+          try
+            delete_property(#0, "cmdlog");
+          except (ANY)
+          endtry
+        as: wizard
+      - run: 'delete_verb({objs}[1], "put");'
+        as: wizard
+      - run: "recycle({objs}[2]);"
+        as: wizard
+      - run: "recycle({objs}[1]);"
+        as: wizard
+
   # ============================================
   # Verb Alias Tests
   # ============================================

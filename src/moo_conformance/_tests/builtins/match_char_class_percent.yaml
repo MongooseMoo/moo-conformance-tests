@@ -1,0 +1,51 @@
+name: match_char_class_percent
+description: >
+  Inside a MOO regex character class, '%' is NOT an escape character -- it is a
+  literal class member, exactly like POSIX treats backslash inside brackets.
+  A ']' immediately after '[' (or '[^') is likewise a literal member. These
+  semantics are load-bearing in real databases: mongoose's
+  $string_utils:regexp_quote scans with rmatch(string, "[][$^.*+?%].*") on hot
+  paths. All expected values captured from the WSL ToastStunt oracle
+  (build-release, stock) on 2026-07-28.
+
+requires:
+  builtins:
+    - match
+    - rmatch
+
+tests:
+  - name: percent_in_class_is_literal
+    code: 'match("100%", "[%]")'
+    expect:
+      value: [4, 4, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "100%"]
+
+  - name: percent_in_class_between_literals
+    code: 'match("a%b", "a[%]b")'
+    expect:
+      value: [1, 3, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "a%b"]
+
+  - name: percent_with_other_members
+    code: 'match("x%", "[a%]")'
+    expect:
+      value: [2, 2, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "x%"]
+
+  - name: negated_class_excludes_percent
+    code: 'match("ab", "[^%]")'
+    expect:
+      value: [1, 1, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "ab"]
+
+  - name: negated_percent_class_star
+    code: 'match("a%b", "[^%]*")'
+    expect:
+      value: [1, 1, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "a%b"]
+
+  - name: rbracket_first_is_literal_member
+    code: 'match("a]b", "[][]")'
+    expect:
+      value: [2, 2, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "a]b"]
+
+  - name: regexp_quote_scan_pattern
+    # The exact pattern mongoose's $string_utils:regexp_quote uses per call.
+    code: 'rmatch("hello.world", "[][$^.*+?%].*")'
+    expect:
+      value: [6, 11, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "hello.world"]

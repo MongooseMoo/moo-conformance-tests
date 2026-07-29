@@ -1385,6 +1385,90 @@ tests:
           endtry
         as: wizard
 
+  - name: audit_waiting_exec_resumes_with_interrupted_after_restart
+    description: >
+      A task waiting for the packaged sleeping executable is persisted as
+      interrupted VM state and resumes with E_INTRPT after a checkpoint and
+      managed restart.
+    skip_if: "missing builtin.exec"
+    steps:
+      - run: |
+          holder = create($nothing);
+          add_property(holder, "audit_result", {}, {player, "rw"});
+          add_verb(holder, {player, "xd", "wait_exec"}, {"this", "none", "this"});
+          set_verb_code(holder, "wait_exec", {
+            "fork id (0)",
+            "  try",
+            "    exec({\"sleep\", \"30\"}, \"\");",
+            "    this.audit_result = {task_id(), \"returned\", E_NONE};",
+            "  except info (ANY)",
+            "    this.audit_result = {task_id(), \"error\", info[1]};",
+            "  endtry",
+            "endfork",
+            "suspend(0.1);",
+            "return id;"
+          });
+          return holder;
+        capture: exec_holder
+        as: wizard
+      - run: "return {exec_holder}:wait_exec();"
+        capture: exec_task_id
+        as: wizard
+      - run: |
+          frames = task_stack({exec_task_id}, 1, 1);
+          queued_match = 0;
+          for queued in (queued_tasks())
+            if (queued[1] == {exec_task_id} && queued[2] == "executables/sleep")
+              queued_match = 1;
+            endif
+          endfor
+          return {
+            length(frames) >= 1,
+            frames[1][2] == "wait_exec",
+            queued_match
+          };
+        as: wizard
+        expect:
+          value: [1, 1, 1]
+      - run: "return dump_database();"
+        as: wizard
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+      - wait: 500
+      - run: |
+          holder_valid = valid({exec_holder});
+          result = holder_valid ? {exec_holder}.audit_result | {};
+          has_result = length(result) == 3;
+          still_queued = 0;
+          for queued in (queued_tasks())
+            if (queued[1] == {exec_task_id})
+              still_queued = 1;
+            endif
+          endfor
+          return {
+            holder_valid,
+            has_result ? result[1] == {exec_task_id} | 0,
+            has_result ? result[2] | "missing",
+            has_result ? result[3] | E_NONE,
+            still_queued
+          };
+        as: wizard
+        expect:
+          value: [1, 1, error, E_INTRPT, 0]
+    cleanup:
+      - run: |
+          try
+            kill_task({exec_task_id});
+          except (ANY)
+          endtry
+          try
+            recycle({exec_holder});
+          except (ANY)
+          endtry
+        as: wizard
+
   - name: audit_force_input_live_login_connection
     description: force_input() to a live negative connection runs the login input path and can log it in.
     steps:

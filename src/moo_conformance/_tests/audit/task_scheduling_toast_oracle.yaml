@@ -23,7 +23,12 @@ requires:
     - seconds_left
     - task_id
     - task_perms
+    - task_stack
+    - task_local
+    - set_task_local
+    - callers
     - suspend
+    - resume
     - fork
     - queued_tasks
     - kill_task
@@ -824,6 +829,142 @@ tests:
           endtry
           try
             recycle({fork_obj});
+          except (ANY)
+          endtry
+        as: wizard
+
+  - name: audit_suspended_vm_preserves_frames_locals_continuations_and_resume_value
+    description: >
+      A ready suspended VM preserves its complete activation stack, ordered
+      locals, task-local value, operand continuation, active exception handler,
+      identity, and typed resume value across a checkpoint and managed restart.
+    steps:
+      - run: |
+          obj = create($nothing);
+          add_property(obj, "audit_result", {}, {player, "rw"});
+          add_verb(obj, {player, "xd", "inner"}, {"this", "none", "this"});
+          set_verb_code(obj, "inner", {
+            "inner_local = {\"inner-local\", 23};",
+            "try",
+            "  typed_piece = (suspend())[\"resume-kind\"];",
+            "  zero = 0;",
+            "  quotient = 1 / zero;",
+            "except error (E_DIV)",
+            "  caught = error[1];",
+            "endtry",
+            "frames = callers(1);",
+            "return {typed_piece, inner_local, task_local(), task_id(), task_perms(), player, this, caller, verb, length(frames), frames[1][2], frames[1][6], caught};"
+          });
+          add_verb(obj, {player, "xd", "outer"}, {"this", "none", "this"});
+          set_verb_code(obj, "outer", {
+            "outer_local = \"outer-local\";",
+            "inner_result = this:inner();",
+            "this.audit_result = {task_id(), task_perms(), player, this, caller, verb, outer_local, task_local(), inner_result};"
+          });
+          add_verb(obj, {player, "xd", "spawn"}, {"this", "none", "this"});
+          set_verb_code(obj, "spawn", {
+            "fork id (0)",
+            "  set_task_local({\"task-local\", 88, this, caller, player, verb});",
+            "  fork_local = \"fork-local\";",
+            "  this:outer();",
+            "endfork",
+            "suspend(0);",
+            "return id;"
+          });
+          return obj;
+        capture: suspended_obj
+        as: wizard
+      - run: "return {task_perms(), player};"
+        capture: suspended_origin
+        as: wizard
+      - run: "return {suspended_obj}:spawn();"
+        capture: suspended_id
+        as: wizard
+      - run: |
+          stack = task_stack({suspended_id}, 1, 1);
+          inner_vars = stack[1][7];
+          outer_vars = stack[2][7];
+          fork_vars = stack[3][7];
+          return {
+            length(stack) == 3,
+            stack[1][1] == {suspended_obj},
+            stack[1][2] == "inner",
+            stack[1][3] == ({suspended_origin})[1],
+            stack[1][4] == {suspended_obj},
+            stack[1][5] == ({suspended_origin})[2],
+            stack[1][6] > 0,
+            inner_vars["inner_local"] == {"inner-local", 23},
+            stack[2][1] == {suspended_obj},
+            stack[2][2] == "outer",
+            stack[2][3] == ({suspended_origin})[1],
+            stack[2][4] == {suspended_obj},
+            stack[2][5] == ({suspended_origin})[2],
+            stack[2][6] > 0,
+            outer_vars["outer_local"] == "outer-local",
+            stack[3][1] == {suspended_obj},
+            stack[3][2] == "spawn",
+            stack[3][3] == ({suspended_origin})[1],
+            stack[3][4] == {suspended_obj},
+            stack[3][5] == ({suspended_origin})[2],
+            stack[3][6] > 0,
+            fork_vars["fork_local"] == "fork-local"
+          };
+        as: wizard
+        expect:
+          value: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+      - run: |
+          resume({suspended_id}, ["resume-kind" -> {"typed", 42, E_RANGE}]);
+          return dump_database();
+        as: wizard
+        expect:
+          value: 0
+      - restart_server:
+          wait_ms: 300
+      - run: |
+          result = {suspended_obj}.audit_result;
+          inner = result[9];
+          still_queued = 0;
+          for queued in (queued_tasks())
+            if (queued[1] == {suspended_id})
+              still_queued = 1;
+            endif
+          endfor
+          return {
+            result[1] == {suspended_id},
+            result[2] == ({suspended_origin})[1],
+            result[3] == ({suspended_origin})[2],
+            result[4] == {suspended_obj},
+            result[5] == result[8][3],
+            result[6] == "outer",
+            result[7] == "outer-local",
+            result[8][1] == "task-local",
+            result[8][2] == 88,
+            inner[1] == {"typed", 42, E_RANGE},
+            inner[2] == {"inner-local", 23},
+            inner[3] == result[8],
+            inner[4] == {suspended_id},
+            inner[5] == ({suspended_origin})[1],
+            inner[6] == ({suspended_origin})[2],
+            inner[7] == {suspended_obj},
+            inner[8] == {suspended_obj},
+            inner[9] == "inner",
+            inner[10] >= 2,
+            inner[11] == "outer",
+            inner[12] > 0,
+            inner[13] == E_DIV,
+            !still_queued
+          };
+        as: wizard
+        expect:
+          value: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    cleanup:
+      - run: |
+          try
+            kill_task({suspended_id});
+          except (ANY)
+          endtry
+          try
+            recycle({suspended_obj});
           except (ANY)
           endtry
         as: wizard

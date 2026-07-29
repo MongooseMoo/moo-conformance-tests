@@ -185,11 +185,16 @@ class ManagedServer:
         checkpoint and the next boot) -- unlike a post-restart wait, which
         only delays after the new process is already up and reconnected.
         """
+        if db_path is None:
+            # Capture the requested checkpoint before stopping the server.
+            # Toast performs a separate graceful-shutdown dump on SIGTERM,
+            # which can overwrite {db}.out and must not become the artifact
+            # adopted by an explicit restart checkpoint test.
+            self._sync_checkpoint_output()
         self.stop(preserve_temp=True)
         if down_ms > 0:
             time.sleep(down_ms / 1000.0)
         if db_path is None:
-            self._sync_checkpoint_output()
             self.start(wait_for_port=wait_for_port)
         else:
             self.start(db_path=db_path, wait_for_port=wait_for_port)

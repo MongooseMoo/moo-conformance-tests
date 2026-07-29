@@ -56,6 +56,40 @@ def test_restart_preserves_working_db_copy(monkeypatch, tmp_path: Path):
     assert len(created) == 2
 
 
+def test_restart_adopts_checkpoint_before_shutdown_can_overwrite_output(
+    monkeypatch, tmp_path: Path
+):
+    baseline = tmp_path / "baseline.db"
+    baseline.write_text("baseline", encoding="utf-8")
+
+    class _ShutdownDumpProcess(_FakeProcess):
+        def __init__(self, dump_path: Path):
+            super().__init__()
+            self.dump_path = dump_path
+
+        def terminate(self):
+            self.dump_path.write_text("shutdown dump", encoding="utf-8")
+            super().terminate()
+
+    def fake_popen(command, **kwargs):
+        return _ShutdownDumpProcess(Path(command[2]))
+
+    monkeypatch.setattr("moo_conformance.server.subprocess.Popen", fake_popen)
+    monkeypatch.setattr(ManagedServer, "_find_free_port", lambda self: 17777)
+    monkeypatch.setattr(ManagedServer, "_wait_for_port", lambda self, timeout=30.0: None)
+
+    server = ManagedServer("fake-server {db} {db}.out {port}", baseline)
+    server.start()
+
+    assert server._db_copy_path is not None
+    checkpoint_output = Path(str(server._db_copy_path) + ".out")
+    checkpoint_output.write_text("requested checkpoint", encoding="utf-8")
+
+    server.restart()
+
+    assert server._db_copy_path.read_text(encoding="utf-8") == "requested checkpoint"
+
+
 def test_restart_waits_before_transport_reconnect(monkeypatch):
     events = []
     transport = Mock()

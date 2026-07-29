@@ -437,6 +437,41 @@ tests:
       - run: "kill_task({task_id});"
         as: wizard
 
+  - name: audit_queued_tasks_wizard_include_variables_exposes_other_programmer
+    description: >
+      Wizard authority exposes another programmer's delayed task, while truthy
+      argument 1 independently appends the extended runtime-environment field.
+    steps:
+      - run: "return task_perms();"
+        capture: other_programmer
+        as: programmer
+      - run: |
+          marker = "visible-in-show-all";
+          fork id (30)
+            marker;
+          endfork
+          return id;
+        capture: other_task_id
+        as: programmer
+      - run: |
+          for queued in (queued_tasks(1))
+            if (queued[1] == {other_task_id})
+              vars = queued[11];
+              return {
+                queued[5] == {other_programmer},
+                length(queued) == 11,
+                vars["marker"] == "visible-in-show-all"
+              };
+            endif
+          endfor
+          return {};
+        as: wizard
+        expect:
+          value: [1, 1, 1]
+    cleanup:
+      - run: "kill_task({other_task_id});"
+        as: wizard
+
   - name: audit_read_no_arg_from_fork_denied
     description: read() with no explicit connection is denied outside the last input task context.
     steps:

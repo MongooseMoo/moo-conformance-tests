@@ -6,6 +6,7 @@ requires:
     - add_property
     - delete_property
     - create
+    - new_waif
     - recycle
     - valid
     - set_player_flag
@@ -1204,6 +1205,98 @@ tests:
           endtry
           try
             recycle({anonymous_class});
+          except (ANY)
+          endtry
+        as: wizard
+
+  - name: audit_waif_values_in_suspended_vm_survive_restart
+    description: >
+      A WAIF held in a suspended local, task-local value, and resume value
+      preserves its class, property data, and shared alias identity across a
+      checkpoint and managed restart.
+    steps:
+      - run: |
+          class = create($waif);
+          add_property(class, "saved_waif", 0, {player, "rw"});
+          add_property(class, "audit_result", {}, {player, "rw"});
+          add_property(class, ":marker", "class-marker", {player, ""});
+          add_verb(class, {player, "xd", "hold"}, {"this", "none", "this"});
+          set_verb_code(class, "hold", {
+            "fork id (0)",
+            "  local_waif = this.saved_waif;",
+            "  set_task_local({\"task-waif\", local_waif});",
+            "  resumed_waif = suspend();",
+            "  task_waif = task_local()[2];",
+            "  before = local_waif.marker;",
+            "  resumed_waif.marker = \"resumed-marker\";",
+            "  this.audit_result = {task_id(), typeof(local_waif), typeof(task_waif), typeof(resumed_waif), local_waif == task_waif, task_waif == resumed_waif, local_waif.class == this, task_waif.class == this, resumed_waif.class == this, before, local_waif.marker, task_waif.marker, resumed_waif.marker};",
+            "endfork",
+            "suspend(0);",
+            "return id;"
+          });
+          waif = class:new();
+          waif.marker = "waif-marker";
+          class.saved_waif = waif;
+          return class;
+        capture: waif_class
+        as: wizard
+      - run: "return {waif_class}:hold();"
+        capture: waif_task_id
+        as: wizard
+      - run: |
+          frame = task_stack({waif_task_id}, 1, 1)[1];
+          local_waif = frame[7]["local_waif"];
+          return {
+            typeof(local_waif),
+            local_waif.class == {waif_class},
+            local_waif.marker
+          };
+        as: wizard
+        expect:
+          value: [13, 1, waif-marker]
+      - run: |
+          resume({waif_task_id}, {waif_class}.saved_waif);
+          return dump_database();
+        as: wizard
+        expect:
+          value: 0
+      - restart_server:
+      - wait: 300
+      - run: |
+          result = {waif_class}.audit_result;
+          still_queued = 0;
+          for queued in (queued_tasks())
+            if (queued[1] == {waif_task_id})
+              still_queued = 1;
+            endif
+          endfor
+          return {
+            result[1] == {waif_task_id},
+            result[2],
+            result[3],
+            result[4],
+            result[5],
+            result[6],
+            result[7],
+            result[8],
+            result[9],
+            result[10],
+            result[11],
+            result[12],
+            result[13],
+            still_queued
+          };
+        as: wizard
+        expect:
+          value: [1, 13, 13, 13, 1, 1, 1, 1, 1, waif-marker, resumed-marker, resumed-marker, resumed-marker, 0]
+    cleanup:
+      - run: |
+          try
+            kill_task({waif_task_id});
+          except (ANY)
+          endtry
+          try
+            recycle({waif_class});
           except (ANY)
           endtry
         as: wizard

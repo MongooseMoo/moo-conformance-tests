@@ -1090,6 +1090,153 @@ tests:
           endfor
         as: wizard
 
+  - name: audit_checkpointed_connections_disconnect_before_server_started
+    description: >
+      Startup reports every checkpointed connection to user_disconnected with
+      its listener before running server_started.
+    skip_if: "missing builtin.dump_database"
+    steps:
+      - run: |
+          for prop in ({"audit_restart_connection_events", "audit_restart_connection_id", "audit_restart_hooks_saved"})
+            try
+              add_property(#0, prop, {}, {#0, "rw"});
+            except (E_INVARG)
+            endtry
+          endfor
+          user_exists = 1;
+          try
+            user_info = verb_info(#0, "user_disconnected");
+            user_args = verb_args(#0, "user_disconnected");
+            user_code = verb_code(#0, "user_disconnected");
+          except (E_VERBNF)
+            user_exists = 0;
+            user_info = {};
+            user_args = {};
+            user_code = {};
+          endtry
+          started_exists = 1;
+          try
+            started_info = verb_info(#0, "server_started");
+            started_args = verb_args(#0, "server_started");
+            started_code = verb_code(#0, "server_started");
+          except (E_VERBNF)
+            started_exists = 0;
+            started_info = {};
+            started_args = {};
+            started_code = {};
+          endtry
+          #0.audit_restart_hooks_saved = {
+            {user_exists, user_info, user_args, user_code},
+            {started_exists, started_info, started_args, started_code}
+          };
+          #0.audit_restart_connection_events = {};
+          #0.audit_restart_connection_id = #-1;
+          try
+            add_verb(#0, {#0, "rxd", "user_disconnected"}, {"this", "none", "this"});
+          except (E_INVARG)
+          endtry
+          set_verb_info(#0, "user_disconnected", {player, "rxd", "user_disconnected"});
+          set_verb_args(#0, "user_disconnected", {"this", "none", "this"});
+          set_verb_code(#0, "user_disconnected", {
+            "#0.audit_restart_connection_events = {@#0.audit_restart_connection_events, {\"disconnected\", player, args[1], this}};",
+            "return 1;"
+          });
+          try
+            add_verb(#0, {#0, "rxd", "server_started"}, {"this", "none", "this"});
+          except (E_INVARG)
+          endtry
+          set_verb_info(#0, "server_started", {player, "rxd", "server_started"});
+          set_verb_args(#0, "server_started", {"this", "none", "this"});
+          set_verb_code(#0, "server_started", {
+            "#0.audit_restart_connection_events = {@#0.audit_restart_connection_events, {\"started\", player, this}};",
+            "return 1;"
+          });
+          return 1;
+        as: wizard
+      - new_connection:
+          capture: former_connection
+      - run: |
+          connection = #-1;
+          for candidate in (connected_players(1))
+            if (!valid(candidate))
+              connection = candidate;
+            endif
+          endfor
+          if (connection == #-1)
+            raise(E_INVARG);
+          endif
+          #0.audit_restart_connection_id = connection;
+          return connection;
+        capture: former_connection_id
+        as: wizard
+      - run: "return dump_database();"
+        as: wizard
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+      - wait: 500
+      - run: |
+          events = #0.audit_restart_connection_events;
+          disconnected_index = 0;
+          started_index = 0;
+          disconnected_player = #-1;
+          disconnected_arg = #-1;
+          disconnected_listener = #-1;
+          started_this = #-1;
+          for index in [1..length(events)]
+            event = events[index];
+            if (event[1] == "disconnected" && event[3] == {former_connection_id})
+              disconnected_index = index;
+              disconnected_player = event[2];
+              disconnected_arg = event[3];
+              disconnected_listener = event[4];
+            elseif (event[1] == "started" && started_index == 0)
+              started_index = index;
+              started_this = event[3];
+            endif
+          endfor
+          return {
+            disconnected_index > 0,
+            started_index > disconnected_index,
+            disconnected_player == {former_connection_id},
+            disconnected_arg == {former_connection_id},
+            disconnected_listener == #0,
+            started_this == #0
+          };
+        as: wizard
+        expect:
+          value: [1, 1, 1, 1, 1, 1]
+    cleanup:
+      - run: |
+          try
+            saved = #0.audit_restart_hooks_saved;
+            user_saved = saved[1];
+            if (user_saved[1])
+              set_verb_info(#0, "user_disconnected", user_saved[2]);
+              set_verb_args(#0, "user_disconnected", user_saved[3]);
+              set_verb_code(#0, "user_disconnected", user_saved[4]);
+            else
+              delete_verb(#0, "user_disconnected");
+            endif
+            started_saved = saved[2];
+            if (started_saved[1])
+              set_verb_info(#0, "server_started", started_saved[2]);
+              set_verb_args(#0, "server_started", started_saved[3]);
+              set_verb_code(#0, "server_started", started_saved[4]);
+            else
+              delete_verb(#0, "server_started");
+            endif
+          except (ANY)
+          endtry
+          for prop in ({"audit_restart_connection_events", "audit_restart_connection_id", "audit_restart_hooks_saved"})
+            try
+              delete_property(#0, prop);
+            except (ANY)
+            endtry
+          endfor
+        as: wizard
+
   - name: audit_connect_timeout_server_option
     description: Toast resets $server_options.connect_timeout on unauthenticated activity and calls user_disconnected exactly once with the connection frame.
     steps:

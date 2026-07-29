@@ -969,6 +969,151 @@ tests:
           endtry
         as: wizard
 
+  - name: audit_suspended_vm_remaining_wake_time_survives_restart
+    description: >
+      A timed suspended VM whose wake remains in the future stays pending after
+      a genuine process-down restart, retains its rounded schedule and task id,
+      and resumes only after the saved deadline.
+    steps:
+      - run: |
+          obj = create($nothing);
+          add_property(obj, "audit_result", {}, {player, "rw"});
+          add_verb(obj, {player, "xd", "timed"}, {"this", "none", "this"});
+          set_verb_code(obj, "timed", {
+            "fork id (0)",
+            "  started = time();",
+            "  suspend(8);",
+            "  this.audit_result = {task_id(), started, time()};",
+            "endfork",
+            "suspend(0);",
+            "return id;"
+          });
+          return obj;
+        capture: remaining_obj
+        as: wizard
+      - run: "return {remaining_obj}:timed();"
+        capture: remaining_id
+        as: wizard
+      - run: |
+          for queued in (queued_tasks())
+            if (queued[1] == {remaining_id})
+              return queued[2];
+            endif
+          endfor
+          return 0;
+        capture: remaining_start
+        as: wizard
+      - run: "return dump_database();"
+        as: wizard
+        expect:
+          value: 0
+      - restart_server:
+          wait_ms: 300
+          down_ms: 1000
+      - run: |
+          queued_start = 0;
+          for queued in (queued_tasks())
+            if (queued[1] == {remaining_id})
+              queued_start = queued[2];
+            endif
+          endfor
+          return {
+            {remaining_obj}.audit_result == {},
+            queued_start == {remaining_start},
+            queued_start > time()
+          };
+        as: wizard
+        expect:
+          value: [1, 1, 1]
+      - wait: 7000
+      - run: |
+          result = {remaining_obj}.audit_result;
+          still_queued = 0;
+          for queued in (queued_tasks())
+            if (queued[1] == {remaining_id})
+              still_queued = 1;
+            endif
+          endfor
+          return {
+            result[1] == {remaining_id},
+            result[3] >= result[2] + 7,
+            !still_queued
+          };
+        as: wizard
+        expect:
+          value: [1, 1, 1]
+    cleanup:
+      - run: |
+          try
+            kill_task({remaining_id});
+          except (ANY)
+          endtry
+          try
+            recycle({remaining_obj});
+          except (ANY)
+          endtry
+        as: wizard
+
+  - name: audit_suspended_vm_overdue_during_process_down_runs_after_restart
+    description: >
+      A timed suspended VM whose deadline passes while the process is down is
+      immediately eligible after restart and preserves its task id.
+    steps:
+      - run: |
+          obj = create($nothing);
+          add_property(obj, "audit_result", {}, {player, "rw"});
+          add_verb(obj, {player, "xd", "timed"}, {"this", "none", "this"});
+          set_verb_code(obj, "timed", {
+            "fork id (0)",
+            "  started = time();",
+            "  suspend(3);",
+            "  this.audit_result = {task_id(), started, time()};",
+            "endfork",
+            "suspend(0);",
+            "return id;"
+          });
+          return obj;
+        capture: overdue_obj
+        as: wizard
+      - run: "return {overdue_obj}:timed();"
+        capture: overdue_id
+        as: wizard
+      - run: "return dump_database();"
+        as: wizard
+        expect:
+          value: 0
+      - restart_server:
+          wait_ms: 300
+          down_ms: 4000
+      - wait: 500
+      - run: |
+          result = {overdue_obj}.audit_result;
+          still_queued = 0;
+          for queued in (queued_tasks())
+            if (queued[1] == {overdue_id})
+              still_queued = 1;
+            endif
+          endfor
+          return {
+            result[1] == {overdue_id},
+            result[3] >= result[2] + 2,
+            !still_queued
+          };
+        as: wizard
+        expect:
+          value: [1, 1, 1]
+    cleanup:
+      - run: |
+          try
+            kill_task({overdue_id});
+          except (ANY)
+          endtry
+          try
+            recycle({overdue_obj});
+          except (ANY)
+          endtry
+        as: wizard
+
   - name: audit_force_input_live_login_connection
     description: force_input() to a live negative connection runs the login input path and can log it in.
     steps:

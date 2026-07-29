@@ -87,6 +87,7 @@ def test_restart_adopts_checkpoint_before_shutdown_can_overwrite_output(
     server.restart()
 
     assert server._db_copy_path.read_text(encoding="utf-8") == "requested checkpoint"
+    assert not checkpoint_output.exists()
 
 
 def test_restart_waits_before_transport_reconnect(monkeypatch):

@@ -1114,6 +1114,100 @@ tests:
           endtry
         as: wizard
 
+  - name: audit_anonymous_values_in_suspended_vm_survive_restart
+    description: >
+      A valid anonymous object held in a suspended local, task-local value, and
+      resume value preserves its type, validity, identity, and property data
+      across a checkpoint and managed restart.
+    steps:
+      - run: |
+          class = create($nothing);
+          add_property(class, "saved_anon", 0, {player, "rw"});
+          add_property(class, "audit_result", {}, {player, "rw"});
+          add_property(class, "marker", "class-marker", {player, "rw"});
+          add_verb(class, {player, "xd", "hold"}, {"this", "none", "this"});
+          set_verb_code(class, "hold", {
+            "fork id (0)",
+            "  local_anon = this.saved_anon;",
+            "  set_task_local({\"task-anon\", local_anon});",
+            "  resumed_anon = suspend();",
+            "  task_anon = task_local()[2];",
+            "  this.audit_result = {task_id(), typeof(local_anon), valid(local_anon), local_anon == this.saved_anon, local_anon.marker, typeof(task_anon), valid(task_anon), task_anon == local_anon, typeof(resumed_anon), valid(resumed_anon), resumed_anon == local_anon, resumed_anon.marker};",
+            "endfork",
+            "suspend(0);",
+            "return id;"
+          });
+          anon = create(class, 1);
+          anon.marker = "anonymous-marker";
+          class.saved_anon = anon;
+          return class;
+        capture: anonymous_class
+        as: wizard
+      - run: "return {anonymous_class}:hold();"
+        capture: anonymous_task_id
+        as: wizard
+      - run: |
+          frame = task_stack({anonymous_task_id}, 1, 1)[1];
+          local_anon = frame[7]["local_anon"];
+          return {
+            typeof(local_anon),
+            valid(local_anon),
+            local_anon == {anonymous_class}.saved_anon,
+            local_anon.marker
+          };
+        as: wizard
+        expect:
+          value: [12, 1, 1, anonymous-marker]
+      - run: |
+          resume({anonymous_task_id}, {anonymous_class}.saved_anon);
+          return dump_database();
+        as: wizard
+        expect:
+          value: 0
+      - restart_server:
+      - wait: 300
+      - run: |
+          result = {anonymous_class}.audit_result;
+          still_queued = 0;
+          for queued in (queued_tasks())
+            if (queued[1] == {anonymous_task_id})
+              still_queued = 1;
+            endif
+          endfor
+          return {
+            result[1] == {anonymous_task_id},
+            result[2],
+            result[3],
+            result[4],
+            result[5],
+            result[6],
+            result[7],
+            result[8],
+            result[9],
+            result[10],
+            result[11],
+            result[12],
+            still_queued
+          };
+        as: wizard
+        expect:
+          value: [1, 12, 1, 1, anonymous-marker, 12, 1, 1, 12, 1, 1, anonymous-marker, 0]
+    cleanup:
+      - run: |
+          try
+            kill_task({anonymous_task_id});
+          except (ANY)
+          endtry
+          try
+            recycle({anonymous_class}.saved_anon);
+          except (ANY)
+          endtry
+          try
+            recycle({anonymous_class});
+          except (ANY)
+          endtry
+        as: wizard
+
   - name: audit_force_input_live_login_connection
     description: force_input() to a live negative connection runs the login input path and can log it in.
     steps:

@@ -355,7 +355,7 @@ def discover_yaml_tests(
                 data = yaml.safe_load(f)
 
             if data is None:
-                continue
+                raise ValueError("YAML document is empty")
 
             suite = validate_test_suite(data)
 
@@ -366,10 +366,10 @@ def discover_yaml_tests(
             for test in suite.tests:
                 test_cases.append((yaml_file, suite, test))
 
-        except Exception as e:
-            # Log but don't fail on bad YAML files
-            print(f"Warning: Failed to load {yaml_file}: {e}")
-            continue
+        except Exception as exc:
+            raise pytest.UsageError(
+                f"Failed to load conformance suite {yaml_file}: {exc}"
+            ) from exc
 
     return test_cases
 

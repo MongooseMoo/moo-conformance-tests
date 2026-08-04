@@ -112,17 +112,17 @@ tests:
   permission: wizard
   code: create($nothing, -2)
   expect:
-    value_contains: '*anonymous*'
+    type: anon
 - name: create_invalid_owner_ambiguous
   permission: wizard
   code: create($nothing, -3)
   expect:
-    value_contains: '*anonymous*'
+    type: anon
 - name: create_invalid_owner_failed_match
   permission: wizard
   code: create($nothing, -4)
   expect:
-    value_contains: '*anonymous*'
+    type: anon
 - name: create_invalid_owner_nothing_as_wizard
   permission: wizard
   statement: 'e = create($nothing, $nothing);
@@ -1740,7 +1740,7 @@ tests:
 
     '
   expect:
-    value_contains: '*anonymous*'
+    type: obj
 - name: chparent_permission_wizard_can_change_any
   permission: wizard
   statement: 'a = create($nothing);

@@ -1,4 +1,3 @@
-import hashlib
 import json
 import os
 import subprocess
@@ -10,6 +9,7 @@ from moo_conformance import execution_ledger
 from moo_conformance.execution_ledger import (
     CaseOutcome,
     ExecutionLedgerError,
+    candidate_identity_digest,
     enforce_execution_surface,
     load_baseline,
     load_candidate_inventory,
@@ -36,8 +36,7 @@ def case(case_id: str, child: str = "") -> str:
 def write_suite(root: Path, filename: str, names: list[str]) -> None:
     root.mkdir(parents=True, exist_ok=True)
     tests = "\n".join(
-        f"  - name: {name}\n    code: '1'\n    expect:\n      value: 1"
-        for name in names
+        f"  - name: {name}\n    code: '1'\n    expect:\n      value: 1" for name in names
     )
     (root / filename).write_text(f"name: suite\ntests:\n{tests}\n", encoding="utf-8")
 
@@ -64,7 +63,7 @@ def inventory_data(
     candidate_ids = ["suite.yaml::addition", "suite.yaml::base"] if candidate is None else candidate
     additive_ids = ["suite.yaml::addition"] if additive is None else additive
     strings = sorted(case_id for case_id in candidate_ids if isinstance(case_id, str))
-    digest = hashlib.sha256(("\n".join(strings) + "\n").encode()).hexdigest()
+    digest = candidate_identity_digest(strings)
     return {
         "schema_version": 2,
         "candidate_anchor": "C:/immutable/candidate",
@@ -340,6 +339,26 @@ def test_load_candidate_inventory_accepts_exact_schema_v2(tmp_path: Path) -> Non
     assert load_candidate_inventory(inventory_path) == expected
 
 
+def test_candidate_identity_digest_distinguishes_embedded_newlines() -> None:
+    assert candidate_identity_digest(["a.yaml::a\nb.yaml::b"]) != (
+        candidate_identity_digest(["a.yaml::a", "b.yaml::b"])
+    )
+
+
+def test_load_candidate_inventory_rejects_former_newline_digest_collision(
+    tmp_path: Path,
+) -> None:
+    inventory_path = tmp_path / "paired-inventory.json"
+    combined = "a.yaml::a\nb.yaml::b"
+    data = inventory_data(trusted=[combined], candidate=[combined], additive=[])
+    data["trusted_case_ids"] = ["a.yaml::a", "b.yaml::b"]
+    data["candidate_case_ids"] = ["a.yaml::a", "b.yaml::b"]
+    write_inventory(inventory_path, data)
+
+    with pytest.raises(ExecutionLedgerError, match="candidate_identity_sha256 mismatch"):
+        load_candidate_inventory(inventory_path)
+
+
 @pytest.mark.parametrize(
     ("contents", "message"),
     [
@@ -356,6 +375,14 @@ def test_load_candidate_inventory_rejects_malformed_json_or_root_type(
     inventory_path.write_text(contents, encoding="utf-8")
 
     with pytest.raises(ExecutionLedgerError, match=message):
+        load_candidate_inventory(inventory_path)
+
+
+def test_load_candidate_inventory_normalizes_invalid_utf8(tmp_path: Path) -> None:
+    inventory_path = tmp_path / "paired-inventory.json"
+    inventory_path.write_bytes(b"\xff")
+
+    with pytest.raises(ExecutionLedgerError, match="cannot read paired inventory"):
         load_candidate_inventory(inventory_path)
 
 
@@ -575,9 +602,7 @@ def test_unsuccessful_case_always_fails(status: str) -> None:
 
 
 def test_unreviewed_never_executed_case_fails() -> None:
-    reports = {
-        "profile": {"suite.yaml::case": CaseOutcome("skipped", "unsupported")}
-    }
+    reports = {"profile": {"suite.yaml::case": CaseOutcome("skipped", "unsupported")}}
 
     with pytest.raises(ExecutionLedgerError, match="absent from the reviewed baseline"):
         enforce_execution_surface(reports, {"suite.yaml::case"}, {})
@@ -599,9 +624,7 @@ def test_exact_reviewed_skip_is_allowed() -> None:
 
 
 def test_skip_reason_drift_fails() -> None:
-    reports = {
-        "profile": {"suite.yaml::case": CaseOutcome("skipped", "new reason")}
-    }
+    reports = {"profile": {"suite.yaml::case": CaseOutcome("skipped", "new reason")}}
 
     with pytest.raises(ExecutionLedgerError, match="baseline drift"):
         enforce_execution_surface(

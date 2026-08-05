@@ -58,6 +58,16 @@ def _strict_json_object(pairs: list[tuple[str, object]]) -> dict[str, object]:
     return result
 
 
+def candidate_identity_digest(case_ids: Iterable[str]) -> str:
+    """Hash an unambiguous canonical encoding of a conformance identity set."""
+    payload = json.dumps(
+        sorted(case_ids),
+        ensure_ascii=False,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
 def packaged_case_ids(
     tests_dir: str | Path | None = None,
     *,
@@ -117,7 +127,7 @@ def validate_candidate_inventory(
             + ", ".join(sorted(missing))
         )
     candidate_identities = sorted(candidate)
-    digest = hashlib.sha256(("\n".join(candidate_identities) + "\n").encode()).hexdigest()
+    digest = candidate_identity_digest(candidate_identities)
     return {
         "schema_version": 2,
         "candidate_anchor": str(anchor),
@@ -157,7 +167,7 @@ def load_candidate_inventory(path: str | Path) -> CandidateInventory:
             inventory_path.read_text(encoding="utf-8"),
             object_pairs_hook=_strict_json_object,
         )
-    except (OSError, json.JSONDecodeError) as exc:
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
         raise ExecutionLedgerError(f"cannot read paired inventory {inventory_path}: {exc}") from exc
     if not isinstance(raw, dict):
         raise ExecutionLedgerError("paired inventory must be a JSON object")
@@ -206,7 +216,7 @@ def load_candidate_inventory(path: str | Path) -> CandidateInventory:
         )
 
     claimed_digest = data["candidate_identity_sha256"]
-    digest = hashlib.sha256(("\n".join(sorted(candidate_set)) + "\n").encode()).hexdigest()
+    digest = candidate_identity_digest(candidate_set)
     if not isinstance(claimed_digest, str) or claimed_digest != digest:
         raise ExecutionLedgerError("paired inventory candidate_identity_sha256 mismatch")
     return {
@@ -301,9 +311,7 @@ def enforce_execution_surface(
             if extra:
                 details.append("unknown=" + ", ".join(sorted(extra)))
             detail = "; ".join(details)
-            raise ExecutionLedgerError(
-                f"profile {profile} has an inexact surface: {detail}"
-            )
+            raise ExecutionLedgerError(f"profile {profile} has an inexact surface: {detail}")
 
         bad = {
             case_id: outcome
@@ -381,9 +389,7 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         report_paths = _parse_report_arguments(args.report)
-        reports = {
-            profile: parse_junit_report(path) for profile, path in report_paths.items()
-        }
+        reports = {profile: parse_junit_report(path) for profile, path in report_paths.items()}
         expected_case_ids = (
             set(load_candidate_inventory(args.inventory)["candidate_case_ids"])
             if args.inventory is not None

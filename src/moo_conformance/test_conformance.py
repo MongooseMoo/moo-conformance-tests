@@ -8,6 +8,8 @@ Run with:
 
 import pytest
 
+from .plugin import _skip_declared_yaml_case
+
 
 _builtin_cache: dict[str, bool] = {}
 _feature_cache: set[str] | None = None
@@ -105,10 +107,7 @@ def test_yaml_conformance(runner, yaml_test_case, moo_config, profile_metadata_g
     """
     suite, test = yaml_test_case
 
-    # Skip tests that are marked as skip
-    if test.skip:
-        reason = test.skip if isinstance(test.skip, str) else "Test marked as skip"
-        pytest.skip(reason)
+    _skip_declared_yaml_case(suite, test)
 
     # Skip tests based on skip_if condition
     if test.skip_if:

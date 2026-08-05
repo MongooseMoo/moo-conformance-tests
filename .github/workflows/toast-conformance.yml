@@ -1,0 +1,145 @@
+name: Toast conformance
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: toast-conformance-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  full-suite:
+    name: Full suite
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+
+    steps:
+      - name: Prepare evidence directory
+        run: |
+          reports_dir="${RUNNER_TEMP}/toast-conformance-reports"
+          printf 'REPORTS_DIR=%s\n' "${reports_dir}" >> "${GITHUB_ENV}"
+          mkdir -p "${reports_dir}"
+          printf 'run_id=%s\nrunner_os=%s\nrunner_arch=%s\n' \
+            "${GITHUB_RUN_ID}" "${RUNNER_OS}" "${RUNNER_ARCH}" \
+            > "${reports_dir}/workflow-start.txt"
+
+      - name: Check out conformance candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check out pinned Toast oracle
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: MongooseMoo/toaststunt
+          # Commit embedded in the canonical managed WSL Toast binary.
+          ref: aecc51e9449c6e7c95272f0f044b5ba38948459e
+          path: toaststunt
+          persist-credentials: false
+
+      - name: Install uv and Python
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: 0.8.8
+          python-version: "3.13"
+          enable-cache: false
+
+      - name: Install Toast build dependencies
+        run: |
+          set -o pipefail
+          sudo apt-get update 2>&1 | tee "${REPORTS_DIR}/apt.log"
+          sudo apt-get install --yes --no-install-recommends \
+            aspell \
+            aspell-en \
+            bison \
+            build-essential \
+            cmake \
+            gperf \
+            libargon2-dev \
+            libaspell-dev \
+            libcrypt-dev \
+            libcurl4-openssl-dev \
+            libpcre2-dev \
+            libsqlite3-dev \
+            libssl-dev \
+            nettle-dev \
+            ninja-build \
+            perl \
+            2>&1 | tee -a "${REPORTS_DIR}/apt.log"
+
+      - name: Install locked conformance environment
+        run: |
+          set -o pipefail
+          uv sync --locked 2>&1 | tee "${REPORTS_DIR}/uv-sync.log"
+
+      - name: Verify conformance-owned startup fixtures
+        run: |
+          set -o pipefail
+          (
+            cd src/moo_conformance/_db/startup
+            sha256sum --check startup-fixtures.sha256
+          ) 2>&1 | tee "${REPORTS_DIR}/startup-fixtures.log"
+
+      - name: Build Toast oracle
+        run: |
+          set -o pipefail
+          (
+            mkdir -p toaststunt/build-release
+            cd toaststunt/build-release
+            cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
+            cmake --build . --target moo --parallel 2
+          ) 2>&1 | tee "${REPORTS_DIR}/toast-build.log"
+          test -x toaststunt/build-release/moo
+
+      - name: Run every packaged conformance case against Toast
+        run: |
+          set -o pipefail
+          uv run --frozen pytest \
+            --pyargs moo_conformance \
+            --server-command="${GITHUB_WORKSPACE}/toaststunt/build-release/moo --no-ipv6 --ipv4 127.0.0.1 --outbound {db} {db}.new {port}" \
+            --server-db-dir="${GITHUB_WORKSPACE}/src/moo_conformance/_db/startup" \
+            --moo-host=127.0.0.1 \
+            --fail-on-unexpected-skip \
+            --strict-markers \
+            --junitxml="${REPORTS_DIR}/toast-conformance.xml" \
+            -q -ra \
+            2>&1 | tee "${REPORTS_DIR}/toast-conformance.log"
+
+      - name: Enforce the full Toast execution surface
+        run: |
+          uv run --frozen python - <<'PY'
+          from pathlib import Path
+          import os
+          import xml.etree.ElementTree as ET
+
+          report = Path(os.environ["REPORTS_DIR"], "toast-conformance.xml")
+          root = ET.parse(report).getroot()
+          suites = [root] if root.tag == "testsuite" else list(root.findall("testsuite"))
+          totals = {
+              field: sum(int(suite.attrib.get(field, 0)) for suite in suites)
+              for field in ("tests", "failures", "errors", "skipped")
+          }
+          print(totals)
+          assert totals == {
+              "tests": 11_566,
+              "failures": 0,
+              "errors": 0,
+              # All remaining skips are declared by the suite and strict skip mode.
+              "skipped": 138,
+          }, "Toast conformance execution surface changed"
+          PY
+
+      - name: Upload Toast conformance evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: toast-conformance-${{ github.run_id }}
+          path: ${{ env.REPORTS_DIR }}
+          if-no-files-found: error
+          retention-days: 14

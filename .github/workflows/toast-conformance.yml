@@ -131,7 +131,7 @@ jobs:
               "failures": 0,
               "errors": 0,
               # All remaining skips are declared by the suite and strict skip mode.
-              "skipped": 106,
+              "skipped": 99,
           }, "Toast conformance execution surface changed"
           PY
 

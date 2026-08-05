@@ -2,7 +2,23 @@ name: task_local
 description: Tests for task_local() and set_task_local() builtins
 
 requires:
-  builtins: [task_local, set_task_local, task_id, suspend, fork, resume, kill_task]
+  builtins:
+    - task_local
+    - set_task_local
+    - task_id
+    - suspend
+    - fork
+    - resume
+    - kill_task
+    - create
+    - recycle
+    - add_verb
+    - set_verb_code
+    - add_property
+    - delete_property
+    - valid
+    - notify
+    - tostr
   features: [tasks]
 
 tests:
@@ -83,7 +99,6 @@ tests:
 
   - name: fork_and_suspend_case
     permission: wizard
-    skip: "Requires async resume() to pass value to parent task - architectural limitation in synchronous eval"
     statement: |
       set_task_local({1, 2});
       id = task_id();
@@ -122,48 +137,212 @@ tests:
     expect:
       error: E_DIV
 
-  # Verb call tests - require dynamic verb creation and calling
-  # These tests reference #-1 which requires dynamic object/verb creation
-  # The YAML test framework doesn't support this - would need multi-step setup
+  # Verb call tests
   - name: command_verb
     permission: wizard
-    skip: "Requires dynamic verb creation on #-1 - YAML test harness limitation"
-    verb: "#-1:foo"
-    argstr: "#-1 to the #-1"
-    expect:
-      notifications: ["> {\"#-1 to the #-1\"}"]
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - verb_setup:
+          object: "{obj}"
+          name: "foo"
+          args: ["any", "any", "any"]
+          code: |
+            set_task_local({argstr});
+            this:bar();
+      - verb_setup:
+          object: "{obj}"
+          name: "bar"
+          args: ["this", "none", "this"]
+          code: 'notify(player, tostr(task_local() == {tostr(this) + " to the " + tostr(this)}));'
+      - command: "foo {obj} to the {obj}"
+        expect:
+          output: "1"
+    cleanup:
+      - run: "if (valid({obj})) recycle({obj}); endif"
 
   - name: server_verb
     permission: wizard
-    skip: "Requires dynamic verb creation on #-1 - YAML test harness limitation"
-    statement: |
-      set_task_local({1, {2, {3}}});
-      recycle(#-1);
-    expect:
-      notifications: ["> {1, {2, {3}}}"]
+    steps:
+      - run: |
+          try
+            add_property(#0, "task_local_server_verb_marker", {}, {#0, "rw"});
+          except (E_INVARG)
+            #0.task_local_server_verb_marker = {};
+          endtry
+          return create($nothing);
+        capture: obj
+      - verb_setup:
+          object: "{obj}"
+          name: "recycle"
+          args: ["this", "none", "this"]
+          code: "this:bar();"
+      - verb_setup:
+          object: "{obj}"
+          name: "bar"
+          args: ["this", "none", "this"]
+          code: "#0.task_local_server_verb_marker = task_local();"
+      - run: |
+          set_task_local({1, {2, {3}}});
+          recycle({obj});
+          return 0;
+        expect:
+          value: 0
+      - run: "return #0.task_local_server_verb_marker;"
+        expect:
+          value: [1, [2, [3]]]
+    cleanup:
+      - run: |
+          if (valid({obj}))
+            recycle({obj});
+          endif
+          try
+            delete_property(#0, "task_local_server_verb_marker");
+          except (ANY)
+          endtry
 
   - name: across_verb_calls
     permission: wizard
-    skip: "Requires dynamic verb creation on #-1 - YAML test harness limitation"
-    statement: |
-      #-1:foo(1.234);
-      return #-1:bar();
-    expect:
-      value: 1.234
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - verb_setup:
+          object: "{obj}"
+          name: "foo"
+          args: ["this", "none", "this"]
+          code: |
+            {value} = args;
+            set_task_local(value);
+      - verb_setup:
+          object: "{obj}"
+          name: "bar"
+          args: ["this", "none", "this"]
+          code: "return task_local();"
+      - run: "{obj}:foo(1.234); return {obj}:bar();"
+        expect:
+          value: 1.234
+    cleanup:
+      - run: "if (valid({obj})) recycle({obj}); endif"
 
   - name: across_verb_calls_with_intermediate
     permission: wizard
-    skip: "Requires dynamic verb creation on #-1 - YAML test harness limitation"
-    code: "#-1:baz(23.456)"
-    expect:
-      value: 23.456
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - verb_setup:
+          object: "{obj}"
+          name: "foo"
+          args: ["this", "none", "this"]
+          code: |
+            {value} = args;
+            set_task_local(value);
+      - verb_setup:
+          object: "{obj}"
+          name: "bar"
+          args: ["this", "none", "this"]
+          code: "return task_local();"
+      - verb_setup:
+          object: "{obj}"
+          name: "baz"
+          args: ["this", "none", "this"]
+          code: |
+            {value} = args;
+            this:foo(value);
+            return this:bar();
+      - run: "{obj}:baz(23.456)"
+        expect:
+          value: 23.456
+    cleanup:
+      - run: "if (valid({obj})) recycle({obj}); endif"
 
   - name: suspend_between_verb_calls
     permission: wizard
-    skip: "Requires dynamic verb creation on #-1 - YAML test harness limitation"
-    code: "#-1:baz(2.5)"
-    expect:
-      value: 97.65625
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: |
+          add_property({obj}, "task_local_worker_task", 0, {player, "rw"});
+          add_property({obj}, "task_local_child_task", 0, {player, "rw"});
+          add_property({obj}, "task_local_result", 0, {player, "rw"});
+          add_property({obj}, "task_local_done", 0, {player, "rw"});
+          return 1;
+        expect:
+          value: 1
+      - verb_setup:
+          object: "{obj}"
+          name: "foo"
+          args: ["this", "none", "this"]
+          code: |
+            {value} = args;
+            set_task_local(value);
+      - verb_setup:
+          object: "{obj}"
+          name: "bar"
+          args: ["this", "none", "this"]
+          code: "return task_local();"
+      - verb_setup:
+          object: "{obj}"
+          name: "baz"
+          args: ["this", "none", "this"]
+          code: |
+            {value} = args;
+            this.task_local_worker_task = task_id();
+            this:foo(value);
+            fork child_task (0)
+              for i in [1..10]
+                suspend(1);
+              endfor
+            endfork
+            this.task_local_child_task = child_task;
+            total = 1.0;
+            for i in [1..5]
+              suspend(1);
+              total = total * this:bar();
+            endfor
+            kill_task(child_task);
+            this.task_local_child_task = 0;
+            this.task_local_result = total;
+            this.task_local_worker_task = 0;
+            this.task_local_done = 1;
+            return total;
+      - new_connection:
+          capture: worker
+      - send:
+          connection: worker
+          text: "connect wizard"
+      - send:
+          connection: worker
+          text: "; return {obj}:baz(2.5);"
+      - wait: 7000
+      - run: "return {obj}.task_local_done;"
+        expect:
+          value: 1
+      - run: "return {obj}.task_local_result;"
+        expect:
+          value: 97.65625
+      - close_connection: worker
+    cleanup:
+      - run: |
+          if (valid({obj}))
+            try
+              child_task = {obj}.task_local_child_task;
+              if (child_task)
+                kill_task(child_task);
+              endif
+            except (ANY)
+            endtry
+            try
+              worker_task = {obj}.task_local_worker_task;
+              if (worker_task)
+                kill_task(worker_task);
+              endif
+            except (ANY)
+            endtry
+            try
+              recycle({obj});
+            except (ANY)
+            endtry
+          endif
 
   # Memory leak regression tests (non-functional)
   - name: nonfunctional_fork_suspend
@@ -176,8 +355,32 @@ tests:
       value: 0
 
   - name: nonfunctional_kill_task
-    skip: "Kills current task before response can be sent - causes timeout"
     permission: wizard
-    code: "kill_task(task_id())"
-    expect:
-      error: E_INTRPT
+    steps:
+      - run: |
+          try
+            add_property(#0, "task_local_self_kill_marker", "before", {#0, "rw"});
+          except (E_INVARG)
+            #0.task_local_self_kill_marker = "before";
+          endtry
+          return 1;
+        expect:
+          value: 1
+      - new_connection:
+          capture: victim
+      - send:
+          connection: victim
+          text: "connect wizard"
+      - send:
+          connection: victim
+          text: '; #0.task_local_self_kill_marker = "entered"; kill_task(task_id()); #0.task_local_self_kill_marker = "after";'
+      - close_connection: victim
+      - run: 'return #0.task_local_self_kill_marker;'
+        expect:
+          value: entered
+    cleanup:
+      - run: |
+          try
+            delete_property(#0, "task_local_self_kill_marker");
+          except (ANY)
+          endtry

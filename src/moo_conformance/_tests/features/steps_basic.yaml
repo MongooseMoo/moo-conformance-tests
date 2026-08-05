@@ -43,13 +43,13 @@ tests:
   - name: top_level_satisfies_binds_result_value
     code: "{1, 2, 3}"
     expect:
-      satisfies: "length({value}) == 3"
+      satisfies: "length(__actual__) == 3"
 
   - name: step_satisfies_binds_result_value
     steps:
       - run: "{1, 2, 3}"
         expect:
-          satisfies: "length({value}) == 3"
+          satisfies: "length(__actual__) == 3"
 
   - name: step_notifications_are_enforced
     steps:

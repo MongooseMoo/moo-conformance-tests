@@ -10,10 +10,19 @@ import time
 from pathlib import Path
 from typing import Any
 
-from .transport import MooTransport, ExecutionResult, TestConnection
-from .schema import MooTestSuite, MooTestCase, Expectation, TestStep, LogAssertion, FileAssertion, WriteFile
+from .moo_types import MooError
+from .schema import (
+    Expectation,
+    FileAssertion,
+    LogAssertion,
+    MooTestCase,
+    MooTestSuite,
+    TestStep,
+    WriteFile,
+    _value_to_moo,
+)
 from .server import ManagedServer
-from .moo_types import MooError, TYPE_NAMES
+from .transport import ExecutionResult, MooTransport, TestConnection
 
 
 class AssertionError(Exception):
@@ -191,6 +200,10 @@ class YamlTestRunner:
         try:
             # Check if this is a multi-step test
             if test.has_steps():
+                if self._declared_expectation_fields(test.expect):
+                    raise AssertionError(
+                        f"Test '{test.name}' multi-step test cannot have a top-level expectation"
+                    )
                 self._execute_steps(test)
             else:
                 # Traditional single-execution test
@@ -266,6 +279,8 @@ class YamlTestRunner:
 
         try:
             for step in test.steps:
+                self._validate_step_expectation_route(step, test.name)
+
                 # Switch permission if step specifies different one
                 if step.as_:
                     self._ensure_transport_connected()
@@ -452,6 +467,10 @@ class YamlTestRunner:
         finally:
             # Run cleanup steps (always, even on failure)
             for cleanup_step in test.cleanup:
+                if cleanup_step.expect is not None:
+                    raise AssertionError(
+                        f"Test '{test.name}' cleanup steps cannot have expectations"
+                    )
                 # Switch permission if cleanup step specifies different one
                 if cleanup_step.as_:
                     self._ensure_transport_connected()
@@ -468,6 +487,64 @@ class YamlTestRunner:
                     conn.close()
                 except Exception:
                     pass
+
+    def _declared_expectation_fields(self, expect: Expectation) -> set[str]:
+        """Return the fields a programmatically constructed expectation declares."""
+        return {
+            name
+            for name in (
+                "value",
+                "error",
+                "type",
+                "match",
+                "contains",
+                "range",
+                "satisfies",
+                "notifications",
+                "output",
+            )
+            if getattr(expect, name) is not None
+        }
+
+    def _validate_step_expectation_route(self, step: TestStep, test_name: str) -> None:
+        """Defensively enforce action/expectation ownership for direct callers."""
+        if step.expect is None:
+            return
+
+        actions = (
+            "run",
+            "command",
+            "verb_setup",
+            "allocate_port",
+            "new_connection",
+            "send",
+            "send_bytes",
+            "read_connection",
+            "close_connection",
+            "wait",
+            "assert_log",
+            "assert_file",
+            "write_file",
+            "write_stdin",
+            "restart_server",
+        )
+        action = next((name for name in actions if getattr(step, name) is not None), "unknown")
+        fields = self._declared_expectation_fields(step.expect)
+        if action in {"run", "verb_setup"}:
+            if "output" in fields:
+                raise AssertionError(
+                    f"Test '{test_name}' {action} does not support output expectations"
+                )
+            return
+        if action in {"command", "send", "send_bytes", "read_connection"}:
+            if fields != {"output"}:
+                raise AssertionError(
+                    f"Test '{test_name}' {action} only supports an output expectation"
+                )
+            return
+        raise AssertionError(
+            f"Test '{test_name}' {action} does not produce an expectation result"
+        )
 
     def _execute_restart_server(self, wait_ms: int, test_name: str, down_ms: int = 0) -> None:
         """Restart managed server and reconnect transport to the same user."""
@@ -712,56 +789,57 @@ class YamlTestRunner:
             result: The execution result
             context: Context string for error messages (e.g., test name or step description)
         """
-        # Check for expected error
-        if expect.error:
+        if expect.output is not None:
+            raise AssertionError(f"{context} result expectation cannot contain output")
+
+        success_fields = (
+            expect.value,
+            expect.type,
+            expect.contains,
+            expect.range,
+            expect.satisfies,
+        )
+        has_success_assertion = any(value is not None for value in success_fields)
+
+        # An explicit error expectation selects the error result path. Compatible
+        # message and notification assertions are still enforced below.
+        if expect.error is not None:
             self._verify_error(expect.error, result, context)
-            return
-
-        # Check for expected match pattern (can match on error messages too)
-        if expect.match:
-            # If we got an error, check if the pattern matches the error message
-            if not result.success and result.error_message:
-                self._verify_match(expect.match, result.error_message, context)
-                return
-            # Otherwise expect success and check value
-            if not result.success:
-                raise AssertionError(
-                    f"{context} expected success but got error: "
-                    f"{result.error or result.error_message}"
-                )
-            self._verify_match(expect.match, result.value, context)
-            return
-
-        # If we got here, we expect success
-        if not result.success:
+            if expect.match is not None:
+                error_text = result.error_message or str(result.error)
+                self._verify_match(expect.match, error_text, context)
+        elif (
+            not result.success
+            and not has_success_assertion
+            and expect.match is not None
+            and result.error_message
+        ):
+            # Match-only expectations retain their documented ability to match
+            # non-MOO error text.
+            self._verify_match(expect.match, result.error_message, context)
+        elif not result.success:
             raise AssertionError(
                 f"{context} expected success but got error: "
                 f"{result.error or result.error_message}"
             )
+        if result.success or expect.error is not None:
+            # Enforce every compatible result assertion; none may short-circuit
+            # the assertions that follow it.
+            if expect.match is not None and expect.error is None:
+                self._verify_match(expect.match, result.value, context)
+            if expect.value is not None:
+                self._verify_value(expect.value, result.value, context)
+            if expect.type is not None:
+                self._verify_type(expect.type, result.value, context)
+            if expect.contains is not None:
+                self._verify_contains(expect.contains, result.value, context)
+            if expect.range is not None:
+                self._verify_range(expect.range, result.value, context)
+            if expect.satisfies is not None:
+                self._verify_satisfies(expect.satisfies, result.value, context)
 
-        # Check value expectation
-        if expect.value is not None:
-            self._verify_value(expect.value, result.value, context)
-
-        # Check type expectation
-        if expect.type:
-            self._verify_type(expect.type, result.value, context)
-
-        # Check contains expectation
-        if expect.contains is not None:
-            self._verify_contains(expect.contains, result.value, context)
-
-        # Check range expectation
-        if expect.range is not None:
-            self._verify_range(expect.range, result.value, context)
-
-        # Check notifications expectation
         if expect.notifications is not None:
             self._verify_notifications(expect.notifications, result.notifications, context)
-
-        # Check target-executed predicate expectation
-        if expect.satisfies is not None:
-            self._verify_satisfies(expect.satisfies, result.value, context)
 
     def _verify_expectations(self, test: MooTestCase, result: ExecutionResult) -> None:
         """Verify test result against expectations.
@@ -1047,15 +1125,21 @@ class YamlTestRunner:
                 )
 
     def _verify_satisfies(self, predicate: str, actual: Any, test_name: str) -> None:
-        """Evaluate a MOO predicate with ``{value}`` bound to the actual result."""
-        if "{value}" not in predicate:
+        """Evaluate a MOO predicate with ``__actual__`` bound to the result."""
+        if "__actual__" not in predicate:
             raise AssertionError(
-                f"Test '{test_name}' satisfies predicate must reference {{value}}: {predicate!r}"
+                f"Test '{test_name}' satisfies predicate must reference __actual__: {predicate!r}"
+            )
+        if self._contains_anonymous_value(actual):
+            raise AssertionError(
+                f"Test '{test_name}' satisfies result cannot be round-tripped to MOO: {actual!r}"
             )
 
-        predicate = self._substitute_variables(predicate, {"value": actual})
+        moo_value = _value_to_moo(actual)
         self._ensure_transport_connected()
-        predicate_result = self.transport.execute(f"return !(!({predicate}));")
+        predicate_result = self.transport.execute(
+            f"__actual__ = {moo_value}; return !(!({predicate}));"
+        )
 
         if not predicate_result.success:
             raise AssertionError(
@@ -1067,6 +1151,19 @@ class YamlTestRunner:
             raise AssertionError(
                 f"Test '{test_name}' result {actual!r} does not satisfy predicate {predicate!r}"
             )
+
+    def _contains_anonymous_value(self, value: Any) -> bool:
+        """Return whether a parsed result contains a non-round-trippable anonymous object."""
+        if isinstance(value, str):
+            return self._get_moo_type(value) == "anon"
+        if isinstance(value, list):
+            return any(self._contains_anonymous_value(item) for item in value)
+        if isinstance(value, dict):
+            return any(
+                self._contains_anonymous_value(key) or self._contains_anonymous_value(item)
+                for key, item in value.items()
+            )
+        return False
 
     def _verify_output(self, expected: Any, actual: list[str], context: str) -> None:
         """Verify output from raw command matches expectation.
@@ -1100,16 +1197,12 @@ class YamlTestRunner:
                         f"{context} expected output {expected.exact!r}, "
                         f"but got {joined!r}"
                     )
-            return
-
         if expected.match is not None:
             # Regex match on joined output
             if not re.search(expected.match, joined):
                 raise AssertionError(
                     f"{context} pattern {expected.match!r} not found in output {joined!r}"
                 )
-            return
-
         if expected.contains is not None:
             # Substring match on joined output
             if expected.contains not in joined:

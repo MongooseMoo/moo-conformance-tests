@@ -1,7 +1,10 @@
 import json
+from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
+import moo_conformance.test_conformance as canonical_tests
 from moo_conformance.admission import (
     ADMISSION_PROBE_INVENTORY,
     AdmissionEvidenceError,
@@ -11,6 +14,10 @@ from moo_conformance.admission import (
     run_capability_admission,
     validate_admission_evidence,
     write_admission_evidence,
+)
+from moo_conformance.plugin import (
+    _admission_runtime_state,
+    _record_canonical_admission_report,
 )
 
 pytest_plugins = ("pytester",)
@@ -152,81 +159,57 @@ def test_admission_evidence_json_is_stable_and_schema_versioned(tmp_path) -> Non
     assert path.read_text().endswith("\n")
 
 
-def test_unfiltered_pytest_stops_before_packaged_items_when_admission_fails(
-    pytester, tmp_path
-) -> None:
-    packaged_marker = tmp_path / "packaged-ran"
-    pytester.makepyfile(
-        f"""
-        from pathlib import Path
-        import pytest
-
-        @pytest.mark.conformance
-        def test_packaged():
-            Path({str(packaged_marker)!r}).write_text("ran")
-
-        @pytest.mark.admission
-        def test_admission():
-            pytest.fail("probe failed")
-        """
+def _canonical_item():
+    return SimpleNamespace(
+        module=canonical_tests,
+        obj=canonical_tests.test_capability_admission,
+        name="test_capability_admission",
+        config=SimpleNamespace(),
+        session=SimpleNamespace(shouldfail=False),
     )
 
-    result = pytester.runpytest("-q", "--strict-markers")
 
-    assert result.ret == pytest.ExitCode.TESTS_FAILED
-    result.assert_outcomes(failed=1)
-    assert not packaged_marker.exists()
-
-
-def test_unfiltered_pytest_stops_before_packaged_items_when_admission_skips(
-    pytester, tmp_path
-) -> None:
-    packaged_marker = tmp_path / "packaged-ran"
-    pytester.makepyfile(
-        f"""
-        from pathlib import Path
-        import pytest
-
-        @pytest.mark.conformance
-        def test_packaged():
-            Path({str(packaged_marker)!r}).write_text("ran")
-
-        @pytest.mark.admission
-        def test_capability_admission():
-            pytest.skip("probe unavailable")
-        """
+def test_failed_exact_canonical_admission_never_authorizes_packaged_runtime() -> None:
+    item = _canonical_item()
+    _record_canonical_admission_report(
+        item,
+        SimpleNamespace(when="setup", passed=True, failed=False, skipped=False),
+    )
+    _record_canonical_admission_report(
+        item,
+        SimpleNamespace(when="call", passed=False, failed=True, skipped=False),
     )
 
-    result = pytester.runpytest("-q", "--strict-markers")
-
-    assert result.ret == pytest.ExitCode.TESTS_FAILED
-    result.assert_outcomes(skipped=1)
-    assert not packaged_marker.exists()
+    assert not _admission_runtime_state(item.config).authorized
+    assert "did not pass" in item.session.shouldfail
 
 
-def test_unfiltered_pytest_runs_packaged_items_after_admission_succeeds(
-    pytester, tmp_path
-) -> None:
-    packaged_marker = tmp_path / "packaged-ran"
-    pytester.makepyfile(
-        f"""
-        from pathlib import Path
-        import pytest
-
-        @pytest.mark.conformance
-        def test_packaged():
-            Path({str(packaged_marker)!r}).write_text("ran")
-
-        @pytest.mark.admission
-        def test_admission():
-            pass
-        """
+def test_skipped_exact_canonical_admission_never_authorizes_packaged_runtime() -> None:
+    item = _canonical_item()
+    _record_canonical_admission_report(
+        item,
+        SimpleNamespace(when="setup", passed=False, failed=False, skipped=True),
     )
 
-    result = pytester.runpytest("-q", "--strict-markers")
+    assert not _admission_runtime_state(item.config).authorized
+    assert "did not pass" in item.session.shouldfail
 
-    result.assert_outcomes(passed=2)
-    assert packaged_marker.read_text() == "ran"
+
+def test_exact_canonical_admission_authorizes_only_after_successful_teardown() -> None:
+    item = _canonical_item()
+    for when in ("setup", "call"):
+        _record_canonical_admission_report(
+            item,
+            SimpleNamespace(when=when, passed=True, failed=False, skipped=False),
+        )
+        assert not _admission_runtime_state(item.config).authorized
+
+    _record_canonical_admission_report(
+        item,
+        SimpleNamespace(when="teardown", passed=True, failed=False, skipped=False),
+    )
+
+    assert _admission_runtime_state(item.config).authorized
 
 
 def _write_successful_admission(path, context=TEST_CONTEXT) -> None:
@@ -236,8 +219,8 @@ def _write_successful_admission(path, context=TEST_CONTEXT) -> None:
     )
 
 
-def _make_packaged_probe(pytester, launched, executed) -> None:
-    pytester.makepyfile(
+def _make_packaged_probe(pytester, launched, executed) -> Path:
+    return pytester.makepyfile(
         f"""
         from pathlib import Path
         import pytest
@@ -298,6 +281,75 @@ def test_k_filter_cannot_remove_admission_and_execute_packaged_items(
 
     assert result.ret == pytest.ExitCode.USAGE_ERROR
     result.stderr.fnmatch_lines(["*selected packaged conformance requires*"])
+    assert not launched.exists()
+    assert not executed.exists()
+
+
+def test_fake_admission_marker_cannot_authorize_packaged_runtime(
+    pytester, tmp_path
+) -> None:
+    launched = tmp_path / "launched"
+    executed = tmp_path / "executed"
+    _make_packaged_probe(pytester, launched, executed)
+    pytester.makepyfile(
+        test_fake_admission="""
+        def test_fake_admission_item():
+            pass
+        """
+    )
+    pytester.makeconftest(
+        """
+        import pytest
+
+        @pytest.hookimpl(tryfirst=True)
+        def pytest_collection_modifyitems(items):
+            for item in items:
+                if item.name == "test_fake_admission_item":
+                    item.add_marker(pytest.mark.admission)
+        """
+    )
+
+    result = pytester.runpytest("-q", "--strict-markers")
+
+    assert result.ret != pytest.ExitCode.OK
+    assert not launched.exists()
+    assert not executed.exists()
+
+
+def test_post_collection_hookwrapper_removal_cannot_authorize_packaged_runtime(
+    pytester, tmp_path
+) -> None:
+    launched = tmp_path / "launched"
+    executed = tmp_path / "executed"
+    packaged_file = _make_packaged_probe(pytester, launched, executed)
+    pytester.makeconftest(
+        """
+        import pytest
+
+        @pytest.hookimpl(hookwrapper=True)
+        def pytest_collection_modifyitems(items):
+            yield
+            items[:] = [
+                item
+                for item in items
+                if not (
+                    item.name == "test_capability_admission"
+                    and item.module.__name__ == "moo_conformance.test_conformance"
+                )
+            ]
+        """
+    )
+
+    result = pytester.runpytest(
+        "-q",
+        "--strict-markers",
+        "-k",
+        "capability_admission or packaged",
+        str(Path(canonical_tests.__file__).resolve()),
+        str(packaged_file),
+    )
+
+    assert result.ret != pytest.ExitCode.OK
     assert not launched.exists()
     assert not executed.exists()
 

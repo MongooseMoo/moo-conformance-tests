@@ -57,6 +57,10 @@ def test_toast_workflow_uses_exact_candidate_in_every_profile_job() -> None:
 
 def test_each_toast_profile_stages_admission_before_complete_packaged_surface() -> None:
     steps = steps_by_name(load_workflow(TOAST_WORKFLOW_PATH), "full-suite")
+    prepare = steps["Prepare evidence directory"]["run"]
+    assert "secrets.token_hex" in prepare
+    assert "GITHUB_RUN_ATTEMPT" in prepare
+    assert "ADMISSION_CONTEXT" in prepare
     names = list(steps)
     admission_name = "Run canonical capability admission against Toast"
     packaged_name = "Run every packaged conformance case against Toast"
@@ -122,9 +126,9 @@ def test_paired_workflow_is_read_only_and_pins_every_action() -> None:
                 assert PINNED_ACTION.fullmatch(action), f"{job_name}/{name} is not SHA-pinned"
 
 
-def test_candidate_quality_gates_run_from_candidate_root() -> None:
-    quality = steps_by_name(load_workflow())["Run conformance candidate quality gates"]
-    assert quality["working-directory"] == "conformance"
+def test_quality_gates_run_only_from_trusted_controller() -> None:
+    quality = steps_by_name(load_workflow())["Run trusted controller quality gates"]
+    assert quality["working-directory"] == "controller"
     commands = quality["run"]
     assert "pytest tests --strict-markers -q" in commands
     assert "pytest --collect-only --pyargs moo_conformance --strict-markers -q" in commands
@@ -133,29 +137,54 @@ def test_candidate_quality_gates_run_from_candidate_root() -> None:
     assert "mypy src/moo_conformance" in commands
 
 
+def test_paired_candidate_checkout_is_data_only_and_inventory_is_trusted() -> None:
+    steps = steps_by_name(load_workflow())
+    controller = steps["Check out trusted paired controller"]["with"]
+    assert controller == {
+        "repository": "MongooseMoo/moo-conformance-tests",
+        "ref": "${{ github.workflow_sha }}",
+        "path": "controller",
+        "persist-credentials": "false",
+    }
+    candidate = steps["Check out candidate conformance data"]["with"]
+    assert candidate["ref"] == "${{ needs.validate-inputs.outputs.conformance_sha }}"
+    assert candidate["path"] == "candidate-data"
+    workflow_text = WORKFLOW_PATH.read_text()
+    assert "--project conformance" not in workflow_text
+    assert "working-directory: conformance" not in workflow_text
+    inventory = steps["Recompute trusted and candidate case inventories"]["run"]
+    assert "python -m moo_conformance.paired_inventory" in inventory
+    assert "candidate-data/src/moo_conformance/_tests" in inventory
+    assert "expected-case-ids" not in workflow_text
+
+
 def test_candidate_run_is_staged_and_packaged_execution_is_success_gated() -> None:
     steps = steps_by_name(load_workflow())
     admission = steps["Run canonical capability admission against Barn"]
     assert admission["id"] == "admission"
     assert admission["env"]["ADMISSION_CONTEXT"] == (
-        "${{ steps.provenance.outputs.admission_context }}"
+        "${{ steps.trust-context.outputs.admission_context }}"
     )
     assert "-m admission" in admission["run"]
     assert "--admission-evidence-output=" in admission["run"]
     assert "--admission-evidence-context=" in admission["run"]
     assert "--junitxml=" in admission["run"]
+    assert "--project controller" in admission["run"]
+    assert "--moo-suite-root=" in admission["run"]
     assert "exit 0" in admission["run"]
 
     packaged = steps["Run every packaged conformance case against Barn"]
     assert packaged["id"] == "packaged"
     assert packaged["env"]["ADMISSION_CONTEXT"] == (
-        "${{ steps.provenance.outputs.admission_context }}"
+        "${{ steps.trust-context.outputs.admission_context }}"
     )
     assert packaged["if"] == "steps.admission.outputs.exit_code == '0'"
     assert "-m conformance" in packaged["run"]
     assert "--admission-evidence-input=" in packaged["run"]
     assert "--admission-evidence-context=" in packaged["run"]
     assert "--pyargs moo_conformance" in packaged["run"]
+    assert "--project controller" in packaged["run"]
+    assert "--moo-suite-root=" in packaged["run"]
     assert "--fail-on-unexpected-skip" in packaged["run"]
     assert "--moo-suite-path" not in packaged["run"]
     assert "-k " not in packaged["run"]
@@ -163,7 +192,9 @@ def test_candidate_run_is_staged_and_packaged_execution_is_success_gated() -> No
 
 def test_paired_outputs_include_both_phase_exit_codes_and_exact_declaration() -> None:
     outputs = load_workflow()["jobs"]["paired"]["outputs"]
-    assert outputs["admission_context"] == "${{ steps.provenance.outputs.admission_context }}"
+    assert outputs["admission_context"] == (
+        "${{ steps.trust-context.outputs.admission_context }}"
+    )
     assert outputs["admission_exit"] == "${{ steps.admission.outputs.exit_code }}"
     assert outputs["packaged_exit"] == "${{ steps.packaged.outputs.exit_code }}"
     assert outputs["expected_phase"] == "${{ needs.validate-inputs.outputs.expected_phase }}"
@@ -186,7 +217,9 @@ def test_trusted_controller_validates_phase_appropriate_raw_evidence() -> None:
     command = validate["run"]
     assert "python -m moo_conformance.paired_result" in command
     assert '--admission="raw-evidence/admission.json"' in command
+    assert '--admission-report="raw-evidence/admission.xml"' in command
     assert '--admission-context="$ADMISSION_CONTEXT"' in command
+    assert '--candidate-tests="candidate-data/src/moo_conformance/_tests"' in command
     assert '--phase="$EXPECTED_PHASE"' in command
     assert '--admission-exit-code="$ADMISSION_EXIT"' in command
     assert '--required-bad-identities="$REQUIRED_BAD_IDENTITIES"' in command
@@ -194,14 +227,15 @@ def test_trusted_controller_validates_phase_appropriate_raw_evidence() -> None:
     assert "--packaged-exit-code=" in command
 
 
-def test_schema_v3_provenance_records_declared_and_observed_phase_identity_sets() -> None:
+def test_schema_v4_provenance_records_trusted_inventory_and_phase_identity_sets() -> None:
     workflow = load_workflow()
     provenance = steps_by_name(workflow, "verdict")["Record final staged provenance"]["run"]
-    assert '"schema_version": 3' in provenance
+    assert '"schema_version": 4' in provenance
     assert '"phase": result["phase"]' in provenance
     assert '"declared_bad_identities": result["declared_bad_identities"]' in provenance
     assert '"observed_bad_identities": result["observed_bad_identities"]' in provenance
     assert '"admission_context": result["admission"]["context"]' in provenance
+    assert '"inventory": result["inventory"]' in provenance
     summary = steps_by_name(workflow, "verdict")["Publish staged result summary"]["run"]
     assert "Declared bad identities" in summary
     assert "Observed bad identities" in summary
@@ -226,3 +260,20 @@ def test_verdict_uses_trusted_default_branch_controller() -> None:
         "path": "controller",
         "persist-credentials": "false",
     }
+    candidate = steps_by_name(workflow, "verdict")[
+        "Check out immutable candidate conformance data"
+    ]["with"]
+    assert candidate["ref"] == "${{ needs.paired.outputs.conformance_sha }}"
+    assert candidate["path"] == "candidate-data"
+
+
+def test_trusted_workflow_context_contains_fresh_run_attempt_nonce_and_immutable_pair() -> None:
+    steps = steps_by_name(load_workflow())
+    context = steps["Create trusted run-attempt admission context"]
+    assert context["id"] == "trust-context"
+    script = context["run"]
+    assert "secrets.token_hex" in script
+    assert "GITHUB_RUN_ID" in script
+    assert "GITHUB_RUN_ATTEMPT" in script
+    assert 'steps.provenance.outputs.barn_sha' in str(context["env"])
+    assert 'steps.provenance.outputs.conformance_sha' in str(context["env"])

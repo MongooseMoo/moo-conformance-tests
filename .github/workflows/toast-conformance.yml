@@ -93,11 +93,16 @@ jobs:
         run: |
           reports_dir="${RUNNER_TEMP}/toast-conformance-${{ matrix.profile }}"
           printf 'REPORTS_DIR=%s\n' "${reports_dir}" >> "${GITHUB_ENV}"
-          printf 'ADMISSION_CONTEXT=toast:%s:%s:%s\n' \
+          nonce=$(python3 -c 'import secrets; print(secrets.token_hex(32))')
+          printf 'ADMISSION_CONTEXT=toast:%s:%s:%s:%s:%s:%s\n' \
+            "${GITHUB_RUN_ID}" \
+            "${GITHUB_RUN_ATTEMPT}" \
+            "$nonce" \
             "${{ inputs.conformance_sha || github.sha }}" \
             "${{ matrix.profile }}" \
             "aecc51e9449c6e7c95272f0f044b5ba38948459e" >> "${GITHUB_ENV}"
           mkdir -p "${reports_dir}"
+          printf '%s\n' "$nonce" > "${reports_dir}/admission-nonce.txt"
           printf 'run_id=%s\nprofile=%s\nrunner_os=%s\nrunner_arch=%s\n' \
             "${GITHUB_RUN_ID}" "${{ matrix.profile }}" "${RUNNER_OS}" "${RUNNER_ARCH}" \
             > "${reports_dir}/workflow-start.txt"

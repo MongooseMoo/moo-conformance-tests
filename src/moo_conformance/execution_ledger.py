@@ -8,7 +8,7 @@ import re
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, TypedDict
 
 from .plugin import conformance_case_id, discover_yaml_tests, get_tests_dir
 
@@ -25,11 +25,44 @@ class CaseOutcome:
     reason: str | None = None
 
 
-def packaged_case_ids() -> set[str]:
-    tests_dir = get_tests_dir()
+class CandidateInventory(TypedDict):
+    schema_version: int
+    trusted_case_ids: list[str]
+    candidate_case_ids: list[str]
+    additive_case_ids: list[str]
+
+
+def packaged_case_ids(tests_dir: str | Path | None = None) -> set[str]:
+    tests_dir = Path(tests_dir).resolve() if tests_dir is not None else get_tests_dir()
     return {
         conformance_case_id(path, test, tests_dir)
         for path, _suite, test in discover_yaml_tests(test_dir=tests_dir)
+    }
+
+
+def validate_candidate_inventory(
+    candidate_tests_dir: str | Path,
+    *,
+    trusted_tests_dir: str | Path | None = None,
+) -> CandidateInventory:
+    """Recompute trusted and candidate identities and reject candidate deletions."""
+    trusted = packaged_case_ids(trusted_tests_dir)
+    candidate = packaged_case_ids(candidate_tests_dir)
+    if not trusted:
+        raise ExecutionLedgerError("trusted-main packaged conformance inventory is empty")
+    if not candidate:
+        raise ExecutionLedgerError("candidate packaged conformance inventory is empty")
+    missing = trusted - candidate
+    if missing:
+        raise ExecutionLedgerError(
+            "candidate conformance data deletes trusted-main identities: "
+            + ", ".join(sorted(missing))
+        )
+    return {
+        "schema_version": 1,
+        "trusted_case_ids": sorted(trusted),
+        "candidate_case_ids": sorted(candidate),
+        "additive_case_ids": sorted(candidate - trusted),
     }
 
 

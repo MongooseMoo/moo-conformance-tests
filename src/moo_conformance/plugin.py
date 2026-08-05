@@ -20,6 +20,8 @@ Usage from command line:
 
 import importlib.resources
 import os
+import sys
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterator
 
@@ -42,6 +44,65 @@ from .transport import MooTransport, SocketTransport
 
 # Global capability manager (session-scoped)
 capability_manager = CapabilityManager()
+
+
+@dataclass
+class _AdmissionRuntimeState:
+    external_authorized: bool = False
+    canonical_setup_passed: bool = False
+    canonical_call_passed: bool = False
+    canonical_authorized: bool = False
+
+    @property
+    def authorized(self) -> bool:
+        return self.external_authorized or self.canonical_authorized
+
+
+def _admission_runtime_state(config) -> _AdmissionRuntimeState:
+    state = getattr(config, "_moo_admission_runtime_state", None)
+    if state is None:
+        state = _AdmissionRuntimeState()
+        config._moo_admission_runtime_state = state
+    return state
+
+
+def _is_canonical_admission_item(item) -> bool:
+    module = sys.modules.get("moo_conformance.test_conformance")
+    return bool(
+        module is not None
+        and getattr(item, "module", None) is module
+        and getattr(item, "obj", None)
+        is getattr(module, "test_capability_admission", None)
+        and getattr(item, "name", None) == "test_capability_admission"
+    )
+
+
+def _is_packaged_conformance_item(item) -> bool:
+    module = sys.modules.get("moo_conformance.test_conformance")
+    return bool(
+        module is not None
+        and getattr(item, "module", None) is module
+        and getattr(item, "obj", None)
+        is getattr(module, "test_yaml_conformance", None)
+    )
+
+
+def _record_canonical_admission_report(item, report) -> None:
+    state = _admission_runtime_state(item.config)
+    if report.when == "setup":
+        state.canonical_setup_passed = report.passed
+    elif report.when == "call":
+        state.canonical_call_passed = report.passed
+    elif report.when == "teardown" and report.passed:
+        state.canonical_authorized = (
+            state.canonical_setup_passed and state.canonical_call_passed
+        )
+
+    if report.failed or report.skipped:
+        item.session.shouldfail = (
+            "canonical capability admission did not pass; packaged conformance "
+            "was not executed"
+        )
 
 
 def get_tests_dir() -> Path:
@@ -136,6 +197,11 @@ def pytest_addoption(parser):
         action="append",
         default=[],
         help="Internal packaged-suite path selected by the moo-conformance CLI.",
+    )
+    parser.addoption(
+        "--moo-suite-root",
+        default=None,
+        help="Trusted-controller data root containing candidate YAML suites.",
     )
     parser.addoption(
         "--fail-on-unexpected-skip",
@@ -415,13 +481,22 @@ def pytest_generate_tests(metafunc: Any) -> None:
     """
     if "yaml_test_case" in metafunc.fixturenames:
         selected_paths = metafunc.config.getoption("--moo-suite-path")
-        test_cases = discover_yaml_tests(selected_paths=selected_paths)
+        configured_root = metafunc.config.getoption("--moo-suite-root")
+        tests_dir = (
+            Path(configured_root).resolve()
+            if configured_root is not None
+            else get_tests_dir()
+        )
+        if not tests_dir.is_dir():
+            raise pytest.UsageError(f"Conformance suite root not found: {tests_dir}")
+        test_cases = discover_yaml_tests(
+            test_dir=tests_dir,
+            selected_paths=selected_paths,
+        )
 
         # Create IDs for each test case
         ids: list[str] = []
         params: list[tuple[MooTestSuite, MooTestCase]] = []
-
-        tests_dir = get_tests_dir()
 
         for yaml_path, suite, test in test_cases:
             ids.append(conformance_case_id(yaml_path, test, tests_dir))
@@ -448,7 +523,7 @@ def pytest_collection_modifyitems(session, config, items):
     normal = []
 
     for item in items:
-        if item.get_closest_marker("admission") is not None:
+        if _is_canonical_admission_item(item):
             admission.append(item)
             continue
         # Get test case from parametrized fixture
@@ -473,7 +548,8 @@ def pytest_collection_modifyitems(session, config, items):
     packaged = [
         item
         for item in providers + normal + consumers
-        if item.get_closest_marker("conformance") is not None
+        if _is_packaged_conformance_item(item)
+        or item.get_closest_marker("conformance") is not None
     ]
     if packaged and not admission:
         evidence_path = config.getoption("--admission-evidence-input")
@@ -500,12 +576,26 @@ def pytest_collection_modifyitems(session, config, items):
                 "selected packaged conformance requires successful admission evidence; "
                 f"failed/error={sorted(bad)!r}, blocked={sorted(blocked)!r}"
             )
+        _admission_runtime_state(config).external_authorized = True
 
     items[:] = admission + providers + normal + consumers
 
 
+@pytest.hookimpl(tryfirst=True)
 def pytest_runtest_setup(item):
     """Skip test if assumed capabilities aren't verified."""
+    if (
+        (
+            _is_packaged_conformance_item(item)
+            or item.get_closest_marker("conformance") is not None
+        )
+        and not _admission_runtime_state(item.config).authorized
+    ):
+        raise pytest.UsageError(
+            "packaged conformance runtime requires successful execution of the exact "
+            "canonical admission test in this session or fully validated external evidence"
+        )
+
     if hasattr(item, "callspec") and "yaml_test_case" in item.callspec.params:
         suite, test = item.callspec.params["yaml_test_case"]
 
@@ -530,10 +620,8 @@ def pytest_runtest_makereport(item, call):
     outcome = yield
     report = outcome.get_result()
 
-    if (report.failed or report.skipped) and item.get_closest_marker("admission") is not None:
-        item.session.shouldfail = (
-            "capability admission did not pass; packaged conformance was not executed"
-        )
+    if _is_canonical_admission_item(item):
+        _record_canonical_admission_report(item, report)
 
     if item.config.getoption("--fail-on-unexpected-skip"):
         _reject_unexpected_runtime_skip(item, report)

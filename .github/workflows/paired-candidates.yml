@@ -139,7 +139,7 @@ jobs:
     outputs:
       barn_sha: ${{ steps.provenance.outputs.barn_sha }}
       conformance_sha: ${{ steps.provenance.outputs.conformance_sha }}
-      admission_context: ${{ steps.provenance.outputs.admission_context }}
+      admission_context: ${{ steps.trust-context.outputs.admission_context }}
       admission_exit: ${{ steps.admission.outputs.exit_code }}
       packaged_exit: ${{ steps.packaged.outputs.exit_code }}
       expected_phase: ${{ needs.validate-inputs.outputs.expected_phase }}
@@ -157,12 +157,20 @@ jobs:
           path: barn
           persist-credentials: false
 
-      - name: Check out conformance candidate
+      - name: Check out trusted paired controller
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: MongooseMoo/moo-conformance-tests
+          ref: ${{ github.workflow_sha }}
+          path: controller
+          persist-credentials: false
+
+      - name: Check out candidate conformance data
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: MongooseMoo/moo-conformance-tests
           ref: ${{ needs.validate-inputs.outputs.conformance_sha }}
-          path: conformance
+          path: candidate-data
           persist-credentials: false
 
       - name: Record exact candidate provenance
@@ -174,15 +182,26 @@ jobs:
         run: |
           set -euo pipefail
           barn_sha=$(git -C barn rev-parse HEAD)
-          conformance_sha=$(git -C conformance rev-parse HEAD)
+          conformance_sha=$(git -C candidate-data rev-parse HEAD)
           test "$barn_sha" = "$REQUESTED_BARN_SHA"
           test "$conformance_sha" = "$REQUESTED_CONFORMANCE_SHA"
           printf 'barn_sha=%s\n' "$barn_sha" >> "$GITHUB_OUTPUT"
           printf 'conformance_sha=%s\n' "$conformance_sha" >> "$GITHUB_OUTPUT"
-          printf 'admission_context=paired:%s:%s:barn-linux-testdb-outbound-on\n' \
-            "$barn_sha" "$conformance_sha" >> "$GITHUB_OUTPUT"
           printf '%s\n' "$barn_sha" > "${REPORTS_DIR}/barn-sha.txt"
           printf '%s\n' "$conformance_sha" > "${REPORTS_DIR}/conformance-sha.txt"
+
+      - name: Create trusted run-attempt admission context
+        id: trust-context
+        env:
+          BARN_SHA: ${{ steps.provenance.outputs.barn_sha }}
+          CONFORMANCE_SHA: ${{ steps.provenance.outputs.conformance_sha }}
+          REPORTS_DIR: ${{ runner.temp }}/paired-evidence
+        run: |
+          set -euo pipefail
+          nonce=$(python3 -c 'import secrets; print(secrets.token_hex(32))')
+          context="paired:${GITHUB_RUN_ID}:${GITHUB_RUN_ATTEMPT}:${nonce}:${BARN_SHA}:${CONFORMANCE_SHA}:barn-linux-testdb-outbound-on"
+          printf 'admission_context=%s\n' "$context" >> "$GITHUB_OUTPUT"
+          printf '%s\n' "$nonce" > "${REPORTS_DIR}/admission-nonce.txt"
 
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
@@ -206,11 +225,11 @@ jobs:
           python-version: "3.13"
           enable-cache: false
 
-      - name: Install locked conformance candidate
-        run: uv sync --project conformance --locked --extra dev
+      - name: Install locked trusted controller
+        run: uv sync --project controller --locked --extra dev
 
-      - name: Run conformance candidate quality gates
-        working-directory: conformance
+      - name: Run trusted controller quality gates
+        working-directory: controller
         run: |
           uv run --frozen pytest tests --strict-markers -q
           uv run --frozen pytest --collect-only --pyargs moo_conformance --strict-markers -q
@@ -219,26 +238,24 @@ jobs:
           uv run --frozen ruff check .
           uv run --frozen mypy src/moo_conformance
 
-      - name: Create exact case inventory and oracle profile
+      - name: Recompute trusted and candidate case inventories
         env:
           REPORTS_DIR: ${{ runner.temp }}/paired-evidence
         run: |
           set -euo pipefail
           printf 'OUTBOUND_NETWORK = 1\nPROMOTE_NUMBERS = 0\n' > "${REPORTS_DIR}/barn.conf"
-          uv run --project conformance --frozen python - <<'PY'
+          uv run --project controller --frozen python -m moo_conformance.paired_inventory \
+            --candidate-tests="candidate-data/src/moo_conformance/_tests" \
+            --output="${REPORTS_DIR}/candidate-inventory.json"
+          uv run --project controller --frozen python - <<'PY'
           import hashlib
           import json
           import os
           from pathlib import Path
 
-          from moo_conformance.execution_ledger import packaged_case_ids
-
           reports = Path(os.environ["REPORTS_DIR"])
-          database = Path("conformance/src/moo_conformance/_db/Test.db")
+          database = Path("candidate-data/src/moo_conformance/_db/Test.db")
           checksum = hashlib.sha256(database.read_bytes()).hexdigest()
-          (reports / "expected-case-ids.json").write_text(
-              json.dumps(sorted(packaged_case_ids()), indent=2) + "\n"
-          )
           oracle = {
               "profile_id": "barn-linux-testdb-outbound-on-oracle",
               "implementation": "toast-contract",
@@ -260,15 +277,17 @@ jobs:
         id: admission
         env:
           REPORTS_DIR: ${{ runner.temp }}/paired-evidence
-          ADMISSION_CONTEXT: ${{ steps.provenance.outputs.admission_context }}
+          ADMISSION_CONTEXT: ${{ steps.trust-context.outputs.admission_context }}
         run: |
           set -o pipefail
           set +e
-          uv run --project conformance --frozen pytest \
+          uv run --project controller --frozen pytest \
             --pyargs moo_conformance \
             -m admission \
+            --moo-suite-root="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_tests" \
             --server-command="${GITHUB_WORKSPACE}/barn-candidate -db {db} -port {port} -config=${REPORTS_DIR}/barn.conf -outbound -profile-id=barn-linux-testdb-outbound-on -profile-manifest=${REPORTS_DIR}/target-profile.json" \
-            --server-db-dir="${GITHUB_WORKSPACE}/conformance/src/moo_conformance/_db/startup" \
+            --server-db="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/Test.db" \
+            --server-db-dir="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/startup" \
             --moo-host=127.0.0.1 \
             --oracle-profile-manifest="${REPORTS_DIR}/oracle-profile.json" \
             --target-profile-manifest="${REPORTS_DIR}/target-profile.json" \
@@ -289,15 +308,17 @@ jobs:
         if: steps.admission.outputs.exit_code == '0'
         env:
           REPORTS_DIR: ${{ runner.temp }}/paired-evidence
-          ADMISSION_CONTEXT: ${{ steps.provenance.outputs.admission_context }}
+          ADMISSION_CONTEXT: ${{ steps.trust-context.outputs.admission_context }}
         run: |
           set -o pipefail
           set +e
-          uv run --project conformance --frozen pytest \
+          uv run --project controller --frozen pytest \
             --pyargs moo_conformance \
             -m conformance \
+            --moo-suite-root="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_tests" \
             --server-command="${GITHUB_WORKSPACE}/barn-candidate -db {db} -port {port} -config=${REPORTS_DIR}/barn.conf -outbound -profile-id=barn-linux-testdb-outbound-on -profile-manifest=${REPORTS_DIR}/target-profile.json" \
-            --server-db-dir="${GITHUB_WORKSPACE}/conformance/src/moo_conformance/_db/startup" \
+            --server-db="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/Test.db" \
+            --server-db-dir="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/startup" \
             --moo-host=127.0.0.1 \
             --oracle-profile-manifest="${REPORTS_DIR}/oracle-profile.json" \
             --target-profile-manifest="${REPORTS_DIR}/target-profile.json" \
@@ -340,6 +361,14 @@ jobs:
           path: controller
           persist-credentials: false
 
+      - name: Check out immutable candidate conformance data
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: MongooseMoo/moo-conformance-tests
+          ref: ${{ needs.paired.outputs.conformance_sha }}
+          path: candidate-data
+          persist-credentials: false
+
       - name: Install trusted controller
         uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
         with:
@@ -373,12 +402,13 @@ jobs:
           mkdir -p verdict
           args=(
             --admission="raw-evidence/admission.json"
+            --admission-report="raw-evidence/admission.xml"
             --admission-context="$ADMISSION_CONTEXT"
+            --candidate-tests="candidate-data/src/moo_conformance/_tests"
             --expected="$EXPECTED_RESULT"
             --phase="$EXPECTED_PHASE"
             --admission-exit-code="$ADMISSION_EXIT"
             --required-bad-identities="$REQUIRED_BAD_IDENTITIES"
-            --expected-ids="raw-evidence/expected-case-ids.json"
             --output="verdict/result.json"
           )
           if [[ -f raw-evidence/conformance.xml ]]; then
@@ -416,7 +446,7 @@ jobs:
 
           result = json.loads(Path("verdict/result.json").read_text())
           provenance = {
-              "schema_version": 3,
+              "schema_version": 4,
               "repositories": {
                   "barn": "MongooseMoo/barn",
                   "conformance": "MongooseMoo/moo-conformance-tests",
@@ -428,6 +458,7 @@ jobs:
               "declared_bad_identities": result["declared_bad_identities"],
               "observed_bad_identities": result["observed_bad_identities"],
               "admission_context": result["admission"]["context"],
+              "inventory": result["inventory"],
               "correlation_id": os.environ["CORRELATION_ID"] or None,
               "workflow_repository": os.environ["WORKFLOW_REPOSITORY"],
               "workflow_ref": os.environ["WORKFLOW_REF"],

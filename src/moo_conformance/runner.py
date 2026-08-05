@@ -103,8 +103,19 @@ class YamlTestRunner:
             return self.managed_server.default_db_path
 
         server_db = Path(suite.server_db)
-        if not server_db.is_absolute() and self.server_db_dir is not None:
-            server_db = Path(self.server_db_dir) / server_db
+        if self.server_db_dir is not None:
+            fixture_root = Path(self.server_db_dir).resolve()
+            server_db = (
+                server_db.resolve()
+                if server_db.is_absolute()
+                else (fixture_root / server_db).resolve()
+            )
+            try:
+                server_db.relative_to(fixture_root)
+            except ValueError as exc:
+                raise ValueError(
+                    f"Suite server_db escapes the configured fixture directory: {suite.server_db}"
+                ) from exc
 
         return Path(os.path.realpath(server_db))
 

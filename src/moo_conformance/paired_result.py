@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 from .admission import (
@@ -14,20 +16,27 @@ from .admission import (
     admission_counts,
     load_admission_evidence,
 )
-from .execution_ledger import ExecutionLedgerError, packaged_case_ids, parse_junit_report
+from .execution_ledger import (
+    CandidateInventory,
+    CaseOutcome,
+    ExecutionLedgerError,
+    parse_junit_report,
+    validate_candidate_inventory,
+)
 
 
 def validate_paired_result(
     *,
     admission_path: str | Path,
+    admission_report_path: str | Path,
     admission_context: str,
+    candidate_tests_dir: str | Path,
     report_path: str | Path | None,
     expected: str,
     expected_phase: str,
     admission_exit_code: int,
     packaged_exit_code: int | None,
     required_bad_identities: object,
-    expected_case_ids: set[str] | None = None,
 ) -> dict[str, object]:
     """Validate exactly one complete admission or packaged result surface."""
     if expected not in {"success", "failure"}:
@@ -37,13 +46,10 @@ def validate_paired_result(
     if expected == "success" and expected_phase != "packaged":
         raise ExecutionLedgerError("expected success requires packaged phase")
 
+    inventory = validate_candidate_inventory(candidate_tests_dir)
+    candidate_case_ids = set(inventory["candidate_case_ids"])
     if expected_phase == "packaged":
-        expected_case_ids = (
-            expected_case_ids if expected_case_ids is not None else packaged_case_ids()
-        )
-        if not expected_case_ids:
-            raise ExecutionLedgerError("packaged conformance collection is empty")
-        known_identities = expected_case_ids
+        known_identities = candidate_case_ids
     else:
         known_identities = set(ADMISSION_PROBE_INVENTORY)
 
@@ -67,13 +73,25 @@ def validate_paired_result(
     admission_succeeded = (
         admission_exit_code == 0 and not admission_bad and not admission_blocked
     )
+    admission_junit = parse_admission_junit(
+        admission_report_path,
+        expected_context=admission_context,
+    )
+    expected_junit_status = "passed" if admission_succeeded else "failed"
+    if admission_junit.status != expected_junit_status:
+        raise ExecutionLedgerError(
+            "admission JUnit/JSON disagreement: "
+            f"JSON success={admission_succeeded}, JUnit status={admission_junit.status}"
+        )
     admission_summary: dict[str, object] = {
         "schema_version": 2,
         "context": admission_context,
         "inventory": list(ADMISSION_PROBE_INVENTORY),
         **counts,
         "exit_code": admission_exit_code,
+        "junit_status": admission_junit.status,
     }
+    inventory_summary = _inventory_summary(inventory)
 
     if expected_phase == "admission":
         if expected != "failure":
@@ -91,12 +109,13 @@ def validate_paired_result(
             )
         _require_exact_bad_set(admission_bad, declared_bad)
         return {
-            "schema_version": 3,
+            "schema_version": 4,
             "phase": "admission",
             "expected_result": expected,
             "declared_bad_identities": sorted(declared_bad),
             "observed_bad_identities": sorted(admission_bad),
             "admission": admission_summary,
+            "inventory": inventory_summary,
             "packaged": None,
         }
 
@@ -110,10 +129,9 @@ def validate_paired_result(
             "packaged phase requires a complete JUnit report and packaged exit code"
         )
 
-    assert expected_case_ids is not None
     outcomes = parse_junit_report(report_path)
-    missing = expected_case_ids - set(outcomes)
-    extra = set(outcomes) - expected_case_ids
+    missing = candidate_case_ids - set(outcomes)
+    extra = set(outcomes) - candidate_case_ids
     if missing or extra:
         details: list[str] = []
         if missing:
@@ -148,15 +166,16 @@ def validate_paired_result(
     _require_exact_bad_set(observed_bad, declared_bad)
 
     return {
-        "schema_version": 3,
+        "schema_version": 4,
         "phase": "packaged",
         "expected_result": expected,
         "declared_bad_identities": sorted(declared_bad),
         "observed_bad_identities": sorted(observed_bad),
         "admission": admission_summary,
+        "inventory": inventory_summary,
         "packaged": {
             "exit_code": packaged_exit_code,
-            "packaged_cases": len(expected_case_ids),
+            "packaged_cases": len(candidate_case_ids),
             **packaged_counts,
         },
     }
@@ -224,55 +243,95 @@ def _validate_required_bad_identities(
     return declared
 
 
-def _load_expected_ids(path: Path) -> set[str]:
+def parse_admission_junit(
+    path: str | Path,
+    *,
+    expected_context: str,
+) -> CaseOutcome:
+    report_path = Path(path)
     try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        raise ExecutionLedgerError(f"cannot read expected case IDs {path}: {exc}") from exc
-    if not isinstance(data, list) or any(
-        not isinstance(case_id, str) or not case_id or case_id != case_id.strip()
-        for case_id in data
+        root = ET.parse(report_path).getroot()
+    except (OSError, ET.ParseError) as exc:
+        raise ExecutionLedgerError(
+            f"cannot read admission JUnit report {report_path}: {exc}"
+        ) from exc
+    testcases = list(root.iter("testcase"))
+    if len(testcases) != 1:
+        raise ExecutionLedgerError(
+            "admission JUnit must contain exactly one canonical testcase"
+        )
+    testcase = testcases[0]
+    if (
+        testcase.attrib.get("name") != "test_capability_admission"
+        or testcase.attrib.get("classname") != "src.moo_conformance.test_conformance"
     ):
         raise ExecutionLedgerError(
-            "expected case IDs must be a JSON array of non-empty strings without padding"
+            "admission JUnit does not identify the exact canonical admission test"
         )
-    case_ids = set(data)
-    if len(case_ids) != len(data):
-        raise ExecutionLedgerError("expected case IDs contain duplicates")
-    if not case_ids:
-        raise ExecutionLedgerError("expected case IDs are empty")
-    return case_ids
+    properties = {
+        prop.attrib.get("name"): prop.attrib.get("value")
+        for prop in testcase.findall("./properties/property")
+    }
+    if properties != {"admission_context": expected_context}:
+        raise ExecutionLedgerError(
+            "admission JUnit context mismatch or malformed context properties"
+        )
+    failure = testcase.find("failure")
+    error = testcase.find("error")
+    skipped = testcase.find("skipped")
+    if failure is not None:
+        return CaseOutcome("failed")
+    if error is not None:
+        return CaseOutcome("error")
+    if skipped is not None:
+        return CaseOutcome("skipped")
+    return CaseOutcome("passed")
+
+
+def _inventory_summary(inventory: CandidateInventory) -> dict[str, object]:
+    trusted = inventory["trusted_case_ids"]
+    candidate = inventory["candidate_case_ids"]
+    additive = inventory["additive_case_ids"]
+    digest = hashlib.sha256(("\n".join(candidate) + "\n").encode()).hexdigest()
+    return {
+        "schema_version": 1,
+        "trusted_cases": len(trusted),
+        "candidate_cases": len(candidate),
+        "additive_cases": len(additive),
+        "candidate_identity_sha256": digest,
+    }
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--admission", required=True, type=Path)
+    parser.add_argument("--admission-report", required=True, type=Path)
     parser.add_argument("--admission-context", required=True)
+    parser.add_argument("--candidate-tests", required=True, type=Path)
     parser.add_argument("--report", type=Path)
     parser.add_argument("--expected", required=True, choices=("success", "failure"))
     parser.add_argument("--phase", required=True, choices=("admission", "packaged"))
     parser.add_argument("--admission-exit-code", required=True, type=int)
     parser.add_argument("--packaged-exit-code", type=int)
     parser.add_argument("--required-bad-identities", required=True)
-    parser.add_argument("--expected-ids", type=Path)
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args(argv)
 
     try:
-        expected_case_ids = _load_expected_ids(args.expected_ids) if args.expected_ids else None
         required_bad_identities = _parse_required_bad_identities(
             args.required_bad_identities
         )
         result = validate_paired_result(
             admission_path=args.admission,
+            admission_report_path=args.admission_report,
             admission_context=args.admission_context,
+            candidate_tests_dir=args.candidate_tests,
             report_path=args.report,
             expected=args.expected,
             expected_phase=args.phase,
             admission_exit_code=args.admission_exit_code,
             packaged_exit_code=args.packaged_exit_code,
             required_bad_identities=required_bad_identities,
-            expected_case_ids=expected_case_ids,
         )
     except ExecutionLedgerError as exc:
         parser.error(str(exc))

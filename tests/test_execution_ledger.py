@@ -10,6 +10,7 @@ from moo_conformance.execution_ledger import (
     load_baseline,
     packaged_case_ids,
     parse_junit_report,
+    validate_candidate_inventory,
 )
 
 
@@ -25,6 +26,52 @@ def case(case_id: str, child: str = "") -> str:
         '<testcase classname="src.moo_conformance.test_conformance" '
         f'name="test_yaml_conformance[{case_id}]">{child}</testcase>'
     )
+
+
+def write_suite(root: Path, filename: str, names: list[str]) -> None:
+    root.mkdir(parents=True, exist_ok=True)
+    tests = "\n".join(
+        f"  - name: {name}\n    code: '1'\n    expect:\n      value: 1"
+        for name in names
+    )
+    (root / filename).write_text(f"name: suite\ntests:\n{tests}\n", encoding="utf-8")
+
+
+def test_candidate_inventory_allows_additions_but_recomputes_both_surfaces(
+    tmp_path: Path,
+) -> None:
+    trusted = tmp_path / "trusted"
+    candidate = tmp_path / "candidate"
+    write_suite(trusted, "suite.yaml", ["base"])
+    write_suite(candidate, "suite.yaml", ["base", "addition"])
+
+    inventory = validate_candidate_inventory(
+        candidate,
+        trusted_tests_dir=trusted,
+    )
+
+    assert inventory["trusted_case_ids"] == ["suite.yaml::base"]
+    assert inventory["candidate_case_ids"] == [
+        "suite.yaml::addition",
+        "suite.yaml::base",
+    ]
+    assert inventory["additive_case_ids"] == ["suite.yaml::addition"]
+
+
+def test_candidate_inventory_rejects_yaml_deletion_despite_forged_id_claim(
+    tmp_path: Path,
+) -> None:
+    trusted = tmp_path / "trusted"
+    candidate = tmp_path / "candidate"
+    write_suite(trusted, "suite.yaml", ["required"])
+    write_suite(candidate, "suite.yaml", ["other"])
+    (candidate / "expected-case-ids.json").write_text(
+        json.dumps(["suite.yaml::required"]),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ExecutionLedgerError, match="deletes trusted-main identities"):
+        validate_candidate_inventory(candidate, trusted_tests_dir=trusted)
 
 
 def test_parse_junit_report_records_exact_outcomes(tmp_path: Path) -> None:

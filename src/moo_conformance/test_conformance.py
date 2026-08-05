@@ -321,7 +321,7 @@ def _run_admission_probe(runner, profile_features, identity: str) -> bool:
 
 
 @pytest.mark.admission
-def test_capability_admission(runner, profile_metadata_gate, request) -> None:
+def test_capability_admission(runner, profile_metadata_gate, request, record_property) -> None:
     """Record the complete canonical admission inventory before packaged execution."""
     _reset_capability_caches_for_tests()
     output_path = request.config.getoption("--admission-evidence-output")
@@ -332,6 +332,7 @@ def test_capability_admission(runner, profile_metadata_gate, request) -> None:
                 "--admission-evidence-output requires --admission-evidence-context"
             )
         context = "same-session"
+    record_property("admission_context", context)
     evidence = run_capability_admission(
         lambda identity: _run_admission_probe(runner, profile_metadata_gate, identity),
         context=context,

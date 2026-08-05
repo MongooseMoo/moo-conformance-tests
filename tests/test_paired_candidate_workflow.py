@@ -70,6 +70,7 @@ def test_paired_workflow_validates_refs_before_any_candidate_checkout() -> None:
     assert validation["outputs"] == {
         "barn_sha": "${{ steps.validate.outputs.barn_sha }}",
         "conformance_sha": "${{ steps.validate.outputs.conformance_sha }}",
+        "required_bad_cases": "${{ steps.validate.outputs.required_bad_cases }}",
     }
     steps = steps_by_name(workflow, "validate-inputs")
     validate = steps["Reject mutable or malformed candidate refs"]
@@ -157,8 +158,14 @@ def test_paired_workflow_checks_out_fixed_repositories_without_credentials() -> 
         "BARN_SHA": "${{ github.event.client_payload.barn_sha }}",
         "CONFORMANCE_SHA": "${{ github.event.client_payload.conformance_sha }}",
         "EXPECTED_RESULT": "${{ github.event.client_payload.expected_result }}",
-        "REQUIRED_BAD_CASE": "${{ github.event.client_payload.required_bad_case }}",
+        "REQUIRED_BAD_CASES": "${{ toJSON(github.event.client_payload.required_bad_cases) }}",
     }
+
+    validation = validate_step["run"]
+    assert "json.loads" in validation
+    assert "required_bad_cases must be a JSON array" in validation
+    assert "required_bad_cases contains duplicates" in validation
+    assert "required_bad_case" not in validation.replace("required_bad_cases", "")
 
 
 def test_paired_workflow_runs_complete_strict_suite_and_fails_closed_on_evidence() -> None:
@@ -179,10 +186,19 @@ def test_paired_workflow_runs_complete_strict_suite_and_fails_closed_on_evidence
     assert "python -m moo_conformance.paired_result" in validate
     assert '--expected="$EXPECTED_RESULT"' in validate
     assert '--exit-code="$CONFORMANCE_EXIT"' in validate
-    assert '--required-bad-case="$REQUIRED_BAD_CASE"' in validate
+    assert '--required-bad-cases="$REQUIRED_BAD_CASES"' in validate
     assert '--expected-ids="raw-evidence/expected-case-ids.json"' in validate
     assert "--report=" in validate
     assert "--output=" in validate
+
+    paired = workflow["jobs"]["paired"]
+    assert paired["outputs"]["required_bad_cases"] == (
+        "${{ needs.validate-inputs.outputs.required_bad_cases }}"
+    )
+    verdict_env = steps_by_name(workflow, "verdict")[
+        "Validate the expected paired result"
+    ]["env"]
+    assert verdict_env["REQUIRED_BAD_CASES"] == "${{ needs.paired.outputs.required_bad_cases }}"
 
     raw_upload = steps["Upload raw paired evidence"]["with"]
     final_upload = steps_by_name(workflow, "verdict")["Upload final paired verdict"]["with"]
@@ -219,6 +235,18 @@ def test_paired_workflow_records_requested_and_resolved_provenance() -> None:
 
     final_record = steps_by_name(workflow, "verdict")["Record final paired provenance"]
     assert final_record["env"]["WORKFLOW_SHA"] == "${{ github.workflow_sha }}"
+    assert "result[\"required_bad_cases\"]" in final_record["run"]
+
+    summary = steps_by_name(workflow, "verdict")["Publish paired result summary"]["run"]
+    assert "Required bad cases" in summary
+    assert "result['required_bad_cases']" in summary
+
+
+def test_paired_workflow_has_only_canonical_plural_failure_set_input() -> None:
+    workflow_text = WORKFLOW_PATH.read_text()
+
+    assert "required_bad_cases" in workflow_text
+    assert not re.search(r"required_bad_case(?!s)", workflow_text)
 
 
 def test_verdict_job_uses_trusted_controller_and_no_candidate_code() -> None:

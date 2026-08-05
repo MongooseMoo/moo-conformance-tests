@@ -38,10 +38,10 @@ def test_complete_three_profile_toast_admission_remains_unconditional() -> None:
     assert workflow["jobs"]["paired"]["needs"] == ["validate-inputs", "toast-admission"]
 
 
-def test_toast_pr_check_is_base_owned_read_only_and_pr_scoped() -> None:
+def test_toast_pr_check_bootstraps_base_owned_read_only_validation() -> None:
     workflow = load_workflow(TOAST_WORKFLOW_PATH)
     assert workflow["on"]["pull_request_target"] == ""
-    assert "pull_request" not in workflow["on"]
+    assert workflow["on"]["pull_request"] == ""
     assert workflow["on"]["push"] == {"branches": ["main"]}
     assert workflow["on"]["workflow_call"] == {
         "inputs": {

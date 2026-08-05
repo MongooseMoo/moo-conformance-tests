@@ -315,6 +315,30 @@ def test_paired_workflow_is_read_only_and_pins_every_action() -> None:
                 assert PINNED_ACTION.fullmatch(action), f"{job_name}/{name} is not SHA-pinned"
 
 
+def test_toast_workflow_regenerates_shutdown_fixtures_before_full_suite() -> None:
+    workflow = load_workflow(TOAST_WORKFLOW_PATH)
+    steps = steps_by_name(workflow, "full-suite")
+    names = list(steps)
+    admission_name = "Run canonical capability admission against Toast"
+    provenance_name = "Regenerate and byte-compare shutdown fixtures with managed Toast"
+    full_suite_name = "Run every packaged conformance case against Toast"
+
+    assert names.index(admission_name) < names.index(provenance_name)
+    assert names.index(provenance_name) < names.index(full_suite_name)
+    provenance_step = steps[provenance_name]
+    assert "working-directory" not in provenance_step
+    provenance = provenance_step["run"]
+    assert "uv run --project trusted-controller --frozen pytest" in provenance
+    assert "-m conformance" in provenance
+    assert "--moo-suite-path=fixture_provenance" in provenance
+    assert '--candidate-root="${GITHUB_WORKSPACE}/candidate-data"' in provenance
+    assert "${RUNNER_TEMP}/toast-build-${{ matrix.profile }}/moo" in provenance
+    assert "--fail-on-unexpected-skip" in provenance
+    assert "--admission-evidence-input=" in provenance
+    assert "--admission-evidence-context=" in provenance
+    assert "toast-fixture-provenance.xml" in provenance
+
+
 def test_quality_gates_run_only_from_trusted_controller() -> None:
     quality = steps_by_name(load_workflow())["Run trusted controller quality gates"]
     assert quality["working-directory"] == "controller"

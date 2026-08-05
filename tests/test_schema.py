@@ -112,10 +112,20 @@ def test_unknown_fields_are_rejected_at_closed_schema_boundaries(
         ("send_bytes", {"hex": "00", "connection": "conn"}),
         ("read_connection", {"connection": "conn"}),
         ("assert_log", {"contains": "ready"}),
-        ("assert_file", {"path": "out.txt", "exists": True, "contains": "ready"}),
+        (
+            "assert_file",
+            {
+                "path": "out.txt",
+                "exists": True,
+                "contains": "ready",
+                "equals_file": "expected.txt",
+                "timeout_ms": 1000,
+            },
+        ),
         ("write_file", {"path": "in.txt", "content": "data"}),
         ("write_stdin", {"text": "quit\n"}),
         ("restart_server", {"wait_ms": 1, "down_ms": 1}),
+        ("wait_for_server_exit", {"timeout_ms": 1000, "exit_code": 0}),
     ],
 )
 def test_unknown_fields_are_rejected_in_structured_actions(
@@ -129,6 +139,242 @@ def test_unknown_fields_are_rejected_in_structured_actions(
 
     with pytest.raises(ValueError, match=r"Unknown field.*unexpected"):
         validate_test_suite(data)
+
+
+def _suite_with_wait_for_server_exit(payload: dict) -> dict:
+    return {
+        "name": "wait_for_server_exit_schema",
+        "tests": [
+            {
+                "name": "wait_for_exit",
+                "steps": [{"wait_for_server_exit": payload}],
+            }
+        ],
+    }
+
+
+@pytest.mark.parametrize(
+    ("payload", "message"),
+    [
+        ({"exit_code": 0}, "must specify timeout_ms"),
+        ({"timeout_ms": 1000}, "exactly one"),
+        (
+            {"timeout_ms": 1000, "exit_code": 0, "termination": "abort"},
+            "exactly one",
+        ),
+        ({"timeout_ms": 1000, "termination": "SIGTERM"}, "must be 'abort'"),
+        ({"timeout_ms": 1000, "exit_code": True}, "must be an integer"),
+    ],
+    ids=[
+        "missing-timeout",
+        "missing-expectation",
+        "conflicting-expectations",
+        "unknown-termination",
+        "boolean-exit-code",
+    ],
+)
+def test_wait_for_server_exit_rejects_invalid_schema(payload: dict, message: str):
+    with pytest.raises(ValueError, match=message):
+        validate_test_suite(_suite_with_wait_for_server_exit(payload))
+
+
+def test_wait_for_server_exit_accepts_portable_abort_termination():
+    suite = validate_test_suite(
+        _suite_with_wait_for_server_exit(
+            {"timeout_ms": 5000, "termination": "abort"}
+        )
+    )
+
+    expectation = suite.tests[0].steps[0].wait_for_server_exit
+    assert expectation is not None
+    assert expectation.timeout_ms == 5000
+    assert expectation.exit_code is None
+    assert expectation.termination == "abort"
+
+
+@pytest.mark.parametrize(
+    ("suite", "message"),
+    [
+        (
+            {
+                "name": "post-exit-run",
+                "tests": [
+                    {
+                        "name": "case",
+                        "steps": [
+                            {"wait_for_server_exit": {"timeout_ms": 1000, "exit_code": 0}},
+                            {"run": "return 1;"},
+                        ],
+                    }
+                ],
+            },
+            "only assert_log or assert_file",
+        ),
+        (
+            {
+                "name": "post-exit-cleanup",
+                "tests": [
+                    {
+                        "name": "case",
+                        "steps": [
+                            {"wait_for_server_exit": {"timeout_ms": 1000, "exit_code": 0}}
+                        ],
+                        "cleanup": [{"run": "return 1;"}],
+                    }
+                ],
+            },
+            "cannot declare cleanup",
+        ),
+        (
+            {
+                "name": "post-exit-test-teardown",
+                "tests": [
+                    {
+                        "name": "case",
+                        "steps": [
+                            {"wait_for_server_exit": {"timeout_ms": 1000, "exit_code": 0}}
+                        ],
+                        "teardown": "return 1;",
+                    }
+                ],
+            },
+            "cannot declare teardown",
+        ),
+        (
+            {
+                "name": "post-exit-suite-teardown",
+                "teardown": "return 1;",
+                "tests": [
+                    {
+                        "name": "case",
+                        "steps": [
+                            {"wait_for_server_exit": {"timeout_ms": 1000, "exit_code": 0}}
+                        ],
+                    }
+                ],
+            },
+            "suite teardown",
+        ),
+        (
+            {
+                "name": "exit-before-later-test",
+                "tests": [
+                    {
+                        "name": "exit",
+                        "steps": [
+                            {"wait_for_server_exit": {"timeout_ms": 1000, "exit_code": 0}}
+                        ],
+                    },
+                    {"name": "later", "code": "1"},
+                ],
+            },
+            "suite's final test",
+        ),
+    ],
+    ids=[
+        "server-step-after-exit",
+        "cleanup-after-exit",
+        "test-teardown-after-exit",
+        "suite-teardown-after-exit",
+        "later-test-after-exit",
+    ],
+)
+def test_wait_for_server_exit_rejects_nonterminal_lifecycle(suite: dict, message: str):
+    with pytest.raises(ValueError, match=message):
+        validate_test_suite(suite)
+
+
+def test_wait_for_server_exit_allows_only_post_exit_log_and_file_evidence():
+    suite = validate_test_suite(
+        {
+            "name": "terminal-evidence",
+            "tests": [
+                {
+                    "name": "case",
+                    "steps": [
+                        {"wait_for_server_exit": {"timeout_ms": 1000, "exit_code": 0}},
+                        {"assert_log": {"contains": "stopped"}},
+                        {"assert_file": {"path": "output.db", "contains": "done"}},
+                    ],
+                }
+            ],
+        }
+    )
+
+    assert len(suite.tests[0].steps) == 3
+
+
+def test_assert_file_parses_structural_suspended_task_contract():
+    suite = validate_test_suite(
+        {
+            "name": "suspended-task-structure",
+            "tests": [
+                {
+                    "name": "case",
+                    "steps": [
+                        {
+                            "assert_file": {
+                                "path": "panic.db",
+                                "suspended_task": {
+                                    "waif_class": 9,
+                                    "waif_owner": 3,
+                                    "anonymous_object": 10,
+                                    "anonymous_owner": 3,
+                                },
+                            }
+                        }
+                    ],
+                }
+            ],
+        }
+    )
+
+    assertion = suite.tests[0].steps[0].assert_file
+    assert assertion is not None
+    assert assertion.suspended_task is not None
+    assert assertion.suspended_task.anonymous_object == 10
+
+
+@pytest.mark.parametrize(
+    "suspended_task",
+    [
+        {"waif_class": 9, "waif_owner": 3, "anonymous_object": 10},
+        {
+            "waif_class": 9,
+            "waif_owner": 3,
+            "anonymous_object": 10,
+            "anonymous_owner": True,
+        },
+        {
+            "waif_class": 9,
+            "waif_owner": 3,
+            "anonymous_object": 10,
+            "anonymous_owner": 3,
+            "fragment": "state",
+        },
+    ],
+    ids=["missing-field", "boolean-owner", "unknown-fragment-field"],
+)
+def test_assert_file_rejects_invalid_suspended_task_contract(suspended_task: dict):
+    with pytest.raises(ValueError, match="suspended_task"):
+        validate_test_suite(
+            {
+                "name": "bad-suspended-task",
+                "tests": [
+                    {
+                        "name": "case",
+                        "steps": [
+                            {
+                                "assert_file": {
+                                    "path": "panic.db",
+                                    "suspended_task": suspended_task,
+                                }
+                            }
+                        ],
+                    }
+                ],
+            }
+        )
 
 
 def test_table_row_variable_mappings_remain_open() -> None:

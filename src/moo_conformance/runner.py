@@ -6,6 +6,7 @@ Executes test cases defined in YAML format against a MOO transport.
 import os
 import re
 import socket
+import stat
 import time
 from pathlib import Path
 from typing import Any
@@ -18,10 +19,18 @@ from .schema import (
     LogAssertion,
     MooTestCase,
     MooTestSuite,
+    SuspendedTaskAssertion,
     TestStep,
+    WaitForServerExit,
     WriteFile,
 )
-from .server import ManagedServer
+from .server import (
+    FileSnapshotSignature,
+    ManagedServer,
+    file_snapshot_signature,
+    normalize_process_termination,
+    snapshot_regular_files,
+)
 from .transport import ExecutionResult, MooTransport, TestConnection
 
 
@@ -29,6 +38,156 @@ class AssertionError(Exception):
     """Test assertion failed."""
 
     pass
+
+
+def _is_link_or_reparse(info: os.stat_result) -> bool:
+    attributes = getattr(info, "st_file_attributes", 0)
+    reparse_flag = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
+    return stat.S_ISLNK(info.st_mode) or bool(attributes & reparse_flag)
+
+
+def _parse_db_var(lines: list[str], index: int) -> tuple[object, int]:
+    """Parse one Toast database value from newline-delimited storage."""
+    if index >= len(lines) or re.fullmatch(r"-?\d+", lines[index]) is None:
+        raise ValueError("missing database value type")
+    value_type = int(lines[index])
+    index += 1
+
+    def integer() -> int:
+        nonlocal index
+        if index >= len(lines) or re.fullmatch(r"-?\d+", lines[index]) is None:
+            raise ValueError("missing integer payload")
+        value = int(lines[index])
+        index += 1
+        return value
+
+    if value_type in {0, 1, 3, 7, 8, 14}:
+        return integer(), index
+    if value_type == 2:
+        if index >= len(lines):
+            raise ValueError("missing string payload")
+        string_value = lines[index]
+        return string_value, index + 1
+    if value_type in {5, 6}:
+        return None, index
+    if value_type == 9:
+        if index >= len(lines):
+            raise ValueError("missing float payload")
+        try:
+            float_value = float(lines[index])
+        except ValueError as exc:
+            raise ValueError("invalid float payload") from exc
+        return float_value, index + 1
+    if value_type == 4:
+        length = integer()
+        values = []
+        for _ in range(length):
+            item, index = _parse_db_var(lines, index)
+            values.append(item)
+        return {"type": "list", "items": values}, index
+    if value_type == 10:
+        length = integer()
+        pairs = []
+        for _ in range(length):
+            key, index = _parse_db_var(lines, index)
+            map_value, index = _parse_db_var(lines, index)
+            pairs.append((key, map_value))
+        return {"type": "map", "pairs": pairs}, index
+    if value_type == 12:
+        return {"type": "anonymous", "object": integer()}, index
+    if value_type == 13:
+        if index >= len(lines):
+            raise ValueError("missing WAIF payload")
+        marker = re.fullmatch(r"([cr]) (\d+)", lines[index])
+        if marker is None:
+            raise ValueError("invalid WAIF marker")
+        index += 1
+        if marker.group(1) == "r":
+            if index >= len(lines) or lines[index] != ".":
+                raise ValueError("unterminated WAIF reference")
+            return {"type": "waif_reference", "index": int(marker.group(2))}, index + 1
+        waif_class = integer()
+        waif_owner = integer()
+        integer()  # property-definition count; serialized values are -1 terminated
+        while True:
+            property_index = integer()
+            if property_index == -1:
+                break
+            _, index = _parse_db_var(lines, index)
+        if index >= len(lines) or lines[index] != ".":
+            raise ValueError("unterminated WAIF creation")
+        return {
+            "type": "waif",
+            "class": waif_class,
+            "owner": waif_owner,
+        }, index + 1
+    raise ValueError(f"unsupported database value type {value_type}")
+
+
+def _parse_suspended_task_state(content: str) -> tuple[object, dict[int, int]]:
+    """Return the one suspended activation's ``state`` value and object owners."""
+    lines = content.splitlines()
+    first_object = next(
+        (index for index, line in enumerate(lines) if re.fullmatch(r"#\d+", line)),
+        len(lines),
+    )
+    headers = [
+        (index, int(match.group(1)))
+        for index, line in enumerate(lines[:first_object])
+        if (match := re.fullmatch(r"(\d+) suspended tasks", line)) is not None
+    ]
+    if len(headers) != 1 or headers[0][1] != 1:
+        raise ValueError("expected exactly one suspended task section")
+    section_start = headers[0][0] + 1
+    section_end = next(
+        (
+            index
+            for index in range(section_start, first_object)
+            if re.fullmatch(r"\d+ interrupted tasks", lines[index]) is not None
+        ),
+        None,
+    )
+    if section_end is None:
+        raise ValueError("suspended task section has no structural end")
+    section = lines[section_start:section_end]
+
+    state_values: list[object] = []
+    for marker_index, line in enumerate(section):
+        marker = re.fullmatch(r"(\d+) variables", line)
+        if marker is None:
+            continue
+        cursor = marker_index + 1
+        variables: dict[str, object] = {}
+        try:
+            for _ in range(int(marker.group(1))):
+                if cursor >= len(section):
+                    raise ValueError("truncated activation variables")
+                name = section[cursor]
+                cursor += 1
+                value, cursor = _parse_db_var(section, cursor)
+                variables[name] = value
+        except ValueError:
+            continue
+        if cursor >= len(section) or re.fullmatch(
+            r"\d+ rt_stack slots in use", section[cursor]
+        ) is None:
+            continue
+        if "state" in variables:
+            state_values.append(variables["state"])
+    if len(state_values) != 1:
+        raise ValueError("expected state in exactly one suspended activation")
+
+    owners: dict[int, int] = {}
+    for index in range(first_object, len(lines)):
+        object_match = re.fullmatch(r"#(\d+)", lines[index])
+        if object_match is None or index + 3 >= len(lines):
+            continue
+        if re.fullmatch(r"-?\d+", lines[index + 2]) is None:
+            continue
+        if re.fullmatch(r"-?\d+", lines[index + 3]) is None:
+            continue
+        owners[int(object_match.group(1))] = int(lines[index + 3])
+    return state_values[0], owners
 
 
 class YamlTestRunner:
@@ -51,6 +210,9 @@ class YamlTestRunner:
         self.candidate_root = candidate_root
         self._suites_setup_done: set[str] = set()
         self._log_offset: int = 0
+        self._file_boundary: dict[str, FileSnapshotSignature] = {}
+        self._process_log_boundary_pending = managed_server is not None
+        self._server_exited = False
         self._active_server_db_path: Path | None = None
 
     def run_suite_setup(self, suite: MooTestSuite) -> None:
@@ -93,6 +255,10 @@ class YamlTestRunner:
 
     def _ensure_transport_connected(self) -> None:
         """Reconnect the transport if it was disconnected by a server restart."""
+        if self._server_exited:
+            raise AssertionError(
+                "Managed server exited naturally; a fresh managed launch is required"
+            )
         if getattr(self.transport, "sock", None) is None:
             current_user = getattr(self.transport, "current_user", "programmer")
             self.transport.connect(current_user)
@@ -162,6 +328,8 @@ class YamlTestRunner:
 
         if suite.setup is not None or suite.teardown is not None:
             return True
+        if suite.requires.builtins or suite.requires.min_version is not None:
+            return True
 
         for test in suite.tests:
             if test.code is not None or test.statement is not None or test.verb is not None:
@@ -215,6 +383,16 @@ class YamlTestRunner:
 
         needs_transport = self._suite_requires_transport(suite)
 
+        if self._server_exited:
+            current_user = getattr(self.transport, "current_user", "programmer")
+            self.managed_server.restart(db_path=desired_db, wait_for_port=needs_transport)
+            self._server_exited = False
+            self._process_log_boundary_pending = True
+            self._active_server_db_path = desired_db
+            if needs_transport:
+                self.transport.connect(current_user)
+            return
+
         if self._active_server_db_path is not None:
             current_db = Path(os.path.realpath(self._active_server_db_path))
             if current_db == desired_db:
@@ -229,6 +407,8 @@ class YamlTestRunner:
         current_user = getattr(self.transport, "current_user", "programmer")
         self.transport.disconnect()
         self.managed_server.restart(db_path=desired_db, wait_for_port=needs_transport)
+        self._server_exited = False
+        self._process_log_boundary_pending = True
         self._active_server_db_path = desired_db
 
         if needs_transport and suite.setup is not None:
@@ -236,6 +416,9 @@ class YamlTestRunner:
 
     def run_suite_teardown(self, suite: MooTestSuite) -> None:
         """Run suite-level teardown."""
+        if self._server_exited:
+            self._suites_setup_done.discard(suite.name)
+            return
         if suite.teardown:
             # REMOVED: Connection is now session-scoped (managed by fixture)
             # self.transport.connect(suite.teardown.permission)
@@ -297,7 +480,7 @@ class YamlTestRunner:
 
         finally:
             # Run test teardown (always, even on failure)
-            if test.teardown:
+            if test.teardown and not self._server_exited:
                 for code in test.teardown.code_lines:
                     self._ensure_transport_connected()
                     self.transport.execute(code)
@@ -305,16 +488,25 @@ class YamlTestRunner:
     def _snapshot_log_offset(self) -> None:
         """Record the current end-of-file position of the log file.
 
-        Called at the start of each test so that assert_log only checks
-        log entries written during this test.
+        Called at the start of each test so that assert_log normally checks
+        entries written during this test.  After a managed launch, preserve
+        that process's pre-launch boundary so startup output remains visible.
         """
+        if self._process_log_boundary_pending and self.managed_server is not None:
+            self._log_offset = self.managed_server.process_log_offset
+            self._file_boundary = self.managed_server.process_file_snapshot
+            self._process_log_boundary_pending = False
+            return
         if self.log_file_path is None:
             self._log_offset = 0
-            return
-        try:
-            self._log_offset = os.path.getsize(self.log_file_path)
-        except OSError:
-            self._log_offset = 0
+        else:
+            try:
+                self._log_offset = os.path.getsize(self.log_file_path)
+            except OSError:
+                self._log_offset = 0
+        self._file_boundary = (
+            snapshot_regular_files(self.server_dir) if self.server_dir is not None else {}
+        )
 
     def _read_log_since_offset(self) -> str:
         """Read log file content from saved offset to current end.
@@ -346,6 +538,11 @@ class YamlTestRunner:
 
         try:
             for step in test.steps:
+                if self._server_exited and step.assert_log is None and step.assert_file is None:
+                    raise AssertionError(
+                        f"Test '{test.name}' may use only assert_log or assert_file after "
+                        "wait_for_server_exit"
+                    )
                 # Switch permission if step specifies different one
                 if step.as_:
                     self._ensure_transport_connected()
@@ -475,6 +672,13 @@ class YamlTestRunner:
                     )
                     continue
 
+                if step.wait_for_server_exit:
+                    self._execute_wait_for_server_exit(
+                        step.wait_for_server_exit,
+                        test.name,
+                    )
+                    continue
+
                 # Check if this is a verb_setup step
                 if step.verb_setup:
                     self._ensure_transport_connected()
@@ -546,7 +750,7 @@ class YamlTestRunner:
 
         finally:
             # Run cleanup steps (always, even on failure)
-            for cleanup_step in test.cleanup:
+            for cleanup_step in test.cleanup if not self._server_exited else []:
                 # Switch permission if cleanup step specifies different one
                 if cleanup_step.as_:
                     self._ensure_transport_connected()
@@ -573,11 +777,17 @@ class YamlTestRunner:
                 f"Test '{test_name}' uses restart_server but no managed server is configured "
                 f"(use --server-command)"
             )
+        if self._server_exited:
+            raise AssertionError(
+                f"Test '{test_name}' cannot restart a naturally exited server process"
+            )
 
         current_user = getattr(self.transport, "current_user", "programmer")
 
         self.transport.disconnect()
         self.managed_server.restart(down_ms=down_ms)
+        self._log_offset = self.managed_server.process_log_offset
+        self._file_boundary = self.managed_server.process_file_snapshot
 
         # Update transport endpoint in case a dynamic port changed.
         self.transport.host = self.managed_server.host
@@ -599,6 +809,39 @@ class YamlTestRunner:
             self.managed_server.write_stdin(text)
         except RuntimeError as exc:
             raise AssertionError(f"Test '{test_name}' write_stdin failed: {exc}") from exc
+
+    def _execute_wait_for_server_exit(
+        self, expectation: WaitForServerExit, test_name: str
+    ) -> None:
+        """Observe natural exit and assert an exact code or portable termination."""
+        if self.managed_server is None:
+            raise AssertionError(
+                f"Test '{test_name}' uses wait_for_server_exit but no managed server is "
+                "configured (use --server-command)"
+            )
+        try:
+            actual_exit_code = self.managed_server.wait_for_exit(expectation.timeout_ms)
+        except (RuntimeError, TimeoutError) as exc:
+            raise AssertionError(
+                f"Test '{test_name}' wait_for_server_exit failed: {exc}"
+            ) from exc
+        self.transport.disconnect()
+        self._server_exited = True
+        self._log_offset = self.managed_server.process_log_offset
+        self._file_boundary = self.managed_server.process_file_snapshot
+        if expectation.exit_code is not None and actual_exit_code != expectation.exit_code:
+            raise AssertionError(
+                f"Test '{test_name}' wait_for_server_exit expected exit code "
+                f"{expectation.exit_code}, got {actual_exit_code}"
+            )
+        if expectation.termination is not None:
+            actual_termination = normalize_process_termination(actual_exit_code)
+            if actual_termination != expectation.termination:
+                raise AssertionError(
+                    f"Test '{test_name}' wait_for_server_exit expected termination "
+                    f"{expectation.termination!r}, got unrecognized process status "
+                    f"{actual_exit_code}"
+                )
 
     def _substitute_variables(self, code: str, variables: dict[str, Any]) -> str:
         """Substitute {varname} placeholders with captured values.
@@ -693,69 +936,265 @@ class YamlTestRunner:
             )
 
     def _execute_assert_file(self, assertion: FileAssertion, test_name: str) -> None:
-        """Verify that a file on disk has expected state.
-
-        The assertion path is resolved relative to server_dir. Path safety
-        checks prevent directory traversal outside server_dir.
-
-        Args:
-            assertion: FileAssertion with path, exists, and optional contains
-            test_name: Name of the test (for error messages)
-
-        Raises:
-            AssertionError: If server_dir is not configured, path escapes
-                server_dir, or file state doesn't match expectations
-        """
+        """Verify fresh file evidence through one validated descriptor."""
         if self.server_dir is None:
             raise AssertionError(
                 f"Test '{test_name}' uses assert_file but no server directory is configured "
                 f"(use --moo-server-dir)"
             )
-
-        # Resolve the path relative to server_dir
-        base = os.path.realpath(self.server_dir)
-        target = os.path.realpath(os.path.join(base, assertion.path))
-
-        # Path safety: ensure resolved path is inside server_dir
-        if not target.startswith(base + os.sep) and target != base:
-            raise AssertionError(
-                f"Test '{test_name}' assert_file: path {assertion.path!r} resolves to "
-                f"{target!r} which is outside server directory {base!r}"
-            )
-
-        file_exists = os.path.exists(target)
-
-        if assertion.exists and not file_exists:
-            raise AssertionError(
-                f"Test '{test_name}' assert_file: expected file {assertion.path!r} to exist "
-                f"but it does not (resolved: {target!r})"
-            )
-
-        if not assertion.exists and file_exists:
-            raise AssertionError(
-                f"Test '{test_name}' assert_file: expected file {assertion.path!r} to NOT exist "
-                f"but it does (resolved: {target!r})"
-            )
-
-        # Content check (only if file exists and contains is specified)
-        if assertion.exists and assertion.contains is not None and file_exists:
+        deadline = time.monotonic() + assertion.timeout_ms / 1000.0
+        last_failure: AssertionError | None = None
+        while True:
+            descriptor: int | None = None
             try:
-                with open(target, "r", encoding="utf-8", errors="replace") as f:
-                    content = f.read()
-            except OSError as e:
+                descriptor, relative_key = self._open_validated_relative_file(
+                    self.server_dir, assertion.path, test_name, "assert_file"
+                )
+            except FileNotFoundError:
+                if not assertion.exists:
+                    return
+                last_failure = AssertionError(
+                    f"Test '{test_name}' assert_file: expected file {assertion.path!r} "
+                    "to exist but it does not"
+                )
+            except OSError as exc:
+                last_failure = AssertionError(
+                    f"Test '{test_name}' assert_file: could not open "
+                    f"{assertion.path!r}: {exc}"
+                )
+            else:
+                if not assertion.exists:
+                    os.close(descriptor)
+                    raise AssertionError(
+                        f"Test '{test_name}' assert_file: expected file "
+                        f"{assertion.path!r} to NOT exist but it does"
+                    )
+                try:
+                    actual_bytes, actual_signature = self._read_stable_descriptor(
+                        descriptor, assertion.path, test_name
+                    )
+                    boundary_signature = self._file_boundary.get(relative_key)
+                    # Windows may finalize creation-time metadata lazily after
+                    # close; identity, size, and mtime are the freshness proof.
+                    if (
+                        boundary_signature is not None
+                        and boundary_signature[:4] == actual_signature[:4]
+                    ):
+                        raise AssertionError(
+                            f"Test '{test_name}' assert_file: {assertion.path!r} predates "
+                            "the current managed launch/test evidence boundary"
+                        )
+                    self._verify_file_bytes(
+                        assertion, actual_bytes, test_name
+                    )
+                    return
+                except AssertionError as exc:
+                    last_failure = exc
+                finally:
+                    os.close(descriptor)
+
+            if time.monotonic() >= deadline:
+                assert last_failure is not None
+                raise last_failure
+            time.sleep(min(0.05, max(0.0, deadline - time.monotonic())))
+
+    def _verify_file_bytes(
+        self, assertion: FileAssertion, actual_bytes: bytes, test_name: str
+    ) -> None:
+        """Apply content assertions to bytes from the already validated descriptor."""
+        content = actual_bytes.decode("utf-8", errors="replace")
+        if assertion.contains is not None and assertion.contains not in content:
+            excerpt = content[:500]
+            if len(content) > 500:
+                excerpt += f"... ({len(content)} bytes total)"
+            raise AssertionError(
+                f"Test '{test_name}' assert_file: expected file {assertion.path!r} to contain "
+                f"{assertion.contains!r}, but it was not found.\nFile content:\n{excerpt}"
+            )
+
+        if assertion.suspended_task is not None:
+            self._verify_suspended_task(
+                content, assertion.suspended_task, assertion.path, test_name
+            )
+
+        if assertion.equals_file is not None:
+            if self.server_db_dir is None:
                 raise AssertionError(
-                    f"Test '{test_name}' assert_file: could not read file {assertion.path!r}: {e}"
+                    f"Test '{test_name}' assert_file uses equals_file but no server DB "
+                    "directory is configured (use --server-db-dir)"
+                )
+            reference_descriptor: int | None = None
+            try:
+                reference_descriptor, _ = self._open_validated_relative_file(
+                    self.server_db_dir,
+                    assertion.equals_file,
+                    test_name,
+                    "assert_file equals_file",
+                )
+                expected_bytes, _ = self._read_stable_descriptor(
+                    reference_descriptor, assertion.equals_file, test_name
+                )
+            except (FileNotFoundError, OSError) as exc:
+                raise AssertionError(
+                    f"Test '{test_name}' assert_file: could not compare bytes: {exc}"
+                ) from exc
+            finally:
+                if reference_descriptor is not None:
+                    os.close(reference_descriptor)
+            if actual_bytes != expected_bytes:
+                shared = min(len(actual_bytes), len(expected_bytes))
+                mismatch = next(
+                    (
+                        index
+                        for index in range(shared)
+                        if actual_bytes[index] != expected_bytes[index]
+                    ),
+                    shared,
+                )
+                raise AssertionError(
+                    f"Test '{test_name}' assert_file: {assertion.path!r} does not byte-match "
+                    f"{assertion.equals_file!r}; first mismatch offset {mismatch}, "
+                    f"actual length {len(actual_bytes)}, expected length {len(expected_bytes)}"
                 )
 
-            if assertion.contains not in content:
-                excerpt = content[:500]
-                if len(content) > 500:
-                    excerpt += f"... ({len(content)} bytes total)"
+    def _validated_relative_parts(
+        self, relative_path: str, test_name: str, operation: str
+    ) -> list[str]:
+        """Reject absolute, empty, dot, and parent-traversal path syntax."""
+        normalized = relative_path.replace("\\", "/")
+        parts = normalized.split("/")
+        if (
+            not relative_path
+            or os.path.isabs(relative_path)
+            or re.match(r"^[A-Za-z]:", relative_path) is not None
+            or any(part in {"", ".", ".."} for part in parts)
+        ):
+            raise AssertionError(
+                f"Test '{test_name}' {operation}: unsafe relative path {relative_path!r}"
+            )
+        return parts
+
+    def _validate_open_path_components(
+        self, base: str, parts: list[str], test_name: str, operation: str
+    ) -> os.stat_result:
+        """Reject links/reparse points and require regular final-file identity."""
+        current = base
+        final_info: os.stat_result | None = None
+        for index, part in enumerate(parts):
+            current = os.path.join(current, part)
+            info = os.lstat(current)
+            if _is_link_or_reparse(info):
                 raise AssertionError(
-                    f"Test '{test_name}' assert_file: expected file {assertion.path!r} to contain "
-                    f"{assertion.contains!r}, but it was not found.\n"
-                    f"File content:\n{excerpt}"
+                    f"Test '{test_name}' {operation}: path component {part!r} is a "
+                    "symlink or reparse point"
                 )
+            if index < len(parts) - 1 and not stat.S_ISDIR(info.st_mode):
+                raise AssertionError(
+                    f"Test '{test_name}' {operation}: path component {part!r} is not a directory"
+                )
+            final_info = info
+        assert final_info is not None
+        if not stat.S_ISREG(final_info.st_mode):
+            raise AssertionError(
+                f"Test '{test_name}' {operation}: target is not a regular file"
+            )
+        return final_info
+
+    def _open_validated_relative_file(
+        self,
+        root: str,
+        relative_path: str,
+        test_name: str,
+        operation: str,
+    ) -> tuple[int, str]:
+        """Open once, then prove the descriptor is still the validated path."""
+        parts = self._validated_relative_parts(relative_path, test_name, operation)
+        base = os.path.realpath(root)
+        self._validate_open_path_components(base, parts, test_name, operation)
+        target = os.path.join(base, *parts)
+        flags = os.O_RDONLY | getattr(os, "O_BINARY", 0) | getattr(os, "O_NOFOLLOW", 0)
+        descriptor = os.open(target, flags)
+        try:
+            path_info = self._validate_open_path_components(
+                base, parts, test_name, operation
+            )
+            descriptor_info = os.fstat(descriptor)
+            if not stat.S_ISREG(descriptor_info.st_mode) or (
+                path_info.st_dev,
+                path_info.st_ino,
+            ) != (descriptor_info.st_dev, descriptor_info.st_ino):
+                raise AssertionError(
+                    f"Test '{test_name}' {operation}: path identity changed during open"
+                )
+        except BaseException:
+            os.close(descriptor)
+            raise
+        return descriptor, "/".join(parts)
+
+    def _read_stable_descriptor(
+        self, descriptor: int, display_path: str, test_name: str
+    ) -> tuple[bytes, FileSnapshotSignature]:
+        """Read through one descriptor and reject mutation during the read."""
+        before = os.fstat(descriptor)
+        os.lseek(descriptor, 0, os.SEEK_SET)
+        chunks = []
+        while True:
+            chunk = os.read(descriptor, 64 * 1024)
+            if not chunk:
+                break
+            chunks.append(chunk)
+        after = os.fstat(descriptor)
+        data = b"".join(chunks)
+        before_signature = file_snapshot_signature(before)
+        after_signature = file_snapshot_signature(after)
+        if before_signature != after_signature or len(data) != after.st_size:
+            raise AssertionError(
+                f"Test '{test_name}' assert_file: {display_path!r} changed while being read"
+            )
+        return data, after_signature
+
+    def _verify_suspended_task(
+        self,
+        content: str,
+        expected: SuspendedTaskAssertion,
+        display_path: str,
+        test_name: str,
+    ) -> None:
+        """Verify roots inside the one suspended activation's state local."""
+        try:
+            state, owners = _parse_suspended_task_state(content)
+        except ValueError as exc:
+            raise AssertionError(
+                f"Test '{test_name}' assert_file: {display_path!r} has invalid suspended-task "
+                f"structure: {exc}"
+            ) from exc
+        if not isinstance(state, dict) or state.get("type") != "list":
+            raise AssertionError(
+                f"Test '{test_name}' assert_file: suspended state is not a list"
+            )
+        items = state.get("items")
+        if not isinstance(items, list) or len(items) != 2:
+            raise AssertionError(
+                f"Test '{test_name}' assert_file: suspended state must contain exactly two roots"
+            )
+        waif, anonymous = items
+        actual = (
+            waif.get("class") if isinstance(waif, dict) else None,
+            waif.get("owner") if isinstance(waif, dict) else None,
+            anonymous.get("object") if isinstance(anonymous, dict) else None,
+        )
+        wanted = (expected.waif_class, expected.waif_owner, expected.anonymous_object)
+        if actual != wanted:
+            raise AssertionError(
+                f"Test '{test_name}' assert_file: suspended state roots {actual!r} "
+                f"do not match {wanted!r}"
+            )
+        actual_owner = owners.get(expected.anonymous_object)
+        if actual_owner != expected.anonymous_owner:
+            raise AssertionError(
+                f"Test '{test_name}' assert_file: anonymous #{expected.anonymous_object} "
+                f"owner {actual_owner!r} does not match {expected.anonymous_owner}"
+            )
 
     def _execute_write_file(self, write_file: WriteFile, test_name: str) -> None:
         """Write a file to disk on the test host.

@@ -179,7 +179,7 @@ TABLE_PRODUCT_AXIS_FIELDS = frozenset({"rows", "columns"})
 STEP_ACTION_FIELDS = frozenset({
     "run", "command", "verb_setup", "allocate_port", "new_connection", "send",
     "send_bytes", "read_connection", "close_connection", "wait", "assert_log",
-    "assert_file", "write_file", "write_stdin", "restart_server",
+    "assert_file", "write_file", "write_stdin", "restart_server", "wait_for_server_exit",
 })
 STEP_FIELDS = STEP_ACTION_FIELDS | {"capture", "as", "expect"}
 ACTION_PAYLOAD_FIELDS = {
@@ -190,11 +190,17 @@ ACTION_PAYLOAD_FIELDS = {
     "send_bytes": frozenset({"hex", "connection"}),
     "read_connection": frozenset({"connection"}),
     "assert_log": frozenset({"contains", "not_contains"}),
-    "assert_file": frozenset({"path", "exists", "contains"}),
+    "assert_file": frozenset({
+        "path", "exists", "contains", "equals_file", "suspended_task", "timeout_ms"
+    }),
     "write_file": frozenset({"path", "content"}),
     "write_stdin": frozenset({"text"}),
     "restart_server": frozenset({"wait_ms", "down_ms"}),
+    "wait_for_server_exit": frozenset({"timeout_ms", "exit_code", "termination"}),
 }
+SUSPENDED_TASK_ASSERTION_FIELDS = frozenset({
+    "waif_class", "waif_owner", "anonymous_object", "anonymous_owner"
+})
 
 
 def _require_mapping(data: Any, context: str) -> dict:
@@ -341,6 +347,15 @@ class LogAssertion:
 
 
 @dataclass
+class SuspendedTaskAssertion:
+    """Expected object roots in one suspended activation's ``state`` local."""
+    waif_class: int
+    waif_owner: int
+    anonymous_object: int
+    anonymous_owner: int
+
+
+@dataclass
 class FileAssertion:
     """Assert that a file on disk has expected state.
 
@@ -350,6 +365,9 @@ class FileAssertion:
     path: str                      # Path relative to server_dir
     exists: bool = True            # Whether the file should exist
     contains: str | None = None    # Optional substring to find in file contents
+    equals_file: str | None = None  # Optional byte-exact reference under server_db_dir
+    suspended_task: SuspendedTaskAssertion | None = None
+    timeout_ms: int = 0             # Optional deadline for output creation
 
 
 @dataclass
@@ -378,6 +396,14 @@ class RestartServer:
 
 
 @dataclass
+class WaitForServerExit:
+    """Require an exact clean code or narrowly normalized natural termination."""
+    timeout_ms: int
+    exit_code: int | None = None
+    termination: str | None = None
+
+
+@dataclass
 class TestStep:
     """A single step in a multi-step test.
 
@@ -400,6 +426,7 @@ class TestStep:
     - write_file: Create a file on the test host
     - write_stdin: Write text to the managed server process stdin
     - restart_server: Restart managed server process in-place
+    - wait_for_server_exit: Observe an exact code or portable natural termination
     """
     run: str | None = None                      # MOO code to execute
     command: str | None = None                  # Raw command (no ; prefix)
@@ -416,6 +443,7 @@ class TestStep:
     write_file: WriteFile | None = None         # Create file on test host
     write_stdin: WriteStdin | None = None       # Write to managed server process stdin
     restart_server: RestartServer | None = None # Restart managed server
+    wait_for_server_exit: WaitForServerExit | None = None  # Observe natural managed exit
     capture: str | None = None                  # Variable name to store result
     as_: str | None = None                      # Permission for this step (wizard, programmer)
     expect: Expectation | None = None           # Optional assertion on this step's result
@@ -615,6 +643,8 @@ def validate_test_suite(data: dict) -> MooTestSuite:
             test = _parse_test_case(expanded_test_data, context)
             tests.append(test)
 
+    _validate_terminal_server_exits(tests, teardown)
+
     # Parse suite-level capability dependencies
     provides = data.get('provides')
     assumes = data.get('assumes', [])
@@ -635,6 +665,53 @@ def validate_test_suite(data: dict) -> MooTestSuite:
         provides=provides,
         assumes=assumes,
     )
+
+
+def _validate_terminal_server_exits(
+    tests: list[MooTestCase], suite_teardown: SetupTeardown | None
+) -> None:
+    """Fail closed when a natural server exit is followed by live-server work."""
+    terminal_test_indexes: list[int] = []
+    for test_index, test in enumerate(tests):
+        exit_indexes = [
+            index
+            for index, step in enumerate(test.steps)
+            if step.wait_for_server_exit is not None
+        ]
+        if not exit_indexes:
+            continue
+        if len(exit_indexes) != 1:
+            raise ValueError(
+                f"test #{test_index + 1} must contain exactly one wait_for_server_exit"
+            )
+        exit_index = exit_indexes[0]
+        invalid_post_exit = [
+            index + 1
+            for index, step in enumerate(test.steps[exit_index + 1 :], start=exit_index + 1)
+            if step.assert_log is None and step.assert_file is None
+        ]
+        if invalid_post_exit:
+            raise ValueError(
+                f"test #{test_index + 1} may use only assert_log or assert_file after "
+                f"wait_for_server_exit (invalid step #{invalid_post_exit[0]})"
+            )
+        if test.cleanup:
+            raise ValueError(
+                f"test #{test_index + 1} cannot declare cleanup after wait_for_server_exit"
+            )
+        if test.teardown is not None:
+            raise ValueError(
+                f"test #{test_index + 1} cannot declare teardown after "
+                "wait_for_server_exit"
+            )
+        terminal_test_indexes.append(test_index)
+
+    if not terminal_test_indexes:
+        return
+    if terminal_test_indexes[-1] != len(tests) - 1 or len(terminal_test_indexes) != 1:
+        raise ValueError("wait_for_server_exit must occur in the suite's final test")
+    if suite_teardown is not None:
+        raise ValueError("suite teardown cannot run after wait_for_server_exit")
 
 
 def _parse_setup_teardown(data: dict | str, context: str) -> SetupTeardown:
@@ -819,19 +896,21 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
     has_write_file = 'write_file' in data
     has_write_stdin = 'write_stdin' in data
     has_restart_server = 'restart_server' in data
+    has_wait_for_server_exit = 'wait_for_server_exit' in data
 
     action_count = sum([has_run, has_command, has_verb_setup, has_allocate_port,
                         has_new_connection, has_send, has_send_bytes,
                         has_read_connection, has_close_connection,
                         has_wait, has_assert_log, has_assert_file,
-                        has_write_file, has_write_stdin, has_restart_server])
+                        has_write_file, has_write_stdin, has_restart_server,
+                        has_wait_for_server_exit])
 
     if action_count == 0:
         raise ValueError(
             "Test step must have an action field (run, command, verb_setup, "
             "allocate_port, new_connection, send, send_bytes, read_connection, "
             "close_connection, wait, assert_log, assert_file, write_file, write_stdin, "
-            "or restart_server)"
+            "restart_server, or wait_for_server_exit)"
         )
     if action_count > 1:
         raise ValueError("Test step must have exactly one action field")
@@ -941,11 +1020,49 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
         _reject_unknown_fields(
             af_data, ACTION_PAYLOAD_FIELDS['assert_file'], f"{context} assert_file"
         )
+        suspended_task = None
+        if 'suspended_task' in af_data:
+            suspended_data = _require_mapping(
+                af_data['suspended_task'], f"{context} assert_file suspended_task"
+            )
+            _reject_unknown_fields(
+                suspended_data,
+                SUSPENDED_TASK_ASSERTION_FIELDS,
+                f"{context} assert_file suspended_task",
+            )
+            if set(suspended_data) != SUSPENDED_TASK_ASSERTION_FIELDS:
+                raise ValueError(
+                    f"{context} assert_file suspended_task must specify "
+                    + ", ".join(sorted(SUSPENDED_TASK_ASSERTION_FIELDS))
+                )
+            for field_name, field_value in suspended_data.items():
+                if type(field_value) is not int:
+                    raise ValueError(
+                        f"{context} assert_file suspended_task {field_name} "
+                        "must be an integer"
+                    )
+            suspended_task = SuspendedTaskAssertion(**suspended_data)
+
         assert_file = FileAssertion(
             path=af_data['path'],
             exists=af_data.get('exists', True),
             contains=af_data.get('contains'),
+            equals_file=af_data.get('equals_file'),
+            suspended_task=suspended_task,
+            timeout_ms=af_data.get('timeout_ms', 0),
         )
+        if type(assert_file.exists) is not bool:
+            raise ValueError(f"{context} assert_file exists must be a boolean")
+        if type(assert_file.timeout_ms) is not int or assert_file.timeout_ms < 0:
+            raise ValueError(f"{context} assert_file timeout_ms must be a non-negative integer")
+        if not assert_file.exists and (
+            assert_file.contains is not None
+            or assert_file.equals_file is not None
+            or assert_file.suspended_task is not None
+        ):
+            raise ValueError(
+                f"{context} assert_file cannot inspect content when exists is false"
+            )
 
     # Parse write_file if present
     write_file = None
@@ -986,6 +1103,46 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
         else:
             restart_server = RestartServer()
 
+    wait_for_server_exit = None
+    if 'wait_for_server_exit' in data:
+        exit_data = _require_mapping(
+            data['wait_for_server_exit'], f"{context} wait_for_server_exit"
+        )
+        _reject_unknown_fields(
+            exit_data,
+            ACTION_PAYLOAD_FIELDS['wait_for_server_exit'],
+            f"{context} wait_for_server_exit",
+        )
+        if 'timeout_ms' not in exit_data:
+            raise ValueError(
+                f"{context} wait_for_server_exit must specify timeout_ms"
+            )
+        timeout_ms = exit_data['timeout_ms']
+        if type(timeout_ms) is not int or timeout_ms <= 0:
+            raise ValueError(
+                f"{context} wait_for_server_exit timeout_ms must be a positive integer"
+            )
+        has_exit_code = 'exit_code' in exit_data
+        has_termination = 'termination' in exit_data
+        if has_exit_code == has_termination:
+            raise ValueError(
+                f"{context} wait_for_server_exit must specify exactly one of "
+                "exit_code or termination"
+            )
+        exit_code = exit_data.get('exit_code')
+        termination = exit_data.get('termination')
+        if has_exit_code and type(exit_code) is not int:
+            raise ValueError(f"{context} wait_for_server_exit exit_code must be an integer")
+        if has_termination and termination != 'abort':
+            raise ValueError(
+                f"{context} wait_for_server_exit termination must be 'abort'"
+            )
+        wait_for_server_exit = WaitForServerExit(
+            timeout_ms=timeout_ms,
+            exit_code=exit_code,
+            termination=termination,
+        )
+
     return TestStep(
         run=data.get('run'),
         command=data.get('command'),
@@ -1002,6 +1159,7 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
         write_file=write_file,
         write_stdin=write_stdin,
         restart_server=restart_server,
+        wait_for_server_exit=wait_for_server_exit,
         capture=data.get('capture'),
         as_=data.get('as'),
         expect=expect,

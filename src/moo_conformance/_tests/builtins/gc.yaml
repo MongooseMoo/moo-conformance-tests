@@ -342,6 +342,7 @@ tests:
           recycle(c);
         endif
       endtry
+      run_gc();
       x = {};
       gc = gc_stats();
       return gc["purple"] == 0;
@@ -370,6 +371,7 @@ tests:
           recycle(c);
         endif
       endtry
+      run_gc();
       x = [];
       gc = gc_stats();
       return gc["purple"] == 0;

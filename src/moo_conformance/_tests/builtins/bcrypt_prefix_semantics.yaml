@@ -10,6 +10,24 @@ tests:
     expect:
       value: ["$2a$05$......................", "$2y$05$......................"]
 
+  - name: salt_bcrypt_{variant}_one_digit_cost_rejected
+    table:
+      rows:
+        - variant: 2a
+        - variant: 2y
+    code: 'salt("${variant}$4$", "~00~00~00~00~00~00~00~00~00~00~00~00~00~00~00~00")'
+    expect:
+      error: E_INVARG
+
+  - name: salt_bcrypt_{variant}_three_digit_cost_canonicalized
+    table:
+      rows:
+        - variant: 2a
+        - variant: 2y
+    code: 'salt("${variant}$004$", "~00~00~00~00~00~00~00~00~00~00~00~00~00~00~00~00")'
+    expect:
+      value: '${variant}$04$......................'
+
   - name: salt_bcrypt_2x_prefix_rejected
     code: 'salt("$2x$", "~00~00~00~00~00~00~00~00~00~00~00~00~00~00~00~00")'
     expect:

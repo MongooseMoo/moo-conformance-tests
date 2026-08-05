@@ -201,7 +201,7 @@ def iter_builtin_calls(
             if name in builtin_names and open_paren < len(code) and code[open_paren] == "(":
                 close_paren = _find_matching_paren(code, open_paren)
                 if close_paren is not None:
-                    args = _split_args(code[open_paren + 1:close_paren])
+                    args = _split_args(code[open_paren + 1 : close_paren])
                     yield name, len(args), tuple(_infer_arg_type(arg) for arg in args)
                     index = close_paren + 1
                     continue
@@ -220,7 +220,9 @@ def required_shapes(spec: BuiltinSpec) -> list[RequiredShape]:
     for arity in arities:
         patterns: list[tuple[str, ...]] = [()]
         for index in range(arity):
-            token = spec.prototype_tokens[index] if index < len(spec.prototype_tokens) else "TYPE_ANY"
+            token = (
+                spec.prototype_tokens[index] if index < len(spec.prototype_tokens) else "TYPE_ANY"
+            )
             patterns = [
                 pattern + (type_name,)
                 for pattern in patterns

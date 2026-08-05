@@ -15,19 +15,19 @@ tests:
       error: E_TYPE
 
   - name: url_encode_reserved_characters
-    skip_if: "missing builtin.url_encode"
+    skip_if: "missing builtin.url_encode or not option.OUTBOUND_NETWORK"
     code: 'url_encode("a b/c?d=e&f")'
     expect:
       value: "a%20b%2Fc%3Fd%3De%26f"
 
   - name: url_encode_plus_and_space_are_distinct
-    skip_if: "missing builtin.url_encode"
+    skip_if: "missing builtin.url_encode or not option.OUTBOUND_NETWORK"
     code: 'url_encode("a+b c")'
     expect:
       value: "a%2Bb%20c"
 
   - name: url_encode_unreserved_characters_pass_through
-    skip_if: "missing builtin.url_encode"
+    skip_if: "missing builtin.url_encode or not option.OUTBOUND_NETWORK"
     code: 'url_encode("AZaz09-_.~")'
     expect:
       value: "AZaz09-_.~"
@@ -51,37 +51,37 @@ tests:
       error: E_TYPE
 
   - name: url_decode_percent_encoding
-    skip_if: "missing builtin.url_decode"
+    skip_if: "missing builtin.url_decode or not option.OUTBOUND_NETWORK"
     code: 'url_decode("a%20b%2Fc%3Fd%3De%26f")'
     expect:
       value: "a b/c?d=e&f"
 
   - name: url_decode_plus_is_literal
-    skip_if: "missing builtin.url_decode"
+    skip_if: "missing builtin.url_decode or not option.OUTBOUND_NETWORK"
     code: 'url_decode("a+b%20c")'
     expect:
       value: "a+b c"
 
   - name: url_decode_encoded_plus
-    skip_if: "missing builtin.url_decode"
+    skip_if: "missing builtin.url_decode or not option.OUTBOUND_NETWORK"
     code: 'url_decode("%2B+%20")'
     expect:
       value: "++ "
 
   - name: url_decode_malformed_percent_is_literal
-    skip_if: "missing builtin.url_decode"
+    skip_if: "missing builtin.url_decode or not option.OUTBOUND_NETWORK"
     code: 'url_decode("bad%zz%4")'
     expect:
       value: "bad%zz%4"
 
   - name: url_decode_binary_bytes
-    skip_if: "missing builtin.url_decode"
+    skip_if: "missing builtin.url_decode or not option.OUTBOUND_NETWORK"
     code: 'encode_binary(url_decode("%7F%80%FF"))'
     expect:
       value: "~7F~80~FF"
 
   - name: url_decode_nul_truncates_string
-    skip_if: "missing builtin.url_decode"
+    skip_if: "missing builtin.url_decode or not option.OUTBOUND_NETWORK"
     code: 'url_decode("%00after")'
     expect:
       value: ""
@@ -115,7 +115,7 @@ tests:
       error: E_TYPE
 
   - name: curl_rejects_file_protocol_with_error_map
-    skip_if: "missing builtin.curl"
+    skip_if: "missing builtin.curl or not option.OUTBOUND_NETWORK"
     permission: wizard
     statement: |
       result = curl("file:///etc/passwd", 0, 1);
@@ -124,7 +124,7 @@ tests:
       value: 1
 
   - name: curl_rejects_ftp_protocol_with_error_map
-    skip_if: "missing builtin.curl"
+    skip_if: "missing builtin.curl or not option.OUTBOUND_NETWORK"
     permission: wizard
     statement: |
       result = curl("ftp://example.invalid/", 0, 1);
@@ -133,7 +133,7 @@ tests:
       value: 1
 
   - name: curl_header_flag_accepts_any_truthy_value
-    skip_if: "missing builtin.curl"
+    skip_if: "missing builtin.curl or not option.OUTBOUND_NETWORK"
     permission: wizard
     statement: |
       result = curl("ftp://example.invalid/", "include headers", 1);

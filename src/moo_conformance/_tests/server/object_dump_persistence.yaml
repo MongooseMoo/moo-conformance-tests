@@ -8,6 +8,7 @@ requires:
     - length
     - toliteral
     - typeof
+  features: [64bit]
   config: [managed_server]
 tests:
   - name: boundary_and_invalid_object_references_survive_dump_and_restart

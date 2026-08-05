@@ -8,6 +8,8 @@ description: >
 requires:
   builtins:
     - toint
+  features:
+    - 64bit
 
 tests:
   - name: toint_positive_overflow_clamps_to_max

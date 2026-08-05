@@ -405,6 +405,7 @@ def test_table_rejects_list_rows_without_columns() -> None:
         "missing builtin.function_info",
         "option.OUTBOUND_NETWORK",
         "not option.PROMOTE_NUMBERS",
+        "missing builtin.url_encode or not option.OUTBOUND_NETWORK",
     ],
 )
 def test_schema_accepts_supported_skip_conditions(condition: str) -> None:
@@ -427,6 +428,8 @@ def test_schema_accepts_supported_skip_conditions(condition: str) -> None:
         "transport == 'direct'",
         " feature.maps",
         "not  feature.maps",
+        "missing builtin.url_encode and not option.OUTBOUND_NETWORK",
+        "missing builtin.url_encode or",
     ],
 )
 def test_schema_rejects_unknown_or_malformed_skip_conditions(condition) -> None:

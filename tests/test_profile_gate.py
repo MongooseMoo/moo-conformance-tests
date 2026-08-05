@@ -2,7 +2,11 @@ import json
 
 import pytest
 
-from moo_conformance.profile_gate import ProfileGateError, validate_manifest_paths, validate_profile_pair
+from moo_conformance.profile_gate import (
+    ProfileGateError,
+    validate_manifest_paths,
+    validate_profile_pair,
+)
 
 
 def manifest(
@@ -116,7 +120,9 @@ def test_validate_profile_pair_rejects_non_boolean_option_values(manifest_side, 
 
 def test_validate_profile_pair_rejects_database_fixture_mismatch():
     with pytest.raises(ProfileGateError, match="database_fixture differs"):
-        validate_profile_pair(manifest(False, fixture="oracle-db"), manifest(False, fixture="testdb"))
+        validate_profile_pair(
+            manifest(False, fixture="oracle-db"), manifest(False, fixture="testdb")
+        )
 
 
 @pytest.mark.parametrize("missing_side", ["oracle", "target"])

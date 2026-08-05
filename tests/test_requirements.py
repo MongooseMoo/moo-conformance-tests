@@ -94,6 +94,45 @@ def test_missing_required_feature_is_a_declared_skip() -> None:
         _enforce_suite_requirements(suite, runner, {})
 
 
+def test_profile_feature_enables_case_without_runtime_advertisement() -> None:
+    suite = MooTestSuite(
+        name="requirements",
+        requires=Requirements(features=["maps"]),
+    )
+    runner = runner_with()
+
+    _enforce_suite_requirements(suite, runner, {}, {"feature.maps": True})
+
+    assert runner.transport.executed == []
+
+
+def test_profile_feature_disables_case_without_runtime_probe() -> None:
+    suite = MooTestSuite(
+        name="requirements",
+        requires=Requirements(features=["maps"]),
+    )
+    runner = runner_with()
+
+    with pytest.raises(pytest.skip.Exception, match="Requires feature: maps"):
+        _enforce_suite_requirements(suite, runner, {}, {"feature.maps": False})
+
+    assert runner.transport.executed == []
+
+
+@pytest.mark.parametrize("value", [None, 0, 1, "true", [], {}])
+def test_profile_feature_rejects_non_boolean_values(value) -> None:
+    suite = MooTestSuite(
+        name="requirements",
+        requires=Requirements(features=["maps"]),
+    )
+    runner = runner_with()
+
+    with pytest.raises(CapabilityProbeError, match="profile value must be boolean"):
+        _enforce_suite_requirements(suite, runner, {}, {"feature.maps": value})
+
+    assert runner.transport.executed == []
+
+
 def test_feature_probe_error_fails_instead_of_becoming_empty_feature_set() -> None:
     suite = MooTestSuite(
         name="requirements",
@@ -237,6 +276,42 @@ def test_supported_skip_conditions_are_enforced(condition, probe, reason) -> Non
 
     with pytest.raises(pytest.skip.Exception, match=reason):
         _enforce_skip_condition(test, runner, profile)
+
+
+@pytest.mark.parametrize(
+    ("probe", "outbound", "reason"),
+    [
+        (
+            ExecutionResult(False, error=MooError.E_INVARG),
+            True,
+            "Requires builtin: url_encode",
+        ),
+        (
+            ExecutionResult(True, value=["url_encode", 1, 1]),
+            False,
+            "Requires option: OUTBOUND_NETWORK",
+        ),
+    ],
+)
+def test_any_skip_condition_uses_the_matching_exact_reason(
+    probe: ExecutionResult,
+    outbound: bool,
+    reason: str,
+) -> None:
+    test = MooTestCase(
+        name="conditional",
+        skip_if="missing builtin.url_encode or not option.OUTBOUND_NETWORK",
+    )
+    runner = runner_with(probe)
+
+    with pytest.raises(pytest.skip.Exception, match=reason):
+        _enforce_skip_condition(
+            test,
+            runner,
+            {"option.OUTBOUND_NETWORK": outbound},
+        )
+
+    assert len(runner.transport.executed) == 1
 
 
 def test_option_probe_error_fails_instead_of_becoming_absence() -> None:

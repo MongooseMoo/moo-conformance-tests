@@ -359,27 +359,23 @@ tests:
 
   # ===================================================================
   # finished_tasks()
-  # WARNING: SAVE_FINISHED_TASKS is commented out in options.h.
-  # These tests may need skipping if not compiled in.
+  # CI's maximal Toast profiles compile this optional builtin.
   # ===================================================================
 
   - name: finished_tasks_no_args_wizard
     description: "finished_tasks() returns a list for wizards"
-    skip: "finished_tasks requires SAVE_FINISHED_TASKS compile option (commented out in options.h)"
     permission: wizard
     code: "typeof(finished_tasks())"
     expect:
       value: 4  # TYPE_LIST
 
   - name: finished_tasks_too_many_args
-    skip: "finished_tasks requires SAVE_FINISHED_TASKS compile option (commented out in options.h)"
     permission: wizard
     code: "finished_tasks(1)"
     expect:
       error: E_ARGS
 
   - name: finished_tasks_non_wizard_perm
-    skip: "finished_tasks requires SAVE_FINISHED_TASKS compile option (commented out in options.h)"
     permission: programmer
     code: "finished_tasks()"
     expect:

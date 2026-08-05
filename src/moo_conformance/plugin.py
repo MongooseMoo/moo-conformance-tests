@@ -71,17 +71,8 @@ def get_db_path() -> Path:
 
 def pytest_addoption(parser):
     """Add conformance test command line options."""
-    parser.addoption(
-        "--moo-host",
-        default="localhost",
-        help="MOO server host (default: localhost)"
-    )
-    parser.addoption(
-        "--moo-port",
-        default=None,
-        type=int,
-        help="MOO server port (default: 7777)"
-    )
+    parser.addoption("--moo-host", default="localhost", help="MOO server host (default: localhost)")
+    parser.addoption("--moo-port", default=None, type=int, help="MOO server port (default: 7777)")
     parser.addoption(
         "--server-command",
         default=None,
@@ -314,9 +305,13 @@ def runner(
     transport, moo_log_file, moo_server_dir, managed_server, moo_server_db_dir
 ) -> YamlTestRunner:
     """Create a test runner with the configured transport."""
-    return YamlTestRunner(transport, log_file_path=moo_log_file,
-                          server_dir=moo_server_dir, managed_server=managed_server,
-                          server_db_dir=moo_server_db_dir)
+    return YamlTestRunner(
+        transport,
+        log_file_path=moo_log_file,
+        server_dir=moo_server_dir,
+        managed_server=managed_server,
+        server_db_dir=moo_server_db_dir,
+    )
 
 
 def discover_yaml_tests(
@@ -369,9 +364,7 @@ def discover_yaml_tests(
                 test_cases.append((yaml_file, suite, test))
 
         except Exception as exc:
-            raise pytest.UsageError(
-                f"Failed to load conformance suite {yaml_file}: {exc}"
-            ) from exc
+            raise pytest.UsageError(f"Failed to load conformance suite {yaml_file}: {exc}") from exc
 
     return test_cases
 
@@ -433,8 +426,8 @@ def pytest_collection_modifyitems(session, config, items):
 
     for item in items:
         # Get test case from parametrized fixture
-        if hasattr(item, 'callspec') and 'yaml_test_case' in item.callspec.params:
-            suite, test = item.callspec.params['yaml_test_case']
+        if hasattr(item, "callspec") and "yaml_test_case" in item.callspec.params:
+            suite, test = item.callspec.params["yaml_test_case"]
 
             # Check for provides (test-level or suite-level)
             provides = test.provides or suite.provides
@@ -456,8 +449,8 @@ def pytest_collection_modifyitems(session, config, items):
 
 def pytest_runtest_setup(item):
     """Skip test if assumed capabilities aren't verified."""
-    if hasattr(item, 'callspec') and 'yaml_test_case' in item.callspec.params:
-        suite, test = item.callspec.params['yaml_test_case']
+    if hasattr(item, "callspec") and "yaml_test_case" in item.callspec.params:
+        suite, test = item.callspec.params["yaml_test_case"]
 
         # Get assumes from test or suite
         assumes = test.assumes or suite.assumes
@@ -484,8 +477,8 @@ def pytest_runtest_makereport(item, call):
         _reject_unexpected_runtime_skip(item, report)
 
     if call.when == "call":
-        if hasattr(item, 'callspec') and 'yaml_test_case' in item.callspec.params:
-            suite, test = item.callspec.params['yaml_test_case']
+        if hasattr(item, "callspec") and "yaml_test_case" in item.callspec.params:
+            suite, test = item.callspec.params["yaml_test_case"]
 
             provides = test.provides or suite.provides
             if provides:
@@ -515,10 +508,7 @@ def _reject_unexpected_runtime_skip(item, report) -> None:
             return
 
     report.outcome = "failed"
-    report.longrepr = (
-        "Unexpected skip rejected by --fail-on-unexpected-skip: "
-        f"{report.longrepr}"
-    )
+    report.longrepr = f"Unexpected skip rejected by --fail-on-unexpected-skip: {report.longrepr}"
 
 
 def _reported_runtime_skip_reason(longrepr) -> str | None:
@@ -528,7 +518,7 @@ def _reported_runtime_skip_reason(longrepr) -> str | None:
     else:
         reason = str(longrepr)
     prefix = "Skipped: "
-    return reason[len(prefix):] if reason.startswith(prefix) else None
+    return reason[len(prefix) :] if reason.startswith(prefix) else None
 
 
 class _UnexpectedCollectionSkipPlugin:
@@ -537,17 +527,14 @@ class _UnexpectedCollectionSkipPlugin:
             return
         report.outcome = "failed"
         report.longrepr = (
-            "Unexpected collection skip rejected by --fail-on-unexpected-skip: "
-            f"{report.longrepr}"
+            f"Unexpected collection skip rejected by --fail-on-unexpected-skip: {report.longrepr}"
         )
 
 
 # Register markers
 def pytest_configure(config):
     """Register custom markers."""
-    config.addinivalue_line(
-        "markers", "conformance: mark test as a MOO conformance test"
-    )
+    config.addinivalue_line("markers", "conformance: mark test as a MOO conformance test")
     if config.getoption("--fail-on-unexpected-skip"):
         config.pluginmanager.register(
             _UnexpectedCollectionSkipPlugin(),

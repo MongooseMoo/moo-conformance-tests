@@ -334,9 +334,6 @@ tests:
         run_gc();
         recycle(c);
         run_gc();
-        x = {};
-        gc = gc_stats();
-        return gc["purple"] == 0;
       finally
         if (valid(o))
           recycle(o);
@@ -345,6 +342,9 @@ tests:
           recycle(c);
         endif
       endtry
+      x = {};
+      gc = gc_stats();
+      return gc["purple"] == 0;
     expect:
       value: 1
 
@@ -362,9 +362,6 @@ tests:
         run_gc();
         recycle(c);
         run_gc();
-        x = [];
-        gc = gc_stats();
-        return gc["purple"] == 0;
       finally
         if (valid(o))
           recycle(o);
@@ -373,6 +370,9 @@ tests:
           recycle(c);
         endif
       endtry
+      x = [];
+      gc = gc_stats();
+      return gc["purple"] == 0;
     expect:
       value: 1
 

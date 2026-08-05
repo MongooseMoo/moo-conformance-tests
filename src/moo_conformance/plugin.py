@@ -18,20 +18,21 @@ Usage from command line:
     pytest --pyargs moo_conformance --moo-port=7777
 """
 
+import importlib.resources
 import os
+from pathlib import Path
+from typing import Any, Iterator
 
 import pytest
 import yaml
-from pathlib import Path
-from typing import Iterator
-import importlib.resources
 
-from .transport import MooTransport, SocketTransport
-from .schema import validate_test_suite, MooTestSuite, MooTestCase
-from .runner import YamlTestRunner
-from .capabilities import CapabilityManager, CapabilityState
-from .server import ManagedServer
+from .capabilities import CapabilityManager
+from .conditions import declared_literal_skip_reason, declared_runtime_skip_reasons
 from .profile_gate import ProfileGateError, load_manifest, validate_manifest_paths
+from .runner import YamlTestRunner
+from .schema import MooTestCase, MooTestSuite, validate_test_suite
+from .server import ManagedServer
+from .transport import MooTransport, SocketTransport
 
 # Global capability manager (session-scoped)
 capability_manager = CapabilityManager()
@@ -154,7 +155,8 @@ def _load_login_script(request) -> list[str] | None:
     raw = os.environ.get(env_name)
     if raw is None or raw == "":
         raise pytest.UsageError(
-            f"--moo-login-script-env={env_name} was provided, but that environment variable is empty"
+            f"--moo-login-script-env={env_name} was provided, but that environment "
+            "variable is empty"
         )
 
     commands = [line.strip() for line in raw.splitlines() if line.strip()]
@@ -257,7 +259,9 @@ def moo_log_file(request, managed_server) -> str | None:
 
 
 @pytest.fixture(scope="session")
-def moo_config(moo_server_dir, moo_log_file, moo_server_db_dir, managed_server) -> dict[str, str | None]:
+def moo_config(
+    moo_server_dir, moo_log_file, moo_server_db_dir, managed_server
+) -> dict[str, str | None]:
     """Aggregate config values available for requires.config checks.
 
     Returns a dict mapping config key names to their values (or None if unavailable).
@@ -306,7 +310,9 @@ def transport(request, managed_server) -> Iterator[MooTransport]:
 
 
 @pytest.fixture(scope="session")
-def runner(transport, moo_log_file, moo_server_dir, managed_server, moo_server_db_dir) -> YamlTestRunner:
+def runner(
+    transport, moo_log_file, moo_server_dir, managed_server, moo_server_db_dir
+) -> YamlTestRunner:
     """Create a test runner with the configured transport."""
     return YamlTestRunner(transport, log_file_path=moo_log_file,
                           server_dir=moo_server_dir, managed_server=managed_server,
@@ -329,7 +335,7 @@ def discover_yaml_tests(
     if test_dir is None:
         test_dir = get_tests_dir()
 
-    test_cases = []
+    test_cases: list[tuple[Path, MooTestSuite, MooTestCase]] = []
 
     if not test_dir.exists():
         return test_cases
@@ -370,7 +376,24 @@ def discover_yaml_tests(
     return test_cases
 
 
-def pytest_generate_tests(metafunc):
+def conformance_case_id(
+    yaml_path: Path,
+    test: MooTestCase,
+    tests_dir: Path | None = None,
+) -> str:
+    """Build the stable case ID from the full YAML path and expanded test name."""
+    if tests_dir is None:
+        tests_dir = get_tests_dir()
+    try:
+        relative_path = yaml_path.resolve().relative_to(tests_dir.resolve())
+    except ValueError as exc:
+        raise pytest.UsageError(
+            f"Conformance suite is outside the configured tests directory: {yaml_path}"
+        ) from exc
+    return f"{relative_path.as_posix()}::{test.name}"
+
+
+def pytest_generate_tests(metafunc: Any) -> None:
     """Generate test cases from YAML files.
 
     This is called by pytest during test collection to create
@@ -381,20 +404,13 @@ def pytest_generate_tests(metafunc):
         test_cases = discover_yaml_tests(selected_paths=selected_paths)
 
         # Create IDs for each test case
-        ids = []
-        params = []
+        ids: list[str] = []
+        params: list[tuple[MooTestSuite, MooTestCase]] = []
 
         tests_dir = get_tests_dir()
 
         for yaml_path, suite, test in test_cases:
-            # Create a readable test ID
-            try:
-                relative_path = yaml_path.relative_to(tests_dir)
-                test_id = f"{relative_path.stem}::{test.name}"
-            except ValueError:
-                test_id = f"{yaml_path.stem}::{test.name}"
-
-            ids.append(test_id)
+            ids.append(conformance_case_id(yaml_path, test, tests_dir))
             params.append((suite, test))
 
         metafunc.parametrize("yaml_test_case", params, ids=ids)
@@ -453,11 +469,8 @@ def pytest_runtest_setup(item):
 
 def _skip_declared_yaml_case(suite: MooTestSuite, test: MooTestCase) -> None:
     """Skip a declared test or suite while preserving the more specific test reason."""
-    if test.skip:
-        reason = test.skip if isinstance(test.skip, str) else "Test marked as skip"
-        pytest.skip(reason)
-    if suite.skip:
-        reason = suite.skip if isinstance(suite.skip, str) else "Suite marked as skip"
+    reason = declared_literal_skip_reason(suite, test)
+    if reason is not None:
         pytest.skip(reason)
 
 
@@ -486,29 +499,19 @@ def _reject_unexpected_runtime_skip(item, report) -> None:
     if not report.skipped:
         return
 
-    literal_skip = False
     test = None
     if hasattr(item, "callspec") and "yaml_test_case" in item.callspec.params:
         suite, test = item.callspec.params["yaml_test_case"]
-        literal_skip = bool(suite.skip or test.skip)
-    if literal_skip:
-        return
 
-    condition = getattr(test, "skip_if", None)
-    if condition:
-        if condition.startswith("not feature."):
-            expected_reason = f"Requires feature: {condition[12:]}"
-        elif condition.startswith("feature."):
-            expected_reason = f"Incompatible with feature: {condition[8:]}"
-        elif condition.startswith("missing builtin."):
-            expected_reason = f"Requires builtin: {condition[16:]}"
-        elif condition.startswith("not option."):
-            expected_reason = f"Requires option: {condition[11:]}"
-        elif condition.startswith("option."):
-            expected_reason = f"Incompatible with option: {condition[7:]}"
-        else:
-            expected_reason = f"Skip condition: {condition}"
-        if f"Skipped: {expected_reason}" in str(report.longrepr):
+    if test is not None:
+        actual_reason = _reported_runtime_skip_reason(report.longrepr)
+        declared_reasons = declared_runtime_skip_reasons(suite, test)
+        assumes = getattr(test, "assumes", ()) or getattr(suite, "assumes", ())
+        if assumes:
+            can_run, assumption_reason = capability_manager.can_run(assumes)
+            if not can_run and assumption_reason is not None:
+                declared_reasons.add(assumption_reason)
+        if actual_reason in declared_reasons:
             return
 
     report.outcome = "failed"
@@ -516,6 +519,16 @@ def _reject_unexpected_runtime_skip(item, report) -> None:
         "Unexpected skip rejected by --fail-on-unexpected-skip: "
         f"{report.longrepr}"
     )
+
+
+def _reported_runtime_skip_reason(longrepr) -> str | None:
+    """Extract pytest's exact runtime skip reason without substring matching."""
+    if isinstance(longrepr, tuple) and len(longrepr) >= 3:
+        reason = str(longrepr[2])
+    else:
+        reason = str(longrepr)
+    prefix = "Skipped: "
+    return reason[len(prefix):] if reason.startswith(prefix) else None
 
 
 class _UnexpectedCollectionSkipPlugin:

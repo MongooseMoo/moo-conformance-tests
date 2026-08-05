@@ -94,19 +94,14 @@ tests:
       # Will error due to connection context but validates signature
       error: E_INVARG
 
-  # Multi-step test for actual player switching (requires connection context)
-  # NOTE: This test requires an active socket connection to work properly.
-  # In DirectTransport mode, it will fail because there's no connection task queue.
+  # Multi-step socket test that verifies the fixture players needed for switching.
   - name: wizard_can_call_switch_player
     permission: wizard
-    skip_if: "transport == 'direct'"
     steps:
       - run: |
           return typeof(#2) == 1 && typeof(#3) == 1;
         expect:
           value: 1
-      # Actual switch_player call would require connection context
-      # which is not available in DirectTransport mode
 
   # NOTE: Full behavioral tests (like "switching changes player context" and
   # "switching back and forth works") require:

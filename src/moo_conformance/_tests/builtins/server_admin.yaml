@@ -592,7 +592,7 @@ tests:
       expect:
         value: 1
     - run: |
-        unlisten({state}["new_port"]);
+        unlisten(0);
         return 1;
       expect:
         value: 1
@@ -614,7 +614,7 @@ tests:
   cleanup:
     - run: |
         try
-          unlisten({state}["new_port"]);
+          unlisten(0);
         except (ANY)
         endtry
         return 1;
@@ -990,7 +990,7 @@ tests:
   cleanup:
     - run: |
         try
-          unlisten({port});
+          unlisten(0);
         except (ANY)
         endtry
         return 1;
@@ -1009,14 +1009,14 @@ tests:
   steps:
     - run: |
         port = listen(#0, 0, ["print-messages" -> 1]);
-        unlisten(port);
+        unlisten(0);
         return port;
       capture: port
       expect:
         type: int
     - run: |
         try
-          unlisten({port});
+          unlisten(0);
           return 0;
         except (E_INVARG)
           return 1;

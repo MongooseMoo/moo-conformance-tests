@@ -145,10 +145,17 @@ skip_if: str
     - "missing builtin.foo" - Skip if builtin 'foo' is not implemented
 """
 
+import re
 from copy import deepcopy
 from dataclasses import dataclass, field
 from itertools import product
 from typing import Any
+
+from .conditions import (
+    SUPPORTED_CONFIG_REQUIREMENTS,
+    parse_min_version,
+    parse_skip_condition,
+)
 
 SUITE_FIELDS = frozenset({
     "name", "description", "version", "skip", "server_db", "requires", "setup",
@@ -202,6 +209,22 @@ def _reject_unknown_fields(data: dict, allowed: frozenset[str], context: str) ->
     noun = "field" if len(unknown) == 1 else "fields"
     names = ", ".join(str(key) for key in unknown)
     raise ValueError(f"Unknown {noun} in {context}: {names}")
+
+
+_REQUIREMENT_NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_]*$")
+
+
+def _require_name_list(value: Any, field_name: str, *, allow_scalar: bool = False) -> list[str]:
+    if allow_scalar and isinstance(value, str):
+        value = [value]
+    if not isinstance(value, list):
+        raise ValueError(f"requires.{field_name} must be a list of names")
+    if any(
+        not isinstance(item, str) or _REQUIREMENT_NAME_RE.fullmatch(item) is None
+        for item in value
+    ):
+        raise ValueError(f"requires.{field_name} must contain only non-empty names")
+    return list(value)
 
 
 @dataclass
@@ -445,7 +468,9 @@ class MooTestCase:
         - steps: raises ValueError (steps are handled separately by runner)
         """
         if self.steps:
-            raise ValueError(f"Test '{self.name}' uses steps - call runner._execute_steps() instead")
+            raise ValueError(
+                f"Test '{self.name}' uses steps - call runner._execute_steps() instead"
+            )
         if self.code:
             code = self.code.strip()
             # Don't double-wrap if already has return
@@ -550,14 +575,23 @@ def validate_test_suite(data: dict) -> MooTestSuite:
     requires_data = data.get('requires', {})
     requires_data = _require_mapping(requires_data, "Test suite requirements")
     _reject_unknown_fields(requires_data, REQUIREMENTS_FIELDS, "test suite requirements")
-    config_val = requires_data.get('config', [])
-    # Allow single string: config: server_dir
-    if isinstance(config_val, str):
-        config_val = [config_val]
+    builtins_val = _require_name_list(requires_data.get('builtins', []), "builtins")
+    features_val = _require_name_list(requires_data.get('features', []), "features")
+    config_val = _require_name_list(
+        requires_data.get('config', []), "config", allow_scalar=True
+    )
+    unknown_config = sorted(set(config_val) - SUPPORTED_CONFIG_REQUIREMENTS)
+    if unknown_config:
+        raise ValueError(
+            "requires.config contains unsupported names: " + ", ".join(unknown_config)
+        )
+    min_version = requires_data.get('min_version')
+    if min_version is not None:
+        parse_min_version(min_version)
     requires = Requirements(
-        builtins=requires_data.get('builtins', []),
-        features=requires_data.get('features', []),
-        min_version=requires_data.get('min_version'),
+        builtins=builtins_val,
+        features=features_val,
+        min_version=min_version,
         config=config_val,
     )
 
@@ -792,9 +826,12 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
                         has_write_file, has_write_stdin, has_restart_server])
 
     if action_count == 0:
-        raise ValueError("Test step must have an action field (run, command, verb_setup, "
-                        "allocate_port, new_connection, send, send_bytes, read_connection, close_connection, wait, assert_log, "
-                        "assert_file, write_file, write_stdin, or restart_server)")
+        raise ValueError(
+            "Test step must have an action field (run, command, verb_setup, "
+            "allocate_port, new_connection, send, send_bytes, read_connection, "
+            "close_connection, wait, assert_log, assert_file, write_file, write_stdin, "
+            "or restart_server)"
+        )
     if action_count > 1:
         raise ValueError("Test step must have exactly one action field")
 
@@ -976,6 +1013,11 @@ def _parse_test_case(data: dict, context: str) -> MooTestCase:
     _reject_unknown_fields(data, TEST_FIELDS - {'table'}, context)
     if 'name' not in data:
         raise ValueError("Test case must have a 'name' field")
+    if 'skip_if' in data:
+        try:
+            parse_skip_condition(data['skip_if'])
+        except ValueError as exc:
+            raise ValueError(f"{context} skip_if: {exc}") from exc
 
     # Parse expectation
     expect = _parse_expectation(data.get('expect', {}), f"{context} expectation")

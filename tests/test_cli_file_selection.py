@@ -143,11 +143,89 @@ def test_literal_yaml_skip_remains_allowed(tmp_path: Path) -> None:
     item = SimpleNamespace(
         callspec=SimpleNamespace(params={"yaml_test_case": (suite, test)})
     )
-    report = SimpleNamespace(skipped=True, outcome="skipped", longrepr="documented")
+    report = SimpleNamespace(
+        skipped=True,
+        outcome="skipped",
+        longrepr=("test_conformance.py", 1, "Skipped: documented"),
+    )
 
     plugin._reject_unexpected_runtime_skip(item, report)
 
     assert report.outcome == "skipped"
+
+
+@pytest.mark.parametrize(
+    ("suite_skip", "test_skip", "reason"),
+    [
+        (False, "test reason", "test reason"),
+        (False, True, "Test marked as skip"),
+        ("suite reason", False, "suite reason"),
+        (True, False, "Suite marked as skip"),
+        ("suite reason", "test reason", "test reason"),
+    ],
+)
+def test_strict_accounting_authorizes_only_emitted_literal_skip_reason(
+    suite_skip, test_skip, reason: str
+) -> None:
+    suite = SimpleNamespace(skip=suite_skip)
+    test = SimpleNamespace(skip=test_skip, skip_if=None)
+    item = SimpleNamespace(
+        callspec=SimpleNamespace(params={"yaml_test_case": (suite, test)})
+    )
+    report = SimpleNamespace(
+        skipped=True,
+        outcome="skipped",
+        longrepr=("test_conformance.py", 1, f"Skipped: {reason}"),
+    )
+
+    plugin._reject_unexpected_runtime_skip(item, report)
+
+    assert report.outcome == "skipped"
+
+
+@pytest.mark.parametrize("actual_reason", ["other reason", "documented extension"])
+def test_literal_skip_does_not_authorize_mismatched_or_prefixed_reason(
+    actual_reason: str,
+) -> None:
+    suite = SimpleNamespace(skip=False)
+    test = SimpleNamespace(skip="documented", skip_if=None)
+    item = SimpleNamespace(
+        callspec=SimpleNamespace(params={"yaml_test_case": (suite, test)})
+    )
+    report = SimpleNamespace(
+        skipped=True,
+        outcome="skipped",
+        longrepr=("runner.py", 1, f"Skipped: {actual_reason}"),
+    )
+
+    plugin._reject_unexpected_runtime_skip(item, report)
+
+    assert report.outcome == "failed"
+
+
+def test_literal_skip_does_not_authorize_unreachable_requirement_reason() -> None:
+    suite = SimpleNamespace(
+        skip=False,
+        requires=SimpleNamespace(
+            builtins=[],
+            features=["maps"],
+            min_version=None,
+            config=[],
+        ),
+    )
+    test = SimpleNamespace(skip="documented", skip_if=None)
+    item = SimpleNamespace(
+        callspec=SimpleNamespace(params={"yaml_test_case": (suite, test)})
+    )
+    report = SimpleNamespace(
+        skipped=True,
+        outcome="skipped",
+        longrepr=("runner.py", 1, "Skipped: Requires feature: maps"),
+    )
+
+    plugin._reject_unexpected_runtime_skip(item, report)
+
+    assert report.outcome == "failed"
 
 
 def test_suite_literal_skip_is_collected_as_declared_runtime_skips(pytester) -> None:
@@ -275,3 +353,103 @@ def test_collection_skip_fails() -> None:
 
     assert report.outcome == "failed"
     assert "collection condition" in report.longrepr
+
+
+def test_invalid_skip_condition_makes_packaged_collection_exit_nonzero(pytester) -> None:
+    suites = pytester.path / "suites"
+    suites.mkdir()
+    invalid = suites / "invalid_condition.yaml"
+    invalid.write_text(
+        """name: invalid_condition
+tests:
+  - name: invalid
+    skip_if: "transport == 'direct'"
+    code: "1"
+    expect:
+      value: 1
+""",
+        encoding="utf-8",
+    )
+    pytester.makeconftest(
+        "\n".join(
+            [
+                "from pathlib import Path",
+                "from moo_conformance import plugin",
+                f"plugin.get_tests_dir = lambda: Path({str(suites)!r})",
+            ]
+        )
+    )
+    pytester.makepyfile(
+        """
+        def test_yaml_conformance(yaml_test_case):
+            assert yaml_test_case
+        """
+    )
+
+    original_get_tests_dir = plugin.get_tests_dir
+    try:
+        result = pytester.runpytest("-q")
+    finally:
+        plugin.get_tests_dir = original_get_tests_dir
+
+    assert result.ret != pytest.ExitCode.OK
+    result.stdout.fnmatch_lines(["*skip_if*transport == 'direct'*"])
+
+
+def test_requirement_skip_is_allowed_by_strict_packaged_runner(pytester) -> None:
+    suites = pytester.path / "suites"
+    suites.mkdir()
+    suite_path = suites / "requires_feature.yaml"
+    suite_path.write_text(
+        """name: requires_feature
+requires:
+  features: [maps]
+tests:
+  - name: guarded
+    code: "1"
+    expect:
+      value: 1
+""",
+        encoding="utf-8",
+    )
+    pytester.makeconftest(
+        "\n".join(
+            [
+                "from pathlib import Path",
+                "from types import SimpleNamespace",
+                "import pytest",
+                "from moo_conformance import plugin",
+                "from moo_conformance.transport import ExecutionResult",
+                f"plugin.get_tests_dir = lambda: Path({str(suites)!r})",
+                "class FakeTransport:",
+                "    def switch_user(self, user): self.current_user = user",
+                "    def execute(self, code): return ExecutionResult(True, value=[])",
+                "@pytest.fixture",
+                "def runner():",
+                "    return SimpleNamespace(",
+                "        transport=FakeTransport(),",
+                "        prepare_suite_environment=lambda suite: None,",
+                "    )",
+                "@pytest.fixture",
+                "def moo_config(): return {}",
+                "@pytest.fixture",
+                "def profile_metadata_gate(): return {}",
+            ]
+        )
+    )
+    pytester.makepyfile(
+        """
+        from moo_conformance.test_conformance import test_yaml_conformance as run_yaml_case
+
+        def test_selected_suite(runner, yaml_test_case, moo_config, profile_metadata_gate):
+            run_yaml_case(runner, yaml_test_case, moo_config, profile_metadata_gate)
+        """
+    )
+
+    original_get_tests_dir = plugin.get_tests_dir
+    try:
+        result = pytester.runpytest("-q", "--fail-on-unexpected-skip")
+    finally:
+        plugin.get_tests_dir = original_get_tests_dir
+
+    result.assert_outcomes(skipped=1)

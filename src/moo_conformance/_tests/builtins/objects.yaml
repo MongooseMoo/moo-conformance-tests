@@ -636,14 +636,44 @@ tests:
 - name: renumber_basic
   description: Test renumber fills recycled slot
   permission: wizard
-  skip: Complex test with state-dependent behavior
-  statement: "recycle(create($nothing));\nl = -1;\nfor o in [0..max_object()]\n  if\
-    \ (!valid(o))\n    l = toobj(o);\n    break;\n  endif\nendfor\na = create($nothing);\n\
-    b = create(a);\nc = create(b);\nmove(b, a);\nmove(c, b);\nresult = renumber(b);\n\
-    return {result == l, parent(c) == result, result in children(a)};\n"
+  statement: |
+    a = #-1;
+    b = #-1;
+    c = #-1;
+    hole = #-1;
+    result = #-1;
+    cleanup_failed = 0;
+    try
+      hole = create($nothing);
+      recycle(hole);
+      hole = #-1;
+      a = create($nothing);
+      b = create(a);
+      c = create(b);
+      old_b = b;
+      move(b, a);
+      move(c, b);
+      result = renumber(b);
+      answer = {result != old_b, !valid(old_b), parent(c) == result, result in children(a)};
+    finally
+      for candidate in ({c, result, b, a, hole})
+        try
+          if (valid(candidate))
+            recycle(candidate);
+          endif
+        except (ANY)
+          cleanup_failed = 1;
+        endtry
+      endfor
+    endtry
+    if (cleanup_failed)
+      raise(E_INVARG);
+    endif
+    return answer;
   expect:
     value:
-    - 0
+    - 1
+    - 1
     - 1
     - 1
 - name: move_basic
@@ -1240,9 +1270,17 @@ tests:
     error: E_INVARG
 - name: verb_cache_basic
   permission: wizard
-  skip: Server-state dependent - cache not empty on running server
-  statement: "vcs = verb_cache_stats();\nif (vcs[1] == 0 && vcs[2] == 0 && vcs[3]\
-    \ == 0 && vcs[4] == 0)\n  return 1;\nendif\nreturn 0;\n"
+  statement: |
+    vcs = verb_cache_stats();
+    if (length(vcs) != 5 || length(vcs[5]) != 17)
+      return 0;
+    endif
+    for value in ({@vcs[1..4], @vcs[5]})
+      if (typeof(value) != INT || value < 0)
+        return 0;
+      endif
+    endfor
+    return 1;
   expect:
     value: 1
 - name: recycle_multiple_inheritance_reparents

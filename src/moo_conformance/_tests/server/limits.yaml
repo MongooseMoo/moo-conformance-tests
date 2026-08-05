@@ -539,7 +539,6 @@ tests:
     permission: wizard
     statement: |
       $server_options.max_string_concat = 3210;
-      $server_options.fg_ticks = 1000000;
       load_server_options();
       x = "";
       for i in [1..3210]

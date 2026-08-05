@@ -455,20 +455,29 @@ tests:
   permission: wizard
   description: Wizard sees valid anonymous objects in callers()
   statement: |
-    class = create($nothing);
-    add_verb(class, {player, "xd", "a"}, {"this", "none", "this"});
-    set_verb_code(class, "a", {"return callers();"});
-    add_verb(class, {player, "xd", "b"}, {"this", "none", "this"});
-    set_verb_code(class, "b", {"return this:a();"});
-    add_verb(class, {player, "xd", "c"}, {"this", "none", "this"});
-    set_verb_code(class, "c", {
-      "c = this:b();",
-      "return {{c[1][2], valid(c[1][1]), valid(c[1][4])}, {c[2][2], valid(c[2][1]), valid(c[2][4])}};"
-    });
-    o = create(class, 1);
-    result = o:c();
-    recycle(o);
-    recycle(class);
+    class = #-1;
+    o = #-1;
+    try
+      class = create($nothing);
+      add_verb(class, {player, "xd", "a"}, {"this", "none", "this"});
+      set_verb_code(class, "a", {"return callers();"});
+      add_verb(class, {player, "xd", "b"}, {"this", "none", "this"});
+      set_verb_code(class, "b", {"return this:a();"});
+      add_verb(class, {player, "xd", "c"}, {"this", "none", "this"});
+      set_verb_code(class, "c", {
+        "c = this:b();",
+        "return {{c[1][2], valid(c[1][1]), valid(c[1][4])}, {c[2][2], valid(c[2][1]), valid(c[2][4])}};"
+      });
+      o = create(class, 1);
+      result = o:c();
+    finally
+      if (valid(o))
+        recycle(o);
+      endif
+      if (valid(class))
+        recycle(class);
+      endif
+    endtry
     return result;
   expect:
     value:
@@ -484,26 +493,44 @@ tests:
   permission: wizard
   description: Wizard sees valid anonymous objects in task_stack()
   statement: |
-    class = create($nothing);
-    add_verb(class, {player, "xd", "a"}, {"this", "none", "this"});
-    set_verb_code(class, "a", {"suspend();"});
-    add_verb(class, {player, "xd", "b"}, {"this", "none", "this"});
-    set_verb_code(class, "b", {"return this:a();"});
-    add_verb(class, {player, "xd", "c"}, {"this", "none", "this"});
-    set_verb_code(class, "c", {
-      "fork t (0)",
-      "  c = this:b();",
-      "endfork",
-      "suspend(0);",
-      "stack = task_stack(t);",
-      "result = {{stack[1][2], valid(stack[1][1]), valid(stack[1][4])}, {stack[2][2], valid(stack[2][1]), valid(stack[2][4])}, {stack[3][2], valid(stack[3][1]), valid(stack[3][4])}};",
-      "kill_task(t);",
-      "return result;"
-    });
-    o = create(class, 1);
-    result = o:c();
-    recycle(o);
-    recycle(class);
+    class = #-1;
+    o = #-1;
+    try
+      class = create($nothing);
+      add_verb(class, {player, "xd", "a"}, {"this", "none", "this"});
+      set_verb_code(class, "a", {"suspend();"});
+      add_verb(class, {player, "xd", "b"}, {"this", "none", "this"});
+      set_verb_code(class, "b", {"return this:a();"});
+      add_verb(class, {player, "xd", "c"}, {"this", "none", "this"});
+      set_verb_code(class, "c", {
+        "t = 0;",
+        "try",
+        "  fork t (0)",
+        "    c = this:b();",
+        "  endfork",
+        "  suspend(0);",
+        "  stack = task_stack(t);",
+        "  result = {{stack[1][2], valid(stack[1][1]), valid(stack[1][4])}, {stack[2][2], valid(stack[2][1]), valid(stack[2][4])}, {stack[3][2], valid(stack[3][1]), valid(stack[3][4])}};",
+        "finally",
+        "  if (t)",
+        "    try",
+        "      kill_task(t);",
+        "    except (ANY)",
+        "    endtry",
+        "  endif",
+        "endtry",
+        "return result;"
+      });
+      o = create(class, 1);
+      result = o:c();
+    finally
+      if (valid(o))
+        recycle(o);
+      endif
+      if (valid(class))
+        recycle(class);
+      endif
+    endtry
     return result;
   expect:
     value:
@@ -594,37 +621,53 @@ tests:
   permission: wizard
   description: Wizard sees valid anonymous objects in queued_tasks()
   statement: |
-    class = create($nothing);
-    add_verb(class, {player, "xd", "a"}, {"this", "none", "this"});
-    set_verb_code(class, "a", {"suspend();"});
-    add_verb(class, {player, "xd", "b"}, {"this", "none", "this"});
-    set_verb_code(class, "b", {"return this:a();"});
-    add_verb(class, {player, "xd", "c"}, {"this", "none", "this"});
-    set_verb_code(class, "c", {
-      "ids = {};",
-      "for delay in ({0, 100})",
-      "  fork id (delay)",
-      "    c = this:b();",
-      "  endfork",
-      "  ids = {@ids, id};",
-      "endfor",
-      "suspend(0);",
-      "q = queued_tasks();",
-      "mine = {};",
-      "for queued in (q)",
-      "  if (queued[1] in ids)",
-      "    mine = {@mine, queued};",
-      "  endif",
-      "endfor",
-      "result = {length(mine), {mine[1][7], valid(mine[1][6]), valid(mine[1][9])}, {mine[2][7], valid(mine[2][6]), valid(mine[2][9])}};",
-      "kill_task(ids[1]);",
-      "kill_task(ids[2]);",
-      "return result;"
-    });
-    o = create(class, 1);
-    result = o:c();
-    recycle(o);
-    recycle(class);
+    class = #-1;
+    o = #-1;
+    try
+      class = create($nothing);
+      add_verb(class, {player, "xd", "a"}, {"this", "none", "this"});
+      set_verb_code(class, "a", {"suspend();"});
+      add_verb(class, {player, "xd", "b"}, {"this", "none", "this"});
+      set_verb_code(class, "b", {"return this:a();"});
+      add_verb(class, {player, "xd", "c"}, {"this", "none", "this"});
+      set_verb_code(class, "c", {
+        "ids = {};",
+        "try",
+        "  for delay in ({0, 100})",
+        "    fork id (delay)",
+        "      c = this:b();",
+        "    endfork",
+        "    ids = {@ids, id};",
+        "  endfor",
+        "  suspend(0);",
+        "  q = queued_tasks();",
+        "  mine = {};",
+        "  for queued in (q)",
+        "    if (queued[1] in ids)",
+        "      mine = {@mine, queued};",
+        "    endif",
+        "  endfor",
+        "  result = {length(mine), {mine[1][7], valid(mine[1][6]), valid(mine[1][9])}, {mine[2][7], valid(mine[2][6]), valid(mine[2][9])}};",
+        "finally",
+        "  for id in (ids)",
+        "    try",
+        "      kill_task(id);",
+        "    except (ANY)",
+        "    endtry",
+        "  endfor",
+        "endtry",
+        "return result;"
+      });
+      o = create(class, 1);
+      result = o:c();
+    finally
+      if (valid(o))
+        recycle(o);
+      endif
+      if (valid(class))
+        recycle(class);
+      endif
+    endtry
     return result;
   expect:
     value:

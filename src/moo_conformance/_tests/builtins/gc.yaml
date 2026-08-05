@@ -110,132 +110,212 @@ tests:
   - name: single_cyclic_self_reference_basic
     permission: wizard
     statement: |
-      c = create($nothing);
-      add_property(c, "next", 0, {player, ""});
-      o = create(c, 1);
-      o.next = o;
-      run_gc();
-      result = valid(o);
-      recycle(o);
-      recycle(c);
-      run_gc();
-      return result;
+      c = o = #-1;
+      try
+        c = create($nothing);
+        add_property(c, "next", 0, {player, ""});
+        o = create(c, 1);
+        o.next = o;
+        run_gc();
+        result = valid(o);
+        recycle(o);
+        recycle(c);
+        run_gc();
+        return result;
+      finally
+        if (valid(o))
+          recycle(o);
+        endif
+        if (valid(c))
+          recycle(c);
+        endif
+      endtry
     expect:
       value: 1
 
   - name: single_cyclic_self_reference_with_recycle
     permission: wizard
     statement: |
-      c = create($nothing);
-      add_property(c, "next", 0, {player, ""});
-      o = create(c, 1);
-      o.next = o;
-      recycle(o);
-      run_gc();
-      recycle(c);
-      run_gc();
-      return 1;
+      c = o = #-1;
+      try
+        c = create($nothing);
+        add_property(c, "next", 0, {player, ""});
+        o = create(c, 1);
+        o.next = o;
+        recycle(o);
+        run_gc();
+        recycle(c);
+        run_gc();
+        return 1;
+      finally
+        if (valid(o))
+          recycle(o);
+        endif
+        if (valid(c))
+          recycle(c);
+        endif
+      endtry
     expect:
       value: 1
 
   - name: dual_cyclic_self_references
     permission: wizard
     statement: |
-      c = create($nothing);
-      add_property(c, "x", 0, {player, ""});
-      add_property(c, "y", 0, {player, ""});
-      o = create(c, 1);
-      o.x = o;
-      o.y = o;
-      run_gc();
-      result = valid(o);
-      recycle(o);
-      recycle(c);
-      run_gc();
-      return result;
+      c = o = #-1;
+      try
+        c = create($nothing);
+        add_property(c, "x", 0, {player, ""});
+        add_property(c, "y", 0, {player, ""});
+        o = create(c, 1);
+        o.x = o;
+        o.y = o;
+        run_gc();
+        result = valid(o);
+        recycle(o);
+        recycle(c);
+        run_gc();
+        return result;
+      finally
+        if (valid(o))
+          recycle(o);
+        endif
+        if (valid(c))
+          recycle(c);
+        endif
+      endtry
     expect:
       value: 1
 
   - name: dual_cyclic_self_references_with_recycle
     permission: wizard
     statement: |
-      c = create($nothing);
-      add_property(c, "x", 0, {player, ""});
-      add_property(c, "y", 0, {player, ""});
-      o = create(c, 1);
-      o.x = o;
-      o.y = o;
-      recycle(o);
-      run_gc();
-      recycle(c);
-      run_gc();
-      return 1;
+      c = o = #-1;
+      try
+        c = create($nothing);
+        add_property(c, "x", 0, {player, ""});
+        add_property(c, "y", 0, {player, ""});
+        o = create(c, 1);
+        o.x = o;
+        o.y = o;
+        recycle(o);
+        run_gc();
+        recycle(c);
+        run_gc();
+        return 1;
+      finally
+        if (valid(o))
+          recycle(o);
+        endif
+        if (valid(c))
+          recycle(c);
+        endif
+      endtry
     expect:
       value: 1
 
   - name: cyclic_references_through_list
     permission: wizard
     statement: |
-      c = create($nothing);
-      add_property(c, "next", 0, {player, ""});
-      o = create(c, 1);
-      x = {o, o, o};
-      o.next = x;
-      run_gc();
-      result = valid(o);
-      recycle(o);
-      recycle(c);
-      run_gc();
-      return result;
+      c = o = #-1;
+      try
+        c = create($nothing);
+        add_property(c, "next", 0, {player, ""});
+        o = create(c, 1);
+        x = {o, o, o};
+        o.next = x;
+        run_gc();
+        result = valid(o);
+        recycle(o);
+        recycle(c);
+        run_gc();
+        return result;
+      finally
+        if (valid(o))
+          recycle(o);
+        endif
+        if (valid(c))
+          recycle(c);
+        endif
+      endtry
     expect:
       value: 1
 
   - name: cyclic_references_through_list_with_recycle
     permission: wizard
     statement: |
-      c = create($nothing);
-      add_property(c, "next", 0, {player, ""});
-      o = create(c, 1);
-      x = {o, o, o};
-      o.next = x;
-      recycle(o);
-      run_gc();
-      recycle(c);
-      run_gc();
-      return 1;
+      c = o = #-1;
+      try
+        c = create($nothing);
+        add_property(c, "next", 0, {player, ""});
+        o = create(c, 1);
+        x = {o, o, o};
+        o.next = x;
+        recycle(o);
+        run_gc();
+        recycle(c);
+        run_gc();
+        return 1;
+      finally
+        if (valid(o))
+          recycle(o);
+        endif
+        if (valid(c))
+          recycle(c);
+        endif
+      endtry
     expect:
       value: 1
 
   - name: cyclic_references_through_map
     permission: wizard
     statement: |
-      c = create($nothing);
-      add_property(c, "next", 0, {player, ""});
-      o = create(c, 1);
-      x = [1 -> o, 2 -> o, 3 -> o];
-      o.next = x;
-      run_gc();
-      result = valid(o);
-      recycle(o);
-      recycle(c);
-      run_gc();
-      return result;
+      c = o = #-1;
+      try
+        c = create($nothing);
+        add_property(c, "next", 0, {player, ""});
+        o = create(c, 1);
+        x = [1 -> o, 2 -> o, 3 -> o];
+        o.next = x;
+        run_gc();
+        result = valid(o);
+        recycle(o);
+        recycle(c);
+        run_gc();
+        return result;
+      finally
+        if (valid(o))
+          recycle(o);
+        endif
+        if (valid(c))
+          recycle(c);
+        endif
+      endtry
     expect:
       value: 1
 
   - name: cyclic_references_through_map_with_recycle
     permission: wizard
     statement: |
-      c = create($nothing);
-      add_property(c, "next", 0, {player, ""});
-      o = create(c, 1);
-      x = [1 -> o, 2 -> o, 3 -> o];
-      o.next = x;
-      recycle(o);
-      run_gc();
-      recycle(c);
-      run_gc();
-      return 1;
+      c = o = #-1;
+      try
+        c = create($nothing);
+        add_property(c, "next", 0, {player, ""});
+        o = create(c, 1);
+        x = [1 -> o, 2 -> o, 3 -> o];
+        o.next = x;
+        recycle(o);
+        run_gc();
+        recycle(c);
+        run_gc();
+        return 1;
+      finally
+        if (valid(o))
+          recycle(o);
+        endif
+        if (valid(c))
+          recycle(c);
+        endif
+      endtry
     expect:
       value: 1
 
@@ -243,15 +323,27 @@ tests:
   - name: empty_list_is_green
     permission: wizard
     statement: |
-      c = create($nothing);
-      add_property(c, "list", 0, {player, ""});
-      o = create(c, 1);
-      o.list = {};
+      c = o = #-1;
+      try
+        c = create($nothing);
+        add_property(c, "list", 0, {player, ""});
+        o = create(c, 1);
+        o.list = {};
+        run_gc();
+        recycle(o);
+        run_gc();
+        recycle(c);
+        run_gc();
+      finally
+        if (valid(o))
+          recycle(o);
+        endif
+        if (valid(c))
+          recycle(c);
+        endif
+      endtry
       run_gc();
-      recycle(o);
-      run_gc();
-      recycle(c);
-      run_gc();
+      suspend(0);
       x = {};
       gc = gc_stats();
       return gc["purple"] == 0;
@@ -261,15 +353,27 @@ tests:
   - name: empty_map_is_green
     permission: wizard
     statement: |
-      c = create($nothing);
-      add_property(c, "map", 0, {player, ""});
-      o = create(c, 1);
-      o.map = [];
+      c = o = #-1;
+      try
+        c = create($nothing);
+        add_property(c, "map", 0, {player, ""});
+        o = create(c, 1);
+        o.map = [];
+        run_gc();
+        recycle(o);
+        run_gc();
+        recycle(c);
+        run_gc();
+      finally
+        if (valid(o))
+          recycle(o);
+        endif
+        if (valid(c))
+          recycle(c);
+        endif
+      endtry
       run_gc();
-      recycle(o);
-      run_gc();
-      recycle(c);
-      run_gc();
+      suspend(0);
       x = [];
       gc = gc_stats();
       return gc["purple"] == 0;
@@ -280,64 +384,112 @@ tests:
   - name: list_as_cycle_root
     permission: wizard
     statement: |
-      c = create($nothing);
-      add_property(c, "next", 0, {player, ""});
-      x = y = {create(c, 1)};
-      x[1].next = x;
-      run_gc();
-      x = y = 0;
-      run_gc();
-      recycle(c);
-      run_gc();
-      return 1;
+      c = o = #-1;
+      try
+        c = create($nothing);
+        add_property(c, "next", 0, {player, ""});
+        o = create(c, 1);
+        x = y = {o};
+        x[1].next = x;
+        run_gc();
+        x = y = 0;
+        o = #-1;
+        run_gc();
+        recycle(c);
+        run_gc();
+        return 1;
+      finally
+        if (valid(o))
+          recycle(o);
+        endif
+        if (valid(c))
+          recycle(c);
+        endif
+      endtry
     expect:
       value: 1
 
   - name: object_pointing_to_list_cycle
     permission: wizard
     statement: |
-      c = create($nothing);
-      add_property(c, "next", 0, {player, ""});
-      x = y = create(c, 1);
-      x.next = {x};
-      run_gc();
-      x = y = 0;
-      run_gc();
-      recycle(c);
-      run_gc();
-      return 1;
+      c = o = #-1;
+      try
+        c = create($nothing);
+        add_property(c, "next", 0, {player, ""});
+        o = create(c, 1);
+        x = y = o;
+        x.next = {x};
+        run_gc();
+        x = y = 0;
+        o = #-1;
+        run_gc();
+        recycle(c);
+        run_gc();
+        return 1;
+      finally
+        if (valid(o))
+          recycle(o);
+        endif
+        if (valid(c))
+          recycle(c);
+        endif
+      endtry
     expect:
       value: 1
 
   - name: map_as_cycle_root
     permission: wizard
     statement: |
-      c = create($nothing);
-      add_property(c, "next", 0, {player, ""});
-      x = y = [1 -> create(c, 1)];
-      x[1].next = x;
-      run_gc();
-      x = y = 0;
-      run_gc();
-      recycle(c);
-      run_gc();
-      return 1;
+      c = o = #-1;
+      try
+        c = create($nothing);
+        add_property(c, "next", 0, {player, ""});
+        o = create(c, 1);
+        x = y = [1 -> o];
+        x[1].next = x;
+        run_gc();
+        x = y = 0;
+        o = #-1;
+        run_gc();
+        recycle(c);
+        run_gc();
+        return 1;
+      finally
+        if (valid(o))
+          recycle(o);
+        endif
+        if (valid(c))
+          recycle(c);
+        endif
+      endtry
     expect:
       value: 1
 
   - name: object_pointing_to_map_cycle
     permission: wizard
     statement: |
-      c = create($nothing);
-      add_property(c, "next", 0, {player, ""});
-      x = y = create(c, 1);
-      x.next = [1 -> x];
-      run_gc();
-      x = y = 0;
-      run_gc();
-      recycle(c);
-      run_gc();
-      return 1;
+      c = o = #-1;
+      try
+        c = create($nothing);
+        add_property(c, "next", 0, {player, ""});
+        o = create(c, 1);
+        x = y = o;
+        x.next = [1 -> x];
+        run_gc();
+        x = y = 0;
+        o = #-1;
+        run_gc();
+        recycle(c);
+        run_gc();
+        return 1;
+      finally
+        if (valid(o))
+          recycle(o);
+        endif
+        if (valid(c))
+          recycle(c);
+        endif
+      endtry
     expect:
       value: 1
 
@@ -345,82 +497,146 @@ tests:
   - name: cyclic_chain_length_2
     permission: wizard
     statement: |
-      c = create($nothing);
-      add_property(c, "next", 0, {player, ""});
-      x = y = create(c, 1);
-      for i in [1..2]
-        x.next = create(c, 1);
-        x = x.next;
-      endfor
-      x.next = y;
-      run_gc();
-      recycle(y);
-      x = y = 0;
-      run_gc();
-      recycle(c);
-      run_gc();
-      return 1;
+      c = head = tail = #-1;
+      try
+        c = create($nothing);
+        add_property(c, "next", 0, {player, ""});
+        x = y = create(c, 1);
+        head = tail = x;
+        for i in [1..2]
+          x.next = create(c, 1);
+          x = x.next;
+          tail = x;
+        endfor
+        x.next = y;
+        run_gc();
+        recycle(y);
+        x = y = 0;
+        head = tail = #-1;
+        run_gc();
+        recycle(c);
+        run_gc();
+        return 1;
+      finally
+        if (valid(tail))
+          recycle(tail);
+        endif
+        if (valid(head))
+          recycle(head);
+        endif
+        if (valid(c))
+          recycle(c);
+        endif
+      endtry
     expect:
       value: 1
 
   - name: cyclic_chain_length_3
     permission: wizard
     statement: |
-      c = create($nothing);
-      add_property(c, "next", 0, {player, ""});
-      x = y = create(c, 1);
-      for i in [1..3]
-        x.next = create(c, 1);
-        x = x.next;
-      endfor
-      x.next = y;
-      run_gc();
-      recycle(y);
-      x = y = 0;
-      run_gc();
-      recycle(c);
-      run_gc();
-      return 1;
+      c = head = tail = #-1;
+      try
+        c = create($nothing);
+        add_property(c, "next", 0, {player, ""});
+        x = y = create(c, 1);
+        head = tail = x;
+        for i in [1..3]
+          x.next = create(c, 1);
+          x = x.next;
+          tail = x;
+        endfor
+        x.next = y;
+        run_gc();
+        recycle(y);
+        x = y = 0;
+        head = tail = #-1;
+        run_gc();
+        recycle(c);
+        run_gc();
+        return 1;
+      finally
+        if (valid(tail))
+          recycle(tail);
+        endif
+        if (valid(head))
+          recycle(head);
+        endif
+        if (valid(c))
+          recycle(c);
+        endif
+      endtry
     expect:
       value: 1
 
   - name: cyclic_chain_length_2_with_recycle
     permission: wizard
     statement: |
-      c = create($nothing);
-      add_property(c, "next", 0, {player, ""});
-      x = y = create(c, 1);
-      for i in [1..2]
-        x.next = create(c, 1);
-        x = x.next;
-      endfor
-      x.next = y;
-      recycle(y);
-      x = y = 0;
-      run_gc();
-      recycle(c);
-      run_gc();
-      return 1;
+      c = head = tail = #-1;
+      try
+        c = create($nothing);
+        add_property(c, "next", 0, {player, ""});
+        x = y = create(c, 1);
+        head = tail = x;
+        for i in [1..2]
+          x.next = create(c, 1);
+          x = x.next;
+          tail = x;
+        endfor
+        x.next = y;
+        recycle(y);
+        x = y = 0;
+        head = tail = #-1;
+        run_gc();
+        recycle(c);
+        run_gc();
+        return 1;
+      finally
+        if (valid(tail))
+          recycle(tail);
+        endif
+        if (valid(head))
+          recycle(head);
+        endif
+        if (valid(c))
+          recycle(c);
+        endif
+      endtry
     expect:
       value: 1
 
   - name: cyclic_chain_length_4_with_recycle
     permission: wizard
     statement: |
-      c = create($nothing);
-      add_property(c, "next", 0, {player, ""});
-      x = y = create(c, 1);
-      for i in [1..4]
-        x.next = create(c, 1);
-        x = x.next;
-      endfor
-      x.next = y;
-      recycle(y);
-      x = y = 0;
-      run_gc();
-      recycle(c);
-      run_gc();
-      return 1;
+      c = head = tail = #-1;
+      try
+        c = create($nothing);
+        add_property(c, "next", 0, {player, ""});
+        x = y = create(c, 1);
+        head = tail = x;
+        for i in [1..4]
+          x.next = create(c, 1);
+          x = x.next;
+          tail = x;
+        endfor
+        x.next = y;
+        recycle(y);
+        x = y = 0;
+        head = tail = #-1;
+        run_gc();
+        recycle(c);
+        run_gc();
+        return 1;
+      finally
+        if (valid(tail))
+          recycle(tail);
+        endif
+        if (valid(head))
+          recycle(head);
+        endif
+        if (valid(c))
+          recycle(c);
+        endif
+      endtry
     expect:
       value: 1
 
@@ -439,15 +655,25 @@ tests:
   - name: anonymous_made_invalid_with_cycle
     permission: wizard
     statement: |
-      o = create($nothing);
-      add_property(o, "next", 0, {player, ""});
-      p = create(o, 1);
-      p.next = p;
-      add_property(o, "foo", 0, {player, ""});
-      run_gc();
-      recycle(o);
-      run_gc();
-      return 1;
+      o = p = #-1;
+      try
+        o = create($nothing);
+        add_property(o, "next", 0, {player, ""});
+        p = create(o, 1);
+        p.next = p;
+        add_property(o, "foo", 0, {player, ""});
+        run_gc();
+        recycle(o);
+        run_gc();
+        return 1;
+      finally
+        if (valid(p))
+          recycle(p);
+        endif
+        if (valid(o))
+          recycle(o);
+        endif
+      endtry
     expect:
       value: 1
 
@@ -455,34 +681,66 @@ tests:
   - name: contrived_recycled_object_y_first
     permission: wizard
     statement: |
-      c = create($nothing);
-      add_property(c, "next", 0, {player, ""});
-      x = y = create(c, 1);
-      x.next = create(c, 1);
-      x.next.next = x;
-      recycle(y);
-      x = y = 0;
-      run_gc();
-      recycle(c);
-      run_gc();
-      return 1;
+      c = head = tail = #-1;
+      try
+        c = create($nothing);
+        add_property(c, "next", 0, {player, ""});
+        x = y = create(c, 1);
+        head = x;
+        x.next = create(c, 1);
+        tail = x.next;
+        x.next.next = x;
+        recycle(y);
+        x = y = 0;
+        head = tail = #-1;
+        run_gc();
+        recycle(c);
+        run_gc();
+        return 1;
+      finally
+        if (valid(tail))
+          recycle(tail);
+        endif
+        if (valid(head))
+          recycle(head);
+        endif
+        if (valid(c))
+          recycle(c);
+        endif
+      endtry
     expect:
       value: 1
 
   - name: contrived_recycled_object_x_first
     permission: wizard
     statement: |
-      c = create($nothing);
-      add_property(c, "next", 0, {player, ""});
-      x = y = create(c, 1);
-      x.next = create(c, 1);
-      x.next.next = x;
-      recycle(x);
-      x = y = 0;
-      run_gc();
-      recycle(c);
-      run_gc();
-      return 1;
+      c = head = tail = #-1;
+      try
+        c = create($nothing);
+        add_property(c, "next", 0, {player, ""});
+        x = y = create(c, 1);
+        head = x;
+        x.next = create(c, 1);
+        tail = x.next;
+        x.next.next = x;
+        recycle(x);
+        x = y = 0;
+        head = tail = #-1;
+        run_gc();
+        recycle(c);
+        run_gc();
+        return 1;
+      finally
+        if (valid(tail))
+          recycle(tail);
+        endif
+        if (valid(head))
+          recycle(head);
+        endif
+        if (valid(c))
+          recycle(c);
+        endif
+      endtry
     expect:
       value: 1
 
@@ -562,62 +820,110 @@ tests:
   - name: cyclic_chain_length_5
     permission: wizard
     statement: |
-      c = create($nothing);
-      add_property(c, "next", 0, {player, ""});
-      x = y = create(c, 1);
-      for i in [1..5]
-        x.next = create(c, 1);
-        x = x.next;
-      endfor
-      x.next = y;
-      run_gc();
-      recycle(y);
-      x = y = 0;
-      run_gc();
-      recycle(c);
-      run_gc();
-      return 1;
+      c = head = tail = #-1;
+      try
+        c = create($nothing);
+        add_property(c, "next", 0, {player, ""});
+        x = y = create(c, 1);
+        head = tail = x;
+        for i in [1..5]
+          x.next = create(c, 1);
+          x = x.next;
+          tail = x;
+        endfor
+        x.next = y;
+        run_gc();
+        recycle(y);
+        x = y = 0;
+        head = tail = #-1;
+        run_gc();
+        recycle(c);
+        run_gc();
+        return 1;
+      finally
+        if (valid(tail))
+          recycle(tail);
+        endif
+        if (valid(head))
+          recycle(head);
+        endif
+        if (valid(c))
+          recycle(c);
+        endif
+      endtry
     expect:
       value: 1
 
   - name: cyclic_chain_length_6
     permission: wizard
     statement: |
-      c = create($nothing);
-      add_property(c, "next", 0, {player, ""});
-      x = y = create(c, 1);
-      for i in [1..6]
-        x.next = create(c, 1);
-        x = x.next;
-      endfor
-      x.next = y;
-      run_gc();
-      recycle(y);
-      x = y = 0;
-      run_gc();
-      recycle(c);
-      run_gc();
-      return 1;
+      c = head = tail = #-1;
+      try
+        c = create($nothing);
+        add_property(c, "next", 0, {player, ""});
+        x = y = create(c, 1);
+        head = tail = x;
+        for i in [1..6]
+          x.next = create(c, 1);
+          x = x.next;
+          tail = x;
+        endfor
+        x.next = y;
+        run_gc();
+        recycle(y);
+        x = y = 0;
+        head = tail = #-1;
+        run_gc();
+        recycle(c);
+        run_gc();
+        return 1;
+      finally
+        if (valid(tail))
+          recycle(tail);
+        endif
+        if (valid(head))
+          recycle(head);
+        endif
+        if (valid(c))
+          recycle(c);
+        endif
+      endtry
     expect:
       value: 1
 
   - name: cyclic_chain_length_7_with_recycle
     permission: wizard
     statement: |
-      c = create($nothing);
-      add_property(c, "next", 0, {player, ""});
-      x = y = create(c, 1);
-      for i in [1..7]
-        x.next = create(c, 1);
-        x = x.next;
-      endfor
-      x.next = y;
-      recycle(y);
-      x = y = 0;
-      run_gc();
-      recycle(c);
-      run_gc();
-      return 1;
+      c = head = tail = #-1;
+      try
+        c = create($nothing);
+        add_property(c, "next", 0, {player, ""});
+        x = y = create(c, 1);
+        head = tail = x;
+        for i in [1..7]
+          x.next = create(c, 1);
+          x = x.next;
+          tail = x;
+        endfor
+        x.next = y;
+        recycle(y);
+        x = y = 0;
+        head = tail = #-1;
+        run_gc();
+        recycle(c);
+        run_gc();
+        return 1;
+      finally
+        if (valid(tail))
+          recycle(tail);
+        endif
+        if (valid(head))
+          recycle(head);
+        endif
+        if (valid(c))
+          recycle(c);
+        endif
+      endtry
     expect:
       value: 1
 

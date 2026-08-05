@@ -134,13 +134,14 @@ jobs:
         run: uv sync --project conformance --locked --extra dev
 
       - name: Run conformance candidate quality gates
+        working-directory: conformance
         run: |
-          uv run --project conformance --frozen pytest conformance/tests --strict-markers -q
-          uv run --project conformance --frozen pytest --collect-only --pyargs moo_conformance --strict-markers -q
-          uv run --project conformance --frozen moo-lint-duplicates \
-            --baseline conformance/ci/duplicate-baseline.json
-          uv run --project conformance --frozen ruff check conformance
-          uv run --project conformance --frozen mypy conformance/src/moo_conformance
+          uv run --frozen pytest tests --strict-markers -q
+          uv run --frozen pytest --collect-only --pyargs moo_conformance --strict-markers -q
+          uv run --frozen moo-lint-duplicates \
+            --baseline ci/duplicate-baseline.json
+          uv run --frozen ruff check .
+          uv run --frozen mypy src/moo_conformance
 
       - name: Create exact case inventory and oracle profile
         env:

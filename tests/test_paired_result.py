@@ -1,22 +1,50 @@
+import hashlib
 import json
 import xml.etree.ElementTree as ET
 
 import pytest
 
 import moo_conformance.paired_result as paired_result
+from moo_conformance.admission import ADMISSION_PROBE_INVENTORY
 from moo_conformance.execution_ledger import ExecutionLedgerError
-from moo_conformance.paired_result import _load_expected_ids, validate_paired_result
+from moo_conformance.paired_result import validate_paired_result
+
+TEST_CONTEXT = "test:paired-context"
+CURRENT_CANDIDATE_IDS = {"suite.yaml::case"}
+pytest_plugins = ("pytester",)
+
+
+@pytest.fixture(autouse=True)
+def trusted_inventory_boundary(monkeypatch):
+    global CURRENT_CANDIDATE_IDS
+    CURRENT_CANDIDATE_IDS = {"suite.yaml::case"}
+
+    def inventory(
+        candidate_root,
+        _candidate_tests_dir,
+        *,
+        candidate_db_path,
+        candidate_db_dir,
+    ):
+        identities = sorted(CURRENT_CANDIDATE_IDS)
+        digest = hashlib.sha256(("\n".join(identities) + "\n").encode()).hexdigest()
+        return {
+            "schema_version": 2,
+            "candidate_anchor": str(candidate_root),
+            "trusted_case_ids": identities,
+            "candidate_case_ids": identities,
+            "additive_case_ids": [],
+            "candidate_identity_sha256": digest,
+        }
+
+    monkeypatch.setattr(paired_result, "validate_candidate_inventory", inventory)
 
 
 def write_report(tmp_path, outcomes):
     root = ET.Element("testsuites")
     suite = ET.SubElement(root, "testsuite")
     for case_id, status in outcomes.items():
-        case = ET.SubElement(
-            suite,
-            "testcase",
-            name=f"test_yaml_conformance[{case_id}]",
-        )
+        case = ET.SubElement(suite, "testcase", name=f"test_yaml_conformance[{case_id}]")
         if status != "passed":
             element_name = "failure" if status == "failed" else status
             ET.SubElement(case, element_name, message=f"{status} reason")
@@ -25,250 +53,490 @@ def write_report(tmp_path, outcomes):
     return report
 
 
-def test_validate_success_requires_exact_nonempty_passing_surface(tmp_path, monkeypatch) -> None:
-    monkeypatch.setattr(
-        "moo_conformance.paired_result.packaged_case_ids",
-        lambda: {"suite.yaml::one", "suite.yaml::two"},
+def write_admission_report(
+    tmp_path,
+    status="passed",
+    context=TEST_CONTEXT,
+    *,
+    name="test_capability_admission",
+):
+    root = ET.Element("testsuites")
+    suite = ET.SubElement(root, "testsuite")
+    case = ET.SubElement(
+        suite,
+        "testcase",
+        name=name,
+        classname="src.moo_conformance.test_conformance",
     )
-    report = write_report(
+    properties = ET.SubElement(case, "properties")
+    ET.SubElement(
+        properties,
+        "property",
+        name="admission_context",
+        value=context,
+    )
+    if status != "passed":
+        ET.SubElement(case, status, message=f"{status} reason")
+    report = tmp_path / "admission.xml"
+    ET.ElementTree(root).write(report, encoding="unicode")
+    return report
+
+
+def test_pytest_junit_records_context_as_testcase_property(pytester) -> None:
+    pytester.makepyfile(
+        """
+        def test_admission_shape(record_property):
+            record_property("admission_context", "nonce-bound-context")
+        """
+    )
+    report = pytester.path / "admission.xml"
+
+    result = pytester.runpytest("-q", f"--junitxml={report}")
+
+    result.assert_outcomes(passed=1)
+    testcase = ET.parse(report).getroot().find(".//testcase")
+    assert testcase is not None
+    properties = {
+        prop.attrib["name"]: prop.attrib["value"]
+        for prop in testcase.findall("./properties/property")
+    }
+    assert properties == {"admission_context": "nonce-bound-context"}
+
+
+def write_admission(tmp_path, statuses=None, context=TEST_CONTEXT):
+    statuses = statuses or {}
+    probes = []
+    for identity in ADMISSION_PROBE_INVENTORY:
+        status = statuses.get(identity, "passed")
+        if status == "passed":
+            probe = {
+                "identity": identity,
+                "status": status,
+                "value": True,
+                "prerequisite_blocked_by": [],
+            }
+        elif status in {"failed", "error"}:
+            probe = {
+                "identity": identity,
+                "status": status,
+                "detail": f"{status} detail",
+                "prerequisite_blocked_by": [],
+            }
+        else:
+            probe = {
+                "identity": identity,
+                "status": "blocked",
+                "prerequisite_blocked_by": ["admission::option.OUTBOUND_NETWORK"],
+            }
+        probes.append(probe)
+    path = tmp_path / "admission.json"
+    path.write_text(
+        json.dumps(
+            {
+                "schema_version": 2,
+                "phase": "admission",
+                "context": context,
+                "probes": probes,
+            }
+        )
+    )
+    return path
+
+
+def candidate_surface_kwargs(tmp_path):
+    root = tmp_path / "candidate-data"
+    return {
+        "candidate_root": root,
+        "candidate_tests_dir": root / "_tests",
+        "candidate_db_path": root / "_db" / "Test.db",
+        "candidate_db_dir": root / "_db" / "startup",
+    }
+
+
+def validate_packaged(tmp_path, outcomes, **overrides):
+    global CURRENT_CANDIDATE_IDS
+    CURRENT_CANDIDATE_IDS = set(overrides.pop("inventory_ids", outcomes))
+    arguments = {
+        "admission_path": write_admission(tmp_path),
+        "admission_report_path": write_admission_report(tmp_path),
+        "admission_context": TEST_CONTEXT,
+        **candidate_surface_kwargs(tmp_path),
+        "report_path": write_report(tmp_path, outcomes),
+        "expected": "success",
+        "expected_phase": "packaged",
+        "admission_exit_code": 0,
+        "packaged_exit_code": 0,
+        "required_bad_identities": [],
+    }
+    arguments.update(overrides)
+    return validate_paired_result(**arguments)
+
+
+def test_validate_packaged_success_requires_exact_nonempty_surface(tmp_path) -> None:
+    result = validate_packaged(
         tmp_path,
         {"suite.yaml::one": "passed", "suite.yaml::two": "skipped"},
     )
 
-    result = validate_paired_result(
-        report,
-        expected="success",
-        exit_code=0,
-        required_bad_cases=[],
-    )
-
     assert result == {
-        "schema_version": 2,
+        "schema_version": 5,
+        "phase": "packaged",
         "expected_result": "success",
-        "required_bad_cases": [],
-        "exit_code": 0,
-        "packaged_cases": 2,
-        "passed": 1,
-        "skipped": 1,
-        "failed": 0,
-        "error": 0,
+        "declared_bad_identities": [],
+        "observed_bad_identities": [],
+        "admission": {
+            "schema_version": 2,
+            "context": TEST_CONTEXT,
+            "inventory": list(ADMISSION_PROBE_INVENTORY),
+            "passed": 4,
+            "failed": 0,
+            "error": 0,
+            "blocked": 0,
+            "exit_code": 0,
+            "junit_status": "passed",
+        },
+        "inventory": {
+            "schema_version": 2,
+            "candidate_anchor": str(tmp_path / "candidate-data"),
+            "trusted_cases": 2,
+            "candidate_cases": 2,
+            "additive_cases": 0,
+            "candidate_identity_sha256": hashlib.sha256(
+                b"suite.yaml::one\nsuite.yaml::two\n"
+            ).hexdigest(),
+        },
+        "packaged": {
+            "exit_code": 0,
+            "packaged_cases": 2,
+            "passed": 1,
+            "skipped": 1,
+            "failed": 0,
+            "error": 0,
+        },
     }
 
 
-def test_validate_expected_failure_requires_bad_outcome_and_nonzero_exit(
-    tmp_path, monkeypatch
-) -> None:
-    monkeypatch.setattr(
-        "moo_conformance.paired_result.packaged_case_ids",
-        lambda: {"suite.yaml::one"},
-    )
-    report = write_report(tmp_path, {"suite.yaml::one": "error"})
-
-    result = validate_paired_result(
-        report,
-        expected="failure",
-        exit_code=1,
-        required_bad_cases=["suite.yaml::one"],
-    )
-
-    assert result["error"] == 1
-    assert result["expected_result"] == "failure"
-
-
-@pytest.mark.parametrize(
-    ("outcomes", "expected", "exit_code", "message"),
-    [
-        ({"suite.yaml::one": "passed"}, "success", 1, "expected success"),
-        ({"suite.yaml::one": "failed"}, "success", 1, "expected success"),
-        ({"suite.yaml::one": "passed"}, "failure", 0, "expected failure"),
-        ({"suite.yaml::one": "passed"}, "failure", 1, "expected failure"),
-        ({"suite.yaml::one": "error"}, "failure", 2, "expected failure"),
-    ],
-)
-def test_validate_rejects_result_mismatch(
-    tmp_path, monkeypatch, outcomes, expected, exit_code, message
-) -> None:
-    monkeypatch.setattr(
-        "moo_conformance.paired_result.packaged_case_ids",
-        lambda: {"suite.yaml::one"},
-    )
-    report = write_report(tmp_path, outcomes)
-
-    with pytest.raises(ExecutionLedgerError, match=message):
-        validate_paired_result(
-            report,
-            expected=expected,
-            exit_code=exit_code,
-            required_bad_cases=["suite.yaml::one"] if expected == "failure" else [],
-        )
-
-
-def test_validate_rejects_inexact_surface(tmp_path, monkeypatch) -> None:
-    monkeypatch.setattr(
-        "moo_conformance.paired_result.packaged_case_ids",
-        lambda: {"suite.yaml::one", "suite.yaml::missing"},
-    )
-    report = write_report(tmp_path, {"suite.yaml::one": "passed"})
-
-    with pytest.raises(ExecutionLedgerError, match="inexact surface"):
-        validate_paired_result(
-            report,
-            expected="success",
-            exit_code=0,
-            required_bad_cases=[],
-        )
-
-
-def test_validate_expected_failure_requires_nonempty_declared_set(tmp_path, monkeypatch) -> None:
-    monkeypatch.setattr(
-        "moo_conformance.paired_result.packaged_case_ids",
-        lambda: {"suite.yaml::one", "suite.yaml::other"},
-    )
-    report = write_report(
-        tmp_path,
-        {"suite.yaml::one": "error", "suite.yaml::other": "passed"},
-    )
-
-    with pytest.raises(ExecutionLedgerError, match="non-empty required_bad_cases"):
-        validate_paired_result(
-            report,
-            expected="failure",
-            exit_code=1,
-            required_bad_cases=[],
-        )
-
-
-def test_validate_expected_success_rejects_nonempty_declared_set(tmp_path, monkeypatch) -> None:
-    monkeypatch.setattr(
-        "moo_conformance.paired_result.packaged_case_ids",
-        lambda: {"suite.yaml::one"},
-    )
-    report = write_report(tmp_path, {"suite.yaml::one": "passed"})
-
-    with pytest.raises(ExecutionLedgerError, match="empty required_bad_cases"):
-        validate_paired_result(
-            report,
-            expected="success",
-            exit_code=0,
-            required_bad_cases=["suite.yaml::one"],
-        )
-
-
-def test_validate_expected_failure_accepts_exact_multiple_bad_cases(tmp_path, monkeypatch) -> None:
-    monkeypatch.setattr(
-        "moo_conformance.paired_result.packaged_case_ids",
-        lambda: {"suite.yaml::first", "suite.yaml::second", "suite.yaml::passing"},
-    )
-    report = write_report(
+def test_validate_packaged_failure_preserves_exact_set_semantics(tmp_path) -> None:
+    result = validate_packaged(
         tmp_path,
         {
             "suite.yaml::first": "failed",
             "suite.yaml::second": "error",
             "suite.yaml::passing": "passed",
         },
-    )
-
-    result = validate_paired_result(
-        report,
         expected="failure",
-        exit_code=1,
-        required_bad_cases=["suite.yaml::second", "suite.yaml::first"],
+        packaged_exit_code=1,
+        required_bad_identities=["suite.yaml::second", "suite.yaml::first"],
     )
 
-    assert result["required_bad_cases"] == ["suite.yaml::first", "suite.yaml::second"]
+    assert result["observed_bad_identities"] == [
+        "suite.yaml::first",
+        "suite.yaml::second",
+    ]
+    assert result["declared_bad_identities"] == result["observed_bad_identities"]
 
 
-@pytest.mark.parametrize(
-    ("required_bad_cases", "message"),
-    [
-        (["suite.yaml::failed", "suite.yaml::failed"], "duplicates"),
-        (["suite.yaml::unknown"], "unknown"),
-        ([""], "non-empty strings"),
-        (["suite.yaml::failed", 7], "non-empty strings"),
-    ],
-)
-def test_validate_rejects_duplicate_malformed_or_unknown_declarations(
-    tmp_path, monkeypatch, required_bad_cases, message
+def test_validate_packaged_rejects_missing_or_extra_surface(tmp_path) -> None:
+    with pytest.raises(ExecutionLedgerError, match="inexact surface"):
+        validate_packaged(
+            tmp_path,
+            {"suite.yaml::one": "passed"},
+            inventory_ids={"suite.yaml::one", "suite.yaml::missing"},
+        )
+
+
+def test_validate_packaged_rejects_admission_from_another_candidate_context(
+    tmp_path,
 ) -> None:
-    expected_ids = {"suite.yaml::failed", "suite.yaml::passing"}
-    monkeypatch.setattr(
-        "moo_conformance.paired_result.packaged_case_ids",
-        lambda: expected_ids,
-    )
-    report = write_report(
-        tmp_path,
-        {"suite.yaml::failed": "failed", "suite.yaml::passing": "passed"},
-    )
+    other = tmp_path / "other"
+    other.mkdir()
+    with pytest.raises(ExecutionLedgerError, match="context mismatch"):
+        validate_packaged(
+            tmp_path,
+            {"suite.yaml::one": "passed"},
+            admission_path=write_admission(other, context="other:candidate"),
+        )
 
-    with pytest.raises(ExecutionLedgerError, match=message):
-        validate_paired_result(
-            report,
-            expected="failure",
-            exit_code=1,
-            required_bad_cases=required_bad_cases,
+
+def test_validate_rejects_admission_junit_json_status_disagreement(tmp_path) -> None:
+    other = tmp_path / "other-report"
+    other.mkdir()
+    with pytest.raises(ExecutionLedgerError, match="JUnit/JSON disagreement"):
+        validate_packaged(
+            tmp_path,
+            {"suite.yaml::one": "passed"},
+            admission_report_path=write_admission_report(other, "failure"),
+        )
+
+
+def test_validate_rejects_admission_junit_nonce_substitution(tmp_path) -> None:
+    other = tmp_path / "other-report"
+    other.mkdir()
+    with pytest.raises(ExecutionLedgerError, match="JUnit context mismatch"):
+        validate_packaged(
+            tmp_path,
+            {"suite.yaml::one": "passed"},
+            admission_report_path=write_admission_report(
+                other,
+                context="test:other-run-attempt-nonce",
+            ),
+        )
+
+
+def test_validate_rejects_noncanonical_admission_junit_substitution(tmp_path) -> None:
+    other = tmp_path / "other-report"
+    other.mkdir()
+    with pytest.raises(ExecutionLedgerError, match="exact canonical admission test"):
+        validate_packaged(
+            tmp_path,
+            {"suite.yaml::one": "passed"},
+            admission_report_path=write_admission_report(
+                other,
+                name="test_fake_admission",
+            ),
         )
 
 
 @pytest.mark.parametrize(
-    ("required_bad_cases", "message"),
+    ("declared", "message"),
     [
         (["suite.yaml::first"], "extra observed"),
-        (["suite.yaml::first", "suite.yaml::second", "suite.yaml::passing"], "missing observed"),
+        (
+            ["suite.yaml::first", "suite.yaml::second", "suite.yaml::passing"],
+            "missing observed",
+        ),
     ],
 )
-def test_validate_rejects_inexact_observed_failure_set(
-    tmp_path, monkeypatch, required_bad_cases, message
+def test_validate_packaged_rejects_inexact_failure_identity_set(
+    tmp_path, declared, message
 ) -> None:
-    expected_ids = {"suite.yaml::first", "suite.yaml::second", "suite.yaml::passing"}
-    monkeypatch.setattr(
-        "moo_conformance.paired_result.packaged_case_ids",
-        lambda: expected_ids,
-    )
-    report = write_report(
-        tmp_path,
-        {
-            "suite.yaml::first": "failed",
-            "suite.yaml::second": "error",
-            "suite.yaml::passing": "passed",
-        },
-    )
-
     with pytest.raises(ExecutionLedgerError, match=message):
-        validate_paired_result(
-            report,
+        validate_packaged(
+            tmp_path,
+            {
+                "suite.yaml::first": "failed",
+                "suite.yaml::second": "error",
+                "suite.yaml::passing": "passed",
+            },
             expected="failure",
-            exit_code=1,
-            required_bad_cases=required_bad_cases,
+            packaged_exit_code=1,
+            required_bad_identities=declared,
         )
 
 
 @pytest.mark.parametrize(
-    "payload",
-    ["", "not json", '"suite.yaml::one,suite.yaml::two"', "{}", "null", "[1]", '[""]'],
+    ("expected", "exit_code", "status", "message"),
+    [
+        ("success", 1, "passed", "expected success"),
+        ("success", 1, "failed", "expected success"),
+        ("failure", 0, "failed", "expected packaged failure"),
+        ("failure", 1, "passed", "expected packaged failure"),
+        ("failure", 2, "error", "expected packaged failure"),
+    ],
 )
-def test_parse_required_bad_cases_rejects_malformed_payload(payload) -> None:
-    with pytest.raises(ExecutionLedgerError, match="required_bad_cases"):
-        paired_result._parse_required_bad_cases(payload)
+def test_validate_packaged_rejects_exit_or_result_mismatch(
+    tmp_path, expected, exit_code, status, message
+) -> None:
+    required = ["suite.yaml::one"] if expected == "failure" else []
+    with pytest.raises(ExecutionLedgerError, match=message):
+        validate_packaged(
+            tmp_path,
+            {"suite.yaml::one": status},
+            expected=expected,
+            packaged_exit_code=exit_code,
+            required_bad_identities=required,
+        )
 
 
-def test_parse_required_bad_cases_preserves_json_array_for_validation() -> None:
-    assert paired_result._parse_required_bad_cases('["suite.yaml::two", "suite.yaml::one"]') == [
-        "suite.yaml::two",
-        "suite.yaml::one",
-    ]
+def test_validate_admission_failure_uses_exact_failed_error_set_and_blocked_evidence(
+    tmp_path,
+) -> None:
+    failed = "admission::option.OUTBOUND_NETWORK"
+    admission = write_admission(
+        tmp_path,
+        {
+            failed: "failed",
+            "admission::feature.connectable_listener_port": "blocked",
+        },
+    )
+
+    result = validate_paired_result(
+        admission_path=admission,
+        admission_report_path=write_admission_report(tmp_path, "failure"),
+        admission_context=TEST_CONTEXT,
+        **candidate_surface_kwargs(tmp_path),
+        report_path=None,
+        expected="failure",
+        expected_phase="admission",
+        admission_exit_code=1,
+        packaged_exit_code=None,
+        required_bad_identities=[failed],
+    )
+
+    assert result["phase"] == "admission"
+    assert result["observed_bad_identities"] == [failed]
+    assert result["admission"]["blocked"] == 1
+    assert result["packaged"] is None
 
 
-@pytest.mark.parametrize("content", ["[]", '["duplicate", "duplicate"]', '{}', 'null'])
-def test_load_expected_ids_rejects_invalid_lists(tmp_path, content) -> None:
-    path = tmp_path / "expected.json"
-    path.write_text(content)
+def test_validate_admission_failure_rejects_inexact_failed_error_set(tmp_path) -> None:
+    admission = write_admission(
+        tmp_path,
+        {
+            "admission::feature.ephemeral_listen": "error",
+            "admission::option.PROMOTE_NUMBERS": "failed",
+        },
+    )
 
-    with pytest.raises(ExecutionLedgerError):
-        _load_expected_ids(path)
+    with pytest.raises(ExecutionLedgerError, match="extra observed"):
+        validate_paired_result(
+            admission_path=admission,
+            admission_report_path=write_admission_report(tmp_path, "failure"),
+            admission_context=TEST_CONTEXT,
+            **candidate_surface_kwargs(tmp_path),
+            report_path=None,
+            expected="failure",
+            expected_phase="admission",
+            admission_exit_code=1,
+            packaged_exit_code=None,
+            required_bad_identities=["admission::feature.ephemeral_listen"],
+        )
 
 
-def test_load_expected_ids_accepts_unique_nonempty_list(tmp_path) -> None:
-    path = tmp_path / "expected.json"
-    path.write_text(json.dumps(["suite.yaml::one", "suite.yaml::two"]))
+def test_validate_admission_phase_rejects_manufactured_packaged_evidence(tmp_path) -> None:
+    failed = "admission::feature.ephemeral_listen"
+    admission = write_admission(tmp_path, {failed: "failed"})
 
-    assert _load_expected_ids(path) == {"suite.yaml::one", "suite.yaml::two"}
+    with pytest.raises(ExecutionLedgerError, match="must not contain a packaged report"):
+        validate_paired_result(
+            admission_path=admission,
+            admission_report_path=write_admission_report(tmp_path, "failure"),
+            admission_context=TEST_CONTEXT,
+            **candidate_surface_kwargs(tmp_path),
+            report_path=write_report(tmp_path, {"suite.yaml::case": "passed"}),
+            expected="failure",
+            expected_phase="admission",
+            admission_exit_code=1,
+            packaged_exit_code=0,
+            required_bad_identities=[failed],
+        )
+
+
+def test_validate_rejects_malformed_admission_evidence(tmp_path) -> None:
+    path = tmp_path / "admission.json"
+    path.write_text(
+        json.dumps(
+            {
+                "schema_version": 2,
+                "phase": "admission",
+                "context": TEST_CONTEXT,
+                "probes": [],
+            }
+        )
+    )
+
+    with pytest.raises(ExecutionLedgerError, match="incomplete probe inventory"):
+        validate_paired_result(
+            admission_path=path,
+            admission_report_path=write_admission_report(tmp_path, "failure"),
+            admission_context=TEST_CONTEXT,
+            **candidate_surface_kwargs(tmp_path),
+            report_path=None,
+            expected="failure",
+            expected_phase="admission",
+            admission_exit_code=1,
+            packaged_exit_code=None,
+            required_bad_identities=["admission::feature.ephemeral_listen"],
+        )
+
+
+def test_validate_rejects_packaged_phase_when_admission_did_not_succeed(tmp_path) -> None:
+    failed = "admission::feature.ephemeral_listen"
+    admission = write_admission(tmp_path, {failed: "error"})
+
+    with pytest.raises(ExecutionLedgerError, match="packaged phase requires successful admission"):
+        validate_paired_result(
+            admission_path=admission,
+            admission_report_path=write_admission_report(tmp_path, "failure"),
+            admission_context=TEST_CONTEXT,
+            **candidate_surface_kwargs(tmp_path),
+            report_path=None,
+            expected="failure",
+            expected_phase="packaged",
+            admission_exit_code=1,
+            packaged_exit_code=None,
+            required_bad_identities=["suite.yaml::case"],
+        )
+
+
+def test_validate_rejects_admission_phase_after_successful_admission(tmp_path) -> None:
+    with pytest.raises(ExecutionLedgerError, match="expected admission failure"):
+        validate_paired_result(
+            admission_path=write_admission(tmp_path),
+            admission_report_path=write_admission_report(tmp_path),
+            admission_context=TEST_CONTEXT,
+            **candidate_surface_kwargs(tmp_path),
+            report_path=None,
+            expected="failure",
+            expected_phase="admission",
+            admission_exit_code=0,
+            packaged_exit_code=None,
+            required_bad_identities=["admission::feature.ephemeral_listen"],
+        )
+
+
+@pytest.mark.parametrize(
+    ("phase", "identities", "message"),
+    [
+        ("admission", ["admission::unknown"], "unknown admission"),
+        ("admission", ["suite.yaml::case"], "unknown admission"),
+        ("packaged", ["admission::feature.ephemeral_listen"], "unknown packaged"),
+        ("packaged", ["suite.yaml::unknown"], "unknown packaged"),
+        ("packaged", ["suite.yaml::case", "suite.yaml::case"], "duplicates"),
+        ("packaged", [""], "non-empty strings"),
+    ],
+)
+def test_validate_rejects_unknown_malformed_duplicate_or_phase_incompatible_declarations(
+    tmp_path, phase, identities, message
+) -> None:
+    with pytest.raises(ExecutionLedgerError, match=message):
+        validate_paired_result(
+            admission_path=write_admission(tmp_path),
+            admission_report_path=write_admission_report(tmp_path),
+            admission_context=TEST_CONTEXT,
+            **candidate_surface_kwargs(tmp_path),
+            report_path=write_report(tmp_path, {"suite.yaml::case": "failed"}),
+            expected="failure",
+            expected_phase=phase,
+            admission_exit_code=0,
+            packaged_exit_code=1,
+            required_bad_identities=identities,
+        )
+
+
+def test_validate_expected_success_requires_packaged_phase(tmp_path) -> None:
+    with pytest.raises(ExecutionLedgerError, match="expected success requires packaged phase"):
+        validate_paired_result(
+            admission_path=write_admission(tmp_path),
+            admission_report_path=write_admission_report(tmp_path),
+            admission_context=TEST_CONTEXT,
+            **candidate_surface_kwargs(tmp_path),
+            report_path=None,
+            expected="success",
+            expected_phase="admission",
+            admission_exit_code=0,
+            packaged_exit_code=None,
+            required_bad_identities=[],
+        )
+
+
+@pytest.mark.parametrize(
+    "payload", ["", "not json", '"one,two"', "{}", "null", "[1]", '[""]']
+)
+def test_parse_required_bad_identities_rejects_malformed_payload(payload) -> None:
+    with pytest.raises(ExecutionLedgerError, match="required_bad_identities"):
+        paired_result._parse_required_bad_identities(payload)
+
+
+def test_parse_required_bad_identities_preserves_array_for_validation() -> None:
+    assert paired_result._parse_required_bad_identities('["two", "one"]') == ["two", "one"]

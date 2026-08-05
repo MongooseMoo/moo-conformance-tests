@@ -729,6 +729,45 @@ def test_prepare_exit_suite_starts_transport_before_server_requirements(tmp_path
     transport.connect.assert_called_once_with("wizard")
 
 
+def test_candidate_suite_server_db_cannot_escape_fixture_root(tmp_path: Path):
+    runner = YamlTestRunner(
+        Mock(),
+        managed_server=Mock(),
+        server_db_dir=str(tmp_path / "fixtures"),
+    )
+    suite = MooTestSuite(
+        name="escape",
+        server_db="../outside.db",
+        tests=[MooTestCase(name="case", code="return 1;")],
+    )
+
+    with pytest.raises(ValueError, match="escapes the configured fixture directory"):
+        runner.prepare_suite_environment(suite)
+
+
+def test_candidate_suite_server_db_symlink_cannot_escape_candidate_anchor(tmp_path: Path):
+    anchor = tmp_path / "candidate-data"
+    fixtures = anchor / "src" / "moo_conformance" / "_db" / "startup"
+    fixtures.mkdir(parents=True)
+    outside = tmp_path / "outside.db"
+    outside.write_text("outside", encoding="utf-8")
+    linked = fixtures / "linked.db"
+    try:
+        linked.symlink_to(outside)
+    except OSError as exc:
+        pytest.skip(f"symlinks unavailable: {exc}")
+    runner = YamlTestRunner(
+        Mock(),
+        managed_server=Mock(),
+        server_db_dir=str(fixtures),
+        candidate_root=str(anchor),
+    )
+    suite = MooTestSuite(name="linked", server_db="linked.db", tests=[])
+
+    with pytest.raises(ValueError, match="escapes"):
+        runner._resolve_suite_server_db(suite)
+
+
 def test_command_template_supports_manifest_and_server_dir(monkeypatch, tmp_path: Path):
     baseline = tmp_path / "baseline.db"
     baseline.write_text("baseline", encoding="utf-8")

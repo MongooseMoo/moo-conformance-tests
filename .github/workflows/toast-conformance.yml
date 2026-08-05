@@ -5,6 +5,12 @@ on:
   push:
     branches:
       - main
+  workflow_call:
+    inputs:
+      conformance_sha:
+        description: Exact conformance candidate commit
+        required: true
+        type: string
 
 concurrency:
   group: toast-conformance-${{ github.workflow }}-${{ github.ref }}
@@ -22,6 +28,7 @@ jobs:
       - name: Check out conformance candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ inputs.conformance_sha || github.sha }}
           persist-credentials: false
 
       - name: Install uv and Python
@@ -94,6 +101,7 @@ jobs:
       - name: Check out conformance candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ inputs.conformance_sha || github.sha }}
           persist-credentials: false
 
       - name: Check out pinned Toast oracle
@@ -252,6 +260,7 @@ jobs:
       - name: Check out conformance candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ inputs.conformance_sha || github.sha }}
           persist-credentials: false
 
       - name: Install uv and Python

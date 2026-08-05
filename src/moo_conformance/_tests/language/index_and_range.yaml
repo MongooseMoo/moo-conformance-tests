@@ -450,13 +450,26 @@ tests:
   # Decompile and disassemble
   - name: decompile_with_index_operators
     permission: wizard
-    skip: "Barn: verb_code returns original source verbatim, needs AST unparse for normalization"
     statement: |
-      o = create($nothing);
-      add_verb(o, {player, "xd", "foobar"}, {"this", "none", "this"});
-      set_verb_code(o, "foobar", {"return \"foobar\"[^ + 2 ^ 2 .. $ - #0.off];"});
-      vc = verb_code(o, "foobar");
-      recycle(o);
+      o = #-1;
+      cleanup_failed = 0;
+      try
+        o = create($nothing);
+        add_verb(o, {player, "xd", "foobar"}, {"this", "none", "this"});
+        set_verb_code(o, "foobar", {"return \"foobar\"[^ + 2 ^ 2 .. $ - #0.off];"});
+        vc = verb_code(o, "foobar");
+      finally
+        try
+          if (valid(o))
+            recycle(o);
+          endif
+        except (ANY)
+          cleanup_failed = 1;
+        endtry
+      endtry
+      if (cleanup_failed)
+        raise(E_INVARG);
+      endif
       return vc;
     expect:
       value: ["return \"foobar\"[^ + 2 ^ 2..$ - $off];"]

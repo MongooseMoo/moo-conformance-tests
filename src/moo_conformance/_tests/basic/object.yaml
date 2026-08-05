@@ -73,7 +73,15 @@ tests:
       value: 1
 
   - name: children_of_system_object
-    skip: "Database-dependent - #0 children vary by db"
-    code: "children(#0)"
-    expect:
-      value: []
+    permission: wizard
+    steps:
+      - run: "return create(#0);"
+        capture: child
+      - run: "return {child} in children(#0);"
+        expect:
+          value: 1
+    cleanup:
+      - run: |
+          if (valid({child}))
+            recycle({child});
+          endif

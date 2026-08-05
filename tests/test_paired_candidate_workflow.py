@@ -185,6 +185,29 @@ def test_candidate_controller_quality_is_explicitly_untrusted_and_nonauthoritati
     assert "candidate-quality" not in workflow["jobs"]["full-suite"]["needs"]
 
 
+def test_push_neutral_runs_toast_after_skipped_candidate_quality_and_green_aggregate() -> None:
+    workflow = load_workflow(TOAST_WORKFLOW_PATH)
+    candidate_quality = workflow["jobs"]["candidate-quality"]
+    quality = workflow["jobs"]["quality"]
+    full_suite = workflow["jobs"]["full-suite"]
+
+    assert candidate_quality["if"] == (
+        "needs.classify-changes.result == 'success' && "
+        "needs.classify-changes.outputs.mode == 'controller'"
+    )
+    assert quality["if"] == "always()"
+    assert quality["needs"] == [
+        "classify-changes",
+        "candidate-quality",
+        "trusted-quality",
+    ]
+    assert full_suite["needs"] == ["classify-changes", "quality"]
+    assert full_suite["if"] == (
+        "always() && needs.classify-changes.result == 'success' && "
+        "needs.quality.result == 'success'"
+    )
+
+
 def test_required_aggregates_fail_closed_over_every_staged_result() -> None:
     workflow = load_workflow(TOAST_WORKFLOW_PATH)
     quality = workflow["jobs"]["quality"]

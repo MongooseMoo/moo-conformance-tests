@@ -117,7 +117,7 @@ def _has_feature(
     if feature == "ephemeral_listen":
         return _dynamic_feature(feature, runner, """
             port = listen(player, 0, ["print-messages" -> 1]);
-            unlisten(port);
+            unlisten(0);
             return 1;
         """)
     return feature in _server_features(runner)
@@ -137,6 +137,15 @@ def _dynamic_feature(feature: str, runner, statement: str) -> bool:
     return _dynamic_feature_cache[feature]
 
 
+def _snapshot_mutable_capabilities(
+    runner, profile_features: dict[str, object] | None = None
+) -> None:
+    """Resolve state-sensitive admission facts before any case mutates the server."""
+    for feature in ("connectable_listener_port", "ephemeral_listen"):
+        _has_feature(runner, feature, profile_features)
+    _has_option(runner, "PROMOTE_NUMBERS", profile_features)
+
+
 def _has_option(runner, option: str, profile_features: dict[str, object] | None = None) -> bool:
     profile_key = f"option.{option}"
     if profile_features is not None and profile_key in profile_features:
@@ -146,6 +155,25 @@ def _has_option(runner, option: str, profile_features: dict[str, object] | None 
                 f"Failed to probe option {option}: profile value must be boolean, got {value!r}"
             )
         return value
+
+    if option == "PROMOTE_NUMBERS":
+        if option not in _option_cache:
+            result = _execute_probe(
+                runner,
+                f"option {option} via numeric equality semantics",
+                "return 1 == 1.0;",
+            )
+            if not result.success:
+                raise _probe_failure(
+                    f"option {option} via numeric equality semantics", result
+                )
+            if type(result.value) is not int or result.value not in (0, 1):
+                raise CapabilityProbeError(
+                    f"Failed to probe option {option}: expected semantic result 0 or 1, "
+                    f"got {result.value!r}"
+                )
+            _option_cache[option] = result.value == 1
+        return _option_cache[option]
 
     if option not in _option_cache:
         for key in (f"options.{option}", f"options/{option}"):
@@ -238,6 +266,12 @@ def _uses_managed_restart(test) -> bool:
     return any(step.restart_server is not None for step in [*test.steps, *test.cleanup])
 
 
+@pytest.fixture(scope="session", autouse=True)
+def mutable_capability_snapshot(runner, profile_metadata_gate) -> None:
+    """Snapshot mutable runtime capabilities on the pristine managed server."""
+    _snapshot_mutable_capabilities(runner, profile_metadata_gate)
+
+
 @pytest.mark.conformance
 def test_yaml_conformance(runner, yaml_test_case, moo_config, profile_metadata_gate):
     """Run a single YAML test case.
@@ -251,6 +285,7 @@ def test_yaml_conformance(runner, yaml_test_case, moo_config, profile_metadata_g
 
     _skip_declared_yaml_case(suite, test)
 
+    runner.prepare_suite_environment(suite)
     _enforce_suite_requirements(suite, runner, moo_config, profile_metadata_gate)
     _enforce_skip_condition(test, runner, profile_metadata_gate)
 

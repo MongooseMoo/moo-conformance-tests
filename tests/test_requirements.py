@@ -19,6 +19,7 @@ from moo_conformance.test_conformance import (
     _enforce_skip_condition,
     _enforce_suite_requirements,
     _reset_capability_caches_for_tests,
+    _snapshot_mutable_capabilities,
 )
 from moo_conformance.test_conformance import (
     test_yaml_conformance as run_yaml_case,
@@ -48,7 +49,8 @@ class QueueTransport:
 
 def runner_with(*results: ExecutionResult, current_user: str = "programmer"):
     return SimpleNamespace(
-        transport=QueueTransport(*results, current_user=current_user)
+        transport=QueueTransport(*results, current_user=current_user),
+        prepare_suite_environment=lambda _suite: None,
     )
 
 
@@ -261,6 +263,69 @@ def test_missing_option_paths_fail_closed() -> None:
 
 
 @pytest.mark.parametrize(
+    ("semantic_result", "skipped"),
+    [
+        (0, True),
+        (1, False),
+    ],
+)
+def test_promote_numbers_uses_numeric_equality_semantics(
+    semantic_result: int, skipped: bool
+) -> None:
+    test = MooTestCase(name="conditional", skip_if="not option.PROMOTE_NUMBERS")
+    runner = runner_with(ExecutionResult(True, value=semantic_result))
+
+    try:
+        _enforce_skip_condition(test, runner, {})
+        actual_skipped = False
+    except pytest.skip.Exception:
+        actual_skipped = True
+
+    assert actual_skipped is skipped
+    assert runner.transport.executed == ["return 1 == 1.0;"]
+
+
+@pytest.mark.parametrize(
+    "result",
+    [
+        ExecutionResult(False, error=MooError.E_PERM, error_message="permission denied"),
+        ExecutionResult(True, value="unknown"),
+    ],
+)
+def test_promote_numbers_semantic_probe_fails_closed(result: ExecutionResult) -> None:
+    test = MooTestCase(name="conditional", skip_if="not option.PROMOTE_NUMBERS")
+
+    with pytest.raises(CapabilityProbeError, match="PROMOTE_NUMBERS"):
+        _enforce_skip_condition(test, runner_with(result), {})
+
+
+def test_canonical_execution_prepares_suite_before_capability_probes() -> None:
+    events: list[str] = []
+
+    class PreparedTransport(QueueTransport):
+        def execute(self, code: str) -> ExecutionResult:
+            assert events == ["prepare"]
+            return super().execute(code)
+
+    transport = PreparedTransport(ExecutionResult(True, value=["maps"]))
+    runner = SimpleNamespace(
+        transport=transport,
+        prepare_suite_environment=lambda _suite: events.append("prepare"),
+        run_suite_setup=lambda _suite: events.append("setup"),
+        run_test=lambda _test: events.append("test"),
+    )
+    suite = MooTestSuite(
+        name="prepared",
+        requires=Requirements(features=["maps"]),
+    )
+    test = MooTestCase(name="case", code="return 1;")
+
+    run_yaml_case(runner, (suite, test), {}, {})
+
+    assert events == ["prepare", "setup", "test"]
+
+
+@pytest.mark.parametrize(
     "value", [None, 0, 1, True, False, [], {}, "", "UNKNOWN"]
 )
 def test_option_probe_rejects_malformed_success_values(value) -> None:
@@ -296,6 +361,46 @@ def test_dynamic_admission_uses_wizard_after_programmer_case(
 
     assert runner.transport.executed_as == ["wizard"] * len(results)
     assert runner.transport.current_user == "wizard"
+
+
+def test_mutable_capabilities_are_snapshotted_before_order_contamination() -> None:
+    runner = runner_with(
+        ExecutionResult(False, error=MooError.E_INVARG),
+        ExecutionResult(True, value="ON"),
+        ExecutionResult(True, value=1),
+        ExecutionResult(True, value=1),
+        ExecutionResult(True, value=0),
+    )
+
+    _snapshot_mutable_capabilities(runner, {})
+    probe_count = len(runner.transport.executed)
+    assert "unlisten(0);" in runner.transport.executed[3]
+    runner.transport.results.extend(
+        [
+            ExecutionResult(False, error=MooError.E_INVARG),
+            ExecutionResult(False, error=MooError.E_INVARG),
+        ]
+    )
+
+    _enforce_skip_condition(
+        MooTestCase(name="connectable", skip_if="not feature.connectable_listener_port"),
+        runner,
+        {},
+    )
+    _enforce_skip_condition(
+        MooTestCase(name="ephemeral", skip_if="not feature.ephemeral_listen"),
+        runner,
+        {},
+    )
+    with pytest.raises(pytest.skip.Exception, match="Requires option: PROMOTE_NUMBERS"):
+        _enforce_skip_condition(
+            MooTestCase(name="promotion", skip_if="not option.PROMOTE_NUMBERS"),
+            runner,
+            {},
+        )
+
+    assert len(runner.transport.executed) == probe_count
+    assert len(runner.transport.results) == 2
 
 
 def test_dynamic_probe_error_fails_instead_of_becoming_absence() -> None:

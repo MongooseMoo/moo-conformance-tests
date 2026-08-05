@@ -213,7 +213,17 @@ tests:
   description: add_property fails with E_PERM if programmer does not have write permission
     (owner still can)
   permission: programmer
-  skip: Owners can always add properties regardless of .w flag - need non-owner test
+  steps:
+  - run: obj = create($nothing); obj.w = 0; return obj;
+    capture: obj
+    as: wizard
+  - run: add_property({obj}, "foobar", 0, {player, ""})
+    as: programmer
+    expect:
+      error: E_PERM
+  cleanup:
+  - run: recycle({obj})
+    as: wizard
 - name: add_property_with_write_permission
   description: add_property succeeds if programmer has write permission
   permission: programmer
@@ -320,8 +330,17 @@ tests:
   description: delete_property fails with E_PERM if programmer does not have write
     permission (owner still can)
   permission: programmer
-  skip: Owners can always delete properties regardless of .w flag - need non-owner
-    test
+  steps:
+  - run: obj = create($nothing); obj.w = 0; add_property(obj, "foobar", 0, {player, ""}); return obj;
+    capture: obj
+    as: wizard
+  - run: delete_property({obj}, "foobar")
+    as: programmer
+    expect:
+      error: E_PERM
+  cleanup:
+  - run: recycle({obj})
+    as: wizard
 - name: delete_property_with_write_permission
   description: delete_property succeeds if programmer has write permission
   permission: programmer
@@ -416,7 +435,17 @@ tests:
   description: is_clear_property fails with E_PERM if programmer does not have read
     permission (owner still can)
   permission: programmer
-  skip: Owners can always read properties regardless of .r flag - need non-owner test
+  steps:
+  - run: parent = create($nothing); add_property(parent, "foobar", 0, {player, ""}); return {parent, create(parent)};
+    capture: objs
+    as: wizard
+  - run: is_clear_property({objs}[2], "foobar")
+    as: programmer
+    expect:
+      error: E_PERM
+  cleanup:
+  - run: recycle({objs}[2]); recycle({objs}[1]);
+    as: wizard
 - name: is_clear_property_with_read_permission
   description: is_clear_property succeeds if programmer has read permission
   permission: programmer
@@ -516,8 +545,17 @@ tests:
   description: clear_property fails with E_PERM if programmer does not have write
     permission (owner still can)
   permission: programmer
-  skip: Owners can always clear properties regardless of .w flag - need non-owner
-    test
+  steps:
+  - run: parent = create($nothing); add_property(parent, "foobar", 0, {player, ""}); child = create(parent); child.foobar = 1; return {parent, child};
+    capture: objs
+    as: wizard
+  - run: clear_property({objs}[2], "foobar")
+    as: programmer
+    expect:
+      error: E_PERM
+  cleanup:
+  - run: recycle({objs}[2]); recycle({objs}[1]);
+    as: wizard
 - name: clear_property_with_write_permission
   description: clear_property succeeds if programmer has write permission
   permission: programmer
@@ -601,8 +639,17 @@ tests:
   description: property_info fails with E_PERM if programmer does not have read permission
     (owner still can)
   permission: programmer
-  skip: Owners can always read property info regardless of .r flag - need non-owner
-    test
+  steps:
+  - run: obj = create($nothing); add_property(obj, "foobar", 0, {player, ""}); return obj;
+    capture: obj
+    as: wizard
+  - run: property_info({obj}, "foobar")
+    as: programmer
+    expect:
+      error: E_PERM
+  cleanup:
+  - run: recycle({obj})
+    as: wizard
 - name: property_info_with_read_permission
   description: property_info succeeds if programmer has read permission
   permission: programmer
@@ -633,8 +680,21 @@ tests:
   - run: recycle({obj})
 - name: set_property_info_works
   description: set_property_info changes property owner and perms
-  permission: programmer
-  skip: Needs wizard permission to change property info - see set_property_info_wizard_succeeds
+  permission: wizard
+  steps:
+  - run: create($nothing)
+    capture: obj
+  - run: add_property({obj}, "foobar", 0, {player, ""})
+  - run: set_property_info({obj}, "foobar", {$system, "rw"})
+    expect:
+      value: 0
+  - run: info = property_info({obj}, "foobar"); return {info[1] == $system, info[2]};
+    expect:
+      value:
+      - 1
+      - rw
+  cleanup:
+  - run: recycle({obj})
 - name: set_property_info_recycled_object
   description: set_property_info fails with E_INVARG if object is not valid
   permission: programmer
@@ -671,7 +731,17 @@ tests:
   description: set_property_info fails with E_PERM if programmer does not have write
     permission (requires wizard)
   permission: programmer
-  skip: set_property_info requires wizard - not just write permission
+  steps:
+  - run: obj = create($nothing); obj.w = 0; add_property(obj, "foobar", 0, {player, ""}); return obj;
+    capture: obj
+    as: wizard
+  - run: set_property_info({obj}, "foobar", {player, "rw"})
+    as: programmer
+    expect:
+      error: E_PERM
+  cleanup:
+  - run: recycle({obj})
+    as: wizard
 - name: set_property_info_wizard_succeeds
   description: set_property_info succeeds if programmer is wizard
   permission: wizard
@@ -745,8 +815,17 @@ tests:
   description: properties fails with E_PERM if programmer does not have read permission
     (owner still can)
   permission: programmer
-  skip: Owners can always read properties list regardless of .r flag - need non-owner
-    test
+  steps:
+  - run: obj = create($nothing); obj.r = 0; return obj;
+    capture: obj
+    as: wizard
+  - run: properties({obj})
+    as: programmer
+    expect:
+      error: E_PERM
+  cleanup:
+  - run: recycle({obj})
+    as: wizard
 - name: properties_with_read_permission
   description: properties succeeds if programmer has read permission
   permission: programmer

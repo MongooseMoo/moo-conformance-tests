@@ -260,6 +260,14 @@ tests:
     steps:
       - run: "create($nothing)"
         capture: obj
+      - run: |
+          add_property({obj}, "task_local_worker_task", 0, {player, "rw"});
+          add_property({obj}, "task_local_child_task", 0, {player, "rw"});
+          add_property({obj}, "task_local_result", 0, {player, "rw"});
+          add_property({obj}, "task_local_done", 0, {player, "rw"});
+          return 1;
+        expect:
+          value: 1
       - verb_setup:
           object: "{obj}"
           name: "foo"
@@ -278,17 +286,24 @@ tests:
           args: ["this", "none", "this"]
           code: |
             {value} = args;
+            this.task_local_worker_task = task_id();
             this:foo(value);
-            fork (0)
+            fork child_task (0)
               for i in [1..10]
                 suspend(1);
               endfor
             endfork
+            this.task_local_child_task = child_task;
             total = 1.0;
             for i in [1..5]
               suspend(1);
               total = total * this:bar();
             endfor
+            kill_task(child_task);
+            this.task_local_child_task = 0;
+            this.task_local_result = total;
+            this.task_local_worker_task = 0;
+            this.task_local_done = 1;
             return total;
       - new_connection:
           capture: worker
@@ -298,15 +313,31 @@ tests:
       - send:
           connection: worker
           text: "; return {obj}:baz(2.5);"
-      - wait: 5500
-      - read_connection:
-          connection: worker
+      - wait: 7000
+      - run: "return {obj}.task_local_done;"
         expect:
-          output:
-            contains: "97.65625"
+          value: 1
+      - run: "return {obj}.task_local_result;"
+        expect:
+          value: 97.65625
       - close_connection: worker
     cleanup:
-      - run: "if (valid({obj})) recycle({obj}); endif"
+      - run: |
+          if (valid({obj}))
+            if ({obj}.task_local_child_task)
+              try
+                kill_task({obj}.task_local_child_task);
+              except (ANY)
+              endtry
+            endif
+            if ({obj}.task_local_worker_task)
+              try
+                kill_task({obj}.task_local_worker_task);
+              except (ANY)
+              endtry
+            endif
+            recycle({obj});
+          endif
 
   # Memory leak regression tests (non-functional)
   - name: nonfunctional_fork_suspend

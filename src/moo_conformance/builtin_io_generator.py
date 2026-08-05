@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from pathlib import Path
 import ast
 import re
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import TypedDict
 
-from pycparser import c_ast, c_parser
 import yaml
-
+from pycparser import c_ast, c_parser
 
 TYPE_NAME_MAP = {
     "TYPE_ANY": "any",
@@ -169,6 +169,16 @@ class BuiltinSpec:
     implementation_file: str | None = None
 
 
+class _ParsedRegistration(TypedDict):
+    """Typed values extracted from one builtin registration call."""
+
+    name: str
+    implementation: str
+    minargs: int
+    maxargs: int
+    prototype_tokens: list[str]
+
+
 def generate_builtin_io_yamls(
     toast_src: str | Path,
     out_dir: str | Path,
@@ -236,7 +246,8 @@ def render_builtin_yaml(spec: BuiltinSpec) -> str:
     header = (
         f"# Generated from actual Toast source for builtin {spec.name}().\n"
         "# This file is a runnable moo-conformance suite.\n"
-        "# Registration signatures are parsed with pycparser from Toast register_function(...) calls.\n"
+        "# Registration signatures are parsed with pycparser from Toast "
+        "register_function(...) calls.\n"
         f"# registration_kind: {spec.registration_kind}\n"
         f"# registration_file: {spec.registration_file}\n"
         f"# implementation: {spec.implementation}\n"
@@ -326,8 +337,7 @@ def _build_runtime_outcome_test(spec: BuiltinSpec) -> dict[str, object] | None:
         return None
 
     success_checks = " || ".join(
-        f"typeof(result) == {MOO_TYPE_CONST_MAP[type_name]}"
-        for type_name in spec.success_types
+        f"typeof(result) == {MOO_TYPE_CONST_MAP[type_name]}" for type_name in spec.success_types
     )
     error_codes = [code for code in spec.raised_errors if code.startswith("E_")]
 
@@ -402,7 +412,7 @@ def _find_registration_calls(text: str) -> list[tuple[str, str]]:
     for match in pattern.finditer(text):
         open_paren = match.end() - 1
         close_paren = _find_matching(text, open_paren, "(", ")")
-        call_text = match.group(1) + "(" + text[open_paren + 1:close_paren] + ")"
+        call_text = match.group(1) + "(" + text[open_paren + 1 : close_paren] + ")"
         calls.append((match.group(1), call_text))
     return calls
 
@@ -454,7 +464,8 @@ def _registration_translation_unit(call_text: str) -> str:
         "typedef int Byte; typedef int Objid; typedef int Var; typedef int package;\n"
         "int TYPE_ANY; int TYPE_NUMERIC; int TYPE_INT; int TYPE_OBJ; int _TYPE_STR; int TYPE_STR;\n"
         "int TYPE_ERR; int _TYPE_LIST; int TYPE_LIST; int _TYPE_FLOAT; int TYPE_FLOAT;\n"
-        "int _TYPE_MAP; int TYPE_MAP; int _TYPE_ITER; int TYPE_ITER; int _TYPE_ANON; int TYPE_ANON;\n"
+        "int _TYPE_MAP; int TYPE_MAP; int _TYPE_ITER; int TYPE_ITER; "
+        "int _TYPE_ANON; int TYPE_ANON;\n"
         "int _TYPE_WAIF; int TYPE_WAIF; int TYPE_BOOL;\n"
         "package register_function(); package register_function_with_read_write();\n"
         "void probe(void) { " + call_text + "; }\n"
@@ -463,7 +474,7 @@ def _registration_translation_unit(call_text: str) -> str:
 
 class _RegistrationVisitor(c_ast.NodeVisitor):
     def __init__(self) -> None:
-        self.calls: list[dict[str, object]] = []
+        self.calls: list[_ParsedRegistration] = []
 
     def visit_FuncCall(self, node: c_ast.FuncCall) -> None:
         if not isinstance(node.name, c_ast.ID):
@@ -510,7 +521,7 @@ def _find_function_bodies(text: str) -> list[tuple[str, str]]:
         if brace_pos >= len(text) or text[brace_pos] != "{":
             continue
         close_brace = _find_matching(text, brace_pos, "{", "}")
-        bodies.append((match.group(1), text[brace_pos + 1:close_brace]))
+        bodies.append((match.group(1), text[brace_pos + 1 : close_brace]))
     return bodies
 
 
@@ -538,11 +549,15 @@ def _candidate_statements(body: str) -> list[str]:
     patterns = [
         r"(?:^|[\r\n])[ \t]*(?:if\s*\([^;{}]*\)\s*)?return\s+.*?;",
         r"(?:^|[\r\n])[ \t]*[A-Za-z_]\w*\.type\s*=\s*[A-Z_][A-Z0-9_]*\s*;",
-        r"(?:^|[\r\n])[ \t]*(?:[A-Za-z_]\w*\s+)?[A-Za-z_]\w*\s*=\s*(?:new_list|new_map|str_dup_to_var|str_ref_to_var|Var::new_[A-Za-z_]+|new_waif)\s*\(.*?\)\s*;",
+        r"(?:^|[\r\n])[ \t]*(?:[A-Za-z_]\w*\s+)?[A-Za-z_]\w*\s*=\s*"
+        r"(?:new_list|new_map|str_dup_to_var|str_ref_to_var|Var::new_[A-Za-z_]+|"
+        r"new_waif)\s*\(.*?\)\s*;",
     ]
     statements: list[str] = []
     for pattern in patterns:
-        statements.extend(match.group(0).strip() for match in re.finditer(pattern, body, flags=re.S))
+        statements.extend(
+            match.group(0).strip() for match in re.finditer(pattern, body, flags=re.S)
+        )
     deduped: list[str] = []
     seen: set[str] = set()
     for statement in statements:
@@ -555,7 +570,11 @@ def _candidate_statements(body: str) -> list[str]:
 def _normalize_statement(statement: str) -> str:
     normalized = statement
     normalized = normalized.replace("nullptr", "0")
-    normalized = re.sub(r"\bVar::new_(int|float|obj|anon|waif|bool)\s*\(", lambda m: f"VAR_NEW_{m.group(1).upper()}(", normalized)
+    normalized = re.sub(
+        r"\bVar::new_(int|float|obj|anon|waif|bool)\s*\(",
+        lambda m: f"VAR_NEW_{m.group(1).upper()}(",
+        normalized,
+    )
     return normalized
 
 
@@ -563,14 +582,20 @@ def _statement_translation_unit(statement: str) -> str:
     return (
         "typedef int Var; typedef int package; typedef int Byte; typedef int Objid;\n"
         "int TYPE_ANY; int TYPE_NUMERIC; int TYPE_INT; int TYPE_OBJ; int TYPE_STR; int TYPE_ERR;\n"
-        "int TYPE_LIST; int TYPE_FLOAT; int TYPE_MAP; int TYPE_ITER; int TYPE_ANON; int TYPE_WAIF; int TYPE_BOOL;\n"
-        "int E_NONE; int E_TYPE; int E_DIV; int E_PERM; int E_PROPNF; int E_VERBNF; int E_VARNF; int E_INVIND;\n"
-        "int E_RECMOVE; int E_MAXREC; int E_RANGE; int E_ARGS; int E_NACC; int E_INVARG; int E_QUOTA; int E_FLOAT;\n"
+        "int TYPE_LIST; int TYPE_FLOAT; int TYPE_MAP; int TYPE_ITER; int TYPE_ANON; "
+        "int TYPE_WAIF; int TYPE_BOOL;\n"
+        "int E_NONE; int E_TYPE; int E_DIV; int E_PERM; int E_PROPNF; int E_VERBNF; "
+        "int E_VARNF; int E_INVIND;\n"
+        "int E_RECMOVE; int E_MAXREC; int E_RANGE; int E_ARGS; int E_NACC; "
+        "int E_INVARG; int E_QUOTA; int E_FLOAT;\n"
         "int E_FILE; int E_EXEC; int E_INTRPT;\n"
-        "package make_var_pack(); package make_int_pack(); package make_float_pack(); package no_var_pack();\n"
+        "package make_var_pack(); package make_int_pack(); package make_float_pack(); "
+        "package no_var_pack();\n"
         "package make_error_pack(); package make_raise_pack(); package make_x_not_found_pack();\n"
-        "Var new_list(); Var new_map(); Var str_dup_to_var(); Var str_ref_to_var(); Var var_ref(); Var new_waif();\n"
-        "Var VAR_NEW_INT(); Var VAR_NEW_FLOAT(); Var VAR_NEW_OBJ(); Var VAR_NEW_ANON(); Var VAR_NEW_WAIF(); Var VAR_NEW_BOOL();\n"
+        "Var new_list(); Var new_map(); Var str_dup_to_var(); Var str_ref_to_var(); "
+        "Var var_ref(); Var new_waif();\n"
+        "Var VAR_NEW_INT(); Var VAR_NEW_FLOAT(); Var VAR_NEW_OBJ(); Var VAR_NEW_ANON(); "
+        "Var VAR_NEW_WAIF(); Var VAR_NEW_BOOL();\n"
         "int zero; int nothing;\n"
         "void probe(void) { " + statement + " }\n"
     )

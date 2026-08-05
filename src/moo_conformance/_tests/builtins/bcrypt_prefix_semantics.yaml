@@ -1,0 +1,97 @@
+name: bcrypt_prefix_semantics
+description: Toast bcrypt variant, salt-generation, cost-width, and permission semantics
+
+requires:
+  builtins: [crypt, salt]
+
+tests:
+  - name: salt_bcrypt_2a_and_2y_prefixes_preserved
+    code: '{salt("$2a$", "~00~00~00~00~00~00~00~00~00~00~00~00~00~00~00~00"), salt("$2y$", "~00~00~00~00~00~00~00~00~00~00~00~00~00~00~00~00")}'
+    expect:
+      value: ["$2a$05$......................", "$2y$05$......................"]
+
+  - name: salt_bcrypt_{variant}_one_digit_cost_rejected
+    table:
+      rows:
+        - variant: 2a
+        - variant: 2y
+    code: 'salt("${variant}$4$", "~00~00~00~00~00~00~00~00~00~00~00~00~00~00~00~00")'
+    expect:
+      error: E_INVARG
+
+  - name: salt_bcrypt_{variant}_three_digit_cost_canonicalized
+    table:
+      rows:
+        - variant: 2a
+        - variant: 2y
+    code: 'salt("${variant}$004$", "~00~00~00~00~00~00~00~00~00~00~00~00~00~00~00~00")'
+    expect:
+      value: '${variant}$04$......................'
+
+  - name: salt_bcrypt_2x_prefix_rejected
+    code: 'salt("$2x$", "~00~00~00~00~00~00~00~00~00~00~00~00~00~00~00~00")'
+    expect:
+      error: E_INVARG
+
+  - name: salt_bcrypt_2b_prefix_rejected
+    code: 'salt("$2b$", "~00~00~00~00~00~00~00~00~00~00~00~00~00~00~00~00")'
+    expect:
+      error: E_INVARG
+
+  - name: crypt_bcrypt_2x_ascii_hash_body_matches_2y
+    description: "The 2x compatibility path differs from 2y only when the password has high bytes"
+    code: 'crypt("foobar", "$2x$05$KRGxLBS0Lxe3KBCwKxOzLe")[4..60] == crypt("foobar", "$2y$05$KRGxLBS0Lxe3KBCwKxOzLe")[4..60]'
+    expect:
+      value: 1
+
+  - name: crypt_bcrypt_{variant}_exact_two_digit_cost_wizard_succeeds
+    permission: wizard
+    table:
+      rows:
+        - variant: 2x
+        - variant: 2y
+    code: 'index(crypt("foobar", "${variant}$04$KRGxLBS0Lxe3KBCwKxOzLe"), "${variant}$04$")'
+    expect:
+      value: 1
+
+  - name: crypt_bcrypt_{variant}_exact_two_digit_cost_programmer_rejected
+    permission: programmer
+    table:
+      rows:
+        - variant: 2x
+        - variant: 2y
+    code: 'crypt("foobar", "${variant}$04$KRGxLBS0Lxe3KBCwKxOzLe")'
+    expect:
+      error: E_PERM
+
+  - name: crypt_bcrypt_{variant}_one_digit_cost_{permission}_ordering
+    table:
+      product:
+        - rows:
+            - variant: 2x
+            - variant: 2y
+        - rows:
+            - permission: wizard
+              expected_error: E_INVARG
+            - permission: programmer
+              expected_error: E_PERM
+    permission: '{permission}'
+    code: 'crypt("foobar", "${variant}$4$KRGxLBS0Lxe3KBCwKxOzLe")'
+    expect:
+      error: '{expected_error}'
+
+  - name: crypt_bcrypt_{variant}_three_digit_cost_{permission}_ordering
+    table:
+      product:
+        - rows:
+            - variant: 2x
+            - variant: 2y
+        - rows:
+            - permission: wizard
+              expected_error: E_INVARG
+            - permission: programmer
+              expected_error: E_PERM
+    permission: '{permission}'
+    code: 'crypt("foobar", "${variant}$004$KRGxLBS0Lxe3KBCwKxOzLe")'
+    expect:
+      error: '{expected_error}'

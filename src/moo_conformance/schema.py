@@ -143,6 +143,7 @@ skip_if: str
     - "feature.64bit" - Skip if 64-bit feature is present
     - "not feature.maps" - Skip if maps feature is NOT present
     - "missing builtin.foo" - Skip if builtin 'foo' is not implemented
+    - Conditions may be joined with the exact " or " operator
 """
 
 import re
@@ -154,7 +155,7 @@ from typing import Any
 from .conditions import (
     SUPPORTED_CONFIG_REQUIREMENTS,
     parse_min_version,
-    parse_skip_condition,
+    parse_skip_conditions,
 )
 
 SUITE_FIELDS = frozenset({
@@ -1037,7 +1038,7 @@ def _parse_test_case(data: dict, context: str) -> MooTestCase:
         raise ValueError("Test case must have a 'name' field")
     if 'skip_if' in data:
         try:
-            parse_skip_condition(data['skip_if'])
+            parse_skip_conditions(data['skip_if'])
         except ValueError as exc:
             raise ValueError(f"{context} skip_if: {exc}") from exc
 

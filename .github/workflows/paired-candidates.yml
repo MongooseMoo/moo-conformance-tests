@@ -1,0 +1,352 @@
+name: Paired Barn and conformance candidates
+run-name: >-
+  Barn ${{ github.event.client_payload.barn_sha }} /
+  conformance ${{ github.event.client_payload.conformance_sha }}
+  expects ${{ github.event.client_payload.expected_result }}
+
+on:
+  repository_dispatch:
+    types:
+      - paired-candidate
+
+permissions:
+  contents: read
+
+jobs:
+  validate-inputs:
+    name: Validate immutable candidate inputs
+    runs-on: ubuntu-24.04
+    outputs:
+      barn_sha: ${{ steps.validate.outputs.barn_sha }}
+      conformance_sha: ${{ steps.validate.outputs.conformance_sha }}
+
+    steps:
+      - name: Reject mutable or malformed candidate refs
+        id: validate
+        env:
+          BARN_SHA: ${{ github.event.client_payload.barn_sha }}
+          CONFORMANCE_SHA: ${{ github.event.client_payload.conformance_sha }}
+          EXPECTED_RESULT: ${{ github.event.client_payload.expected_result }}
+          REQUIRED_BAD_CASE: ${{ github.event.client_payload.required_bad_case }}
+        run: |
+          set -euo pipefail
+          for candidate in "$BARN_SHA" "$CONFORMANCE_SHA"; do
+            if [[ ! "$candidate" =~ ^[0-9a-f]{40}$ ]]; then
+              echo "Candidate is not an exact lowercase 40-hex commit SHA: $candidate" >&2
+              exit 2
+            fi
+          done
+          if [[ "$EXPECTED_RESULT" != success && "$EXPECTED_RESULT" != failure ]]; then
+            echo "expected_result must be success or failure" >&2
+            exit 2
+          fi
+          if [[ "$EXPECTED_RESULT" == failure && -z "$REQUIRED_BAD_CASE" ]]; then
+            echo "required_bad_case is mandatory for an expected failure" >&2
+            exit 2
+          fi
+          if [[ "$EXPECTED_RESULT" == success && -n "$REQUIRED_BAD_CASE" ]]; then
+            echo "required_bad_case must be empty for an expected success" >&2
+            exit 2
+          fi
+          printf 'barn_sha=%s\n' "$BARN_SHA" >> "$GITHUB_OUTPUT"
+          printf 'conformance_sha=%s\n' "$CONFORMANCE_SHA" >> "$GITHUB_OUTPUT"
+
+  toast-admission:
+    name: Complete Toast admission
+    needs:
+      - validate-inputs
+    uses: ./.github/workflows/toast-conformance.yml
+    with:
+      conformance_sha: ${{ needs.validate-inputs.outputs.conformance_sha }}
+
+  paired:
+    name: Explicit candidate pair
+    needs:
+      - validate-inputs
+      - toast-admission
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    outputs:
+      barn_sha: ${{ steps.provenance.outputs.barn_sha }}
+      conformance_sha: ${{ steps.provenance.outputs.conformance_sha }}
+      conformance_exit: ${{ steps.conformance.outputs.exit_code }}
+
+    steps:
+      - name: Prepare evidence directory
+        run: mkdir -p "${RUNNER_TEMP}/paired-evidence"
+
+      - name: Check out Barn candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: MongooseMoo/barn
+          ref: ${{ needs.validate-inputs.outputs.barn_sha }}
+          path: barn
+          persist-credentials: false
+
+      - name: Check out conformance candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: MongooseMoo/moo-conformance-tests
+          ref: ${{ needs.validate-inputs.outputs.conformance_sha }}
+          path: conformance
+          persist-credentials: false
+
+      - name: Record exact candidate provenance
+        id: provenance
+        env:
+          REQUESTED_BARN_SHA: ${{ needs.validate-inputs.outputs.barn_sha }}
+          REQUESTED_CONFORMANCE_SHA: ${{ needs.validate-inputs.outputs.conformance_sha }}
+          REPORTS_DIR: ${{ runner.temp }}/paired-evidence
+        run: |
+          set -euo pipefail
+          barn_sha=$(git -C barn rev-parse HEAD)
+          conformance_sha=$(git -C conformance rev-parse HEAD)
+          test "$barn_sha" = "$REQUESTED_BARN_SHA"
+          test "$conformance_sha" = "$REQUESTED_CONFORMANCE_SHA"
+          printf 'barn_sha=%s\n' "$barn_sha" >> "$GITHUB_OUTPUT"
+          printf 'conformance_sha=%s\n' "$conformance_sha" >> "$GITHUB_OUTPUT"
+          printf '%s\n' "$barn_sha" > "${REPORTS_DIR}/barn-sha.txt"
+          printf '%s\n' "$conformance_sha" > "${REPORTS_DIR}/conformance-sha.txt"
+
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: barn/go.mod
+          cache-dependency-path: barn/go.sum
+          cache: false
+
+      - name: Run Barn unit tests
+        working-directory: barn
+        run: go test ./... -count=1
+
+      - name: Build Barn candidate
+        working-directory: barn
+        run: go build -o "${GITHUB_WORKSPACE}/barn-candidate" ./cmd/barn/
+
+      - name: Install uv and Python
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: 0.8.8
+          python-version: "3.13"
+          enable-cache: false
+
+      - name: Install locked conformance candidate
+        run: uv sync --project conformance --locked --extra dev
+
+      - name: Run conformance candidate quality gates
+        working-directory: conformance
+        run: |
+          uv run --frozen pytest tests --strict-markers -q
+          uv run --frozen pytest --collect-only --pyargs moo_conformance --strict-markers -q
+          uv run --frozen moo-lint-duplicates \
+            --baseline ci/duplicate-baseline.json
+          uv run --frozen ruff check .
+          uv run --frozen mypy src/moo_conformance
+
+      - name: Create exact case inventory and oracle profile
+        env:
+          REPORTS_DIR: ${{ runner.temp }}/paired-evidence
+        run: |
+          set -euo pipefail
+          printf 'OUTBOUND_NETWORK = 1\nPROMOTE_NUMBERS = 0\n' > "${REPORTS_DIR}/barn.conf"
+          uv run --project conformance --frozen python - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          from moo_conformance.execution_ledger import packaged_case_ids
+
+          reports = Path(os.environ["REPORTS_DIR"])
+          database = Path("conformance/src/moo_conformance/_db/Test.db")
+          checksum = hashlib.sha256(database.read_bytes()).hexdigest()
+          (reports / "expected-case-ids.json").write_text(
+              json.dumps(sorted(packaged_case_ids()), indent=2) + "\n"
+          )
+          oracle = {
+              "profile_id": "barn-linux-testdb-outbound-on-oracle",
+              "implementation": "toast-contract",
+              "runtime_os": "linux",
+              "database_fixture": "testdb",
+              "database_checksum": checksum,
+              "support_status": "supported",
+              "features": {
+                  "option.OUTBOUND_NETWORK": True,
+                  "option.PROMOTE_NUMBERS": False,
+              },
+          }
+          (reports / "oracle-profile.json").write_text(
+              json.dumps(oracle, indent=2, sort_keys=True) + "\n"
+          )
+          PY
+
+      - name: Run every packaged conformance case against Barn
+        id: conformance
+        env:
+          REPORTS_DIR: ${{ runner.temp }}/paired-evidence
+        run: |
+          set -o pipefail
+          set +e
+          uv run --project conformance --frozen pytest \
+            --pyargs moo_conformance \
+            --server-command="${GITHUB_WORKSPACE}/barn-candidate -db {db} -port {port} -config=${REPORTS_DIR}/barn.conf -outbound -profile-id=barn-linux-testdb-outbound-on -profile-manifest=${REPORTS_DIR}/target-profile.json" \
+            --server-db-dir="${GITHUB_WORKSPACE}/conformance/src/moo_conformance/_db/startup" \
+            --moo-host=127.0.0.1 \
+            --oracle-profile-manifest="${REPORTS_DIR}/oracle-profile.json" \
+            --target-profile-manifest="${REPORTS_DIR}/target-profile.json" \
+            --fail-on-unexpected-skip \
+            --strict-markers \
+            --junitxml="${REPORTS_DIR}/conformance.xml" \
+            -q -ra \
+            2>&1 | tee "${REPORTS_DIR}/conformance.log"
+          exit_code=${PIPESTATUS[0]}
+          set -e
+          printf 'exit_code=%s\n' "$exit_code" >> "$GITHUB_OUTPUT"
+          printf '%s\n' "$exit_code" > "${REPORTS_DIR}/exit-code.txt"
+          exit 0
+
+      - name: Upload raw paired evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: paired-raw-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/paired-evidence
+          if-no-files-found: error
+          retention-days: 14
+
+  verdict:
+    name: Verdict / expects ${{ github.event.client_payload.expected_result }}
+    if: always()
+    needs:
+      - paired
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out trusted controller
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: MongooseMoo/moo-conformance-tests
+          ref: ${{ github.workflow_sha }}
+          path: controller
+          persist-credentials: false
+
+      - name: Install trusted controller
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: 0.8.8
+          python-version: "3.13"
+          enable-cache: false
+
+      - name: Install locked controller environment
+        run: uv sync --project controller --locked
+
+      - name: Download raw paired evidence
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: paired-raw-${{ github.run_id }}-${{ github.run_attempt }}
+          path: raw-evidence
+
+      - name: Enforce candidate prerequisites
+        env:
+          PAIRED_JOB_RESULT: ${{ needs.paired.result }}
+        run: test "$PAIRED_JOB_RESULT" = success
+
+      - name: Validate the expected paired result
+        env:
+          EXPECTED_RESULT: ${{ github.event.client_payload.expected_result }}
+          REQUIRED_BAD_CASE: ${{ github.event.client_payload.required_bad_case }}
+          CONFORMANCE_EXIT: ${{ needs.paired.outputs.conformance_exit }}
+        run: |
+          mkdir -p verdict
+          uv run --project controller --frozen python -m moo_conformance.paired_result \
+            --report="raw-evidence/conformance.xml" \
+            --expected="$EXPECTED_RESULT" \
+            --exit-code="$CONFORMANCE_EXIT" \
+            --required-bad-case="$REQUIRED_BAD_CASE" \
+            --expected-ids="raw-evidence/expected-case-ids.json" \
+            --output="verdict/result.json"
+
+      - name: Record final paired provenance
+        env:
+          BARN_SHA: ${{ needs.paired.outputs.barn_sha }}
+          CONFORMANCE_SHA: ${{ needs.paired.outputs.conformance_sha }}
+          EXPECTED_RESULT: ${{ github.event.client_payload.expected_result }}
+          REQUIRED_BAD_CASE: ${{ github.event.client_payload.required_bad_case }}
+          CORRELATION_ID: ${{ github.event.client_payload.correlation_id }}
+          WORKFLOW_REPOSITORY: ${{ github.repository }}
+          WORKFLOW_REF: ${{ github.workflow_ref }}
+          WORKFLOW_SHA: ${{ github.workflow_sha }}
+          EVENT_NAME: ${{ github.event_name }}
+          ACTOR: ${{ github.actor }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          def digest(path):
+              return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+          result = json.loads(Path("verdict/result.json").read_text())
+          provenance = {
+              "schema_version": 1,
+              "repositories": {
+                  "barn": "MongooseMoo/barn",
+                  "conformance": "MongooseMoo/moo-conformance-tests",
+              },
+              "barn_sha": os.environ["BARN_SHA"],
+              "conformance_sha": os.environ["CONFORMANCE_SHA"],
+              "expected_result": os.environ["EXPECTED_RESULT"],
+              "required_bad_case": os.environ["REQUIRED_BAD_CASE"] or None,
+              "correlation_id": os.environ["CORRELATION_ID"] or None,
+              "workflow_repository": os.environ["WORKFLOW_REPOSITORY"],
+              "workflow_ref": os.environ["WORKFLOW_REF"],
+              "workflow_sha": os.environ["WORKFLOW_SHA"],
+              "event_name": os.environ["EVENT_NAME"],
+              "actor": os.environ["ACTOR"],
+              "run_id": os.environ["RUN_ID"],
+              "run_attempt": os.environ["RUN_ATTEMPT"],
+              "run_url": os.environ["RUN_URL"],
+              "profile_id": "barn-linux-testdb-outbound-on",
+              "oracle_manifest_sha256": digest("raw-evidence/oracle-profile.json"),
+              "target_manifest_sha256": digest("raw-evidence/target-profile.json"),
+              "recorded_at": datetime.now(timezone.utc).isoformat(),
+              "result": result,
+          }
+          Path("verdict/provenance.json").write_text(
+              json.dumps(provenance, indent=2, sort_keys=True) + "\n"
+          )
+          PY
+
+      - name: Publish paired result summary
+        env:
+          BARN_SHA: ${{ needs.paired.outputs.barn_sha }}
+          CONFORMANCE_SHA: ${{ needs.paired.outputs.conformance_sha }}
+          EXPECTED_RESULT: ${{ github.event.client_payload.expected_result }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          {
+            echo "### Paired candidate verdict: EXPECT $EXPECTED_RESULT"
+            echo
+            echo "- Barn SHA: \`$BARN_SHA\`"
+            echo "- Conformance SHA: \`$CONFORMANCE_SHA\`"
+            echo "- Run: $RUN_URL"
+            echo '```json'
+            cat verdict/result.json
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload final paired verdict
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: paired-verdict-${{ github.run_id }}-${{ github.run_attempt }}
+          path: verdict
+          if-no-files-found: error
+          retention-days: 14

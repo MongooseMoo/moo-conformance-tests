@@ -11,6 +11,7 @@ requires:
 
 tests:
   - name: object_literal_boundaries_follow_pinned_64_bit_lexer
+    skip_if: "not feature.64bit"
     code: |
       return {
         {typeof(#-9223372036854775807),
@@ -38,6 +39,7 @@ tests:
         - [1, 1, 1]
 
   - name: toobj_string_boundaries_clamp_on_native_overflow
+    skip_if: "not feature.64bit"
     code: |
       return {
         toliteral(toobj("-9223372036854775807")),
@@ -57,6 +59,7 @@ tests:
         - "#9223372036854775807"
 
   - name: scalar_equality_order_and_narrowed_map_comparator_are_distinct
+    skip_if: "not feature.64bit"
     statement: |
       small = #0;
       copied = small;

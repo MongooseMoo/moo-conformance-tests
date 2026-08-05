@@ -14,12 +14,12 @@ if src_path.exists():
     sys.path.insert(0, str(src_path))
 
 # Import only fixtures - hooks are registered via entry point
-from moo_conformance.plugin import (
-    transport,
-    runner,
-    yaml_test_case,
-    get_tests_dir,
+from moo_conformance.plugin import (  # noqa: E402
     get_db_path,
+    get_tests_dir,
+    runner,
+    transport,
+    yaml_test_case,
 )
 
 __all__ = [

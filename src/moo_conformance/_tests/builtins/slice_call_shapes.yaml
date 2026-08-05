@@ -4,6 +4,7 @@ description: Table-driven TYPE_ANY coverage for slice().
 requires:
   builtins:
     - slice
+    - toliteral
 
 tests:
   - name: slice_one_arg_list
@@ -18,11 +19,20 @@ tests:
       columns: [kind, expr]
       rows:
         - [int, "1"]
-        - [str, '"x"']
         - [list, "{1}"]
     code: "slice({}, {expr})"
     expect:
       type: list
+
+  # Pinned 32-bit Toast reads the string pointer union field as an integer, so
+  # ASLR makes this call alternate between success and E_RANGE across processes.
+  - name: slice_valid_start_str
+    description: String indexes select matching map values and omit missing keys.
+    permission: wizard
+    skip_if: "not feature.64bit"
+    code: 'toliteral(slice({["x" -> 7], ["y" -> 8], ["x" -> 9]}, "x"))'
+    expect:
+      value: "{7, 9}"
 
   - name: slice_invalid_start_{kind}
     permission: wizard
@@ -49,13 +59,6 @@ tests:
         - [int, "1", err, "E_ARGS"]
         - [int, "1", list, "{}"]
         - [int, "1", map, "[1 -> 2]"]
-        - [str, '"x"', int, "1"]
-        - [str, '"x"', float, "1.5"]
-        - [str, '"x"', obj, "#0"]
-        - [str, '"x"', str, '"x"']
-        - [str, '"x"', err, "E_ARGS"]
-        - [str, '"x"', list, "{}"]
-        - [str, '"x"', map, "[1 -> 2]"]
         - [list, "{1}", int, "1"]
         - [list, "{1}", float, "1.5"]
         - [list, "{1}", obj, "#0"]
@@ -66,6 +69,24 @@ tests:
     code: "slice({}, {start_expr}, {default_expr})"
     expect:
       type: list
+
+  - name: slice_valid_start_str_default_{default_kind}
+    description: String indexes use the supplied default for a missing map key.
+    permission: wizard
+    skip_if: "not feature.64bit"
+    table:
+      columns: [default_kind, default_expr, expected_literal]
+      rows:
+        - [int, "1", "{7, 1}"]
+        - [float, "1.5", "{7, 1.5}"]
+        - [obj, "#0", "{7, #0}"]
+        - [str, '"x"', '{7, "x"}']
+        - [err, "E_ARGS", "{7, E_ARGS}"]
+        - [list, "{}", "{7, {}}"]
+        - [map, "[1 -> 2]", "{7, [1 -> 2]}"]
+    code: 'toliteral(slice({["x" -> 7], ["y" -> 8]}, "x", {default_expr}))'
+    expect:
+      value: "{expected_literal}"
 
   - name: slice_invalid_start_{start_kind}_default_{default_kind}
     permission: wizard

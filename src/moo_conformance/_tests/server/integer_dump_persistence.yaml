@@ -7,6 +7,7 @@ requires:
     - dump_database
     - toliteral
     - typeof
+  features: [64bit]
   config: [managed_server]
 tests:
   - name: full_range_integers_survive_dump_and_restart

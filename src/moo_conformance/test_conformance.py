@@ -10,7 +10,7 @@ import re
 
 import pytest
 
-from .conditions import config_skip_reason, parse_min_version, parse_skip_condition
+from .conditions import config_skip_reason, parse_min_version, parse_skip_conditions
 from .moo_types import MooError
 from .plugin import _skip_declared_yaml_case
 
@@ -99,8 +99,46 @@ def _has_feature(
     feature: str,
     profile_features: dict[str, object] | None = None,
 ) -> bool:
+    profile_key = f"feature.{feature}"
     if feature == "64bit":
+        recorded: list[bool] = []
+        if profile_features is not None:
+            if profile_key in profile_features:
+                value = profile_features[profile_key]
+                if not isinstance(value, bool):
+                    raise CapabilityProbeError(
+                        "Failed to probe feature 64bit: profile value must be "
+                        f"boolean, got {value!r}"
+                    )
+                recorded.append(value)
+            if "runtime.arch_bits" in profile_features:
+                arch_bits = profile_features["runtime.arch_bits"]
+                if type(arch_bits) is not int or arch_bits not in (32, 64):
+                    raise CapabilityProbeError(
+                        "Failed to probe feature 64bit: runtime.arch_bits must be "
+                        f"32 or 64, got {arch_bits!r}"
+                    )
+                recorded.append(arch_bits == 64)
+            if "option.ONLY_32_BITS" in profile_features:
+                recorded.append(
+                    not _has_option(runner, "ONLY_32_BITS", profile_features)
+                )
+        if recorded:
+            if any(value != recorded[0] for value in recorded[1:]):
+                raise CapabilityProbeError(
+                    "Failed to probe feature 64bit: conflicting architecture "
+                    "profile values"
+                )
+            return recorded[0]
         return not _has_option(runner, "ONLY_32_BITS", profile_features)
+    if profile_features is not None and profile_key in profile_features:
+        value = profile_features[profile_key]
+        if not isinstance(value, bool):
+            raise CapabilityProbeError(
+                f"Failed to probe feature {feature}: profile value must be boolean, "
+                f"got {value!r}"
+            )
+        return value
     if feature == "connectable_listener_port":
         if not _has_option(runner, "OUTBOUND_NETWORK", profile_features):
             return False
@@ -251,15 +289,15 @@ def _enforce_suite_requirements(
 def _enforce_skip_condition(test, runner, profile_features) -> None:
     if test.skip_if is None:
         return
-    condition = parse_skip_condition(test.skip_if)
-    if condition.target == "feature":
-        present = _has_feature(runner, condition.name, profile_features)
-    elif condition.target == "builtin":
-        present = _has_builtin(runner, condition.name)
-    else:
-        present = _has_option(runner, condition.name, profile_features)
-    if present == condition.skip_when_present:
-        pytest.skip(condition.skip_reason)
+    for condition in parse_skip_conditions(test.skip_if):
+        if condition.target == "feature":
+            present = _has_feature(runner, condition.name, profile_features)
+        elif condition.target == "builtin":
+            present = _has_builtin(runner, condition.name)
+        else:
+            present = _has_option(runner, condition.name, profile_features)
+        if present == condition.skip_when_present:
+            pytest.skip(condition.skip_reason)
 
 
 def _uses_managed_restart(test) -> bool:

@@ -19,7 +19,6 @@ from .schema import (
     MooTestSuite,
     TestStep,
     WriteFile,
-    _value_to_moo,
 )
 from .server import ManagedServer
 from .transport import ExecutionResult, MooTransport, TestConnection
@@ -27,15 +26,21 @@ from .transport import ExecutionResult, MooTransport, TestConnection
 
 class AssertionError(Exception):
     """Test assertion failed."""
+
     pass
 
 
 class YamlTestRunner:
     """Executes YAML-defined test cases."""
 
-    def __init__(self, transport: MooTransport, log_file_path: str | None = None,
-                 server_dir: str | None = None, managed_server: ManagedServer | None = None,
-                 server_db_dir: str | None = None):
+    def __init__(
+        self,
+        transport: MooTransport,
+        log_file_path: str | None = None,
+        server_dir: str | None = None,
+        managed_server: ManagedServer | None = None,
+        server_db_dir: str | None = None,
+    ):
         self.transport = transport
         self.log_file_path = log_file_path
         self.server_dir = server_dir
@@ -61,11 +66,15 @@ class YamlTestRunner:
                 self.transport.switch_user(suite.setup.permission)
             # Execute setup code as individual statements to match Ruby behavior
             # Ruby calls evaluate() separately for each statement, ignoring errors
-            code = suite.setup.code if isinstance(suite.setup.code, str) else "\n".join(suite.setup.code)
+            code = (
+                suite.setup.code
+                if isinstance(suite.setup.code, str)
+                else "\n".join(suite.setup.code)
+            )
             if code.strip():
                 # Split into individual statements and execute each separately
                 # This matches Ruby's evaluate() calls which ignore errors
-                for stmt in code.strip().split('\n'):
+                for stmt in code.strip().split("\n"):
                     stmt = stmt.strip()
                     if stmt:
                         # Execute statement (errors ignored to match Ruby behavior)
@@ -101,15 +110,18 @@ class YamlTestRunner:
 
     def _suite_requires_transport(self, suite: MooTestSuite) -> bool:
         """Check whether any test in the suite needs a live transport connection."""
+
         def step_needs_transport(step: TestStep) -> bool:
-            return any([
-                step.run is not None,
-                step.command is not None,
-                step.verb_setup is not None,
-                step.new_connection is not None,
-                step.send is not None,
-                step.restart_server is not None,
-            ])
+            return any(
+                [
+                    step.run is not None,
+                    step.command is not None,
+                    step.verb_setup is not None,
+                    step.new_connection is not None,
+                    step.send is not None,
+                    step.restart_server is not None,
+                ]
+            )
 
         if suite.setup is not None or suite.teardown is not None:
             return True
@@ -128,13 +140,25 @@ class YamlTestRunner:
         """Check whether a test will use the transport or require a login."""
         if test.code is not None or test.statement is not None or test.verb is not None:
             return True
-        if any(step.run is not None or step.command is not None or step.verb_setup is not None
-               or step.new_connection is not None or step.send is not None or step.restart_server is not None
-               for step in test.steps):
+        if any(
+            step.run is not None
+            or step.command is not None
+            or step.verb_setup is not None
+            or step.new_connection is not None
+            or step.send is not None
+            or step.restart_server is not None
+            for step in test.steps
+        ):
             return True
-        if any(step.run is not None or step.command is not None or step.verb_setup is not None
-               or step.new_connection is not None or step.send is not None or step.restart_server is not None
-               for step in test.cleanup):
+        if any(
+            step.run is not None
+            or step.command is not None
+            or step.verb_setup is not None
+            or step.new_connection is not None
+            or step.send is not None
+            or step.restart_server is not None
+            for step in test.cleanup
+        ):
             return True
         return False
 
@@ -179,7 +203,11 @@ class YamlTestRunner:
             # REMOVED: Connection is now session-scoped (managed by fixture)
             # self.transport.connect(suite.teardown.permission)
             # Run teardown code as a single block (may contain multi-line constructs)
-            code = suite.teardown.code if isinstance(suite.teardown.code, str) else "\n".join(suite.teardown.code)
+            code = (
+                suite.teardown.code
+                if isinstance(suite.teardown.code, str)
+                else "\n".join(suite.teardown.code)
+            )
             if code.strip():
                 # Best effort - don't fail on teardown errors
                 self._ensure_transport_connected()
@@ -317,7 +345,8 @@ class YamlTestRunner:
                     conn_name = step.send.connection
                     if conn_name not in connections:
                         raise AssertionError(
-                            f"Unknown connection '{conn_name}'. Available: {list(connections.keys())}"
+                            f"Unknown connection '{conn_name}'. Available: "
+                            f"{list(connections.keys())}"
                         )
                     text = self._substitute_variables(step.send.text, variables)
                     output_lines = connections[conn_name].send(text)
@@ -326,7 +355,9 @@ class YamlTestRunner:
                         variables[step.capture] = output_lines
 
                     if step.expect and step.expect.output:
-                        self._verify_output(step.expect.output, output_lines, f"send on '{conn_name}'")
+                        self._verify_output(
+                            step.expect.output, output_lines, f"send on '{conn_name}'"
+                        )
                     continue
 
                 # Handle send_bytes step
@@ -335,7 +366,8 @@ class YamlTestRunner:
                     conn_name = step.send_bytes.connection
                     if conn_name not in connections:
                         raise AssertionError(
-                            f"Unknown connection '{conn_name}'. Available: {list(connections.keys())}"
+                            f"Unknown connection '{conn_name}'. Available: "
+                            f"{list(connections.keys())}"
                         )
                     data = bytes.fromhex(step.send_bytes.hex)
                     output_lines = connections[conn_name].send_bytes(data)
@@ -344,7 +376,9 @@ class YamlTestRunner:
                         variables[step.capture] = output_lines
 
                     if step.expect and step.expect.output:
-                        self._verify_output(step.expect.output, output_lines, f"send_bytes on '{conn_name}'")
+                        self._verify_output(
+                            step.expect.output, output_lines, f"send_bytes on '{conn_name}'"
+                        )
                     continue
 
                 # Handle read_connection step
@@ -353,7 +387,8 @@ class YamlTestRunner:
                     conn_name = step.read_connection.connection
                     if conn_name not in connections:
                         raise AssertionError(
-                            f"Unknown connection '{conn_name}'. Available: {list(connections.keys())}"
+                            f"Unknown connection '{conn_name}'. Available: "
+                            f"{list(connections.keys())}"
                         )
                     output_lines = connections[conn_name].read()
 
@@ -361,7 +396,9 @@ class YamlTestRunner:
                         variables[step.capture] = output_lines
 
                     if step.expect and step.expect.output:
-                        self._verify_output(step.expect.output, output_lines, f"read on '{conn_name}'")
+                        self._verify_output(
+                            step.expect.output, output_lines, f"read on '{conn_name}'"
+                        )
                     continue
 
                 # Handle close_connection step
@@ -422,10 +459,11 @@ class YamlTestRunner:
                         step_desc = f"verb_setup '{step.verb_setup.name}'"
                         self._verify_expectation(step.expect, result, step_desc)
 
-                elif step.command:
+                elif step.command is not None:
                     # Raw command step - for testing command parser
                     self._ensure_transport_connected()
-                    command = self._substitute_variables(step.command, variables)
+                    command_text = step.command
+                    command = self._substitute_variables(command_text, variables)
                     output_lines = self.transport.send_command(command)
 
                     # Note: command output is captured as list of lines, not as result value
@@ -435,22 +473,27 @@ class YamlTestRunner:
 
                     # Verify output expectation if present
                     if step.expect and step.expect.output:
-                        step_desc = f"command '{step.command[:30]}...'"
+                        step_desc = f"command '{command_text[:30]}...'"
                         self._verify_output(step.expect.output, output_lines, step_desc)
 
                 else:
                     # Execute the step (run field)
                     self._ensure_transport_connected()
-                    code = self._substitute_variables(step.run, variables)
+                    if step.run is None:
+                        raise AssertionError(f"Test '{test.name}' has an empty execution step")
+                    run_code = step.run
+                    code = self._substitute_variables(run_code, variables)
 
                     # Wrap as expression if it doesn't look like a statement
                     # Check if code contains 'return' anywhere (for multi-line code)
                     stripped = code.strip()
-                    has_return = 'return ' in stripped or stripped.startswith('return')
-                    is_statement = any(stripped.startswith(kw) for kw in ('if', 'for', 'while', 'try'))
+                    has_return = "return " in stripped or stripped.startswith("return")
+                    is_statement = any(
+                        stripped.startswith(kw) for kw in ("if", "for", "while", "try")
+                    )
 
                     if not has_return and not is_statement:
-                        if not stripped.endswith(';'):
+                        if not stripped.endswith(";"):
                             code = f"return {stripped};"
                         else:
                             code = f"return {stripped}"
@@ -467,7 +510,7 @@ class YamlTestRunner:
 
                     # Verify expectation if present
                     if step.expect:
-                        step_desc = f"step '{step.run[:30]}...'"
+                        step_desc = f"step '{run_code[:30]}...'"
                         self._verify_expectation(step.expect, result, step_desc)
 
         finally:
@@ -482,6 +525,8 @@ class YamlTestRunner:
                     self._ensure_transport_connected()
                     self.transport.switch_user(cleanup_step.as_)
 
+                if cleanup_step.run is None:
+                    raise AssertionError(f"Test '{test.name}' has a cleanup step without run code")
                 cleanup_code = self._substitute_variables(cleanup_step.run, variables)
                 # Best effort - don't fail on cleanup errors
                 self._ensure_transport_connected()
@@ -617,17 +662,17 @@ class YamlTestRunner:
         """
         obj = self._substitute_variables(vs.object, variables)
         name = vs.name
-        args_str = '{' + ', '.join(f'"{a}"' for a in vs.args) + '}'
+        args_str = "{" + ", ".join(f'"{a}"' for a in vs.args) + "}"
 
         # Convert code to list of lines (set_verb_code requires a list)
         # Split on newlines and escape each line for MOO string
-        code_lines = vs.code.split('\n')
+        code_lines = vs.code.split("\n")
         code_list_items = []
         for line in code_lines:
             # Escape backslashes and quotes for MOO string literal
-            escaped = line.replace('\\', '\\\\').replace('"', '\\"')
+            escaped = line.replace("\\", "\\\\").replace('"', '\\"')
             code_list_items.append(f'"{escaped}"')
-        code_list_str = '{' + ', '.join(code_list_items) + '}'
+        code_list_str = "{" + ", ".join(code_list_items) + "}"
 
         # Execute both add_verb and set_verb_code in ONE statement
         # This is necessary because MOO doesn't maintain variable scope between executions
@@ -787,7 +832,9 @@ class YamlTestRunner:
                 f"Test '{test_name}' write_file: could not write file {write_file.path!r}: {e}"
             )
 
-    def _verify_expectation(self, expect: Expectation, result: ExecutionResult, context: str) -> None:
+    def _verify_expectation(
+        self, expect: Expectation, result: ExecutionResult, context: str
+    ) -> None:
         """Verify a single expectation against a result.
 
         Args:
@@ -825,8 +872,7 @@ class YamlTestRunner:
             self._verify_match(expect.match, result.error_message, context)
         elif not result.success:
             raise AssertionError(
-                f"{context} expected success but got error: "
-                f"{result.error or result.error_message}"
+                f"{context} expected success but got error: {result.error or result.error_message}"
             )
         if result.success or expect.error is not None:
             # Enforce every compatible result assertion; none may short-circuit
@@ -874,19 +920,19 @@ class YamlTestRunner:
             )
 
         # Compare error codes
-        actual_error = result.error.value if isinstance(result.error, MooError) else str(result.error)
+        actual_error = (
+            result.error.value if isinstance(result.error, MooError) else str(result.error)
+        )
         if actual_error != expected_error:
             raise AssertionError(
-                f"Test '{test_name}' expected error {expected_error}, "
-                f"but got {actual_error}"
+                f"Test '{test_name}' expected error {expected_error}, but got {actual_error}"
             )
 
     def _verify_value(self, expected: Any, actual: Any, test_name: str) -> None:
         """Verify exact value match."""
         if not self._values_equal(expected, actual):
             raise AssertionError(
-                f"Test '{test_name}' expected value {expected!r}, "
-                f"but got {actual!r}"
+                f"Test '{test_name}' expected value {expected!r}, but got {actual!r}"
             )
 
     def _values_equal(self, expected: Any, actual: Any) -> bool:
@@ -1066,9 +1112,7 @@ class YamlTestRunner:
                 f"but got {type(actual).__name__}: {actual!r}"
             )
         elif not re.search(pattern, actual):
-            raise AssertionError(
-                f"Test '{test_name}' pattern {pattern!r} not found in {actual!r}"
-            )
+            raise AssertionError(f"Test '{test_name}' pattern {pattern!r} not found in {actual!r}")
 
     def _verify_contains(self, expected: Any, actual: Any, test_name: str) -> None:
         """Verify that actual contains expected value."""
@@ -1132,6 +1176,8 @@ class YamlTestRunner:
 
     def _verify_satisfies(self, predicate: str, actual: Any, test_name: str) -> None:
         """Evaluate a MOO predicate with ``__actual__`` bound to the result."""
+        from .schema import _value_to_moo
+
         if "__actual__" not in predicate:
             raise AssertionError(
                 f"Test '{test_name}' satisfies predicate must reference __actual__: {predicate!r}"
@@ -1193,15 +1239,13 @@ class YamlTestRunner:
             if isinstance(expected.exact, list):
                 if actual != expected.exact:
                     raise AssertionError(
-                        f"{context} expected output lines {expected.exact!r}, "
-                        f"but got {actual!r}"
+                        f"{context} expected output lines {expected.exact!r}, but got {actual!r}"
                     )
             else:
                 # Single string - match against joined output
                 if joined != expected.exact:
                     raise AssertionError(
-                        f"{context} expected output {expected.exact!r}, "
-                        f"but got {joined!r}"
+                        f"{context} expected output {expected.exact!r}, but got {joined!r}"
                     )
         if expected.match is not None:
             # Regex match on joined output

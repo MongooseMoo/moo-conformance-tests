@@ -5,6 +5,12 @@ on:
   push:
     branches:
       - main
+  workflow_call:
+    inputs:
+      conformance_sha:
+        description: Exact conformance candidate commit
+        required: true
+        type: string
 
 concurrency:
   group: toast-conformance-${{ github.workflow }}-${{ github.ref }}
@@ -14,24 +20,88 @@ permissions:
   contents: read
 
 jobs:
+  quality:
+    name: Harness, schema, duplicates, types, and lint
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Check out conformance candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.conformance_sha || github.sha }}
+          persist-credentials: false
+
+      - name: Install uv and Python
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: 0.8.8
+          python-version: "3.13"
+          enable-cache: false
+
+      - name: Install locked development environment
+        run: uv sync --locked --extra dev
+
+      - name: Run harness unit tests
+        run: uv run --frozen pytest tests --strict-markers --junitxml=harness-units.xml -q
+
+      - name: Collect every packaged schema case
+        run: uv run --frozen pytest --collect-only --pyargs moo_conformance --strict-markers -q
+
+      - name: Enforce reviewed duplicate baseline
+        run: >
+          uv run --frozen moo-lint-duplicates
+          --baseline ci/duplicate-baseline.json
+
+      - name: Run Ruff
+        run: uv run --frozen ruff check .
+
+      - name: Run mypy
+        run: uv run --frozen mypy src/moo_conformance
+
+      - name: Upload harness evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: harness-quality-evidence
+          path: harness-units.xml
+          if-no-files-found: error
+          retention-days: 14
+
   full-suite:
-    name: Full suite
+    name: Toast / ${{ matrix.profile }}
     runs-on: ubuntu-24.04
     timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - profile: 64bit-outbound-on
+            only_32_bits: "OFF"
+            outbound: "true"
+            outbound_argument: --outbound
+          - profile: 64bit-outbound-off
+            only_32_bits: "OFF"
+            outbound: "false"
+            outbound_argument: --no-outbound
+          - profile: 32bit-outbound-on
+            only_32_bits: "ON"
+            outbound: "true"
+            outbound_argument: --outbound
 
     steps:
       - name: Prepare evidence directory
         run: |
-          reports_dir="${RUNNER_TEMP}/toast-conformance-reports"
+          reports_dir="${RUNNER_TEMP}/toast-conformance-${{ matrix.profile }}"
           printf 'REPORTS_DIR=%s\n' "${reports_dir}" >> "${GITHUB_ENV}"
           mkdir -p "${reports_dir}"
-          printf 'run_id=%s\nrunner_os=%s\nrunner_arch=%s\n' \
-            "${GITHUB_RUN_ID}" "${RUNNER_OS}" "${RUNNER_ARCH}" \
+          printf 'run_id=%s\nprofile=%s\nrunner_os=%s\nrunner_arch=%s\n' \
+            "${GITHUB_RUN_ID}" "${{ matrix.profile }}" "${RUNNER_OS}" "${RUNNER_ARCH}" \
             > "${reports_dir}/workflow-start.txt"
 
       - name: Check out conformance candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ inputs.conformance_sha || github.sha }}
           persist-credentials: false
 
       - name: Check out pinned Toast oracle
@@ -65,6 +135,7 @@ jobs:
             libaspell-dev \
             libcrypt-dev \
             libcurl4-openssl-dev \
+            libjemalloc-dev \
             libpcre2-dev \
             libsqlite3-dev \
             libssl-dev \
@@ -92,54 +163,136 @@ jobs:
           (
             mkdir -p toaststunt/build-release
             cd toaststunt/build-release
-            cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
+            cmake -G Ninja \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DONLY_32_BITS=${{ matrix.only_32_bits }} \
+              -DUSE_JEMALLOC=ON \
+              -DCMAKE_C_FLAGS="-DBACKGROUND_TEST=1 -DSAVE_FINISHED_TASKS=15" \
+              -DCMAKE_CXX_FLAGS="-DBACKGROUND_TEST=1 -DSAVE_FINISHED_TASKS=15" \
+              ..
             cmake --build . --target moo --parallel 2
           ) 2>&1 | tee "${REPORTS_DIR}/toast-build.log"
           test -x toaststunt/build-release/moo
+
+      - name: Record the exact Toast capability profile
+        env:
+          PROFILE_ID: ${{ matrix.profile }}
+          PROFILE_OUTBOUND: ${{ matrix.outbound }}
+          PROFILE_32BIT: ${{ matrix.only_32_bits }}
+        run: |
+          uv run --frozen python - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import json
+          import os
+
+          fixture = Path("src/moo_conformance/_db/Test.db")
+          profile = {
+              "profile_id": os.environ["PROFILE_ID"],
+              "implementation": "toaststunt",
+              "runtime_os": "linux",
+              "database_fixture": "moo_conformance/_db/Test.db",
+              "database_checksum": "sha256:" + hashlib.sha256(fixture.read_bytes()).hexdigest(),
+              "support_status": "supported",
+              "features": {
+                  "option.OUTBOUND_NETWORK": os.environ["PROFILE_OUTBOUND"] == "true",
+                  "option.PROMOTE_NUMBERS": False,
+                  "option.ONLY_32_BITS": os.environ["PROFILE_32BIT"] == "ON",
+                  "feature.maps": True,
+                  "feature.anonymous": True,
+                  "feature.index_extensions": True,
+                  "feature.fork": True,
+                  "feature.forking": True,
+                  "feature.tasks": True,
+                  "feature.exec_support": True,
+                  "feature.command_dispatch": True,
+                  "feature.server_options": True,
+              },
+          }
+          output = Path(os.environ["REPORTS_DIR"], "profile.json")
+          output.write_text(json.dumps(profile, indent=2, sort_keys=True) + "\n")
+          PY
 
       - name: Run every packaged conformance case against Toast
         run: |
           set -o pipefail
           uv run --frozen pytest \
             --pyargs moo_conformance \
-            --server-command="${GITHUB_WORKSPACE}/toaststunt/build-release/moo --no-ipv6 --ipv4 127.0.0.1 --outbound {db} {db}.new {port}" \
+            --server-command="${GITHUB_WORKSPACE}/toaststunt/build-release/moo --no-ipv6 --ipv4 127.0.0.1 ${{ matrix.outbound_argument }} --exec-dir {server_dir}/executables {db} {db}.new {port}" \
             --server-db-dir="${GITHUB_WORKSPACE}/src/moo_conformance/_db/startup" \
             --moo-host=127.0.0.1 \
+            --oracle-profile-manifest="${REPORTS_DIR}/profile.json" \
+            --target-profile-manifest="${REPORTS_DIR}/profile.json" \
             --fail-on-unexpected-skip \
             --strict-markers \
             --junitxml="${REPORTS_DIR}/toast-conformance.xml" \
             -q -ra \
             2>&1 | tee "${REPORTS_DIR}/toast-conformance.log"
 
-      - name: Enforce the full Toast execution surface
-        run: |
-          uv run --frozen python - <<'PY'
-          from pathlib import Path
-          import os
-          import xml.etree.ElementTree as ET
-
-          report = Path(os.environ["REPORTS_DIR"], "toast-conformance.xml")
-          root = ET.parse(report).getroot()
-          suites = [root] if root.tag == "testsuite" else list(root.findall("testsuite"))
-          totals = {
-              field: sum(int(suite.attrib.get(field, 0)) for suite in suites)
-              for field in ("tests", "failures", "errors", "skipped")
-          }
-          print(totals)
-          assert totals == {
-              "tests": 11_569,
-              "failures": 0,
-              "errors": 0,
-              # All remaining skips are declared by the suite and strict skip mode.
-              "skipped": 459,
-          }, "Toast conformance execution surface changed"
-          PY
-
       - name: Upload Toast conformance evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: toast-conformance-${{ github.run_id }}
+          name: toast-conformance-${{ matrix.profile }}
           path: ${{ env.REPORTS_DIR }}
+          if-no-files-found: error
+          retention-days: 14
+
+  execution-ledger:
+    name: Full suite
+    if: always()
+    needs:
+      - quality
+      - full-suite
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+
+    steps:
+      - name: Enforce prerequisite gates
+        env:
+          QUALITY_RESULT: ${{ needs.quality.result }}
+          TOAST_RESULT: ${{ needs.full-suite.result }}
+        run: |
+          test "$QUALITY_RESULT" = success
+          test "$TOAST_RESULT" = success
+
+      - name: Check out conformance candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.conformance_sha || github.sha }}
+          persist-credentials: false
+
+      - name: Install uv and Python
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: 0.8.8
+          python-version: "3.13"
+          enable-cache: false
+
+      - name: Install locked conformance environment
+        run: uv sync --locked
+
+      - name: Download every Toast profile report
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          pattern: toast-conformance-*
+          path: toast-profile-reports
+
+      - name: Enforce exact profile union
+        run: |
+          uv run --frozen python -m moo_conformance.execution_ledger \
+            --report=64bit-outbound-on=toast-profile-reports/toast-conformance-64bit-outbound-on/toast-conformance.xml \
+            --report=64bit-outbound-off=toast-profile-reports/toast-conformance-64bit-outbound-off/toast-conformance.xml \
+            --report=32bit-outbound-on=toast-profile-reports/toast-conformance-32bit-outbound-on/toast-conformance.xml \
+            --baseline=ci/toast-never-executed.json \
+            --output=toast-execution-ledger.json
+
+      - name: Upload Toast execution ledger
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: toast-execution-ledger
+          path: toast-execution-ledger.json
           if-no-files-found: error
           retention-days: 14

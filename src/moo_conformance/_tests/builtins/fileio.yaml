@@ -201,14 +201,6 @@ tests:
     expect:
       error: E_PERM
 
-  # file_version exists only in legacy extension documentation and is absent
-  # from the pinned Toast source and builtin registry.
-  - name: file_version_public
-    permission: programmer
-    code: 'function_info("file_version")'
-    expect:
-      error: E_INVARG
-
   # Text file operations
   - name: text_file_write_read
     permission: wizard

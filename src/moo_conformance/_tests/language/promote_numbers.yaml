@@ -2,8 +2,8 @@ name: promote_numbers
 description: Pinned Toast keeps integer and floating-point equality distinct
 
 tests:
-  - name: list_membership_promotes_integer_to_float
-    description: Legacy identity proving list membership does not promote numeric types
+  - name: list_membership_distinguishes_integer_and_float
+    description: List membership does not promote numeric types
     code: "1 in {1.0}"
     expect:
       value: 0

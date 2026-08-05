@@ -23,25 +23,8 @@ tests:
           contains: "1 suspended tasks"
       - assert_file:
           path: PanicLiveWaifAnonRoots.db.new.PANIC
-          contains: |-
-            state
-            4
-            2
-            13
-            c 0
-            9
-            3
-            0
-            -1
-            .
-            12
-            10
-      - assert_file:
-          path: PanicLiveWaifAnonRoots.db.new.PANIC
-          contains: |-
-            #10
-
-            0
-            3
-            1
-            -1
+          suspended_task:
+            waif_class: 9
+            waif_owner: 3
+            anonymous_object: 10
+            anonymous_owner: 3

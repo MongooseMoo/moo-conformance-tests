@@ -18,6 +18,43 @@ from importlib import resources
 from pathlib import Path
 from typing import TextIO
 
+FileSnapshotSignature = tuple[int, int, int, int, int]
+
+
+def file_snapshot_signature(info: os.stat_result) -> FileSnapshotSignature:
+    """Return identity and mutation fields used by launch/test freshness gates."""
+    return (
+        info.st_dev,
+        info.st_ino,
+        info.st_size,
+        info.st_mtime_ns,
+        info.st_ctime_ns,
+    )
+
+
+def snapshot_regular_files(root: str | os.PathLike[str]) -> dict[str, FileSnapshotSignature]:
+    """Snapshot regular files under ``root`` without traversing links/reparse points."""
+    snapshot: dict[str, FileSnapshotSignature] = {}
+    root_path = os.fspath(root)
+    stack = [(root_path, "")]
+    while stack:
+        directory, relative_directory = stack.pop()
+        entries = list(os.scandir(directory))
+        for entry in entries:
+            # DirEntry.stat() can report zero identity fields for regular
+            # files on Windows; os.stat() preserves the handle-comparable ID.
+            info = os.stat(entry.path, follow_symlinks=False)
+            attributes = getattr(info, "st_file_attributes", 0)
+            is_reparse = bool(attributes & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0))
+            if stat.S_ISLNK(info.st_mode) or is_reparse:
+                continue
+            relative = os.path.join(relative_directory, entry.name)
+            if stat.S_ISDIR(info.st_mode):
+                stack.append((entry.path, relative))
+            elif stat.S_ISREG(info.st_mode):
+                snapshot[relative.replace(os.sep, "/")] = file_snapshot_signature(info)
+    return snapshot
+
 
 def normalize_process_termination(
     returncode: int,
@@ -27,9 +64,9 @@ def normalize_process_termination(
 ) -> str | None:
     """Normalize narrowly proven process statuses to a portable termination.
 
-    ``abort`` accepts only a direct POSIX SIGABRT return code, the conventional
-    POSIX wrapper status ``128 + SIGABRT``, or the Windows CRT abort status 3.
-    Every other ordinary exit code or signal remains unrecognized.
+    ``abort`` accepts only a direct POSIX SIGABRT return code or the Windows CRT
+    abort status 3.  A positive wrapper/ordinary exit status is ambiguous and
+    therefore remains unrecognized, as does every other code or signal.
     """
     platform_name = os.name if platform_name is None else platform_name
     if platform_name == "nt":
@@ -39,10 +76,7 @@ def normalize_process_termination(
         if abort_signal_number is None
         else abort_signal_number
     )
-    if platform_name == "posix" and returncode in {
-        -abort_signal_number,
-        128 + abort_signal_number,
-    }:
+    if platform_name == "posix" and returncode == -abort_signal_number:
         return "abort"
     return None
 
@@ -70,6 +104,7 @@ class ManagedServer:
         self._db_copy_path: Path | None = None
         self._manifest_path: Path | None = None
         self._process_log_offset: int | None = None
+        self._process_file_snapshot: dict[str, FileSnapshotSignature] | None = None
 
     @property
     def port(self) -> int:
@@ -97,6 +132,13 @@ class ManagedServer:
         if self._process_log_offset is None:
             raise RuntimeError("Server not started")
         return self._process_log_offset
+
+    @property
+    def process_file_snapshot(self) -> dict[str, FileSnapshotSignature]:
+        """Regular-file state captured immediately before this process launch."""
+        if self._process_file_snapshot is None:
+            raise RuntimeError("Server not started")
+        return dict(self._process_file_snapshot)
 
     def start(self, db_path: Path | None = None, wait_for_port: bool = True) -> None:
         """Start the server subprocess.
@@ -164,6 +206,7 @@ class ManagedServer:
         self._log_file = open(self._log_path, "a")
         self._log_file.flush()
         self._process_log_offset = os.path.getsize(self._log_path)
+        self._process_file_snapshot = snapshot_regular_files(self._temp_dir)
 
         # Start server process
         self._process = subprocess.Popen(
@@ -205,6 +248,7 @@ class ManagedServer:
             self._db_copy_path = None
             self._manifest_path = None
             self._process_log_offset = None
+            self._process_file_snapshot = None
 
     def write_stdin(self, text: str) -> None:
         """Write text to the managed server process stdin."""

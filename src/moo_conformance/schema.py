@@ -190,12 +190,17 @@ ACTION_PAYLOAD_FIELDS = {
     "send_bytes": frozenset({"hex", "connection"}),
     "read_connection": frozenset({"connection"}),
     "assert_log": frozenset({"contains", "not_contains"}),
-    "assert_file": frozenset({"path", "exists", "contains", "equals_file", "timeout_ms"}),
+    "assert_file": frozenset({
+        "path", "exists", "contains", "equals_file", "suspended_task", "timeout_ms"
+    }),
     "write_file": frozenset({"path", "content"}),
     "write_stdin": frozenset({"text"}),
     "restart_server": frozenset({"wait_ms", "down_ms"}),
     "wait_for_server_exit": frozenset({"timeout_ms", "exit_code", "termination"}),
 }
+SUSPENDED_TASK_ASSERTION_FIELDS = frozenset({
+    "waif_class", "waif_owner", "anonymous_object", "anonymous_owner"
+})
 
 
 def _require_mapping(data: Any, context: str) -> dict:
@@ -342,6 +347,15 @@ class LogAssertion:
 
 
 @dataclass
+class SuspendedTaskAssertion:
+    """Expected object roots in one suspended activation's ``state`` local."""
+    waif_class: int
+    waif_owner: int
+    anonymous_object: int
+    anonymous_owner: int
+
+
+@dataclass
 class FileAssertion:
     """Assert that a file on disk has expected state.
 
@@ -352,6 +366,7 @@ class FileAssertion:
     exists: bool = True            # Whether the file should exist
     contains: str | None = None    # Optional substring to find in file contents
     equals_file: str | None = None  # Optional byte-exact reference under server_db_dir
+    suspended_task: SuspendedTaskAssertion | None = None
     timeout_ms: int = 0             # Optional deadline for output creation
 
 
@@ -628,6 +643,8 @@ def validate_test_suite(data: dict) -> MooTestSuite:
             test = _parse_test_case(expanded_test_data, context)
             tests.append(test)
 
+    _validate_terminal_server_exits(tests, teardown)
+
     # Parse suite-level capability dependencies
     provides = data.get('provides')
     assumes = data.get('assumes', [])
@@ -648,6 +665,53 @@ def validate_test_suite(data: dict) -> MooTestSuite:
         provides=provides,
         assumes=assumes,
     )
+
+
+def _validate_terminal_server_exits(
+    tests: list[MooTestCase], suite_teardown: SetupTeardown | None
+) -> None:
+    """Fail closed when a natural server exit is followed by live-server work."""
+    terminal_test_indexes: list[int] = []
+    for test_index, test in enumerate(tests):
+        exit_indexes = [
+            index
+            for index, step in enumerate(test.steps)
+            if step.wait_for_server_exit is not None
+        ]
+        if not exit_indexes:
+            continue
+        if len(exit_indexes) != 1:
+            raise ValueError(
+                f"test #{test_index + 1} must contain exactly one wait_for_server_exit"
+            )
+        exit_index = exit_indexes[0]
+        invalid_post_exit = [
+            index + 1
+            for index, step in enumerate(test.steps[exit_index + 1 :], start=exit_index + 1)
+            if step.assert_log is None and step.assert_file is None
+        ]
+        if invalid_post_exit:
+            raise ValueError(
+                f"test #{test_index + 1} may use only assert_log or assert_file after "
+                f"wait_for_server_exit (invalid step #{invalid_post_exit[0]})"
+            )
+        if test.cleanup:
+            raise ValueError(
+                f"test #{test_index + 1} cannot declare cleanup after wait_for_server_exit"
+            )
+        if test.teardown is not None:
+            raise ValueError(
+                f"test #{test_index + 1} cannot declare teardown after "
+                "wait_for_server_exit"
+            )
+        terminal_test_indexes.append(test_index)
+
+    if not terminal_test_indexes:
+        return
+    if terminal_test_indexes[-1] != len(tests) - 1 or len(terminal_test_indexes) != 1:
+        raise ValueError("wait_for_server_exit must occur in the suite's final test")
+    if suite_teardown is not None:
+        raise ValueError("suite teardown cannot run after wait_for_server_exit")
 
 
 def _parse_setup_teardown(data: dict | str, context: str) -> SetupTeardown:
@@ -956,11 +1020,35 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
         _reject_unknown_fields(
             af_data, ACTION_PAYLOAD_FIELDS['assert_file'], f"{context} assert_file"
         )
+        suspended_task = None
+        if 'suspended_task' in af_data:
+            suspended_data = _require_mapping(
+                af_data['suspended_task'], f"{context} assert_file suspended_task"
+            )
+            _reject_unknown_fields(
+                suspended_data,
+                SUSPENDED_TASK_ASSERTION_FIELDS,
+                f"{context} assert_file suspended_task",
+            )
+            if set(suspended_data) != SUSPENDED_TASK_ASSERTION_FIELDS:
+                raise ValueError(
+                    f"{context} assert_file suspended_task must specify "
+                    + ", ".join(sorted(SUSPENDED_TASK_ASSERTION_FIELDS))
+                )
+            for field_name, field_value in suspended_data.items():
+                if type(field_value) is not int:
+                    raise ValueError(
+                        f"{context} assert_file suspended_task {field_name} "
+                        "must be an integer"
+                    )
+            suspended_task = SuspendedTaskAssertion(**suspended_data)
+
         assert_file = FileAssertion(
             path=af_data['path'],
             exists=af_data.get('exists', True),
             contains=af_data.get('contains'),
             equals_file=af_data.get('equals_file'),
+            suspended_task=suspended_task,
             timeout_ms=af_data.get('timeout_ms', 0),
         )
         if type(assert_file.exists) is not bool:
@@ -968,7 +1056,9 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
         if type(assert_file.timeout_ms) is not int or assert_file.timeout_ms < 0:
             raise ValueError(f"{context} assert_file timeout_ms must be a non-negative integer")
         if not assert_file.exists and (
-            assert_file.contains is not None or assert_file.equals_file is not None
+            assert_file.contains is not None
+            or assert_file.equals_file is not None
+            or assert_file.suspended_task is not None
         ):
             raise ValueError(
                 f"{context} assert_file cannot inspect content when exists is false"

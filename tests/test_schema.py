@@ -192,6 +192,191 @@ def test_wait_for_server_exit_accepts_portable_abort_termination():
     assert expectation.termination == "abort"
 
 
+@pytest.mark.parametrize(
+    ("suite", "message"),
+    [
+        (
+            {
+                "name": "post-exit-run",
+                "tests": [
+                    {
+                        "name": "case",
+                        "steps": [
+                            {"wait_for_server_exit": {"timeout_ms": 1000, "exit_code": 0}},
+                            {"run": "return 1;"},
+                        ],
+                    }
+                ],
+            },
+            "only assert_log or assert_file",
+        ),
+        (
+            {
+                "name": "post-exit-cleanup",
+                "tests": [
+                    {
+                        "name": "case",
+                        "steps": [
+                            {"wait_for_server_exit": {"timeout_ms": 1000, "exit_code": 0}}
+                        ],
+                        "cleanup": [{"run": "return 1;"}],
+                    }
+                ],
+            },
+            "cannot declare cleanup",
+        ),
+        (
+            {
+                "name": "post-exit-test-teardown",
+                "tests": [
+                    {
+                        "name": "case",
+                        "steps": [
+                            {"wait_for_server_exit": {"timeout_ms": 1000, "exit_code": 0}}
+                        ],
+                        "teardown": "return 1;",
+                    }
+                ],
+            },
+            "cannot declare teardown",
+        ),
+        (
+            {
+                "name": "post-exit-suite-teardown",
+                "teardown": "return 1;",
+                "tests": [
+                    {
+                        "name": "case",
+                        "steps": [
+                            {"wait_for_server_exit": {"timeout_ms": 1000, "exit_code": 0}}
+                        ],
+                    }
+                ],
+            },
+            "suite teardown",
+        ),
+        (
+            {
+                "name": "exit-before-later-test",
+                "tests": [
+                    {
+                        "name": "exit",
+                        "steps": [
+                            {"wait_for_server_exit": {"timeout_ms": 1000, "exit_code": 0}}
+                        ],
+                    },
+                    {"name": "later", "code": "1"},
+                ],
+            },
+            "suite's final test",
+        ),
+    ],
+    ids=[
+        "server-step-after-exit",
+        "cleanup-after-exit",
+        "test-teardown-after-exit",
+        "suite-teardown-after-exit",
+        "later-test-after-exit",
+    ],
+)
+def test_wait_for_server_exit_rejects_nonterminal_lifecycle(suite: dict, message: str):
+    with pytest.raises(ValueError, match=message):
+        validate_test_suite(suite)
+
+
+def test_wait_for_server_exit_allows_only_post_exit_log_and_file_evidence():
+    suite = validate_test_suite(
+        {
+            "name": "terminal-evidence",
+            "tests": [
+                {
+                    "name": "case",
+                    "steps": [
+                        {"wait_for_server_exit": {"timeout_ms": 1000, "exit_code": 0}},
+                        {"assert_log": {"contains": "stopped"}},
+                        {"assert_file": {"path": "output.db", "contains": "done"}},
+                    ],
+                }
+            ],
+        }
+    )
+
+    assert len(suite.tests[0].steps) == 3
+
+
+def test_assert_file_parses_structural_suspended_task_contract():
+    suite = validate_test_suite(
+        {
+            "name": "suspended-task-structure",
+            "tests": [
+                {
+                    "name": "case",
+                    "steps": [
+                        {
+                            "assert_file": {
+                                "path": "panic.db",
+                                "suspended_task": {
+                                    "waif_class": 9,
+                                    "waif_owner": 3,
+                                    "anonymous_object": 10,
+                                    "anonymous_owner": 3,
+                                },
+                            }
+                        }
+                    ],
+                }
+            ],
+        }
+    )
+
+    assertion = suite.tests[0].steps[0].assert_file
+    assert assertion is not None
+    assert assertion.suspended_task is not None
+    assert assertion.suspended_task.anonymous_object == 10
+
+
+@pytest.mark.parametrize(
+    "suspended_task",
+    [
+        {"waif_class": 9, "waif_owner": 3, "anonymous_object": 10},
+        {
+            "waif_class": 9,
+            "waif_owner": 3,
+            "anonymous_object": 10,
+            "anonymous_owner": True,
+        },
+        {
+            "waif_class": 9,
+            "waif_owner": 3,
+            "anonymous_object": 10,
+            "anonymous_owner": 3,
+            "fragment": "state",
+        },
+    ],
+    ids=["missing-field", "boolean-owner", "unknown-fragment-field"],
+)
+def test_assert_file_rejects_invalid_suspended_task_contract(suspended_task: dict):
+    with pytest.raises(ValueError, match="suspended_task"):
+        validate_test_suite(
+            {
+                "name": "bad-suspended-task",
+                "tests": [
+                    {
+                        "name": "case",
+                        "steps": [
+                            {
+                                "assert_file": {
+                                    "path": "panic.db",
+                                    "suspended_task": suspended_task,
+                                }
+                            }
+                        ],
+                    }
+                ],
+            }
+        )
+
+
 def test_table_row_variable_mappings_remain_open() -> None:
     data = {
         "name": "open_rows",

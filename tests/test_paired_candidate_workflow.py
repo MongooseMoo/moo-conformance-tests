@@ -41,10 +41,10 @@ def test_complete_three_profile_toast_admission_remains_unconditional() -> None:
     assert workflow["jobs"]["paired"]["needs"] == ["validate-inputs", "toast-admission"]
 
 
-def test_toast_pr_check_is_read_only_and_pr_scoped() -> None:
+def test_toast_pr_check_is_base_owned_read_only_and_pr_scoped() -> None:
     workflow = load_workflow(TOAST_WORKFLOW_PATH)
-    assert workflow["on"]["pull_request"] == ""
-    assert "pull_request_target" not in workflow["on"]
+    assert workflow["on"]["pull_request_target"] == ""
+    assert "pull_request" not in workflow["on"]
     assert workflow["on"]["push"] == {"branches": ["main"]}
     assert workflow["on"]["workflow_call"] == {
         "inputs": {
@@ -60,7 +60,7 @@ def test_toast_pr_check_is_read_only_and_pr_scoped() -> None:
     assert "github.event.pull_request.number" in concurrency["group"]
     assert "inputs.conformance_sha" in concurrency["group"]
     assert concurrency["cancel-in-progress"] == (
-        "${{ github.event_name == 'pull_request' }}"
+        "${{ github.event_name == 'pull_request_target' }}"
     )
 
 
@@ -70,7 +70,25 @@ def test_toast_exception_baseline_is_removed() -> None:
 
 def test_toast_workflow_uses_immutable_trusted_and_fork_candidate_checkouts() -> None:
     workflow = load_workflow(TOAST_WORKFLOW_PATH)
-    for job_name in ("quality", "full-suite", "execution-ledger"):
+    classifier = steps_by_name(workflow, "classify-changes")
+    assert classifier["Check out trusted controller"]["with"] == {
+        "repository": "MongooseMoo/moo-conformance-tests",
+        "ref": "${{ github.event.pull_request.base.sha || github.workflow_sha }}",
+        "path": "trusted-controller",
+        "persist-credentials": "false",
+    }
+    assert classifier["Check out conformance candidate"]["with"] == {
+        "repository": "${{ github.event.pull_request.head.repo.full_name || github.repository }}",
+        "ref": (
+            "${{ inputs.conformance_sha || github.event.pull_request.head.sha || "
+            "github.sha }}"
+        ),
+        "path": "candidate-tree",
+        "persist-credentials": "false",
+        "allow-unsafe-pr-checkout": "true",
+    }
+
+    for job_name in ("trusted-quality", "full-suite", "execution-ledger"):
         steps = steps_by_name(workflow, job_name)
         trusted = steps["Check out trusted controller"]["with"]
         assert trusted == {
@@ -79,18 +97,197 @@ def test_toast_workflow_uses_immutable_trusted_and_fork_candidate_checkouts() ->
             "path": "trusted-controller",
             "persist-credentials": "false",
         }
-        candidate = steps["Check out conformance candidate"]["with"]
+        candidate = steps["Check out admitted conformance data"]["with"]
         assert candidate == {
             "repository": (
-                "${{ github.event.pull_request.head.repo.full_name || github.repository }}"
+                "${{ needs.classify-changes.outputs.mode == 'data' && "
+                "(github.event.pull_request.head.repo.full_name || github.repository) "
+                "|| 'MongooseMoo/moo-conformance-tests' }}"
             ),
             "ref": (
-                "${{ inputs.conformance_sha || github.event.pull_request.head.sha || "
-                "github.sha }}"
+                "${{ needs.classify-changes.outputs.mode == 'data' && "
+                "(inputs.conformance_sha || github.event.pull_request.head.sha || "
+                "github.sha) || (github.event.pull_request.base.sha || "
+                "github.workflow_sha) }}"
             ),
             "path": "candidate-data",
             "persist-credentials": "false",
+            "allow-unsafe-pr-checkout": "true",
         }
+
+
+def test_trusted_classifier_rejects_unadmitted_trees_before_every_lane() -> None:
+    workflow = load_workflow(TOAST_WORKFLOW_PATH)
+    classifier_job = workflow["jobs"]["classify-changes"]
+    assert classifier_job["outputs"] == {
+        "mode": "${{ steps.classify.outputs.mode }}"
+    }
+    classify = steps_by_name(workflow, "classify-changes")[
+        "Reject mixed, unknown, or nonregular candidate trees"
+    ]
+    assert classify["id"] == "classify"
+    command = classify["run"]
+    assert "--project trusted-controller" in command
+    assert "python -m moo_conformance.change_boundary" in command
+    assert '--trusted-root="${GITHUB_WORKSPACE}/trusted-controller"' in command
+    assert '--candidate-root="${GITHUB_WORKSPACE}/candidate-tree"' in command
+    assert "controller|data|neutral" in command
+
+    for job_name in ("candidate-quality", "trusted-quality"):
+        job = workflow["jobs"][job_name]
+        assert job["needs"] == ["classify-changes"]
+        assert "needs.classify-changes.result == 'success'" in job["if"]
+    assert workflow["jobs"]["full-suite"]["needs"] == [
+        "classify-changes",
+        "quality",
+    ]
+    assert workflow["jobs"]["execution-ledger"]["needs"] == [
+        "classify-changes",
+        "quality",
+        "full-suite",
+    ]
+
+    evidence = steps_by_name(workflow, "classify-changes")[
+        "Upload trusted change-boundary evidence"
+    ]
+    assert evidence["if"] == "always()"
+    assert "change-boundary.json" in evidence["with"]["path"]
+    assert "change-boundary.log" in evidence["with"]["path"]
+
+
+def test_candidate_controller_quality_is_explicitly_untrusted_and_nonauthoritative() -> None:
+    workflow = load_workflow(TOAST_WORKFLOW_PATH)
+    job = workflow["jobs"]["candidate-quality"]
+    assert job["permissions"] == {"contents": "read"}
+    assert job["env"] == {"UNTRUSTED_CANDIDATE_CODE": "true"}
+    assert "secrets." not in str(job)
+    assert "github.token" not in str(job)
+    assert job["if"] == (
+        "needs.classify-changes.result == 'success' && "
+        "needs.classify-changes.outputs.mode == 'controller'"
+    )
+    steps = steps_by_name(workflow, "candidate-quality")
+    checkout = steps["Check out exact untrusted candidate controller"]["with"]
+    assert checkout["ref"] == (
+        "${{ inputs.conformance_sha || github.event.pull_request.head.sha || github.sha }}"
+    )
+    assert checkout["persist-credentials"] == "false"
+    assert checkout["allow-unsafe-pr-checkout"] == "true"
+    assert steps["Install locked untrusted candidate controller"]["run"] == (
+        "uv sync --project candidate-controller --locked --extra dev"
+    )
+    commands = steps["Run non-authoritative candidate controller quality gates"]
+    assert commands["working-directory"] == "candidate-controller"
+    assert "pytest tests --strict-markers" in commands["run"]
+    assert "ruff check ." in commands["run"]
+    assert "mypy src/moo_conformance" in commands["run"]
+    assert all("upload-artifact" not in step.get("uses", "") for step in steps.values())
+    assert "candidate-quality" not in workflow["jobs"]["full-suite"]["needs"]
+
+
+def test_required_aggregates_fail_closed_over_every_staged_result() -> None:
+    workflow = load_workflow(TOAST_WORKFLOW_PATH)
+    quality = workflow["jobs"]["quality"]
+    assert quality["name"] == "Harness, schema, duplicates, types, and lint"
+    assert quality["if"] == "always()"
+    assert quality["needs"] == [
+        "classify-changes",
+        "candidate-quality",
+        "trusted-quality",
+    ]
+    quality_gate = steps_by_name(workflow, "quality")["Enforce staged quality gates"]
+    assert quality_gate["env"] == {
+        "CLASSIFICATION_RESULT": "${{ needs.classify-changes.result }}",
+        "CHANGE_MODE": "${{ needs.classify-changes.outputs.mode }}",
+        "CANDIDATE_QUALITY_RESULT": "${{ needs.candidate-quality.result }}",
+        "TRUSTED_QUALITY_RESULT": "${{ needs.trusted-quality.result }}",
+    }
+    assert 'test "$CLASSIFICATION_RESULT" = success' in quality_gate["run"]
+    assert 'controller) test "$CANDIDATE_QUALITY_RESULT" = success' in quality_gate["run"]
+    assert 'data|neutral) test "$CANDIDATE_QUALITY_RESULT" = skipped' in quality_gate["run"]
+
+    ledger = workflow["jobs"]["execution-ledger"]
+    assert ledger["name"] == "Full suite"
+    assert ledger["if"] == "always()"
+    prerequisite = steps_by_name(workflow, "execution-ledger")[
+        "Enforce prerequisite gates"
+    ]["run"]
+    assert 'test "$CLASSIFICATION_RESULT" = success' in prerequisite
+    assert 'test "$QUALITY_RESULT" = success' in prerequisite
+    assert 'test "$TOAST_RESULT" = success' in prerequisite
+
+
+def test_base_owned_reporter_attaches_required_checks_to_verified_pr_head() -> None:
+    workflow = load_workflow(TOAST_WORKFLOW_PATH)
+    reporter = workflow["jobs"]["report-pr-head-checks"]
+    assert reporter["name"] == "Report required checks on exact PR head"
+    assert reporter["if"] == (
+        "always() && github.event_name == 'pull_request_target'"
+    )
+    assert reporter["needs"] == ["quality", "execution-ledger"]
+    assert reporter["permissions"] == {
+        "checks": "write",
+        "pull-requests": "read",
+    }
+    assert set(reporter["steps"][0]) == {"name", "if", "env", "run"}
+    report = reporter["steps"][0]
+    assert report["name"] == "Verify and report exact PR-head required checks"
+    assert report["env"] == {
+        "GH_TOKEN": "${{ github.token }}",
+        "PR_NUMBER": "${{ github.event.pull_request.number }}",
+        "TESTED_BASE_SHA": "${{ github.event.pull_request.base.sha }}",
+        "TESTED_HEAD_SHA": "${{ github.event.pull_request.head.sha }}",
+        "QUALITY_RESULT": "${{ needs.quality.result }}",
+        "FULL_SUITE_RESULT": "${{ needs.execution-ledger.result }}",
+    }
+    command = report["run"]
+    assert 'f"{api_url}/repos/{repository}/pulls/{pr_number}"' in command
+    assert 'current["head"]["sha"] != head_sha' in command
+    assert 'current["base"]["sha"] != base_sha' in command
+    assert 'current["base"]["repo"]["full_name"] != repository' in command
+    assert '"Harness, schema, duplicates, types, and lint"' in command
+    assert '"Full suite"' in command
+    assert '"head_sha": head_sha' in command
+    assert '"status": "completed"' in command
+    assert 'if os.environ["QUALITY_RESULT"] == "success" else "failure"' in command
+    assert 'if os.environ["FULL_SUITE_RESULT"] == "success"' in command
+    assert 'f"{api_url}/repos/{repository}/check-runs"' in command
+
+
+def test_only_base_owned_non_candidate_reporter_can_write_checks() -> None:
+    workflow = load_workflow(TOAST_WORKFLOW_PATH)
+    check_writers = {
+        job_name
+        for job_name, job in workflow["jobs"].items()
+        if job.get("permissions", {}).get("checks") == "write"
+    }
+    assert check_writers == {"report-pr-head-checks"}
+    reporter_text = str(workflow["jobs"]["report-pr-head-checks"])
+    assert "uses" not in workflow["jobs"]["report-pr-head-checks"]["steps"][0]
+    assert "candidate" not in reporter_text.lower()
+    assert "checkout" not in reporter_text.lower()
+    assert "download-artifact" not in reporter_text
+    assert "GH_TOKEN" not in str(workflow["jobs"]["candidate-quality"])
+
+
+def test_candidate_workflow_content_can_never_author_authoritative_evidence() -> None:
+    workflow = load_workflow(TOAST_WORKFLOW_PATH)
+    assert "pull_request_target" in workflow["on"]
+    assert "pull_request" not in workflow["on"]
+    authoritative_jobs = {
+        "classify-changes",
+        "trusted-quality",
+        "quality",
+        "full-suite",
+        "execution-ledger",
+    }
+    for job_name in authoritative_jobs:
+        job_text = str(workflow["jobs"][job_name])
+        assert "candidate-controller" not in job_text
+    candidate_job_text = str(workflow["jobs"]["candidate-quality"])
+    assert "toast-oracle" not in candidate_job_text
+    assert "admission-evidence" not in candidate_job_text
+    assert "execution_ledger" not in candidate_job_text
 
 
 def test_toast_workflow_pins_every_action() -> None:
@@ -105,18 +302,20 @@ def test_toast_workflow_pins_every_action() -> None:
 def test_toast_candidate_and_oracle_are_fixed_credentialless_siblings() -> None:
     workflow = load_workflow(TOAST_WORKFLOW_PATH)
     steps = steps_by_name(workflow, "full-suite")
-    candidate = steps["Check out conformance candidate"]["with"]
+    candidate = steps["Check out admitted conformance data"]["with"]
     oracle = steps["Check out pinned Toast oracle"]["with"]
 
     assert candidate["path"] == "candidate-data"
     assert candidate["persist-credentials"] == "false"
+    assert candidate["allow-unsafe-pr-checkout"] == "true"
     assert oracle["path"] == "toast-oracle"
     assert oracle["persist-credentials"] == "false"
+    assert "allow-unsafe-pr-checkout" not in oracle
     assert not oracle["path"].startswith(candidate["path"] + "/")
 
 
 def test_toast_quality_executes_only_trusted_code_against_candidate_data() -> None:
-    steps = steps_by_name(load_workflow(TOAST_WORKFLOW_PATH), "quality")
+    steps = steps_by_name(load_workflow(TOAST_WORKFLOW_PATH), "trusted-quality")
     assert steps["Install locked trusted controller"]["run"] == (
         "uv sync --project trusted-controller --locked --extra dev"
     )
@@ -141,6 +340,15 @@ def test_toast_quality_executes_only_trusted_code_against_candidate_data() -> No
         '--baseline="${GITHUB_WORKSPACE}/trusted-controller/ci/duplicate-baseline.json"'
         in candidate
     )
+    fixtures = steps[
+        "Validate candidate startup fixtures with trusted controller"
+    ]["run"]
+    assert "--project trusted-controller" in fixtures
+    assert "-m moo_conformance.startup_fixtures" in fixtures
+    assert '--candidate-root="${GITHUB_WORKSPACE}/candidate-data"' in fixtures
+    assert '--output="${RUNNER_TEMP}/startup-fixtures.json"' in fixtures
+    evidence = steps["Upload harness evidence"]["with"]["path"]
+    assert "${{ runner.temp }}/startup-fixtures.json" in evidence
 
 
 def test_each_toast_profile_stages_admission_before_complete_packaged_surface() -> None:
@@ -197,18 +405,14 @@ def test_toast_generated_state_stays_outside_candidate_anchor() -> None:
     assert '--candidate-db="${GITHUB_WORKSPACE}/candidate-data/' in boundary
     assert '--candidate-db-dir="${GITHUB_WORKSPACE}/candidate-data/' in boundary
     assert '--output="${REPORTS_DIR}/candidate-inventory.json"' in boundary
-    assert steps["Verify conformance-owned startup fixtures"]["working-directory"] == (
-        "candidate-data/src/moo_conformance/_db/startup"
-    )
-    fixture_check = steps["Verify conformance-owned startup fixtures"]["run"]
-    assert "sha256sum --check" in fixture_check
-    assert (
-        '"${GITHUB_WORKSPACE}/trusted-controller/'
-        "src/moo_conformance/_db/startup/startup-fixtures.sha256\""
-        in fixture_check
-    )
-    assert "sha256sum --check startup-fixtures.sha256" not in fixture_check
-    assert "uv " not in fixture_check and "python" not in fixture_check
+    fixture_check = steps["Verify tracked startup fixture manifest"]["run"]
+    assert "uv run --project trusted-controller --frozen python" in fixture_check
+    assert "-m moo_conformance.startup_fixtures" in fixture_check
+    assert '--candidate-root="${GITHUB_WORKSPACE}/candidate-data"' in fixture_check
+    assert '--fixtures-dir="${GITHUB_WORKSPACE}/candidate-data/' in fixture_check
+    assert '--manifest="${GITHUB_WORKSPACE}/candidate-data/' in fixture_check
+    assert '--output="${REPORTS_DIR}/startup-fixtures.json"' in fixture_check
+    assert "sha256sum --check" not in fixture_check
     profile = steps["Record the exact Toast capability profile"]
     assert "working-directory" not in profile
     assert "uv run --project trusted-controller --frozen python" in profile["run"]
@@ -244,25 +448,34 @@ def test_toast_generated_state_stays_outside_candidate_anchor() -> None:
     assert "${{ runner.temp }}/toast-execution-ledger.json" in ledger_artifacts
 
 
-def test_toast_jobs_never_execute_or_install_candidate_python() -> None:
+def test_authoritative_toast_jobs_never_execute_or_install_candidate_python() -> None:
     workflow = load_workflow(TOAST_WORKFLOW_PATH)
-    workflow_text = TOAST_WORKFLOW_PATH.read_text()
-    assert "uv sync --project candidate-data" not in workflow_text
-    assert "uv run --project candidate-data" not in workflow_text
-    assert "uv sync --project ." not in workflow_text
-    assert "uv run --project ." not in workflow_text
-    for job_name in workflow["jobs"]:
+    for job_name in (
+        "classify-changes",
+        "trusted-quality",
+        "quality",
+        "full-suite",
+        "execution-ledger",
+    ):
         for name, step in steps_by_name(workflow, job_name).items():
+            command = step.get("run", "")
+            assert "--project candidate-controller" not in command
+            assert "--project candidate-data" not in command
             working_directory = step.get("working-directory", "")
             if working_directory.startswith("candidate-data"):
-                command = step.get("run", "")
                 assert "uv " not in command, f"{job_name}/{name} executes candidate Python"
                 assert "python" not in command, f"{job_name}/{name} executes candidate Python"
 
 
 def test_toast_python_setup_is_cacheless_in_every_job() -> None:
     workflow = load_workflow(TOAST_WORKFLOW_PATH)
-    for job_name in workflow["jobs"]:
+    for job_name in (
+        "classify-changes",
+        "candidate-quality",
+        "trusted-quality",
+        "full-suite",
+        "execution-ledger",
+    ):
         setup = steps_by_name(workflow, job_name)["Install uv and Python"]
         assert setup["with"]["enable-cache"] == "false"
 

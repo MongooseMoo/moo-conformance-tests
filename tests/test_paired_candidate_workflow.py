@@ -659,7 +659,9 @@ def test_candidate_run_is_staged_and_packaged_execution_is_success_gated() -> No
     assert "--admission-evidence-output=" in admission["run"]
     assert "--admission-evidence-context=" in admission["run"]
     assert "--junitxml=" in admission["run"]
-    assert "--project controller" in admission["run"]
+    assert admission["working-directory"] == "controller"
+    assert "uv run --frozen pytest" in admission["run"]
+    assert "--project controller" not in admission["run"]
     assert '--candidate-root="${GITHUB_WORKSPACE}/candidate-data"' in admission["run"]
     assert "--moo-suite-root=" in admission["run"]
     assert "exit 0" in admission["run"]
@@ -674,7 +676,9 @@ def test_candidate_run_is_staged_and_packaged_execution_is_success_gated() -> No
     assert "--admission-evidence-input=" in packaged["run"]
     assert "--admission-evidence-context=" in packaged["run"]
     assert "--pyargs moo_conformance" in packaged["run"]
-    assert "--project controller" in packaged["run"]
+    assert packaged["working-directory"] == "controller"
+    assert "uv run --frozen pytest" in packaged["run"]
+    assert "--project controller" not in packaged["run"]
     assert '--candidate-root="${GITHUB_WORKSPACE}/candidate-data"' in packaged["run"]
     assert "--moo-suite-root=" in packaged["run"]
     assert "--fail-on-unexpected-skip" in packaged["run"]

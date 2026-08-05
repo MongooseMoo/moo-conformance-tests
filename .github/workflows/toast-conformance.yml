@@ -342,7 +342,6 @@ jobs:
             --report=64bit-outbound-on="${RUNNER_TEMP}/toast-profile-reports/toast-conformance-64bit-outbound-on/toast-conformance.xml" \
             --report=64bit-outbound-off="${RUNNER_TEMP}/toast-profile-reports/toast-conformance-64bit-outbound-off/toast-conformance.xml" \
             --report=32bit-outbound-on="${RUNNER_TEMP}/toast-profile-reports/toast-conformance-32bit-outbound-on/toast-conformance.xml" \
-            --baseline=candidate-data/ci/toast-never-executed.json \
             --output="${RUNNER_TEMP}/toast-execution-ledger.json"
 
       - name: Upload Toast execution ledger

@@ -747,6 +747,22 @@ class YamlTestRunner:
         if expect.type:
             self._verify_type(expect.type, result.value, context)
 
+        # Check contains expectation
+        if expect.contains is not None:
+            self._verify_contains(expect.contains, result.value, context)
+
+        # Check range expectation
+        if expect.range is not None:
+            self._verify_range(expect.range, result.value, context)
+
+        # Check notifications expectation
+        if expect.notifications is not None:
+            self._verify_notifications(expect.notifications, result.notifications, context)
+
+        # Check target-executed predicate expectation
+        if expect.satisfies is not None:
+            self._verify_satisfies(expect.satisfies, result.value, context)
+
     def _verify_expectations(self, test: MooTestCase, result: ExecutionResult) -> None:
         """Verify test result against expectations.
 
@@ -757,54 +773,7 @@ class YamlTestRunner:
         Raises:
             AssertionError: If any expectation is not met
         """
-        expect = test.expect
-
-        # Check for expected error
-        if expect.error:
-            self._verify_error(expect.error, result, test.name)
-            return
-
-        # Check for expected match pattern (can match on error messages too)
-        if expect.match:
-            # If we got an error, check if the pattern matches the error message
-            if not result.success and result.error_message:
-                self._verify_match(expect.match, result.error_message, test.name)
-                return
-            # Otherwise expect success and check value
-            if not result.success:
-                raise AssertionError(
-                    f"Test '{test.name}' expected success but got error: "
-                    f"{result.error or result.error_message}"
-                )
-            self._verify_match(expect.match, result.value, test.name)
-            return
-
-        # If we got here, we expect success
-        if not result.success:
-            raise AssertionError(
-                f"Test '{test.name}' expected success but got error: "
-                f"{result.error or result.error_message}"
-            )
-
-        # Check value expectation
-        if expect.value is not None:
-            self._verify_value(expect.value, result.value, test.name)
-
-        # Check type expectation
-        if expect.type:
-            self._verify_type(expect.type, result.value, test.name)
-
-        # Check contains expectation
-        if expect.contains is not None:
-            self._verify_contains(expect.contains, result.value, test.name)
-
-        # Check range expectation
-        if expect.range:
-            self._verify_range(expect.range, result.value, test.name)
-
-        # Check notifications expectation
-        if expect.notifications:
-            self._verify_notifications(expect.notifications, result.notifications, test.name)
+        self._verify_expectation(test.expect, result, test.name)
 
     def _verify_error(self, expected_error: str, result: ExecutionResult, test_name: str) -> None:
         """Verify that an error was returned."""
@@ -1076,6 +1045,28 @@ class YamlTestRunner:
                     f"Test '{test_name}' expected notification {expected_msg!r}, "
                     f"but only got: {actual_msgs}"
                 )
+
+    def _verify_satisfies(self, predicate: str, actual: Any, test_name: str) -> None:
+        """Evaluate a MOO predicate with ``{value}`` bound to the actual result."""
+        if "{value}" not in predicate:
+            raise AssertionError(
+                f"Test '{test_name}' satisfies predicate must reference {{value}}: {predicate!r}"
+            )
+
+        predicate = self._substitute_variables(predicate, {"value": actual})
+        self._ensure_transport_connected()
+        predicate_result = self.transport.execute(f"return !(!({predicate}));")
+
+        if not predicate_result.success:
+            raise AssertionError(
+                f"Test '{test_name}' satisfies predicate {predicate!r} failed: "
+                f"{predicate_result.error or predicate_result.error_message}"
+            )
+
+        if predicate_result.value != 1:
+            raise AssertionError(
+                f"Test '{test_name}' result {actual!r} does not satisfy predicate {predicate!r}"
+            )
 
     def _verify_output(self, expected: Any, actual: list[str], context: str) -> None:
         """Verify output from raw command matches expectation.

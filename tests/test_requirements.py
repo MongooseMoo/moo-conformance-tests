@@ -18,6 +18,7 @@ from moo_conformance.test_conformance import (
     CapabilityProbeError,
     _enforce_skip_condition,
     _enforce_suite_requirements,
+    _has_feature,
     _reset_capability_caches_for_tests,
     _snapshot_mutable_capabilities,
 )
@@ -189,6 +190,94 @@ def test_64bit_feature_uses_only_32_bits_option(
         'return server_version("options.ONLY_32_BITS");',
         'return server_version("options/ONLY_32_BITS");',
     ]
+
+
+@pytest.mark.parametrize(
+    ("arch_bits", "expected_skip"),
+    [
+        (32, False),
+        (64, True),
+    ],
+)
+def test_64bit_feature_uses_recorded_runtime_architecture_without_a_probe(
+    arch_bits: int, expected_skip: bool
+) -> None:
+    test = MooTestCase(name="conditional", skip_if="feature.64bit")
+    runner = runner_with()
+
+    try:
+        _enforce_skip_condition(
+            test,
+            runner,
+            {"runtime.arch_bits": arch_bits},
+        )
+        skipped = False
+    except pytest.skip.Exception:
+        skipped = True
+
+    assert skipped is expected_skip
+    assert runner.transport.executed == []
+
+
+@pytest.mark.parametrize("arch_bits", [True, 16, 128, "64"])
+def test_64bit_feature_rejects_invalid_recorded_runtime_architecture(
+    arch_bits: object,
+) -> None:
+    test = MooTestCase(name="conditional", skip_if="feature.64bit")
+
+    with pytest.raises(CapabilityProbeError, match="runtime.arch_bits"):
+        _enforce_skip_condition(
+            test,
+            runner_with(),
+            {"runtime.arch_bits": arch_bits},
+        )
+
+
+@pytest.mark.parametrize(
+    "features",
+    [
+        {"feature.64bit": False, "runtime.arch_bits": 64},
+        {"feature.64bit": True, "option.ONLY_32_BITS": True},
+        {"runtime.arch_bits": 32, "option.ONLY_32_BITS": False},
+        {
+            "feature.64bit": False,
+            "runtime.arch_bits": 64,
+            "option.ONLY_32_BITS": False,
+        },
+    ],
+)
+def test_64bit_feature_rejects_conflicting_recorded_architecture_options(
+    features: dict[str, object],
+) -> None:
+    with pytest.raises(CapabilityProbeError, match="conflicting architecture"):
+        _has_feature(runner_with(), "64bit", features)
+
+
+@pytest.mark.parametrize(
+    ("features", "expected_64bit"),
+    [
+        (
+            {
+                "feature.64bit": False,
+                "runtime.arch_bits": 32,
+                "option.ONLY_32_BITS": True,
+            },
+            False,
+        ),
+        (
+            {
+                "feature.64bit": True,
+                "runtime.arch_bits": 64,
+                "option.ONLY_32_BITS": False,
+            },
+            True,
+        ),
+    ],
+)
+def test_64bit_feature_accepts_consistent_recorded_architecture_facts(
+    features: dict[str, object], expected_64bit: bool
+) -> None:
+    assert _has_feature(runner_with(), "64bit", features) is expected_64bit
 
 
 def test_minimum_version_is_enforced() -> None:

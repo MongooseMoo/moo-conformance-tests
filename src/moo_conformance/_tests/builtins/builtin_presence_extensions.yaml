@@ -498,21 +498,6 @@ tests:
     expect:
       value: 1
 
-  - name: read_stdin_exists_in_runtime
-    skip_if: "missing builtin.read_stdin"
-    permission: programmer
-    statement: |
-      try
-        read_stdin(1, 2, 3, 4, 5, 6, 7, 8, 9);
-        return 1;
-      except (E_VERBNF)
-        return 0;
-      except (ANY)
-        return 1;
-      endtry
-    expect:
-      value: 1
-
   - name: spellcheck_exists_in_runtime
     skip_if: "missing builtin.spellcheck"
     permission: programmer

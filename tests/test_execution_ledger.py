@@ -10,7 +10,6 @@ from moo_conformance.execution_ledger import (
     ExecutionLedgerError,
     enforce_execution_surface,
     load_baseline,
-    packaged_case_ids,
     parse_junit_report,
     validate_candidate_inventory,
 )
@@ -428,11 +427,7 @@ def test_load_baseline_rejects_malformed_shape(tmp_path: Path) -> None:
         load_baseline(baseline)
 
 
-def test_reviewed_toast_baseline_contains_only_packaged_cases() -> None:
+def test_reviewed_toast_baseline_is_empty() -> None:
     baseline = load_baseline(Path("ci/toast-never-executed.json"))
 
-    assert len(baseline) == 41
-    assert baseline["builtins/math.yaml::minint_modulus_edge_case"] == (
-        "Pinned 32-bit Toast crashes on -2147483648 % -1"
-    )
-    assert set(baseline) <= packaged_case_ids()
+    assert baseline == {}

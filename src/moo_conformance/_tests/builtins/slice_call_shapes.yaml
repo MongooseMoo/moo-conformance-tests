@@ -18,11 +18,24 @@ tests:
       columns: [kind, expr]
       rows:
         - [int, "1"]
-        - [str, '"x"']
         - [list, "{1}"]
     code: "slice({}, {expr})"
     expect:
       type: list
+
+  - name: slice_valid_start_str
+    permission: wizard
+    skip_if: "not feature.64bit"
+    code: 'slice({}, "x")'
+    expect:
+      type: list
+
+  - name: slice_string_start_is_range_error_32bit
+    permission: wizard
+    skip_if: "feature.64bit"
+    code: 'slice({}, "x")'
+    expect:
+      error: E_RANGE
 
   - name: slice_invalid_start_{kind}
     permission: wizard
@@ -49,13 +62,6 @@ tests:
         - [int, "1", err, "E_ARGS"]
         - [int, "1", list, "{}"]
         - [int, "1", map, "[1 -> 2]"]
-        - [str, '"x"', int, "1"]
-        - [str, '"x"', float, "1.5"]
-        - [str, '"x"', obj, "#0"]
-        - [str, '"x"', str, '"x"']
-        - [str, '"x"', err, "E_ARGS"]
-        - [str, '"x"', list, "{}"]
-        - [str, '"x"', map, "[1 -> 2]"]
         - [list, "{1}", int, "1"]
         - [list, "{1}", float, "1.5"]
         - [list, "{1}", obj, "#0"]
@@ -66,6 +72,40 @@ tests:
     code: "slice({}, {start_expr}, {default_expr})"
     expect:
       type: list
+
+  - name: slice_valid_start_str_default_{default_kind}
+    permission: wizard
+    skip_if: "not feature.64bit"
+    table:
+      columns: [default_kind, default_expr]
+      rows:
+        - [int, "1"]
+        - [float, "1.5"]
+        - [obj, "#0"]
+        - [str, '"x"']
+        - [err, "E_ARGS"]
+        - [list, "{}"]
+        - [map, "[1 -> 2]"]
+    code: 'slice({}, "x", {default_expr})'
+    expect:
+      type: list
+
+  - name: slice_string_start_is_range_error_32bit_default_{default_kind}
+    permission: wizard
+    skip_if: "feature.64bit"
+    table:
+      columns: [default_kind, default_expr]
+      rows:
+        - [int, "1"]
+        - [float, "1.5"]
+        - [obj, "#0"]
+        - [str, '"x"']
+        - [err, "E_ARGS"]
+        - [list, "{}"]
+        - [map, "[1 -> 2]"]
+    code: 'slice({}, "x", {default_expr})'
+    expect:
+      error: E_RANGE
 
   - name: slice_invalid_start_{start_kind}_default_{default_kind}
     permission: wizard

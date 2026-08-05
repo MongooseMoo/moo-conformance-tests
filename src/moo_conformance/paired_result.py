@@ -20,6 +20,7 @@ from .execution_ledger import ExecutionLedgerError, packaged_case_ids, parse_jun
 def validate_paired_result(
     *,
     admission_path: str | Path,
+    admission_context: str,
     report_path: str | Path | None,
     expected: str,
     expected_phase: str,
@@ -54,7 +55,10 @@ def validate_paired_result(
     )
 
     try:
-        admission = load_admission_evidence(admission_path)
+        admission = load_admission_evidence(
+            admission_path,
+            expected_context=admission_context,
+        )
     except AdmissionEvidenceError as exc:
         raise ExecutionLedgerError(str(exc)) from exc
     admission_bad = admission_bad_identities(admission)
@@ -64,7 +68,8 @@ def validate_paired_result(
         admission_exit_code == 0 and not admission_bad and not admission_blocked
     )
     admission_summary: dict[str, object] = {
-        "schema_version": 1,
+        "schema_version": 2,
+        "context": admission_context,
         "inventory": list(ADMISSION_PROBE_INVENTORY),
         **counts,
         "exit_code": admission_exit_code,
@@ -242,6 +247,7 @@ def _load_expected_ids(path: Path) -> set[str]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--admission", required=True, type=Path)
+    parser.add_argument("--admission-context", required=True)
     parser.add_argument("--report", type=Path)
     parser.add_argument("--expected", required=True, choices=("success", "failure"))
     parser.add_argument("--phase", required=True, choices=("admission", "packaged"))
@@ -259,6 +265,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         result = validate_paired_result(
             admission_path=args.admission,
+            admission_context=args.admission_context,
             report_path=args.report,
             expected=args.expected,
             expected_phase=args.phase,

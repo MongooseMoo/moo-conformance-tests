@@ -324,10 +324,18 @@ def _run_admission_probe(runner, profile_features, identity: str) -> bool:
 def test_capability_admission(runner, profile_metadata_gate, request) -> None:
     """Record the complete canonical admission inventory before packaged execution."""
     _reset_capability_caches_for_tests()
-    evidence = run_capability_admission(
-        lambda identity: _run_admission_probe(runner, profile_metadata_gate, identity)
-    )
     output_path = request.config.getoption("--admission-evidence-output")
+    context = request.config.getoption("--admission-evidence-context")
+    if context is None:
+        if output_path is not None:
+            raise pytest.UsageError(
+                "--admission-evidence-output requires --admission-evidence-context"
+            )
+        context = "same-session"
+    evidence = run_capability_admission(
+        lambda identity: _run_admission_probe(runner, profile_metadata_gate, identity),
+        context=context,
+    )
     if output_path is not None:
         write_admission_evidence(output_path, evidence)
 

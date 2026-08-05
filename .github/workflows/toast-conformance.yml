@@ -93,6 +93,10 @@ jobs:
         run: |
           reports_dir="${RUNNER_TEMP}/toast-conformance-${{ matrix.profile }}"
           printf 'REPORTS_DIR=%s\n' "${reports_dir}" >> "${GITHUB_ENV}"
+          printf 'ADMISSION_CONTEXT=toast:%s:%s:%s\n' \
+            "${{ inputs.conformance_sha || github.sha }}" \
+            "${{ matrix.profile }}" \
+            "aecc51e9449c6e7c95272f0f044b5ba38948459e" >> "${GITHUB_ENV}"
           mkdir -p "${reports_dir}"
           printf 'run_id=%s\nprofile=%s\nrunner_os=%s\nrunner_arch=%s\n' \
             "${GITHUB_RUN_ID}" "${{ matrix.profile }}" "${RUNNER_OS}" "${RUNNER_ARCH}" \
@@ -226,6 +230,7 @@ jobs:
             --target-profile-manifest="${REPORTS_DIR}/profile.json" \
             --strict-markers \
             --admission-evidence-output="${REPORTS_DIR}/admission.json" \
+            --admission-evidence-context="$ADMISSION_CONTEXT" \
             --junitxml="${REPORTS_DIR}/admission.xml" \
             -q -ra \
             2>&1 | tee "${REPORTS_DIR}/admission.log"
@@ -243,6 +248,8 @@ jobs:
             --target-profile-manifest="${REPORTS_DIR}/profile.json" \
             --fail-on-unexpected-skip \
             --strict-markers \
+            --admission-evidence-input="${REPORTS_DIR}/admission.json" \
+            --admission-evidence-context="$ADMISSION_CONTEXT" \
             --junitxml="${REPORTS_DIR}/toast-conformance.xml" \
             -q -ra \
             2>&1 | tee "${REPORTS_DIR}/toast-conformance.log"

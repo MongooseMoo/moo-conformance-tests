@@ -8,6 +8,8 @@ from moo_conformance.admission import ADMISSION_PROBE_INVENTORY
 from moo_conformance.execution_ledger import ExecutionLedgerError
 from moo_conformance.paired_result import _load_expected_ids, validate_paired_result
 
+TEST_CONTEXT = "test:paired-context"
+
 
 def write_report(tmp_path, outcomes):
     root = ET.Element("testsuites")
@@ -22,7 +24,7 @@ def write_report(tmp_path, outcomes):
     return report
 
 
-def write_admission(tmp_path, statuses=None):
+def write_admission(tmp_path, statuses=None, context=TEST_CONTEXT):
     statuses = statuses or {}
     probes = []
     for identity in ADMISSION_PROBE_INVENTORY:
@@ -49,13 +51,23 @@ def write_admission(tmp_path, statuses=None):
             }
         probes.append(probe)
     path = tmp_path / "admission.json"
-    path.write_text(json.dumps({"schema_version": 1, "phase": "admission", "probes": probes}))
+    path.write_text(
+        json.dumps(
+            {
+                "schema_version": 2,
+                "phase": "admission",
+                "context": context,
+                "probes": probes,
+            }
+        )
+    )
     return path
 
 
 def validate_packaged(tmp_path, outcomes, **overrides):
     arguments = {
         "admission_path": write_admission(tmp_path),
+        "admission_context": TEST_CONTEXT,
         "report_path": write_report(tmp_path, outcomes),
         "expected": "success",
         "expected_phase": "packaged",
@@ -81,7 +93,8 @@ def test_validate_packaged_success_requires_exact_nonempty_surface(tmp_path) -> 
         "declared_bad_identities": [],
         "observed_bad_identities": [],
         "admission": {
-            "schema_version": 1,
+            "schema_version": 2,
+            "context": TEST_CONTEXT,
             "inventory": list(ADMISSION_PROBE_INVENTORY),
             "passed": 4,
             "failed": 0,
@@ -126,6 +139,19 @@ def test_validate_packaged_rejects_missing_or_extra_surface(tmp_path) -> None:
             tmp_path,
             {"suite.yaml::one": "passed"},
             expected_case_ids={"suite.yaml::one", "suite.yaml::missing"},
+        )
+
+
+def test_validate_packaged_rejects_admission_from_another_candidate_context(
+    tmp_path,
+) -> None:
+    other = tmp_path / "other"
+    other.mkdir()
+    with pytest.raises(ExecutionLedgerError, match="context mismatch"):
+        validate_packaged(
+            tmp_path,
+            {"suite.yaml::one": "passed"},
+            admission_path=write_admission(other, context="other:candidate"),
         )
 
 
@@ -194,6 +220,7 @@ def test_validate_admission_failure_uses_exact_failed_error_set_and_blocked_evid
 
     result = validate_paired_result(
         admission_path=admission,
+        admission_context=TEST_CONTEXT,
         report_path=None,
         expected="failure",
         expected_phase="admission",
@@ -221,6 +248,7 @@ def test_validate_admission_failure_rejects_inexact_failed_error_set(tmp_path) -
     with pytest.raises(ExecutionLedgerError, match="extra observed"):
         validate_paired_result(
             admission_path=admission,
+            admission_context=TEST_CONTEXT,
             report_path=None,
             expected="failure",
             expected_phase="admission",
@@ -238,6 +266,7 @@ def test_validate_admission_phase_rejects_manufactured_packaged_evidence(tmp_pat
     with pytest.raises(ExecutionLedgerError, match="must not contain a packaged report"):
         validate_paired_result(
             admission_path=admission,
+            admission_context=TEST_CONTEXT,
             report_path=write_report(tmp_path, {"suite.yaml::case": "passed"}),
             expected="failure",
             expected_phase="admission",
@@ -250,11 +279,21 @@ def test_validate_admission_phase_rejects_manufactured_packaged_evidence(tmp_pat
 
 def test_validate_rejects_malformed_admission_evidence(tmp_path) -> None:
     path = tmp_path / "admission.json"
-    path.write_text('{"schema_version": 1, "phase": "admission", "probes": []}')
+    path.write_text(
+        json.dumps(
+            {
+                "schema_version": 2,
+                "phase": "admission",
+                "context": TEST_CONTEXT,
+                "probes": [],
+            }
+        )
+    )
 
     with pytest.raises(ExecutionLedgerError, match="incomplete probe inventory"):
         validate_paired_result(
             admission_path=path,
+            admission_context=TEST_CONTEXT,
             report_path=None,
             expected="failure",
             expected_phase="admission",
@@ -272,6 +311,7 @@ def test_validate_rejects_packaged_phase_when_admission_did_not_succeed(tmp_path
     with pytest.raises(ExecutionLedgerError, match="packaged phase requires successful admission"):
         validate_paired_result(
             admission_path=admission,
+            admission_context=TEST_CONTEXT,
             report_path=None,
             expected="failure",
             expected_phase="packaged",
@@ -286,6 +326,7 @@ def test_validate_rejects_admission_phase_after_successful_admission(tmp_path) -
     with pytest.raises(ExecutionLedgerError, match="expected admission failure"):
         validate_paired_result(
             admission_path=write_admission(tmp_path),
+            admission_context=TEST_CONTEXT,
             report_path=None,
             expected="failure",
             expected_phase="admission",
@@ -313,6 +354,7 @@ def test_validate_rejects_unknown_malformed_duplicate_or_phase_incompatible_decl
     with pytest.raises(ExecutionLedgerError, match=message):
         validate_paired_result(
             admission_path=write_admission(tmp_path),
+            admission_context=TEST_CONTEXT,
             report_path=write_report(tmp_path, {"suite.yaml::case": "failed"}),
             expected="failure",
             expected_phase=phase,
@@ -327,6 +369,7 @@ def test_validate_expected_success_requires_packaged_phase(tmp_path) -> None:
     with pytest.raises(ExecutionLedgerError, match="expected success requires packaged phase"):
         validate_paired_result(
             admission_path=write_admission(tmp_path),
+            admission_context=TEST_CONTEXT,
             report_path=None,
             expected="success",
             expected_phase="admission",

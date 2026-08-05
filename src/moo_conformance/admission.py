@@ -39,8 +39,11 @@ class CapabilityProbeFailure(CapabilityProbeError):
 
 def run_capability_admission(
     probe: Callable[[str], bool],
+    *,
+    context: str,
 ) -> dict[str, object]:
     """Run every canonical probe and retain a complete, dependency-aware inventory."""
+    _validate_context(context, label="admission context")
     probes: list[dict[str, object]] = []
     statuses: dict[str, str] = {}
 
@@ -87,8 +90,9 @@ def run_capability_admission(
         probes.append(outcome)
 
     evidence: dict[str, object] = {
-        "schema_version": 1,
+        "schema_version": 2,
         "phase": "admission",
+        "context": context,
         "probes": probes,
     }
     validate_admission_evidence(evidence)
@@ -100,15 +104,17 @@ def validate_admission_evidence(evidence: object) -> dict[str, object]:
     if not isinstance(evidence, dict) or set(evidence) != {
         "schema_version",
         "phase",
+        "context",
         "probes",
     }:
         raise AdmissionEvidenceError(
-            "admission evidence must contain exactly schema_version, phase, and probes"
+            "admission evidence must contain exactly schema_version, phase, context, and probes"
         )
-    if evidence["schema_version"] != 1 or evidence["phase"] != "admission":
+    if evidence["schema_version"] != 2 or evidence["phase"] != "admission":
         raise AdmissionEvidenceError(
-            "admission evidence must use schema_version 1 and phase 'admission'"
+            "admission evidence must use schema_version 2 and phase 'admission'"
         )
+    _validate_context(evidence["context"], label="admission evidence context")
 
     probes = evidence["probes"]
     if not isinstance(probes, list) or len(probes) != len(ADMISSION_PROBE_INVENTORY):
@@ -197,7 +203,19 @@ def validate_admission_evidence(evidence: object) -> dict[str, object]:
     return evidence
 
 
-def load_admission_evidence(path: str | Path) -> dict[str, object]:
+def _validate_context(context: object, *, label: str) -> str:
+    if not isinstance(context, str) or not context or context != context.strip():
+        raise AdmissionEvidenceError(
+            f"{label} must be a non-empty string without surrounding whitespace"
+        )
+    return context
+
+
+def load_admission_evidence(
+    path: str | Path,
+    *,
+    expected_context: str | None = None,
+) -> dict[str, object]:
     evidence_path = Path(path)
     try:
         evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
@@ -205,7 +223,15 @@ def load_admission_evidence(path: str | Path) -> dict[str, object]:
         raise AdmissionEvidenceError(
             f"cannot read admission evidence {evidence_path}: {exc}"
         ) from exc
-    return validate_admission_evidence(evidence)
+    validated = validate_admission_evidence(evidence)
+    if expected_context is not None:
+        _validate_context(expected_context, label="expected admission context")
+        if validated["context"] != expected_context:
+            raise AdmissionEvidenceError(
+                "admission evidence context mismatch: "
+                f"expected {expected_context!r}, observed {validated['context']!r}"
+            )
+    return validated
 
 
 def write_admission_evidence(path: str | Path, evidence: object) -> None:

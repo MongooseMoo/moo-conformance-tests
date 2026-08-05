@@ -26,6 +26,12 @@ from typing import Any, Iterator
 import pytest
 import yaml
 
+from .admission import (
+    AdmissionEvidenceError,
+    admission_bad_identities,
+    admission_blocked_identities,
+    load_admission_evidence,
+)
 from .capabilities import CapabilityManager
 from .conditions import declared_literal_skip_reason, declared_runtime_skip_reasons
 from .profile_gate import ProfileGateError, load_manifest, validate_manifest_paths
@@ -140,6 +146,16 @@ def pytest_addoption(parser):
         "--admission-evidence-output",
         default=None,
         help="Write schema-versioned capability-admission evidence to this path.",
+    )
+    parser.addoption(
+        "--admission-evidence-input",
+        default=None,
+        help="Read successful context-bound admission evidence for a packaged-only run.",
+    )
+    parser.addoption(
+        "--admission-evidence-context",
+        default=None,
+        help="Exact candidate/profile context bound to admission evidence.",
     )
 
 
@@ -423,6 +439,7 @@ def yaml_test_case():
     pass
 
 
+@pytest.hookimpl(trylast=True)
 def pytest_collection_modifyitems(session, config, items):
     """Run admission first, then capability providers before their consumers."""
     admission = []
@@ -453,6 +470,37 @@ def pytest_collection_modifyitems(session, config, items):
 
         normal.append(item)
 
+    packaged = [
+        item
+        for item in providers + normal + consumers
+        if item.get_closest_marker("conformance") is not None
+    ]
+    if packaged and not admission:
+        evidence_path = config.getoption("--admission-evidence-input")
+        context = config.getoption("--admission-evidence-context")
+        if evidence_path is None or context is None:
+            raise pytest.UsageError(
+                "selected packaged conformance requires either a selected admission test "
+                "in the same session or both --admission-evidence-input and "
+                "--admission-evidence-context"
+            )
+        try:
+            evidence = load_admission_evidence(
+                evidence_path,
+                expected_context=context,
+            )
+        except AdmissionEvidenceError as exc:
+            raise pytest.UsageError(
+                f"selected packaged conformance has invalid admission evidence: {exc}"
+            ) from exc
+        bad = admission_bad_identities(evidence)
+        blocked = admission_blocked_identities(evidence)
+        if bad or blocked:
+            raise pytest.UsageError(
+                "selected packaged conformance requires successful admission evidence; "
+                f"failed/error={sorted(bad)!r}, blocked={sorted(blocked)!r}"
+            )
+
     items[:] = admission + providers + normal + consumers
 
 
@@ -482,9 +530,9 @@ def pytest_runtest_makereport(item, call):
     outcome = yield
     report = outcome.get_result()
 
-    if report.failed and item.get_closest_marker("admission") is not None:
+    if (report.failed or report.skipped) and item.get_closest_marker("admission") is not None:
         item.session.shouldfail = (
-            "capability admission failed; packaged conformance was not executed"
+            "capability admission did not pass; packaged conformance was not executed"
         )
 
     if item.config.getoption("--fail-on-unexpected-skip"):

@@ -139,6 +139,7 @@ jobs:
     outputs:
       barn_sha: ${{ steps.provenance.outputs.barn_sha }}
       conformance_sha: ${{ steps.provenance.outputs.conformance_sha }}
+      admission_context: ${{ steps.provenance.outputs.admission_context }}
       admission_exit: ${{ steps.admission.outputs.exit_code }}
       packaged_exit: ${{ steps.packaged.outputs.exit_code }}
       expected_phase: ${{ needs.validate-inputs.outputs.expected_phase }}
@@ -178,6 +179,8 @@ jobs:
           test "$conformance_sha" = "$REQUESTED_CONFORMANCE_SHA"
           printf 'barn_sha=%s\n' "$barn_sha" >> "$GITHUB_OUTPUT"
           printf 'conformance_sha=%s\n' "$conformance_sha" >> "$GITHUB_OUTPUT"
+          printf 'admission_context=paired:%s:%s:barn-linux-testdb-outbound-on\n' \
+            "$barn_sha" "$conformance_sha" >> "$GITHUB_OUTPUT"
           printf '%s\n' "$barn_sha" > "${REPORTS_DIR}/barn-sha.txt"
           printf '%s\n' "$conformance_sha" > "${REPORTS_DIR}/conformance-sha.txt"
 
@@ -257,6 +260,7 @@ jobs:
         id: admission
         env:
           REPORTS_DIR: ${{ runner.temp }}/paired-evidence
+          ADMISSION_CONTEXT: ${{ steps.provenance.outputs.admission_context }}
         run: |
           set -o pipefail
           set +e
@@ -270,6 +274,7 @@ jobs:
             --target-profile-manifest="${REPORTS_DIR}/target-profile.json" \
             --strict-markers \
             --admission-evidence-output="${REPORTS_DIR}/admission.json" \
+            --admission-evidence-context="$ADMISSION_CONTEXT" \
             --junitxml="${REPORTS_DIR}/admission.xml" \
             -q -ra \
             2>&1 | tee "${REPORTS_DIR}/admission.log"
@@ -284,6 +289,7 @@ jobs:
         if: steps.admission.outputs.exit_code == '0'
         env:
           REPORTS_DIR: ${{ runner.temp }}/paired-evidence
+          ADMISSION_CONTEXT: ${{ steps.provenance.outputs.admission_context }}
         run: |
           set -o pipefail
           set +e
@@ -297,6 +303,8 @@ jobs:
             --target-profile-manifest="${REPORTS_DIR}/target-profile.json" \
             --fail-on-unexpected-skip \
             --strict-markers \
+            --admission-evidence-input="${REPORTS_DIR}/admission.json" \
+            --admission-evidence-context="$ADMISSION_CONTEXT" \
             --junitxml="${REPORTS_DIR}/conformance.xml" \
             -q -ra \
             2>&1 | tee "${REPORTS_DIR}/conformance.log"
@@ -358,12 +366,14 @@ jobs:
           EXPECTED_RESULT: ${{ github.event.client_payload.expected_result }}
           EXPECTED_PHASE: ${{ needs.paired.outputs.expected_phase }}
           REQUIRED_BAD_IDENTITIES: ${{ needs.paired.outputs.required_bad_identities }}
+          ADMISSION_CONTEXT: ${{ needs.paired.outputs.admission_context }}
           ADMISSION_EXIT: ${{ needs.paired.outputs.admission_exit }}
           PACKAGED_EXIT: ${{ needs.paired.outputs.packaged_exit }}
         run: |
           mkdir -p verdict
           args=(
             --admission="raw-evidence/admission.json"
+            --admission-context="$ADMISSION_CONTEXT"
             --expected="$EXPECTED_RESULT"
             --phase="$EXPECTED_PHASE"
             --admission-exit-code="$ADMISSION_EXIT"
@@ -417,6 +427,7 @@ jobs:
               "phase": result["phase"],
               "declared_bad_identities": result["declared_bad_identities"],
               "observed_bad_identities": result["observed_bad_identities"],
+              "admission_context": result["admission"]["context"],
               "correlation_id": os.environ["CORRELATION_ID"] or None,
               "workflow_repository": os.environ["WORKFLOW_REPOSITORY"],
               "workflow_ref": os.environ["WORKFLOW_REF"],

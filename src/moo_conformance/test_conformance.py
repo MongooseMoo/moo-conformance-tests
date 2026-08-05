@@ -100,6 +100,37 @@ def _has_feature(
     profile_features: dict[str, object] | None = None,
 ) -> bool:
     profile_key = f"feature.{feature}"
+    if feature == "64bit":
+        recorded: list[bool] = []
+        if profile_features is not None:
+            if profile_key in profile_features:
+                value = profile_features[profile_key]
+                if not isinstance(value, bool):
+                    raise CapabilityProbeError(
+                        "Failed to probe feature 64bit: profile value must be "
+                        f"boolean, got {value!r}"
+                    )
+                recorded.append(value)
+            if "runtime.arch_bits" in profile_features:
+                arch_bits = profile_features["runtime.arch_bits"]
+                if type(arch_bits) is not int or arch_bits not in (32, 64):
+                    raise CapabilityProbeError(
+                        "Failed to probe feature 64bit: runtime.arch_bits must be "
+                        f"32 or 64, got {arch_bits!r}"
+                    )
+                recorded.append(arch_bits == 64)
+            if "option.ONLY_32_BITS" in profile_features:
+                recorded.append(
+                    not _has_option(runner, "ONLY_32_BITS", profile_features)
+                )
+        if recorded:
+            if any(value != recorded[0] for value in recorded[1:]):
+                raise CapabilityProbeError(
+                    "Failed to probe feature 64bit: conflicting architecture "
+                    "profile values"
+                )
+            return recorded[0]
+        return not _has_option(runner, "ONLY_32_BITS", profile_features)
     if profile_features is not None and profile_key in profile_features:
         value = profile_features[profile_key]
         if not isinstance(value, bool):
@@ -108,26 +139,6 @@ def _has_feature(
                 f"got {value!r}"
             )
         return value
-    if feature == "64bit":
-        if profile_features is not None and "runtime.arch_bits" in profile_features:
-            arch_bits = profile_features["runtime.arch_bits"]
-            if type(arch_bits) is not int or arch_bits not in (32, 64):
-                raise CapabilityProbeError(
-                    "Failed to probe feature 64bit: runtime.arch_bits must be "
-                    f"32 or 64, got {arch_bits!r}"
-                )
-            is_64bit = arch_bits == 64
-            if "option.ONLY_32_BITS" in profile_features:
-                only_32_bits = _has_option(
-                    runner, "ONLY_32_BITS", profile_features
-                )
-                if is_64bit == only_32_bits:
-                    raise CapabilityProbeError(
-                        "Failed to probe feature 64bit: conflicting architecture "
-                        "profile values"
-                    )
-            return is_64bit
-        return not _has_option(runner, "ONLY_32_BITS", profile_features)
     if feature == "connectable_listener_port":
         if not _has_option(runner, "OUTBOUND_NETWORK", profile_features):
             return False

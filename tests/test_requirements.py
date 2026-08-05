@@ -18,6 +18,7 @@ from moo_conformance.test_conformance import (
     CapabilityProbeError,
     _enforce_skip_condition,
     _enforce_suite_requirements,
+    _has_feature,
     _reset_capability_caches_for_tests,
     _snapshot_mutable_capabilities,
 )
@@ -232,18 +233,51 @@ def test_64bit_feature_rejects_invalid_recorded_runtime_architecture(
         )
 
 
-def test_64bit_feature_rejects_conflicting_recorded_architecture_options() -> None:
-    test = MooTestCase(name="conditional", skip_if="feature.64bit")
-
+@pytest.mark.parametrize(
+    "features",
+    [
+        {"feature.64bit": False, "runtime.arch_bits": 64},
+        {"feature.64bit": True, "option.ONLY_32_BITS": True},
+        {"runtime.arch_bits": 32, "option.ONLY_32_BITS": False},
+        {
+            "feature.64bit": False,
+            "runtime.arch_bits": 64,
+            "option.ONLY_32_BITS": False,
+        },
+    ],
+)
+def test_64bit_feature_rejects_conflicting_recorded_architecture_options(
+    features: dict[str, object],
+) -> None:
     with pytest.raises(CapabilityProbeError, match="conflicting architecture"):
-        _enforce_skip_condition(
-            test,
-            runner_with(),
+        _has_feature(runner_with(), "64bit", features)
+
+
+@pytest.mark.parametrize(
+    ("features", "expected_64bit"),
+    [
+        (
             {
-                "runtime.arch_bits": 64,
+                "feature.64bit": False,
+                "runtime.arch_bits": 32,
                 "option.ONLY_32_BITS": True,
             },
-        )
+            False,
+        ),
+        (
+            {
+                "feature.64bit": True,
+                "runtime.arch_bits": 64,
+                "option.ONLY_32_BITS": False,
+            },
+            True,
+        ),
+    ],
+)
+def test_64bit_feature_accepts_consistent_recorded_architecture_facts(
+    features: dict[str, object], expected_64bit: bool
+) -> None:
+    assert _has_feature(runner_with(), "64bit", features) is expected_64bit
 
 
 def test_minimum_version_is_enforced() -> None:

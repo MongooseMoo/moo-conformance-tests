@@ -12,6 +12,9 @@ WORKFLOW_PATH = (
 TOAST_WORKFLOW_PATH = (
     Path(__file__).resolve().parents[1] / ".github" / "workflows" / "toast-conformance.yml"
 )
+TOAST_EXCEPTION_BASELINE_PATH = (
+    Path(__file__).resolve().parents[1] / "ci" / "toast-never-executed.json"
+)
 PINNED_ACTION = re.compile(r"^[^@]+@[0-9a-f]{40}$")
 
 
@@ -38,8 +41,11 @@ def test_complete_three_profile_toast_admission_remains_unconditional() -> None:
     assert workflow["jobs"]["paired"]["needs"] == ["validate-inputs", "toast-admission"]
 
 
-def test_toast_workflow_uses_exact_candidate_in_every_profile_job() -> None:
+def test_toast_pr_check_is_read_only_and_pr_scoped() -> None:
     workflow = load_workflow(TOAST_WORKFLOW_PATH)
+    assert workflow["on"]["pull_request"] == ""
+    assert "pull_request_target" not in workflow["on"]
+    assert workflow["on"]["push"] == {"branches": ["main"]}
     assert workflow["on"]["workflow_call"] == {
         "inputs": {
             "conformance_sha": {
@@ -49,11 +55,51 @@ def test_toast_workflow_uses_exact_candidate_in_every_profile_job() -> None:
             }
         }
     }
+    assert workflow["permissions"] == {"contents": "read"}
+    concurrency = workflow["concurrency"]
+    assert "github.event.pull_request.number" in concurrency["group"]
+    assert "inputs.conformance_sha" in concurrency["group"]
+    assert concurrency["cancel-in-progress"] == (
+        "${{ github.event_name == 'pull_request' }}"
+    )
+
+
+def test_toast_exception_baseline_is_removed() -> None:
+    assert not TOAST_EXCEPTION_BASELINE_PATH.exists()
+
+
+def test_toast_workflow_uses_immutable_trusted_and_fork_candidate_checkouts() -> None:
+    workflow = load_workflow(TOAST_WORKFLOW_PATH)
     for job_name in ("quality", "full-suite", "execution-ledger"):
-        checkout = steps_by_name(workflow, job_name)["Check out conformance candidate"]
-        assert checkout["with"]["ref"] == "${{ inputs.conformance_sha || github.sha }}"
-        assert checkout["with"]["persist-credentials"] == "false"
-        assert checkout["with"]["path"] == "candidate-data"
+        steps = steps_by_name(workflow, job_name)
+        trusted = steps["Check out trusted controller"]["with"]
+        assert trusted == {
+            "repository": "MongooseMoo/moo-conformance-tests",
+            "ref": "${{ github.event.pull_request.base.sha || github.workflow_sha }}",
+            "path": "trusted-controller",
+            "persist-credentials": "false",
+        }
+        candidate = steps["Check out conformance candidate"]["with"]
+        assert candidate == {
+            "repository": (
+                "${{ github.event.pull_request.head.repo.full_name || github.repository }}"
+            ),
+            "ref": (
+                "${{ inputs.conformance_sha || github.event.pull_request.head.sha || "
+                "github.sha }}"
+            ),
+            "path": "candidate-data",
+            "persist-credentials": "false",
+        }
+
+
+def test_toast_workflow_pins_every_action() -> None:
+    workflow = load_workflow(TOAST_WORKFLOW_PATH)
+    for job_name in workflow["jobs"]:
+        for name, step in steps_by_name(workflow, job_name).items():
+            action = step.get("uses")
+            if action is not None:
+                assert PINNED_ACTION.fullmatch(action), f"{job_name}/{name} is not SHA-pinned"
 
 
 def test_toast_candidate_and_oracle_are_fixed_credentialless_siblings() -> None:
@@ -69,6 +115,34 @@ def test_toast_candidate_and_oracle_are_fixed_credentialless_siblings() -> None:
     assert not oracle["path"].startswith(candidate["path"] + "/")
 
 
+def test_toast_quality_executes_only_trusted_code_against_candidate_data() -> None:
+    steps = steps_by_name(load_workflow(TOAST_WORKFLOW_PATH), "quality")
+    assert steps["Install locked trusted controller"]["run"] == (
+        "uv sync --project trusted-controller --locked --extra dev"
+    )
+    quality = steps["Run trusted controller quality gates"]
+    assert quality["working-directory"] == "trusted-controller"
+    assert "pytest tests --strict-markers" in quality["run"]
+    assert "ruff check ." in quality["run"]
+    assert "mypy src/moo_conformance" in quality["run"]
+
+    candidate = steps["Validate candidate data with trusted controller"]["run"]
+    assert "--project trusted-controller" in candidate
+    assert "python -m moo_conformance.paired_inventory" in candidate
+    assert "pytest" in candidate and "--collect-only --pyargs moo_conformance" in candidate
+    assert "moo-lint-duplicates" in candidate
+    assert '--candidate-root="${GITHUB_WORKSPACE}/candidate-data"' in candidate
+    assert '--candidate-tests="${GITHUB_WORKSPACE}/candidate-data/' in candidate
+    assert '--moo-suite-root="${GITHUB_WORKSPACE}/candidate-data/' in candidate
+    assert '--server-db="${GITHUB_WORKSPACE}/candidate-data/' in candidate
+    assert '--server-db-dir="${GITHUB_WORKSPACE}/candidate-data/' in candidate
+    assert '--tests-dir="${GITHUB_WORKSPACE}/candidate-data/' in candidate
+    assert (
+        '--baseline="${GITHUB_WORKSPACE}/trusted-controller/ci/duplicate-baseline.json"'
+        in candidate
+    )
+
+
 def test_each_toast_profile_stages_admission_before_complete_packaged_surface() -> None:
     steps = steps_by_name(load_workflow(TOAST_WORKFLOW_PATH), "full-suite")
     prepare = steps["Prepare evidence directory"]["run"]
@@ -81,8 +155,11 @@ def test_each_toast_profile_stages_admission_before_complete_packaged_surface() 
     assert names.index(admission_name) < names.index(packaged_name)
     admission = steps[admission_name]["run"]
     assert '--candidate-root="${GITHUB_WORKSPACE}/candidate-data"' in admission
-    assert "uv run --project . --frozen pytest" in admission
-    assert steps[admission_name]["working-directory"] == "candidate-data"
+    assert '--moo-suite-root="${GITHUB_WORKSPACE}/candidate-data/' in admission
+    assert '--server-db="${GITHUB_WORKSPACE}/candidate-data/' in admission
+    assert '--server-db-dir="${GITHUB_WORKSPACE}/candidate-data/' in admission
+    assert "uv run --project trusted-controller --frozen pytest" in admission
+    assert "working-directory" not in steps[admission_name]
     assert "${RUNNER_TEMP}/toast-build-${{ matrix.profile }}/moo" in admission
     assert "-m admission" in admission
     assert "--admission-evidence-output=" in admission
@@ -91,8 +168,11 @@ def test_each_toast_profile_stages_admission_before_complete_packaged_surface() 
     assert "set +e" not in admission
     packaged = steps[packaged_name]["run"]
     assert '--candidate-root="${GITHUB_WORKSPACE}/candidate-data"' in packaged
-    assert "uv run --project . --frozen pytest" in packaged
-    assert steps[packaged_name]["working-directory"] == "candidate-data"
+    assert '--moo-suite-root="${GITHUB_WORKSPACE}/candidate-data/' in packaged
+    assert '--server-db="${GITHUB_WORKSPACE}/candidate-data/' in packaged
+    assert '--server-db-dir="${GITHUB_WORKSPACE}/candidate-data/' in packaged
+    assert "uv run --project trusted-controller --frozen pytest" in packaged
+    assert "working-directory" not in steps[packaged_name]
     assert "${RUNNER_TEMP}/toast-build-${{ matrix.profile }}/moo" in packaged
     assert "-m conformance" in packaged
     assert "--admission-evidence-input=" in packaged
@@ -109,12 +189,30 @@ def test_toast_generated_state_stays_outside_candidate_anchor() -> None:
     build = steps["Build Toast oracle"]["run"]
     assert "${RUNNER_TEMP}/toast-build-${{ matrix.profile }}" in build
     assert "candidate-data" not in build
+    boundary = steps["Validate candidate data boundary"]["run"]
+    assert "--project trusted-controller" in boundary
+    assert "python -m moo_conformance.paired_inventory" in boundary
+    assert '--candidate-root="${GITHUB_WORKSPACE}/candidate-data"' in boundary
+    assert '--candidate-tests="${GITHUB_WORKSPACE}/candidate-data/' in boundary
+    assert '--candidate-db="${GITHUB_WORKSPACE}/candidate-data/' in boundary
+    assert '--candidate-db-dir="${GITHUB_WORKSPACE}/candidate-data/' in boundary
+    assert '--output="${REPORTS_DIR}/candidate-inventory.json"' in boundary
     assert steps["Verify conformance-owned startup fixtures"]["working-directory"] == (
         "candidate-data/src/moo_conformance/_db/startup"
     )
+    fixture_check = steps["Verify conformance-owned startup fixtures"]["run"]
+    assert "sha256sum --check" in fixture_check
+    assert (
+        '"${GITHUB_WORKSPACE}/trusted-controller/'
+        "src/moo_conformance/_db/startup/startup-fixtures.sha256\""
+        in fixture_check
+    )
+    assert "sha256sum --check startup-fixtures.sha256" not in fixture_check
+    assert "uv " not in fixture_check and "python" not in fixture_check
     profile = steps["Record the exact Toast capability profile"]
-    assert profile["working-directory"] == "candidate-data"
-    assert "uv run --project . --frozen python" in profile["run"]
+    assert "working-directory" not in profile
+    assert "uv run --project trusted-controller --frozen python" in profile["run"]
+    assert 'Path("candidate-data/src/moo_conformance/_db/Test.db")' in profile["run"]
 
     ledger_steps = steps_by_name(workflow, "execution-ledger")
     ledger_environment = ledger_steps["Prepare ledger environment"]["run"]
@@ -123,13 +221,50 @@ def test_toast_generated_state_stays_outside_candidate_anchor() -> None:
     assert ledger_steps["Download every Toast profile report"]["with"]["path"] == (
         "${{ runner.temp }}/toast-profile-reports"
     )
+    inventory = ledger_steps["Recompute trusted candidate inventory"]["run"]
+    assert "--project trusted-controller" in inventory
+    assert "python -m moo_conformance.paired_inventory" in inventory
+    assert '--candidate-root="${GITHUB_WORKSPACE}/candidate-data"' in inventory
+    assert '--candidate-tests="${GITHUB_WORKSPACE}/candidate-data/' in inventory
+    assert '--candidate-db="${GITHUB_WORKSPACE}/candidate-data/' in inventory
+    assert '--candidate-db-dir="${GITHUB_WORKSPACE}/candidate-data/' in inventory
+    assert '--output="${RUNNER_TEMP}/toast-candidate-inventory.json"' in inventory
     union = ledger_steps["Enforce exact profile union"]["run"]
-    assert "--project candidate-data" in union
+    assert "--project trusted-controller" in union
+    assert "--project candidate-data" not in union
+    assert '--inventory="${RUNNER_TEMP}/toast-candidate-inventory.json"' in union
+    assert "--baseline" not in union
+    assert "baseline" not in union
+    assert "toast-never-executed.json" not in union
+    assert "candidate-data/ci" not in union
     assert "${RUNNER_TEMP}/toast-profile-reports" in union
     assert "${RUNNER_TEMP}/toast-execution-ledger.json" in union
-    assert ledger_steps["Upload Toast execution ledger"]["with"]["path"] == (
-        "${{ runner.temp }}/toast-execution-ledger.json"
-    )
+    ledger_artifacts = ledger_steps["Upload Toast execution ledger"]["with"]["path"]
+    assert "${{ runner.temp }}/toast-candidate-inventory.json" in ledger_artifacts
+    assert "${{ runner.temp }}/toast-execution-ledger.json" in ledger_artifacts
+
+
+def test_toast_jobs_never_execute_or_install_candidate_python() -> None:
+    workflow = load_workflow(TOAST_WORKFLOW_PATH)
+    workflow_text = TOAST_WORKFLOW_PATH.read_text()
+    assert "uv sync --project candidate-data" not in workflow_text
+    assert "uv run --project candidate-data" not in workflow_text
+    assert "uv sync --project ." not in workflow_text
+    assert "uv run --project ." not in workflow_text
+    for job_name in workflow["jobs"]:
+        for name, step in steps_by_name(workflow, job_name).items():
+            working_directory = step.get("working-directory", "")
+            if working_directory.startswith("candidate-data"):
+                command = step.get("run", "")
+                assert "uv " not in command, f"{job_name}/{name} executes candidate Python"
+                assert "python" not in command, f"{job_name}/{name} executes candidate Python"
+
+
+def test_toast_python_setup_is_cacheless_in_every_job() -> None:
+    workflow = load_workflow(TOAST_WORKFLOW_PATH)
+    for job_name in workflow["jobs"]:
+        setup = steps_by_name(workflow, job_name)["Install uv and Python"]
+        assert setup["with"]["enable-cache"] == "false"
 
 
 def test_input_validation_requires_explicit_phase_and_exact_identity_array() -> None:
@@ -191,9 +326,9 @@ def test_toast_workflow_regenerates_shutdown_fixtures_before_full_suite() -> Non
     assert names.index(admission_name) < names.index(provenance_name)
     assert names.index(provenance_name) < names.index(full_suite_name)
     provenance_step = steps[provenance_name]
-    assert provenance_step["working-directory"] == "candidate-data"
+    assert "working-directory" not in provenance_step
     provenance = provenance_step["run"]
-    assert "uv run --project . --frozen pytest" in provenance
+    assert "uv run --project trusted-controller --frozen pytest" in provenance
     assert "-m conformance" in provenance
     assert "--moo-suite-path=fixture_provenance" in provenance
     assert '--candidate-root="${GITHUB_WORKSPACE}/candidate-data"' in provenance

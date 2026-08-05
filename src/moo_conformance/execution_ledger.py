@@ -20,6 +20,14 @@ from .path_confinement import (
 from .plugin import conformance_case_id, discover_yaml_tests, get_tests_dir
 
 _CASE_NAME = re.compile(r"^test_yaml_conformance\[(.*)]$")
+_CANDIDATE_INVENTORY_KEYS = {
+    "schema_version",
+    "candidate_anchor",
+    "trusted_case_ids",
+    "candidate_case_ids",
+    "additive_case_ids",
+    "candidate_identity_sha256",
+}
 
 
 class ExecutionLedgerError(RuntimeError):
@@ -39,6 +47,25 @@ class CandidateInventory(TypedDict):
     candidate_case_ids: list[str]
     additive_case_ids: list[str]
     candidate_identity_sha256: str
+
+
+def _strict_json_object(pairs: list[tuple[str, object]]) -> dict[str, object]:
+    result: dict[str, object] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ExecutionLedgerError(f"paired inventory contains duplicate JSON key: {key}")
+        result[key] = value
+    return result
+
+
+def candidate_identity_digest(case_ids: Iterable[str]) -> str:
+    """Hash an unambiguous canonical encoding of a conformance identity set."""
+    payload = json.dumps(
+        sorted(case_ids),
+        ensure_ascii=False,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
 
 
 def packaged_case_ids(
@@ -100,7 +127,7 @@ def validate_candidate_inventory(
             + ", ".join(sorted(missing))
         )
     candidate_identities = sorted(candidate)
-    digest = hashlib.sha256(("\n".join(candidate_identities) + "\n").encode()).hexdigest()
+    digest = candidate_identity_digest(candidate_identities)
     return {
         "schema_version": 2,
         "candidate_anchor": str(anchor),
@@ -108,6 +135,97 @@ def validate_candidate_inventory(
         "candidate_case_ids": candidate_identities,
         "additive_case_ids": sorted(candidate - trusted),
         "candidate_identity_sha256": digest,
+    }
+
+
+def _inventory_case_ids(
+    data: dict[str, object],
+    field: str,
+    *,
+    require_nonempty: bool,
+) -> list[str]:
+    values = data[field]
+    if not isinstance(values, list):
+        raise ExecutionLedgerError(f"paired inventory {field} must be an array")
+    if require_nonempty and not values:
+        raise ExecutionLedgerError(f"paired inventory {field} must not be empty")
+    if any(not isinstance(case_id, str) or not case_id for case_id in values):
+        raise ExecutionLedgerError(
+            f"paired inventory {field} must contain only non-empty string case IDs"
+        )
+    case_ids = [case_id for case_id in values if isinstance(case_id, str)]
+    if len(case_ids) != len(set(case_ids)):
+        raise ExecutionLedgerError(f"paired inventory {field} contains duplicate case IDs")
+    return case_ids
+
+
+def load_candidate_inventory(path: str | Path) -> CandidateInventory:
+    """Load a trusted schema-v2 paired inventory without accepting ambiguity."""
+    inventory_path = Path(path)
+    try:
+        raw = json.loads(
+            inventory_path.read_text(encoding="utf-8"),
+            object_pairs_hook=_strict_json_object,
+        )
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise ExecutionLedgerError(f"cannot read paired inventory {inventory_path}: {exc}") from exc
+    if not isinstance(raw, dict):
+        raise ExecutionLedgerError("paired inventory must be a JSON object")
+    data: dict[str, object] = raw
+    keys = set(data)
+    if keys != _CANDIDATE_INVENTORY_KEYS:
+        missing = sorted(_CANDIDATE_INVENTORY_KEYS - keys)
+        unknown = sorted(keys - _CANDIDATE_INVENTORY_KEYS)
+        details: list[str] = []
+        if missing:
+            details.append("missing=" + ", ".join(missing))
+        if unknown:
+            details.append("unknown=" + ", ".join(unknown))
+        raise ExecutionLedgerError(
+            "paired inventory must contain exactly the schema-v2 keys: " + "; ".join(details)
+        )
+    if type(data["schema_version"]) is not int or data["schema_version"] != 2:
+        raise ExecutionLedgerError("paired inventory schema_version must be 2")
+    anchor = data["candidate_anchor"]
+    if not isinstance(anchor, str) or not anchor:
+        raise ExecutionLedgerError("paired inventory candidate_anchor must be a non-empty string")
+
+    trusted = _inventory_case_ids(data, "trusted_case_ids", require_nonempty=True)
+    candidate = _inventory_case_ids(data, "candidate_case_ids", require_nonempty=True)
+    additive = _inventory_case_ids(data, "additive_case_ids", require_nonempty=False)
+    trusted_set = set(trusted)
+    candidate_set = set(candidate)
+    additive_set = set(additive)
+    missing_trusted = trusted_set - candidate_set
+    if missing_trusted:
+        raise ExecutionLedgerError(
+            "paired inventory trusted_case_ids are not a subset of candidate_case_ids: "
+            + ", ".join(sorted(missing_trusted))
+        )
+    expected_additive = candidate_set - trusted_set
+    if additive_set != expected_additive:
+        missing_additive = expected_additive - additive_set
+        unexpected = additive_set - expected_additive
+        details = []
+        if missing_additive:
+            details.append("missing=" + ", ".join(sorted(missing_additive)))
+        if unexpected:
+            details.append("unexpected=" + ", ".join(sorted(unexpected)))
+        raise ExecutionLedgerError(
+            "paired inventory additive_case_ids mismatch: " + "; ".join(details)
+        )
+
+    claimed_digest = data["candidate_identity_sha256"]
+    digest = candidate_identity_digest(candidate_set)
+    if not isinstance(claimed_digest, str) or claimed_digest != digest:
+        raise ExecutionLedgerError("paired inventory candidate_identity_sha256 mismatch")
+    return {
+        "schema_version": 2,
+        "candidate_anchor": anchor,
+        "trusted_case_ids": trusted,
+        "candidate_case_ids": candidate,
+        "additive_case_ids": additive,
+        "candidate_identity_sha256": claimed_digest,
     }
 
 
@@ -148,38 +266,14 @@ def _element_reason(element: ET.Element) -> str:
     return element.attrib.get("message") or (element.text or "").strip()
 
 
-def load_baseline(path: str | Path) -> dict[str, str]:
-    baseline_path = Path(path)
-    try:
-        data = json.loads(baseline_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        raise ExecutionLedgerError(f"cannot read skip baseline {baseline_path}: {exc}") from exc
-    if not isinstance(data, dict) or data.get("schema_version") != 1:
-        raise ExecutionLedgerError("skip baseline must be an object with schema_version 1")
-    entries = data.get("never_executed")
-    if not isinstance(entries, dict) or any(
-        not isinstance(case_id, str) or not isinstance(reason, str) or not reason
-        for case_id, reason in entries.items()
-    ):
-        raise ExecutionLedgerError("skip baseline never_executed must map case IDs to reasons")
-    return entries
-
-
 def enforce_execution_surface(
     reports: dict[str, dict[str, CaseOutcome]],
     expected_case_ids: set[str],
-    baseline: dict[str, str],
 ) -> dict[str, object]:
     if not reports:
         raise ExecutionLedgerError("no profile reports were supplied")
     if not expected_case_ids:
         raise ExecutionLedgerError("packaged conformance collection is empty")
-
-    unknown_baseline = set(baseline) - expected_case_ids
-    if unknown_baseline:
-        raise ExecutionLedgerError(
-            "skip baseline contains unknown case IDs: " + ", ".join(sorted(unknown_baseline))
-        )
 
     profile_counts: dict[str, dict[str, int]] = {}
     executed: set[str] = set()
@@ -193,9 +287,7 @@ def enforce_execution_surface(
             if extra:
                 details.append("unknown=" + ", ".join(sorted(extra)))
             detail = "; ".join(details)
-            raise ExecutionLedgerError(
-                f"profile {profile} has an inexact surface: {detail}"
-            )
+            raise ExecutionLedgerError(f"profile {profile} has an inexact surface: {detail}")
 
         bad = {
             case_id: outcome
@@ -218,36 +310,17 @@ def enforce_execution_surface(
         }
 
     never_executed = expected_case_ids - executed
-    unreviewed = never_executed - set(baseline)
-    stale = set(baseline) - never_executed
-    if unreviewed:
+    if never_executed:
         raise ExecutionLedgerError(
-            "cases never executed by any profile and absent from the reviewed baseline: "
-            + ", ".join(sorted(unreviewed))
+            "cases never executed by any profile: " + ", ".join(sorted(never_executed))
         )
-    if stale:
-        raise ExecutionLedgerError(
-            "stale skip baseline entries executed by at least one profile: "
-            + ", ".join(sorted(stale))
-        )
-
-    for case_id, expected_reason in sorted(baseline.items()):
-        for profile, outcomes in sorted(reports.items()):
-            outcome = outcomes[case_id]
-            if outcome.status != "skipped" or outcome.reason != expected_reason:
-                raise ExecutionLedgerError(
-                    f"baseline drift for {case_id} in {profile}: expected skipped with "
-                    f"{expected_reason!r}, got {outcome.status} with {outcome.reason!r}"
-                )
 
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "packaged_cases": len(expected_case_ids),
         "executed_cases": len(executed),
-        "reviewed_never_executed_cases": len(baseline),
         "profiles": profile_counts,
         "executed_case_ids": sorted(executed),
-        "reviewed_never_executed": baseline,
     }
 
 
@@ -266,19 +339,17 @@ def _parse_report_arguments(values: Iterable[str]) -> dict[str, Path]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--report", action="append", required=True, metavar="PROFILE=PATH")
-    parser.add_argument("--baseline", required=True, type=Path)
+    parser.add_argument("--inventory", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args(argv)
 
     try:
         report_paths = _parse_report_arguments(args.report)
-        reports = {
-            profile: parse_junit_report(path) for profile, path in report_paths.items()
-        }
+        reports = {profile: parse_junit_report(path) for profile, path in report_paths.items()}
+        expected_case_ids = set(load_candidate_inventory(args.inventory)["candidate_case_ids"])
         ledger = enforce_execution_surface(
             reports,
-            packaged_case_ids(),
-            load_baseline(args.baseline),
+            expected_case_ids,
         )
     except ExecutionLedgerError as exc:
         parser.error(str(exc))
@@ -287,8 +358,7 @@ def main(argv: list[str] | None = None) -> int:
     args.output.write_text(json.dumps(ledger, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(
         f"Toast profile union executed {ledger['executed_cases']} of "
-        f"{ledger['packaged_cases']} packaged cases; "
-        f"{ledger['reviewed_never_executed_cases']} reviewed skips remain"
+        f"{ledger['packaged_cases']} packaged cases"
     )
     return 0
 

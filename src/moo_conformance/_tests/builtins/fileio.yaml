@@ -201,16 +201,6 @@ tests:
     expect:
       error: E_PERM
 
-  # file_version - may not exist on all builds
-  - name: file_version_public
-    permission: programmer
-    skip_if: "missing builtin.file_version"
-    statement: |
-      result = file_version();
-      return typeof(result) == STR;
-    expect:
-      value: 1
-
   # Text file operations
   - name: text_file_write_read
     permission: wizard

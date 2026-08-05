@@ -452,22 +452,32 @@ tests:
   expect:
     value: 1
 - name: callers_returns_valid_anonymous_for_wizards
-  skip: "requires anonymous verb stack behavior not present in upstream Toast master"
   permission: wizard
   description: Wizard sees valid anonymous objects in callers()
   statement: |
-    o = create($anonymous, 1);
-    add_verb(o, {player, "xd", "a"}, {"this", "none", "this"});
-    set_verb_code(o, "a", {"return callers();"});
-    add_verb(o, {player, "xd", "b"}, {"this", "none", "this"});
-    set_verb_code(o, "b", {"return this:a();"});
-    add_verb(o, {player, "xd", "c"}, {"this", "none", "this"});
-    set_verb_code(o, "c", {
-      "c = this:b();",
-      "return {{c[1][2], valid(c[1][1]), valid(c[1][4])}, {c[2][2], valid(c[2][1]), valid(c[2][4])}};"
-    });
-    result = o:c();
-    recycle(o);
+    class = #-1;
+    o = #-1;
+    try
+      class = create($nothing);
+      add_verb(class, {player, "xd", "a"}, {"this", "none", "this"});
+      set_verb_code(class, "a", {"return callers();"});
+      add_verb(class, {player, "xd", "b"}, {"this", "none", "this"});
+      set_verb_code(class, "b", {"return this:a();"});
+      add_verb(class, {player, "xd", "c"}, {"this", "none", "this"});
+      set_verb_code(class, "c", {
+        "c = this:b();",
+        "return {{c[1][2], valid(c[1][1]), valid(c[1][4])}, {c[2][2], valid(c[2][1]), valid(c[2][4])}};"
+      });
+      o = create(class, 1);
+      result = o:c();
+    finally
+      if (valid(o))
+        recycle(o);
+      endif
+      if (valid(class))
+        recycle(class);
+      endif
+    endtry
     return result;
   expect:
     value:
@@ -480,28 +490,47 @@ tests:
   expect:
     value: 1
 - name: task_stack_returns_valid_anonymous_for_wizards
-  skip: "requires anonymous verb stack behavior not present in upstream Toast master"
   permission: wizard
   description: Wizard sees valid anonymous objects in task_stack()
   statement: |
-    o = create($anonymous, 1);
-    add_verb(o, {player, "xd", "a"}, {"this", "none", "this"});
-    set_verb_code(o, "a", {"suspend();"});
-    add_verb(o, {player, "xd", "b"}, {"this", "none", "this"});
-    set_verb_code(o, "b", {"return this:a();"});
-    add_verb(o, {player, "xd", "c"}, {"this", "none", "this"});
-    set_verb_code(o, "c", {
-      "fork t (0)",
-      "  c = this:b();",
-      "endfork",
-      "suspend(0);",
-      "stack = task_stack(t);",
-      "result = {{stack[1][2], valid(stack[1][1]), valid(stack[1][4])}, {stack[2][2], valid(stack[2][1]), valid(stack[2][4])}, {stack[3][2], valid(stack[3][1]), valid(stack[3][4])}};",
-      "kill_task(t);",
-      "return result;"
-    });
-    result = o:c();
-    recycle(o);
+    class = #-1;
+    o = #-1;
+    try
+      class = create($nothing);
+      add_verb(class, {player, "xd", "a"}, {"this", "none", "this"});
+      set_verb_code(class, "a", {"suspend();"});
+      add_verb(class, {player, "xd", "b"}, {"this", "none", "this"});
+      set_verb_code(class, "b", {"return this:a();"});
+      add_verb(class, {player, "xd", "c"}, {"this", "none", "this"});
+      set_verb_code(class, "c", {
+        "t = 0;",
+        "try",
+        "  fork t (0)",
+        "    c = this:b();",
+        "  endfork",
+        "  suspend(0);",
+        "  stack = task_stack(t);",
+        "  result = {{stack[1][2], valid(stack[1][1]), valid(stack[1][4])}, {stack[2][2], valid(stack[2][1]), valid(stack[2][4])}, {stack[3][2], valid(stack[3][1]), valid(stack[3][4])}};",
+        "finally",
+        "  if (t)",
+        "    try",
+        "      kill_task(t);",
+        "    except (ANY)",
+        "    endtry",
+        "  endif",
+        "endtry",
+        "return result;"
+      });
+      o = create(class, 1);
+      result = o:c();
+    finally
+      if (valid(o))
+        recycle(o);
+      endif
+      if (valid(class))
+        recycle(class);
+      endif
+    endtry
     return result;
   expect:
     value:
@@ -589,31 +618,56 @@ tests:
       endtry
     as: wizard
 - name: queued_tasks_returns_valid_anonymous_for_wizards
-  skip: "requires anonymous verb stack behavior not present in upstream Toast master"
   permission: wizard
   description: Wizard sees valid anonymous objects in queued_tasks()
   statement: |
-    o = create($anonymous, 1);
-    add_verb(o, {player, "xd", "a"}, {"this", "none", "this"});
-    set_verb_code(o, "a", {"suspend();"});
-    add_verb(o, {player, "xd", "b"}, {"this", "none", "this"});
-    set_verb_code(o, "b", {"return this:a();"});
-    add_verb(o, {player, "xd", "c"}, {"this", "none", "this"});
-    set_verb_code(o, "c", {
-      "for delay in ({0, 100})",
-      "  fork (delay)",
-      "    c = this:b();",
-      "  endfork",
-      "endfor",
-      "suspend(0);",
-      "q = queued_tasks();",
-      "result = {length(q), {q[1][7], valid(q[1][6]), valid(q[1][9])}, {q[2][7], valid(q[2][6]), valid(q[2][9])}};",
-      "kill_task(q[1][1]);",
-      "kill_task(q[2][1]);",
-      "return result;"
-    });
-    result = o:c();
-    recycle(o);
+    class = #-1;
+    o = #-1;
+    try
+      class = create($nothing);
+      add_verb(class, {player, "xd", "a"}, {"this", "none", "this"});
+      set_verb_code(class, "a", {"suspend();"});
+      add_verb(class, {player, "xd", "b"}, {"this", "none", "this"});
+      set_verb_code(class, "b", {"return this:a();"});
+      add_verb(class, {player, "xd", "c"}, {"this", "none", "this"});
+      set_verb_code(class, "c", {
+        "ids = {};",
+        "try",
+        "  for delay in ({0, 100})",
+        "    fork id (delay)",
+        "      c = this:b();",
+        "    endfork",
+        "    ids = {@ids, id};",
+        "  endfor",
+        "  suspend(0);",
+        "  q = queued_tasks();",
+        "  mine = {};",
+        "  for queued in (q)",
+        "    if (queued[1] in ids)",
+        "      mine = {@mine, queued};",
+        "    endif",
+        "  endfor",
+        "  result = {length(mine), {mine[1][7], valid(mine[1][6]), valid(mine[1][9])}, {mine[2][7], valid(mine[2][6]), valid(mine[2][9])}};",
+        "finally",
+        "  for id in (ids)",
+        "    try",
+        "      kill_task(id);",
+        "    except (ANY)",
+        "    endtry",
+        "  endfor",
+        "endtry",
+        "return result;"
+      });
+      o = create(class, 1);
+      result = o:c();
+    finally
+      if (valid(o))
+        recycle(o);
+      endif
+      if (valid(class))
+        recycle(class);
+      endif
+    endtry
     return result;
   expect:
     value:

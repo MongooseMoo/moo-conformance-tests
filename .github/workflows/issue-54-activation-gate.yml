@@ -1,0 +1,55 @@
+name: Issue 54 activation gate
+
+on:
+  pull_request_target:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  toast-conformance:
+    name: Run base-owned Toast conformance
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'agent/issue-54-staged-ci-workflow'
+    uses: ./.github/workflows/toast-conformance.yml
+    permissions:
+      contents: read
+    with:
+      conformance_sha: ${{ github.event.pull_request.head.sha }}
+
+  report-quality:
+    name: Report trusted quality conclusion
+    if: >-
+      always() &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'agent/issue-54-staged-ci-workflow'
+    needs: toast-conformance
+    uses: ./.github/workflows/trusted-head-check.yml
+    permissions:
+      checks: write
+    with:
+      check_name: Harness, schema, duplicates, types, and lint
+      head_sha: ${{ github.event.pull_request.head.sha }}
+      conclusion: >-
+        ${{ needs.toast-conformance.result == 'success' && 'success' || 'failure' }}
+      summary: Base-owned Toast conformance completed for the exact pull request head.
+
+  report-full-suite:
+    name: Report trusted full-suite conclusion
+    if: >-
+      always() &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'agent/issue-54-staged-ci-workflow'
+    needs: toast-conformance
+    uses: ./.github/workflows/trusted-head-check.yml
+    permissions:
+      checks: write
+    with:
+      check_name: Full suite
+      head_sha: ${{ github.event.pull_request.head.sha }}
+      conclusion: >-
+        ${{ needs.toast-conformance.result == 'success' && 'success' || 'failure' }}
+      summary: Base-owned Toast conformance completed for the exact pull request head.

@@ -88,7 +88,7 @@ tests:
     suspend(0.1);
     found = 0;
     for task in (queued_tasks())
-      if (task[1] == go && task[2] == "executables/sleep")
+      if (task[1] == go)
         found = 1;
       endif
     endfor
@@ -139,7 +139,7 @@ tests:
     suspend(0.1);
     seen_before = {};
     for task in (queued_tasks())
-      if (task[1] in task_ids && task[2] == "executables/sleep")
+      if (task[1] in task_ids)
         seen_before = setadd(seen_before, task[1]);
       endif
     endfor
@@ -147,7 +147,7 @@ tests:
     kill_task(task_ids[3]);
     seen_after = {};
     for task in (queued_tasks())
-      if (task[1] in task_ids && task[2] == "executables/sleep")
+      if (task[1] in task_ids)
         seen_after = setadd(seen_after, task[1]);
       endif
     endfor

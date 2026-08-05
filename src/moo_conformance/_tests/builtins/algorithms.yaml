@@ -1100,13 +1100,11 @@ tests:
       error: E_INVARG
 
   - name: salt_md5_prefix
-    skip: "MD5 salt ($1$) not supported on Windows Toast builds"
     code: 'salt("$1$", "~00~00~00~00~00~00")'
     expect:
       value: "$1$........"
 
   - name: salt_md5_requires_three_chars
-    skip: "MD5 salt ($1$) not supported on Windows Toast builds"
     code: 'salt("$1$", "12")'
     expect:
       error: E_INVARG
@@ -1222,54 +1220,46 @@ tests:
     expect:
       error: E_INVARG
 
-  # Crypt - Windows Toast only supports $2a$ bcrypt, not DES/SHA/SHA512/$2b$
+  # Crypt variants supported by the canonical Linux Toast oracle.
   - name: crypt_one_arg_defaults_to_unix
-    skip: "DES crypt not supported on Windows"
     code: 'length(crypt("password"))'
     expect:
       value: 13
 
   - name: crypt_falls_through_to_unix
-    skip: "DES crypt not supported on Windows"
     code: 'length(crypt("password", "ab"))'
     expect:
       value: 13
 
   - name: crypt_sha256_with_salt
-    skip: "SHA256 crypt not supported on Windows"
     code: 'index(crypt("password", "$5$abc"), "$5$")'
     expect:
       value: 1
 
   - name: crypt_sha256_rounds_wizard
-    skip: "SHA256 crypt not supported on Windows"
     permission: wizard
     code: 'index(crypt("password", "$5$rounds=10000$abc"), "$5$rounds=10000$")'
     expect:
       value: 1
 
   - name: crypt_sha256_rounds_non_wizard
-    skip: "SHA256 crypt not supported on Windows"
     permission: programmer
     code: 'index(crypt("password", "$5$rounds=10000$abc"), "$5$rounds=10000$")'
     expect:
       error: E_PERM
 
   - name: crypt_sha512_with_salt
-    skip: "SHA512 crypt not supported on Windows"
     code: 'index(crypt("password", "$6$abc"), "$6$")'
     expect:
       value: 1
 
   - name: crypt_sha512_rounds_wizard
-    skip: "SHA512 crypt not supported on Windows"
     permission: wizard
     code: 'index(crypt("password", "$6$rounds=10000$abc"), "$6$rounds=10000$")'
     expect:
       value: 1
 
   - name: crypt_sha512_rounds_non_wizard
-    skip: "SHA512 crypt not supported on Windows"
     permission: programmer
     code: 'index(crypt("password", "$6$rounds=10000$abc"), "$6$rounds=10000$")'
     expect:

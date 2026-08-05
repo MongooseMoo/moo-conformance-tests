@@ -5,6 +5,8 @@ Discovers and runs all YAML test files bundled in the package.
 
 import pytest
 
+from moo_conformance.plugin import _skip_declared_yaml_case
+
 
 def _has_option(runner, option: str) -> bool:
     result = runner.transport.execute(f'return server_version("options.{option}");')
@@ -26,10 +28,7 @@ def test_yaml_conformance(runner, yaml_test_case):
     """
     suite, test = yaml_test_case
 
-    # Skip tests that are marked as skip
-    if test.skip:
-        reason = test.skip if isinstance(test.skip, str) else "Test marked as skip"
-        pytest.skip(reason)
+    _skip_declared_yaml_case(suite, test)
 
     # Skip tests based on skip_if condition
     if test.skip_if:

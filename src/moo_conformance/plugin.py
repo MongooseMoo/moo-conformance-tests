@@ -359,10 +359,6 @@ def discover_yaml_tests(
 
             suite = validate_test_suite(data)
 
-            # Skip entire suite if suite.skip is set
-            if suite.skip:
-                continue
-
             for test in suite.tests:
                 test_cases.append((yaml_file, suite, test))
 
@@ -453,6 +449,16 @@ def pytest_runtest_setup(item):
             can_run, reason = capability_manager.can_run(assumes)
             if not can_run:
                 pytest.skip(reason)
+
+
+def _skip_declared_yaml_case(suite: MooTestSuite, test: MooTestCase) -> None:
+    """Skip a declared test or suite while preserving the more specific test reason."""
+    if test.skip:
+        reason = test.skip if isinstance(test.skip, str) else "Test marked as skip"
+        pytest.skip(reason)
+    if suite.skip:
+        reason = suite.skip if isinstance(suite.skip, str) else "Suite marked as skip"
+        pytest.skip(reason)
 
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)

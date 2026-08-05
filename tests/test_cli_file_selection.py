@@ -150,6 +150,67 @@ def test_literal_yaml_skip_remains_allowed(tmp_path: Path) -> None:
     assert report.outcome == "skipped"
 
 
+def test_suite_literal_skip_is_collected_as_declared_runtime_skips(pytester) -> None:
+    suites = pytester.path / "suites"
+    suites.mkdir()
+    suite_path = suites / "suite_skip.yaml"
+    suite_path.write_text(
+        """name: suite_skip
+skip: suite is intentionally disabled
+tests:
+  - name: first
+    code: "1"
+    expect:
+      value: 1
+  - name: second
+    code: "2"
+    expect:
+      value: 2
+""",
+        encoding="utf-8",
+    )
+    pytester.makeconftest(
+        "\n".join(
+            [
+                "from pathlib import Path",
+                "import pytest",
+                "from moo_conformance import plugin",
+                f"plugin.get_tests_dir = lambda: Path({str(suites)!r})",
+                "@pytest.fixture",
+                "def runner(): return object()",
+                "@pytest.fixture",
+                "def moo_config(): return {}",
+                "@pytest.fixture",
+                "def profile_metadata_gate(): return {}",
+            ]
+        )
+    )
+    pytester.makepyfile(
+        """
+        from moo_conformance.test_conformance import test_yaml_conformance as run_yaml_case
+
+        def test_selected_suite(runner, yaml_test_case, moo_config, profile_metadata_gate):
+            run_yaml_case(runner, yaml_test_case, moo_config, profile_metadata_gate)
+        """
+    )
+
+    original_get_tests_dir = plugin.get_tests_dir
+    try:
+        result = pytester.runpytest("-q", "--fail-on-unexpected-skip")
+    finally:
+        plugin.get_tests_dir = original_get_tests_dir
+
+    result.assert_outcomes(skipped=2)
+
+
+def test_test_literal_skip_reason_takes_precedence_over_suite_skip() -> None:
+    suite = SimpleNamespace(skip="suite reason")
+    test = SimpleNamespace(skip="test reason")
+
+    with pytest.raises(pytest.skip.Exception, match="test reason"):
+        plugin._skip_declared_yaml_case(suite, test)
+
+
 def test_matching_declared_conditional_skip_remains_allowed() -> None:
     suite = SimpleNamespace(skip=False)
     test = SimpleNamespace(skip=False, skip_if="missing builtin.background_test")

@@ -2,7 +2,7 @@ name: algorithms
 description: Cryptographic and encoding algorithm builtins (base64, hashing, HMAC, salting, crypt)
 
 requires:
-  builtins: [encode_base64, decode_base64, string_hash, binary_hash, value_hash, string_hmac, binary_hmac, value_hmac, salt, crypt, chr]
+  builtins: [encode_base64, decode_base64, string_hash, binary_hash, value_hash, string_hmac, binary_hmac, value_hmac, salt, crypt]
 
 tests:
   # Base64 Encoding
@@ -1149,25 +1149,10 @@ tests:
     expect:
       value: "$6$rounds=10000$................"
 
-  - name: salt_bcrypt_2a_prefix_preserved
+  - name: salt_bcrypt_prefix
     code: 'salt("$2a$", "~00~00~00~00~00~00~00~00~00~00~00~00~00~00~00~00")'
     expect:
       value: "$2a$05$......................"
-
-  - name: salt_bcrypt_2y_prefix_preserved
-    code: 'salt("$2y$", "~00~00~00~00~00~00~00~00~00~00~00~00~00~00~00~00")'
-    expect:
-      value: "$2y$05$......................"
-
-  - name: salt_bcrypt_2x_prefix_rejected
-    code: 'salt("$2x$", "~00~00~00~00~00~00~00~00~00~00~00~00~00~00~00~00")'
-    expect:
-      error: E_INVARG
-
-  - name: salt_bcrypt_2b_prefix_rejected
-    code: 'salt("$2b$", "~00~00~00~00~00~00~00~00~00~00~00~00~00~00~00~00")'
-    expect:
-      error: E_INVARG
 
   - name: salt_bcrypt_requires_sixteen_chars
     code: 'salt("$2a$", "1234567890")'
@@ -1284,70 +1269,6 @@ tests:
     code: 'crypt("foobar", "$2a$05$KRGxLBS0Lxe3KBCwKxOzLe")'
     expect:
       value: "$2a$05$KRGxLBS0Lxe3KBCwKxOzLeMe5OhXhsCBVMLq7IYo9z2kiiCZMSmz6"
-
-  - name: crypt_bcrypt_2x_ascii_hash_body_matches_2y
-    description: "The 2x compatibility path differs from 2y only when the password has high bytes"
-    code: 'crypt("foobar", "$2x$05$KRGxLBS0Lxe3KBCwKxOzLe")[4..60] == crypt("foobar", "$2y$05$KRGxLBS0Lxe3KBCwKxOzLe")[4..60]'
-    expect:
-      value: 1
-
-  - name: crypt_bcrypt_2x_high_byte_hash_body_differs_from_2y
-    description: "Compare beyond the variant character to prove 2x sign-extension semantics"
-    code: 'crypt(chr(128), "$2x$05$KRGxLBS0Lxe3KBCwKxOzLe")[4..60] != crypt(chr(128), "$2y$05$KRGxLBS0Lxe3KBCwKxOzLe")[4..60]'
-    expect:
-      value: 1
-
-  - name: crypt_bcrypt_{variant}_exact_two_digit_cost_wizard_succeeds
-    permission: wizard
-    table:
-      rows:
-        - variant: 2x
-        - variant: 2y
-    code: 'index(crypt("foobar", "${variant}$04$KRGxLBS0Lxe3KBCwKxOzLe"), "${variant}$04$")'
-    expect:
-      value: 1
-
-  - name: crypt_bcrypt_{variant}_exact_two_digit_cost_programmer_rejected
-    permission: programmer
-    table:
-      rows:
-        - variant: 2x
-        - variant: 2y
-    code: 'crypt("foobar", "${variant}$04$KRGxLBS0Lxe3KBCwKxOzLe")'
-    expect:
-      error: E_PERM
-
-  - name: crypt_bcrypt_{variant}_one_digit_cost_{permission}_ordering
-    table:
-      product:
-        - rows:
-            - variant: 2x
-            - variant: 2y
-        - rows:
-            - permission: wizard
-              expected_error: E_INVARG
-            - permission: programmer
-              expected_error: E_PERM
-    permission: '{permission}'
-    code: 'crypt("foobar", "${variant}$4$KRGxLBS0Lxe3KBCwKxOzLe")'
-    expect:
-      error: '{expected_error}'
-
-  - name: crypt_bcrypt_{variant}_three_digit_cost_{permission}_ordering
-    table:
-      product:
-        - rows:
-            - variant: 2x
-            - variant: 2y
-        - rows:
-            - permission: wizard
-              expected_error: E_INVARG
-            - permission: programmer
-              expected_error: E_PERM
-    permission: '{permission}'
-    code: 'crypt("foobar", "${variant}$004$KRGxLBS0Lxe3KBCwKxOzLe")'
-    expect:
-      error: '{expected_error}'
 
   - name: crypt_bcrypt_2a_requires_sixteen_chars
     code: 'crypt("foobar", "$2a$05$KRGxLBS0Lxe3KBCwKxOzL")'

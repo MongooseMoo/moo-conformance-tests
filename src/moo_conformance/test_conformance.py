@@ -10,6 +10,14 @@ import re
 
 import pytest
 
+from .admission import (
+    CapabilityProbeError,
+    CapabilityProbeFailure,
+    admission_bad_identities,
+    admission_blocked_identities,
+    run_capability_admission,
+    write_admission_evidence,
+)
 from .conditions import config_skip_reason, parse_min_version, parse_skip_conditions
 from .moo_types import MooError
 from .plugin import _skip_declared_yaml_case
@@ -21,13 +29,9 @@ _option_cache: dict[str, bool] = {}
 _version_cache: tuple[int, int, int] | None = None
 
 
-class CapabilityProbeError(RuntimeError):
-    """A capability could not be determined reliably."""
-
-
 def _probe_failure(capability: str, result) -> CapabilityProbeError:
     detail = result.error_message or result.error or "unsuccessful execution"
-    return CapabilityProbeError(f"Failed to probe {capability}: {detail}")
+    return CapabilityProbeFailure(f"Failed to probe {capability}: {detail}")
 
 
 def _execute_probe(runner, capability: str, code: str):
@@ -304,10 +308,47 @@ def _uses_managed_restart(test) -> bool:
     return any(step.restart_server is not None for step in [*test.steps, *test.cleanup])
 
 
-@pytest.fixture(scope="session", autouse=True)
-def mutable_capability_snapshot(runner, profile_metadata_gate) -> None:
-    """Snapshot mutable runtime capabilities on the pristine managed server."""
-    _snapshot_mutable_capabilities(runner, profile_metadata_gate)
+def _run_admission_probe(runner, profile_features, identity: str) -> bool:
+    if identity == "admission::option.OUTBOUND_NETWORK":
+        return _has_option(runner, "OUTBOUND_NETWORK", profile_features)
+    if identity == "admission::feature.connectable_listener_port":
+        return _has_feature(runner, "connectable_listener_port", profile_features)
+    if identity == "admission::feature.ephemeral_listen":
+        return _has_feature(runner, "ephemeral_listen", profile_features)
+    if identity == "admission::option.PROMOTE_NUMBERS":
+        return _has_option(runner, "PROMOTE_NUMBERS", profile_features)
+    raise CapabilityProbeError(f"unknown admission probe identity: {identity}")
+
+
+@pytest.mark.admission
+def test_capability_admission(runner, profile_metadata_gate, request, record_property) -> None:
+    """Record the complete canonical admission inventory before packaged execution."""
+    _reset_capability_caches_for_tests()
+    output_path = request.config.getoption("--admission-evidence-output")
+    context = request.config.getoption("--admission-evidence-context")
+    if context is None:
+        if output_path is not None:
+            raise pytest.UsageError(
+                "--admission-evidence-output requires --admission-evidence-context"
+            )
+        context = "same-session"
+    record_property("admission_context", context)
+    evidence = run_capability_admission(
+        lambda identity: _run_admission_probe(runner, profile_metadata_gate, identity),
+        context=context,
+    )
+    if output_path is not None:
+        write_admission_evidence(output_path, evidence)
+
+    bad = admission_bad_identities(evidence)
+    blocked = admission_blocked_identities(evidence)
+    if bad or blocked:
+        details = []
+        if bad:
+            details.append("failed/error=" + ", ".join(sorted(bad)))
+        if blocked:
+            details.append("blocked=" + ", ".join(sorted(blocked)))
+        pytest.fail("capability admission did not succeed: " + "; ".join(details))
 
 
 @pytest.mark.conformance

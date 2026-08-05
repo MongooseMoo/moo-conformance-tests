@@ -537,7 +537,6 @@ tests:
 
   - name: tostr_limit
     permission: wizard
-    skip: "Ruby test also fails - tostr() has higher overhead than + operator so 3210 iterations exceeds limit. See test_that_string_limits_work in test_limits.rb."
     statement: |
       $server_options.max_string_concat = 3210;
       load_server_options();

@@ -3,6 +3,7 @@ run-name: >-
   Barn ${{ github.event.client_payload.barn_sha }} /
   conformance ${{ github.event.client_payload.conformance_sha }}
   expects ${{ github.event.client_payload.expected_result }}
+  in ${{ github.event.client_payload.expected_phase }}
 
 on:
   repository_dispatch:
@@ -19,15 +20,18 @@ jobs:
     outputs:
       barn_sha: ${{ steps.validate.outputs.barn_sha }}
       conformance_sha: ${{ steps.validate.outputs.conformance_sha }}
+      expected_phase: ${{ steps.validate.outputs.expected_phase }}
+      required_bad_identities: ${{ steps.validate.outputs.required_bad_identities }}
 
     steps:
-      - name: Reject mutable or malformed candidate refs
+      - name: Reject mutable or malformed candidate inputs
         id: validate
         env:
           BARN_SHA: ${{ github.event.client_payload.barn_sha }}
           CONFORMANCE_SHA: ${{ github.event.client_payload.conformance_sha }}
           EXPECTED_RESULT: ${{ github.event.client_payload.expected_result }}
-          REQUIRED_BAD_CASE: ${{ github.event.client_payload.required_bad_case }}
+          EXPECTED_PHASE: ${{ github.event.client_payload.expected_phase }}
+          REQUIRED_BAD_IDENTITIES: ${{ toJSON(github.event.client_payload.required_bad_identities) }}
         run: |
           set -euo pipefail
           for candidate in "$BARN_SHA" "$CONFORMANCE_SHA"; do
@@ -40,16 +44,82 @@ jobs:
             echo "expected_result must be success or failure" >&2
             exit 2
           fi
-          if [[ "$EXPECTED_RESULT" == failure && -z "$REQUIRED_BAD_CASE" ]]; then
-            echo "required_bad_case is mandatory for an expected failure" >&2
+          if [[ "$EXPECTED_PHASE" != admission && "$EXPECTED_PHASE" != packaged ]]; then
+            echo "expected_phase must be admission or packaged" >&2
             exit 2
           fi
-          if [[ "$EXPECTED_RESULT" == success && -n "$REQUIRED_BAD_CASE" ]]; then
-            echo "required_bad_case must be empty for an expected success" >&2
+          if [[ "$EXPECTED_RESULT" = success && "$EXPECTED_PHASE" != packaged ]]; then
+            echo "expected success requires packaged phase" >&2
             exit 2
           fi
+          python3 - <<'PY'
+          import json
+          import os
+          import sys
+
+          raw = os.environ["REQUIRED_BAD_IDENTITIES"]
+          try:
+              required_bad_identities = json.loads(raw)
+          except json.JSONDecodeError as exc:
+              print(f"required_bad_identities must be valid JSON: {exc}", file=sys.stderr)
+              raise SystemExit(2) from exc
+          if not isinstance(required_bad_identities, list) or any(
+              not isinstance(identity, str)
+              or not identity
+              or identity != identity.strip()
+              for identity in required_bad_identities
+          ):
+              print(
+                  "required_bad_identities must be a JSON array of non-empty strings "
+                  "without padding",
+                  file=sys.stderr,
+              )
+              raise SystemExit(2)
+          if len(set(required_bad_identities)) != len(required_bad_identities):
+              print("required_bad_identities contains duplicates", file=sys.stderr)
+              raise SystemExit(2)
+          expected = os.environ["EXPECTED_RESULT"]
+          if expected == "failure" and not required_bad_identities:
+              print(
+                  "required_bad_identities must be non-empty for an expected failure",
+                  file=sys.stderr,
+              )
+              raise SystemExit(2)
+          if expected == "success" and required_bad_identities:
+              print(
+                  "required_bad_identities must be empty for an expected success",
+                  file=sys.stderr,
+              )
+              raise SystemExit(2)
+          phase = os.environ["EXPECTED_PHASE"]
+          admission_identities = {
+              "admission::option.OUTBOUND_NETWORK",
+              "admission::feature.connectable_listener_port",
+              "admission::feature.ephemeral_listen",
+              "admission::option.PROMOTE_NUMBERS",
+          }
+          if phase == "admission":
+              unknown = set(required_bad_identities) - admission_identities
+              if unknown:
+                  print(
+                      "required_bad_identities contains unknown admission identities: "
+                      + ", ".join(sorted(unknown)),
+                      file=sys.stderr,
+                  )
+                  raise SystemExit(2)
+          elif any(identity.startswith("admission::") for identity in required_bad_identities):
+              print(
+                  "required_bad_identities contains admission identity for packaged phase",
+                  file=sys.stderr,
+              )
+              raise SystemExit(2)
+          normalized = json.dumps(sorted(required_bad_identities), separators=(",", ":"))
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write(f"required_bad_identities={normalized}\n")
+          PY
           printf 'barn_sha=%s\n' "$BARN_SHA" >> "$GITHUB_OUTPUT"
           printf 'conformance_sha=%s\n' "$CONFORMANCE_SHA" >> "$GITHUB_OUTPUT"
+          printf 'expected_phase=%s\n' "$EXPECTED_PHASE" >> "$GITHUB_OUTPUT"
 
   toast-admission:
     name: Complete Toast admission
@@ -69,7 +139,11 @@ jobs:
     outputs:
       barn_sha: ${{ steps.provenance.outputs.barn_sha }}
       conformance_sha: ${{ steps.provenance.outputs.conformance_sha }}
-      conformance_exit: ${{ steps.conformance.outputs.exit_code }}
+      admission_context: ${{ steps.trust-context.outputs.admission_context }}
+      admission_exit: ${{ steps.admission.outputs.exit_code }}
+      packaged_exit: ${{ steps.packaged.outputs.exit_code }}
+      expected_phase: ${{ needs.validate-inputs.outputs.expected_phase }}
+      required_bad_identities: ${{ needs.validate-inputs.outputs.required_bad_identities }}
 
     steps:
       - name: Prepare evidence directory
@@ -83,12 +157,20 @@ jobs:
           path: barn
           persist-credentials: false
 
-      - name: Check out conformance candidate
+      - name: Check out trusted paired controller
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: MongooseMoo/moo-conformance-tests
+          ref: ${{ github.workflow_sha }}
+          path: controller
+          persist-credentials: false
+
+      - name: Check out candidate conformance data
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: MongooseMoo/moo-conformance-tests
           ref: ${{ needs.validate-inputs.outputs.conformance_sha }}
-          path: conformance
+          path: candidate-data
           persist-credentials: false
 
       - name: Record exact candidate provenance
@@ -100,13 +182,26 @@ jobs:
         run: |
           set -euo pipefail
           barn_sha=$(git -C barn rev-parse HEAD)
-          conformance_sha=$(git -C conformance rev-parse HEAD)
+          conformance_sha=$(git -C candidate-data rev-parse HEAD)
           test "$barn_sha" = "$REQUESTED_BARN_SHA"
           test "$conformance_sha" = "$REQUESTED_CONFORMANCE_SHA"
           printf 'barn_sha=%s\n' "$barn_sha" >> "$GITHUB_OUTPUT"
           printf 'conformance_sha=%s\n' "$conformance_sha" >> "$GITHUB_OUTPUT"
           printf '%s\n' "$barn_sha" > "${REPORTS_DIR}/barn-sha.txt"
           printf '%s\n' "$conformance_sha" > "${REPORTS_DIR}/conformance-sha.txt"
+
+      - name: Create trusted run-attempt admission context
+        id: trust-context
+        env:
+          BARN_SHA: ${{ steps.provenance.outputs.barn_sha }}
+          CONFORMANCE_SHA: ${{ steps.provenance.outputs.conformance_sha }}
+          REPORTS_DIR: ${{ runner.temp }}/paired-evidence
+        run: |
+          set -euo pipefail
+          nonce=$(python3 -c 'import secrets; print(secrets.token_hex(32))')
+          context="paired:${GITHUB_RUN_ID}:${GITHUB_RUN_ATTEMPT}:${nonce}:${BARN_SHA}:${CONFORMANCE_SHA}:barn-linux-testdb-outbound-on"
+          printf 'admission_context=%s\n' "$context" >> "$GITHUB_OUTPUT"
+          printf '%s\n' "$nonce" > "${REPORTS_DIR}/admission-nonce.txt"
 
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
@@ -130,11 +225,11 @@ jobs:
           python-version: "3.13"
           enable-cache: false
 
-      - name: Install locked conformance candidate
-        run: uv sync --project conformance --locked --extra dev
+      - name: Install locked trusted controller
+        run: uv sync --project controller --locked --extra dev
 
-      - name: Run conformance candidate quality gates
-        working-directory: conformance
+      - name: Run trusted controller quality gates
+        working-directory: controller
         run: |
           uv run --frozen pytest tests --strict-markers -q
           uv run --frozen pytest --collect-only --pyargs moo_conformance --strict-markers -q
@@ -143,26 +238,27 @@ jobs:
           uv run --frozen ruff check .
           uv run --frozen mypy src/moo_conformance
 
-      - name: Create exact case inventory and oracle profile
+      - name: Recompute trusted and candidate case inventories
         env:
           REPORTS_DIR: ${{ runner.temp }}/paired-evidence
         run: |
           set -euo pipefail
           printf 'OUTBOUND_NETWORK = 1\nPROMOTE_NUMBERS = 0\n' > "${REPORTS_DIR}/barn.conf"
-          uv run --project conformance --frozen python - <<'PY'
+          uv run --project controller --frozen python -m moo_conformance.paired_inventory \
+            --candidate-root="${GITHUB_WORKSPACE}/candidate-data" \
+            --candidate-tests="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_tests" \
+            --candidate-db="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/Test.db" \
+            --candidate-db-dir="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/startup" \
+            --output="${REPORTS_DIR}/candidate-inventory.json"
+          uv run --project controller --frozen python - <<'PY'
           import hashlib
           import json
           import os
           from pathlib import Path
 
-          from moo_conformance.execution_ledger import packaged_case_ids
-
           reports = Path(os.environ["REPORTS_DIR"])
-          database = Path("conformance/src/moo_conformance/_db/Test.db")
+          database = Path("candidate-data/src/moo_conformance/_db/Test.db")
           checksum = hashlib.sha256(database.read_bytes()).hexdigest()
-          (reports / "expected-case-ids.json").write_text(
-              json.dumps(sorted(packaged_case_ids()), indent=2) + "\n"
-          )
           oracle = {
               "profile_id": "barn-linux-testdb-outbound-on-oracle",
               "implementation": "toast-contract",
@@ -180,29 +276,68 @@ jobs:
           )
           PY
 
-      - name: Run every packaged conformance case against Barn
-        id: conformance
+      - name: Run canonical capability admission against Barn
+        id: admission
         env:
           REPORTS_DIR: ${{ runner.temp }}/paired-evidence
+          ADMISSION_CONTEXT: ${{ steps.trust-context.outputs.admission_context }}
         run: |
           set -o pipefail
           set +e
-          uv run --project conformance --frozen pytest \
+          uv run --project controller --frozen pytest \
             --pyargs moo_conformance \
+            -m admission \
+            --candidate-root="${GITHUB_WORKSPACE}/candidate-data" \
+            --moo-suite-root="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_tests" \
             --server-command="${GITHUB_WORKSPACE}/barn-candidate -db {db} -port {port} -config=${REPORTS_DIR}/barn.conf -outbound -profile-id=barn-linux-testdb-outbound-on -profile-manifest=${REPORTS_DIR}/target-profile.json" \
-            --server-db-dir="${GITHUB_WORKSPACE}/conformance/src/moo_conformance/_db/startup" \
+            --server-db="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/Test.db" \
+            --server-db-dir="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/startup" \
+            --moo-host=127.0.0.1 \
+            --oracle-profile-manifest="${REPORTS_DIR}/oracle-profile.json" \
+            --target-profile-manifest="${REPORTS_DIR}/target-profile.json" \
+            --strict-markers \
+            --admission-evidence-output="${REPORTS_DIR}/admission.json" \
+            --admission-evidence-context="$ADMISSION_CONTEXT" \
+            --junitxml="${REPORTS_DIR}/admission.xml" \
+            -q -ra \
+            2>&1 | tee "${REPORTS_DIR}/admission.log"
+          exit_code=${PIPESTATUS[0]}
+          set -e
+          printf 'exit_code=%s\n' "$exit_code" >> "$GITHUB_OUTPUT"
+          printf '%s\n' "$exit_code" > "${REPORTS_DIR}/admission-exit-code.txt"
+          exit 0
+
+      - name: Run every packaged conformance case against Barn
+        id: packaged
+        if: steps.admission.outputs.exit_code == '0'
+        env:
+          REPORTS_DIR: ${{ runner.temp }}/paired-evidence
+          ADMISSION_CONTEXT: ${{ steps.trust-context.outputs.admission_context }}
+        run: |
+          set -o pipefail
+          set +e
+          uv run --project controller --frozen pytest \
+            --pyargs moo_conformance \
+            -m conformance \
+            --candidate-root="${GITHUB_WORKSPACE}/candidate-data" \
+            --moo-suite-root="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_tests" \
+            --server-command="${GITHUB_WORKSPACE}/barn-candidate -db {db} -port {port} -config=${REPORTS_DIR}/barn.conf -outbound -profile-id=barn-linux-testdb-outbound-on -profile-manifest=${REPORTS_DIR}/target-profile.json" \
+            --server-db="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/Test.db" \
+            --server-db-dir="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/startup" \
             --moo-host=127.0.0.1 \
             --oracle-profile-manifest="${REPORTS_DIR}/oracle-profile.json" \
             --target-profile-manifest="${REPORTS_DIR}/target-profile.json" \
             --fail-on-unexpected-skip \
             --strict-markers \
+            --admission-evidence-input="${REPORTS_DIR}/admission.json" \
+            --admission-evidence-context="$ADMISSION_CONTEXT" \
             --junitxml="${REPORTS_DIR}/conformance.xml" \
             -q -ra \
             2>&1 | tee "${REPORTS_DIR}/conformance.log"
           exit_code=${PIPESTATUS[0]}
           set -e
           printf 'exit_code=%s\n' "$exit_code" >> "$GITHUB_OUTPUT"
-          printf '%s\n' "$exit_code" > "${REPORTS_DIR}/exit-code.txt"
+          printf '%s\n' "$exit_code" > "${REPORTS_DIR}/packaged-exit-code.txt"
           exit 0
 
       - name: Upload raw paired evidence
@@ -231,6 +366,14 @@ jobs:
           path: controller
           persist-credentials: false
 
+      - name: Check out immutable candidate conformance data
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: MongooseMoo/moo-conformance-tests
+          ref: ${{ needs.paired.outputs.conformance_sha }}
+          path: candidate-data
+          persist-credentials: false
+
       - name: Install trusted controller
         uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
         with:
@@ -252,27 +395,43 @@ jobs:
           PAIRED_JOB_RESULT: ${{ needs.paired.result }}
         run: test "$PAIRED_JOB_RESULT" = success
 
-      - name: Validate the expected paired result
+      - name: Validate the expected staged result
         env:
           EXPECTED_RESULT: ${{ github.event.client_payload.expected_result }}
-          REQUIRED_BAD_CASE: ${{ github.event.client_payload.required_bad_case }}
-          CONFORMANCE_EXIT: ${{ needs.paired.outputs.conformance_exit }}
+          EXPECTED_PHASE: ${{ needs.paired.outputs.expected_phase }}
+          REQUIRED_BAD_IDENTITIES: ${{ needs.paired.outputs.required_bad_identities }}
+          ADMISSION_CONTEXT: ${{ needs.paired.outputs.admission_context }}
+          ADMISSION_EXIT: ${{ needs.paired.outputs.admission_exit }}
+          PACKAGED_EXIT: ${{ needs.paired.outputs.packaged_exit }}
         run: |
           mkdir -p verdict
-          uv run --project controller --frozen python -m moo_conformance.paired_result \
-            --report="raw-evidence/conformance.xml" \
-            --expected="$EXPECTED_RESULT" \
-            --exit-code="$CONFORMANCE_EXIT" \
-            --required-bad-case="$REQUIRED_BAD_CASE" \
-            --expected-ids="raw-evidence/expected-case-ids.json" \
+          args=(
+            --admission="raw-evidence/admission.json"
+            --admission-report="raw-evidence/admission.xml"
+            --admission-context="$ADMISSION_CONTEXT"
+            --candidate-root="${GITHUB_WORKSPACE}/candidate-data"
+            --candidate-tests="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_tests"
+            --candidate-db="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/Test.db"
+            --candidate-db-dir="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/startup"
+            --expected="$EXPECTED_RESULT"
+            --phase="$EXPECTED_PHASE"
+            --admission-exit-code="$ADMISSION_EXIT"
+            --required-bad-identities="$REQUIRED_BAD_IDENTITIES"
             --output="verdict/result.json"
+          )
+          if [[ -f raw-evidence/conformance.xml ]]; then
+            args+=(--report="raw-evidence/conformance.xml")
+          fi
+          if [[ -n "$PACKAGED_EXIT" ]]; then
+            args+=(--packaged-exit-code="$PACKAGED_EXIT")
+          fi
+          uv run --project controller --frozen python -m moo_conformance.paired_result "${args[@]}"
 
-      - name: Record final paired provenance
+      - name: Record final staged provenance
         env:
           BARN_SHA: ${{ needs.paired.outputs.barn_sha }}
           CONFORMANCE_SHA: ${{ needs.paired.outputs.conformance_sha }}
           EXPECTED_RESULT: ${{ github.event.client_payload.expected_result }}
-          REQUIRED_BAD_CASE: ${{ github.event.client_payload.required_bad_case }}
           CORRELATION_ID: ${{ github.event.client_payload.correlation_id }}
           WORKFLOW_REPOSITORY: ${{ github.repository }}
           WORKFLOW_REF: ${{ github.workflow_ref }}
@@ -295,7 +454,7 @@ jobs:
 
           result = json.loads(Path("verdict/result.json").read_text())
           provenance = {
-              "schema_version": 1,
+              "schema_version": 5,
               "repositories": {
                   "barn": "MongooseMoo/barn",
                   "conformance": "MongooseMoo/moo-conformance-tests",
@@ -303,7 +462,13 @@ jobs:
               "barn_sha": os.environ["BARN_SHA"],
               "conformance_sha": os.environ["CONFORMANCE_SHA"],
               "expected_result": os.environ["EXPECTED_RESULT"],
-              "required_bad_case": os.environ["REQUIRED_BAD_CASE"] or None,
+              "phase": result["phase"],
+              "declared_bad_identities": result["declared_bad_identities"],
+              "observed_bad_identities": result["observed_bad_identities"],
+              "admission_context": result["admission"]["context"],
+              "inventory": result["inventory"],
+              "candidate_anchor": result["inventory"]["candidate_anchor"],
+              "candidate_inventory_sha256": result["inventory"]["candidate_identity_sha256"],
               "correlation_id": os.environ["CORRELATION_ID"] or None,
               "workflow_repository": os.environ["WORKFLOW_REPOSITORY"],
               "workflow_ref": os.environ["WORKFLOW_REF"],
@@ -324,18 +489,34 @@ jobs:
           )
           PY
 
-      - name: Publish paired result summary
+      - name: Publish staged result summary
         env:
           BARN_SHA: ${{ needs.paired.outputs.barn_sha }}
           CONFORMANCE_SHA: ${{ needs.paired.outputs.conformance_sha }}
           EXPECTED_RESULT: ${{ github.event.client_payload.expected_result }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
+          result_fields=$(python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          result = json.loads(Path("verdict/result.json").read_text())
+          print(result["phase"])
+          print(json.dumps(result["declared_bad_identities"]))
+          print(json.dumps(result["observed_bad_identities"]))
+          PY
+          )
+          phase=$(printf '%s\n' "$result_fields" | sed -n '1p')
+          declared=$(printf '%s\n' "$result_fields" | sed -n '2p')
+          observed=$(printf '%s\n' "$result_fields" | sed -n '3p')
           {
             echo "### Paired candidate verdict: EXPECT $EXPECTED_RESULT"
             echo
             echo "- Barn SHA: \`$BARN_SHA\`"
             echo "- Conformance SHA: \`$CONFORMANCE_SHA\`"
+            echo "- Phase: \`$phase\`"
+            echo "- Declared bad identities: \`$declared\`"
+            echo "- Observed bad identities: \`$observed\`"
             echo "- Run: $RUN_URL"
             echo '```json'
             cat verdict/result.json

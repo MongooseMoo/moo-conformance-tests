@@ -1,25 +1,22 @@
 name: promote_numbers
-description: Mixed numeric semantics when PROMOTE_NUMBERS is enabled
+description: Pinned Toast keeps integer and floating-point equality distinct
 
 tests:
-  - name: list_membership_promotes_integer_to_float
-    description: Mixed integer and float list membership uses numeric equality
-    skip_if: not option.PROMOTE_NUMBERS
+  - name: list_membership_distinguishes_integer_and_float
+    description: List membership does not promote numeric types
     code: "1 in {1.0}"
     expect:
-      value: 1
+      value: 0
 
   - name: sort_rejects_mixed_integer_and_float_values
-    description: PROMOTE_NUMBERS does not extend to sort() comparisons
-    skip_if: not option.PROMOTE_NUMBERS
+    description: Pinned Toast rejects mixed integer and float comparisons in sort()
     permission: wizard
     code: "sort({2.0, 1})"
     expect:
       error: E_TYPE
 
   - name: map_keys_keep_integer_and_float_identity
-    description: PROMOTE_NUMBERS does not merge integer and float map keys
-    skip_if: not option.PROMOTE_NUMBERS
+    description: Pinned Toast keeps integer and float map keys distinct
     statement: |
       values = [1 -> "integer", 1.0 -> "float"];
       return {length(mapkeys(values)), values[1], values[1.0], maphaskey([1.0 -> 1], 1)};

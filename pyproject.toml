@@ -61,7 +61,7 @@ moo_conformance = [
 ]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["tests", "src/moo_conformance"]
 addopts = "-v"
 
 [tool.ruff]

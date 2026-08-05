@@ -335,7 +335,7 @@ def discover_yaml_tests(
     if test_dir is None:
         test_dir = get_tests_dir()
 
-    test_cases = []
+    test_cases: list[tuple[Path, MooTestSuite, MooTestCase]] = []
 
     if not test_dir.exists():
         return test_cases
@@ -376,7 +376,24 @@ def discover_yaml_tests(
     return test_cases
 
 
-def pytest_generate_tests(metafunc):
+def conformance_case_id(
+    yaml_path: Path,
+    test: MooTestCase,
+    tests_dir: Path | None = None,
+) -> str:
+    """Build the stable case ID from the full YAML path and expanded test name."""
+    if tests_dir is None:
+        tests_dir = get_tests_dir()
+    try:
+        relative_path = yaml_path.resolve().relative_to(tests_dir.resolve())
+    except ValueError as exc:
+        raise pytest.UsageError(
+            f"Conformance suite is outside the configured tests directory: {yaml_path}"
+        ) from exc
+    return f"{relative_path.as_posix()}::{test.name}"
+
+
+def pytest_generate_tests(metafunc: Any) -> None:
     """Generate test cases from YAML files.
 
     This is called by pytest during test collection to create
@@ -387,20 +404,13 @@ def pytest_generate_tests(metafunc):
         test_cases = discover_yaml_tests(selected_paths=selected_paths)
 
         # Create IDs for each test case
-        ids = []
-        params = []
+        ids: list[str] = []
+        params: list[tuple[MooTestSuite, MooTestCase]] = []
 
         tests_dir = get_tests_dir()
 
         for yaml_path, suite, test in test_cases:
-            # Create a readable test ID
-            try:
-                relative_path = yaml_path.relative_to(tests_dir)
-                test_id = f"{relative_path.stem}::{test.name}"
-            except ValueError:
-                test_id = f"{yaml_path.stem}::{test.name}"
-
-            ids.append(test_id)
+            ids.append(conformance_case_id(yaml_path, test, tests_dir))
             params.append((suite, test))
 
         metafunc.parametrize("yaml_test_case", params, ids=ids)

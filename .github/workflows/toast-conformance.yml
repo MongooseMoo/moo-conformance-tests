@@ -31,7 +31,7 @@ jobs:
       - name: Check out conformance candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ inputs.conformance_sha || github.sha }}
+          ref: ${{ inputs.conformance_sha || github.event.pull_request.head.sha || github.sha }}
           path: candidate-data
           persist-credentials: false
 
@@ -114,7 +114,7 @@ jobs:
             "${GITHUB_RUN_ID}" \
             "${GITHUB_RUN_ATTEMPT}" \
             "$nonce" \
-            "${{ inputs.conformance_sha || github.sha }}" \
+            "${{ inputs.conformance_sha || github.event.pull_request.head.sha || github.sha }}" \
             "${{ matrix.profile }}" \
             "aecc51e9449c6e7c95272f0f044b5ba38948459e" >> "${GITHUB_ENV}"
           mkdir -p "${reports_dir}"
@@ -126,7 +126,7 @@ jobs:
       - name: Check out conformance candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ inputs.conformance_sha || github.sha }}
+          ref: ${{ inputs.conformance_sha || github.event.pull_request.head.sha || github.sha }}
           path: candidate-data
           persist-credentials: false
 
@@ -170,12 +170,6 @@ jobs:
             perl \
             2>&1 | tee -a "${REPORTS_DIR}/apt.log"
 
-      - name: Install locked conformance environment
-        working-directory: candidate-data
-        run: |
-          set -o pipefail
-          uv sync --project . --locked 2>&1 | tee "${REPORTS_DIR}/uv-sync.log"
-
       - name: Verify conformance-owned startup fixtures
         working-directory: candidate-data/src/moo_conformance/_db/startup
         run: |
@@ -187,7 +181,10 @@ jobs:
         run: |
           set -o pipefail
           (
-            git -C "${GITHUB_WORKSPACE}/toast-oracle" diff --exit-code
+            test "$(git -C "${GITHUB_WORKSPACE}/toast-oracle" rev-parse HEAD)" = \
+              "aecc51e9449c6e7c95272f0f044b5ba38948459e"
+            test -z "$(git -C "${GITHUB_WORKSPACE}/toast-oracle" status --porcelain=v1 --untracked-files=all)"
+            git -C "${GITHUB_WORKSPACE}/toast-oracle" diff HEAD --exit-code --
             build_dir="${RUNNER_TEMP}/toast-build-${{ matrix.profile }}"
             mkdir -p "$build_dir"
             cd "$build_dir"
@@ -201,6 +198,12 @@ jobs:
             cmake --build . --target moo --parallel 2
           ) 2>&1 | tee "${REPORTS_DIR}/toast-build.log"
           test -x "${RUNNER_TEMP}/toast-build-${{ matrix.profile }}/moo"
+
+      - name: Install locked conformance environment
+        working-directory: candidate-data
+        run: |
+          set -o pipefail
+          uv sync --project . --locked 2>&1 | tee "${REPORTS_DIR}/uv-sync.log"
 
       - name: Record the exact Toast capability profile
         working-directory: candidate-data
@@ -317,8 +320,15 @@ jobs:
       - name: Check out conformance candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ inputs.conformance_sha || github.sha }}
+          ref: ${{ inputs.conformance_sha || github.event.pull_request.head.sha || github.sha }}
           path: candidate-data
+          persist-credentials: false
+
+      - name: Check out trusted main controller
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha || github.event.repository.default_branch }}
+          path: trusted-controller
           persist-credentials: false
 
       - name: Install uv and Python
@@ -329,7 +339,18 @@ jobs:
           enable-cache: false
 
       - name: Install locked conformance environment
-        run: uv sync --project candidate-data --locked
+        run: |
+          uv sync --project candidate-data --locked
+          uv sync --project trusted-controller --locked
+
+      - name: Reject candidate identity deletions
+        run: |
+          uv run --project trusted-controller --frozen python -m moo_conformance.paired_inventory \
+            --candidate-root="${GITHUB_WORKSPACE}/candidate-data" \
+            --candidate-tests="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_tests" \
+            --candidate-db="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/Test.db" \
+            --candidate-db-dir="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/startup" \
+            --output="${RUNNER_TEMP}/toast-candidate-inventory.json"
 
       - name: Download every Toast profile report
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
@@ -350,6 +371,8 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: toast-execution-ledger
-          path: ${{ runner.temp }}/toast-execution-ledger.json
+          path: |
+            ${{ runner.temp }}/toast-execution-ledger.json
+            ${{ runner.temp }}/toast-candidate-inventory.json
           if-no-files-found: error
           retention-days: 14

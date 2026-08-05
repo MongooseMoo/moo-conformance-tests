@@ -48,8 +48,15 @@ def test_toast_matrix_uses_three_unmodified_pinned_oracle_profiles() -> None:
         "32bit-outbound-on",
     ]
     build = steps_by_name(workflow, "full-suite")["Build Toast oracle"]["run"]
-    assert 'git -C "${GITHUB_WORKSPACE}/toast-oracle" diff --exit-code' in build
+    assert "rev-parse HEAD" in build
+    assert "aecc51e9449c6e7c95272f0f044b5ba38948459e" in build
+    assert "status --porcelain=v1 --untracked-files=all" in build
+    assert 'git -C "${GITHUB_WORKSPACE}/toast-oracle" diff HEAD --exit-code --' in build
     assert "sed" not in build
+    names = list(steps_by_name(workflow, "full-suite"))
+    assert names.index("Build Toast oracle") < names.index(
+        "Install locked conformance environment"
+    )
 
 
 def test_toast_workflow_uses_exact_candidate_in_every_profile_job() -> None:
@@ -63,11 +70,34 @@ def test_toast_workflow_uses_exact_candidate_in_every_profile_job() -> None:
             }
         }
     }
+    exact_ref = (
+        "${{ inputs.conformance_sha || github.event.pull_request.head.sha || github.sha }}"
+    )
     for job_name in ("quality", "full-suite", "execution-ledger"):
         checkout = steps_by_name(workflow, job_name)["Check out conformance candidate"]
-        assert checkout["with"]["ref"] == "${{ inputs.conformance_sha || github.sha }}"
+        assert checkout["with"]["ref"] == exact_ref
         assert checkout["with"]["persist-credentials"] == "false"
         assert checkout["with"]["path"] == "candidate-data"
+
+
+def test_toast_ledger_rejects_deletions_against_trusted_main() -> None:
+    workflow = load_workflow(TOAST_WORKFLOW_PATH)
+    steps = steps_by_name(workflow, "execution-ledger")
+    trusted = steps["Check out trusted main controller"]["with"]
+    trusted_ref = (
+        "${{ github.event.pull_request.base.sha || "
+        "github.event.repository.default_branch }}"
+    )
+    assert trusted == {
+        "ref": trusted_ref,
+        "path": "trusted-controller",
+        "persist-credentials": "false",
+    }
+    inventory = steps["Reject candidate identity deletions"]["run"]
+    assert "uv run --project trusted-controller --frozen" in inventory
+    assert "python -m moo_conformance.paired_inventory" in inventory
+    assert '--candidate-root="${GITHUB_WORKSPACE}/candidate-data"' in inventory
+    assert "toast-candidate-inventory.json" in inventory
 
 
 def test_toast_candidate_and_oracle_are_fixed_credentialless_siblings() -> None:
@@ -142,7 +172,8 @@ def test_toast_generated_state_stays_outside_candidate_anchor() -> None:
     assert "${RUNNER_TEMP}/toast-profile-reports" in union
     assert "${RUNNER_TEMP}/toast-execution-ledger.json" in union
     assert ledger_steps["Upload Toast execution ledger"]["with"]["path"] == (
-        "${{ runner.temp }}/toast-execution-ledger.json"
+        "${{ runner.temp }}/toast-execution-ledger.json\n"
+        "${{ runner.temp }}/toast-candidate-inventory.json\n"
     )
 
 

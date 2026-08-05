@@ -90,14 +90,12 @@ jobs:
       - name: Build Toast oracle
         run: |
           set -o pipefail
-          {
-            cmake \
-              -S toaststunt \
-              -B toaststunt/build-release \
-              -G Ninja \
-              -DCMAKE_BUILD_TYPE=Release
-            cmake --build toaststunt/build-release --target moo --parallel 2
-          } 2>&1 | tee "${REPORTS_DIR}/toast-build.log"
+          (
+            mkdir -p toaststunt/build-release
+            cd toaststunt/build-release
+            cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
+            cmake --build . --target moo --parallel 2
+          ) 2>&1 | tee "${REPORTS_DIR}/toast-build.log"
           test -x toaststunt/build-release/moo
 
       - name: Run every packaged conformance case against Toast

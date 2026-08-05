@@ -5,18 +5,18 @@ requires:
   builtins: [create, recycle, add_verb, set_verb_code]
 
 tests:
-  # NOTE: Wildcard * matching in verb names doesn't work as expected
-  # These tests return E_VERBNF against toaststunt oracle
   - name: wildcard_verb_prefix_matching
     description: Verb with * wildcard matches abbreviated calls
     permission: wizard
-    skip: "Verb wildcard matching doesn't work - E_VERBNF in toaststunt"
     statement: |
       obj = create($nothing);
-      add_verb(obj, {player, "rxd", "test_func*tion"}, {"this", "none", "this"});
-      set_verb_code(obj, "test_func*tion", {"return 42;"});
-      result = obj:test_func();
-      recycle(obj);
+      try
+        add_verb(obj, {player, "rxd", "test_func*tion"}, {"this", "none", "this"});
+        set_verb_code(obj, 1, {"return 42;"});
+        result = obj:test_func();
+      finally
+        recycle(obj);
+      endtry
       return result;
     expect:
       value: 42
@@ -24,13 +24,15 @@ tests:
   - name: wildcard_verb_full_name_matching
     description: Verb with * wildcard matches full name too
     permission: wizard
-    skip: "Verb wildcard matching doesn't work - E_VERBNF in toaststunt"
     statement: |
       obj = create($nothing);
-      add_verb(obj, {player, "rxd", "test_func*tion"}, {"this", "none", "this"});
-      set_verb_code(obj, "test_func*tion", {"return 99;"});
-      result = obj:test_function();
-      recycle(obj);
+      try
+        add_verb(obj, {player, "rxd", "test_func*tion"}, {"this", "none", "this"});
+        set_verb_code(obj, 1, {"return 99;"});
+        result = obj:test_function();
+      finally
+        recycle(obj);
+      endtry
       return result;
     expect:
       value: 99
@@ -38,13 +40,15 @@ tests:
   - name: wildcard_verb_partial_suffix_matching
     description: Verb with * wildcard matches partial suffix
     permission: wizard
-    skip: "Verb wildcard matching doesn't work - E_VERBNF in toaststunt"
     statement: |
       obj = create($nothing);
-      add_verb(obj, {player, "rxd", "test_func*tion"}, {"this", "none", "this"});
-      set_verb_code(obj, "test_func*tion", {"return 77;"});
-      result = obj:test_functi();
-      recycle(obj);
+      try
+        add_verb(obj, {player, "rxd", "test_func*tion"}, {"this", "none", "this"});
+        set_verb_code(obj, 1, {"return 77;"});
+        result = obj:test_functi();
+      finally
+        recycle(obj);
+      endtry
       return result;
     expect:
       value: 77

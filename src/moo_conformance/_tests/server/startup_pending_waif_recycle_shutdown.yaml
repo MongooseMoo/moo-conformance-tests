@@ -1,0 +1,20 @@
+name: startup_pending_waif_recycle_shutdown
+description: Verifies clean shutdown invoked from a deferred WAIF recycle hook.
+server_db: PendingWaifRecycleShutdown.db
+requires:
+  config:
+    - managed_server
+    - server_dir
+    - log_file
+    - server_db_dir
+tests:
+  - name: shutdown_from_deferred_waif_recycle_returns_and_exits_cleanly
+    steps:
+      - wait: 1500
+      - assert_log:
+          contains: "ORACLE WAIF RECYCLE ENTERED"
+      - assert_log:
+          contains: "ORACLE WAIF RECYCLE RETURNED"
+      - assert_file:
+          path: PendingWaifRecycleShutdown.db.new
+          contains: "0 values pending finalization"

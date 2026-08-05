@@ -1,0 +1,23 @@
+name: startup_panic_live_waif_anon_roots
+description: Verifies panic dumping while a suspended task owns WAIF and anonymous roots.
+server_db: PanicLiveWaifAnonRoots.db
+requires:
+  config:
+    - managed_server
+    - server_dir
+    - log_file
+    - server_db_dir
+tests:
+  - name: panic_dump_preserves_live_task_roots_without_pending_root_promotion
+    steps:
+      - wait: 2500
+      - assert_log:
+          contains: "ORACLE LIVE ROOT HOLDER SUSPENDED"
+      - assert_log:
+          contains: "PANIC: ORACLE PANIC WITH LIVE ROOTS"
+      - assert_file:
+          path: PanicLiveWaifAnonRoots.db.new.PANIC
+          contains: "0 values pending finalization"
+      - assert_file:
+          path: PanicLiveWaifAnonRoots.db.new.PANIC
+          contains: "1 suspended tasks"

@@ -53,6 +53,20 @@ def test_toast_workflow_uses_exact_candidate_in_every_profile_job() -> None:
         checkout = steps_by_name(workflow, job_name)["Check out conformance candidate"]
         assert checkout["with"]["ref"] == "${{ inputs.conformance_sha || github.sha }}"
         assert checkout["with"]["persist-credentials"] == "false"
+        assert checkout["with"]["path"] == "candidate-data"
+
+
+def test_toast_candidate_and_oracle_are_fixed_credentialless_siblings() -> None:
+    workflow = load_workflow(TOAST_WORKFLOW_PATH)
+    steps = steps_by_name(workflow, "full-suite")
+    candidate = steps["Check out conformance candidate"]["with"]
+    oracle = steps["Check out pinned Toast oracle"]["with"]
+
+    assert candidate["path"] == "candidate-data"
+    assert candidate["persist-credentials"] == "false"
+    assert oracle["path"] == "toast-oracle"
+    assert oracle["persist-credentials"] == "false"
+    assert not oracle["path"].startswith(candidate["path"] + "/")
 
 
 def test_each_toast_profile_stages_admission_before_complete_packaged_surface() -> None:
@@ -66,18 +80,58 @@ def test_each_toast_profile_stages_admission_before_complete_packaged_surface() 
     packaged_name = "Run every packaged conformance case against Toast"
     assert names.index(admission_name) < names.index(packaged_name)
     admission = steps[admission_name]["run"]
-    assert '--candidate-root="${GITHUB_WORKSPACE}"' in admission
+    assert '--candidate-root="${GITHUB_WORKSPACE}/candidate-data"' in admission
+    assert "uv run --project . --frozen pytest" in admission
+    assert steps[admission_name]["working-directory"] == "candidate-data"
+    assert "${RUNNER_TEMP}/toast-build-${{ matrix.profile }}/moo" in admission
     assert "-m admission" in admission
     assert "--admission-evidence-output=" in admission
     assert "--admission-evidence-context=" in admission
     assert "--junitxml=" in admission
     assert "set +e" not in admission
     packaged = steps[packaged_name]["run"]
-    assert '--candidate-root="${GITHUB_WORKSPACE}"' in packaged
+    assert '--candidate-root="${GITHUB_WORKSPACE}/candidate-data"' in packaged
+    assert "uv run --project . --frozen pytest" in packaged
+    assert steps[packaged_name]["working-directory"] == "candidate-data"
+    assert "${RUNNER_TEMP}/toast-build-${{ matrix.profile }}/moo" in packaged
     assert "-m conformance" in packaged
     assert "--admission-evidence-input=" in packaged
     assert "--admission-evidence-context=" in packaged
     assert "--fail-on-unexpected-skip" in packaged
+
+
+def test_toast_generated_state_stays_outside_candidate_anchor() -> None:
+    workflow = load_workflow(TOAST_WORKFLOW_PATH)
+    full = workflow["jobs"]["full-suite"]
+    assert full["env"]["UV_PROJECT_ENVIRONMENT"] == (
+        "${{ runner.temp }}/toast-conformance-venv-${{ matrix.profile }}"
+    )
+    steps = steps_by_name(workflow, "full-suite")
+    build = steps["Build Toast oracle"]["run"]
+    assert "${RUNNER_TEMP}/toast-build-${{ matrix.profile }}" in build
+    assert "candidate-data" not in build
+    assert steps["Verify conformance-owned startup fixtures"]["working-directory"] == (
+        "candidate-data/src/moo_conformance/_db/startup"
+    )
+    profile = steps["Record the exact Toast capability profile"]
+    assert profile["working-directory"] == "candidate-data"
+    assert "uv run --project . --frozen python" in profile["run"]
+
+    ledger = workflow["jobs"]["execution-ledger"]
+    assert ledger["env"]["UV_PROJECT_ENVIRONMENT"] == (
+        "${{ runner.temp }}/toast-ledger-venv"
+    )
+    ledger_steps = steps_by_name(workflow, "execution-ledger")
+    assert ledger_steps["Download every Toast profile report"]["with"]["path"] == (
+        "${{ runner.temp }}/toast-profile-reports"
+    )
+    union = ledger_steps["Enforce exact profile union"]["run"]
+    assert "--project candidate-data" in union
+    assert "${RUNNER_TEMP}/toast-profile-reports" in union
+    assert "${RUNNER_TEMP}/toast-execution-ledger.json" in union
+    assert ledger_steps["Upload Toast execution ledger"]["with"]["path"] == (
+        "${{ runner.temp }}/toast-execution-ledger.json"
+    )
 
 
 def test_input_validation_requires_explicit_phase_and_exact_identity_array() -> None:

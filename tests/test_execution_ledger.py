@@ -171,6 +171,69 @@ def test_candidate_inventory_rejects_primary_database_symlink_escape(tmp_path: P
         )
 
 
+def test_candidate_inventory_rejects_primary_database_link_to_sibling_oracle(
+    tmp_path: Path,
+) -> None:
+    workspace = tmp_path / "workspace"
+    trusted = workspace / "controller-tests"
+    root, candidate, database, fixtures = candidate_surface(workspace)
+    write_suite(trusted, "suite.yaml", ["base"])
+    write_suite(candidate, "suite.yaml", ["base"])
+    oracle_database = workspace / "toaststunt" / "test" / "Test.db"
+    oracle_database.parent.mkdir(parents=True)
+    oracle_database.write_bytes(database.read_bytes())
+    database.unlink()
+    relative_oracle = Path(os.path.relpath(oracle_database, database.parent))
+    # The former workspace-root topology made the analogous target
+    # ../../../toaststunt/test/Test.db appear confined. The fixed sibling
+    # topology adds one boundary component and must reject it despite the
+    # oracle and candidate blobs being byte-identical.
+    assert relative_oracle.as_posix() == "../../../../toaststunt/test/Test.db"
+    symlink_or_skip(database, relative_oracle)
+
+    with pytest.raises(ExecutionLedgerError, match="candidate primary database escapes"):
+        validate_candidate_inventory(
+            root,
+            candidate,
+            candidate_db_path=database,
+            candidate_db_dir=fixtures,
+            trusted_tests_dir=trusted,
+        )
+
+
+@pytest.mark.parametrize("surface", ["suite", "database"])
+def test_candidate_inventory_rejects_links_to_sibling_generated_paths(
+    tmp_path: Path,
+    surface: str,
+) -> None:
+    workspace = tmp_path / "workspace"
+    trusted = workspace / "trusted"
+    root, candidate, database, fixtures = candidate_surface(workspace)
+    write_suite(trusted, "suite.yaml", ["base"])
+    write_suite(candidate, "suite.yaml", ["base"])
+    generated = workspace / "generated"
+    generated.mkdir()
+    if surface == "suite":
+        outside = generated / "linked.yaml"
+        write_suite(generated, outside.name, ["extra"])
+        symlink_or_skip(candidate / "linked.yaml", outside)
+        message = "candidate suite entry escapes"
+    else:
+        outside = generated / "linked.db"
+        outside.write_text("generated", encoding="utf-8")
+        symlink_or_skip(fixtures / "linked.db", outside)
+        message = "candidate database fixture entry escapes"
+
+    with pytest.raises(ExecutionLedgerError, match=message):
+        validate_candidate_inventory(
+            root,
+            candidate,
+            candidate_db_path=database,
+            candidate_db_dir=fixtures,
+            trusted_tests_dir=trusted,
+        )
+
+
 def test_candidate_inventory_rejects_fixture_directory_symlink_escape(tmp_path: Path) -> None:
     trusted = tmp_path / "trusted"
     root, candidate, database, fixtures = candidate_surface(tmp_path)

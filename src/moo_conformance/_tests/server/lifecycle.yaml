@@ -63,7 +63,155 @@ tests:
 
   - name: oob_command_bypasses_normal_parsing
     description: '#$# prefix bypasses normal verb dispatch'
-    skip: "do_out_of_band_command runs with restricted permissions - cannot observe directly"
+    steps:
+      - run: |
+          marker = "moo-conformance-oob-v1";
+          try
+            property_info(#0, "conformance_oob_saved");
+            raise(E_INVARG);
+          except (E_PROPNF)
+          endtry
+          try
+            property_info(#0, "conformance_oob_args");
+            raise(E_INVARG);
+          except (E_PROPNF)
+          endtry
+          old_exists = 1;
+          try
+            old_info = verb_info(#0, "do_out_of_band_command");
+            old_args = verb_args(#0, "do_out_of_band_command");
+            old_code = verb_code(#0, "do_out_of_band_command");
+          except (E_VERBNF)
+            old_exists = 0;
+            old_info = {};
+            old_args = {};
+            old_code = {};
+          endtry
+          add_property(#0, "conformance_oob_saved", {marker, old_exists, old_info, old_args, old_code}, {#0, "rw"});
+          add_property(#0, "conformance_oob_args", {}, {#0, "rw"});
+          if (!old_exists)
+            add_verb(#0, {#0, "rxd", "do_out_of_band_command"}, {"this", "none", "this"});
+          else
+            set_verb_info(#0, "do_out_of_band_command", {#0, "rxd", "do_out_of_band_command"});
+            set_verb_args(#0, "do_out_of_band_command", {"this", "none", "this"});
+          endif
+          set_verb_code(#0, "do_out_of_band_command", {
+            "#0.conformance_oob_args = args;",
+            "return 1;"
+          });
+          return 1;
+        as: wizard
+      - command: "#$#conformance-oob alpha beta"
+      - run: "return #0.conformance_oob_args;"
+        as: wizard
+        expect:
+          value: ["#$#conformance-oob", "alpha", "beta"]
+      - run: |
+          saved = #0.conformance_oob_saved;
+          if (length(saved) != 5 || saved[1] != "moo-conformance-oob-v1")
+            raise(E_INVARG);
+          endif
+          if (saved[2])
+            try
+              verb_info(#0, "do_out_of_band_command");
+            except (E_VERBNF)
+              add_verb(#0, saved[3], saved[4]);
+            endtry
+            set_verb_info(#0, "do_out_of_band_command", saved[3]);
+            set_verb_args(#0, "do_out_of_band_command", saved[4]);
+            set_verb_code(#0, "do_out_of_band_command", saved[5]);
+            restored = verb_info(#0, "do_out_of_band_command") == saved[3]
+              && verb_args(#0, "do_out_of_band_command") == saved[4]
+              && verb_code(#0, "do_out_of_band_command") == saved[5];
+          else
+            try
+              delete_verb(#0, "do_out_of_band_command");
+            except (E_VERBNF)
+            endtry
+            restored = 0;
+            try
+              verb_info(#0, "do_out_of_band_command");
+            except (E_VERBNF)
+              restored = 1;
+            endtry
+          endif
+          if (!restored)
+            raise(E_INVARG);
+          endif
+          delete_property(#0, "conformance_oob_args");
+          delete_property(#0, "conformance_oob_saved");
+          return 1;
+        as: wizard
+        expect:
+          value: 1
+    cleanup:
+      - run: |
+          owned = 0;
+          saved = {};
+          try
+            saved = #0.conformance_oob_saved;
+            owned = length(saved) == 5 && saved[1] == "moo-conformance-oob-v1";
+          except (ANY)
+            owned = 0;
+          endtry
+          if (owned)
+            restored = 0;
+            if (saved[2])
+              try
+                verb_info(#0, "do_out_of_band_command");
+              except (E_VERBNF)
+                try
+                  add_verb(#0, saved[3], saved[4]);
+                except (ANY)
+                endtry
+              endtry
+              try
+                set_verb_info(#0, "do_out_of_band_command", saved[3]);
+              except (ANY)
+              endtry
+              try
+                set_verb_args(#0, "do_out_of_band_command", saved[4]);
+              except (ANY)
+              endtry
+              try
+                set_verb_code(#0, "do_out_of_band_command", saved[5]);
+              except (ANY)
+              endtry
+              try
+                restored = verb_info(#0, "do_out_of_band_command") == saved[3]
+                  && verb_args(#0, "do_out_of_band_command") == saved[4]
+                  && verb_code(#0, "do_out_of_band_command") == saved[5];
+              except (ANY)
+                restored = 0;
+              endtry
+            else
+              try
+                delete_verb(#0, "do_out_of_band_command");
+              except (E_VERBNF)
+              endtry
+              try
+                verb_info(#0, "do_out_of_band_command");
+              except (E_VERBNF)
+                restored = 1;
+              endtry
+            endif
+            if (restored)
+              observation_removed = 0;
+              try
+                delete_property(#0, "conformance_oob_args");
+                observation_removed = 1;
+              except problem (ANY)
+                observation_removed = problem[1] == E_PROPNF;
+              endtry
+              if (observation_removed)
+                try
+                  delete_property(#0, "conformance_oob_saved");
+                except (ANY)
+                endtry
+              endif
+            endif
+          endif
+        as: wizard
 
   # ============================================
   # recycle Verb Tests

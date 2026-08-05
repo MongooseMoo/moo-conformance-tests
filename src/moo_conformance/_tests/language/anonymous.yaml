@@ -508,14 +508,86 @@ tests:
     - [a, 1, 1]
     - [b, 1, 1]
     - [c, 1, 1]
-- name: task_stack_returns_invalid_anonymous_for_others
+- name: task_stack_rejects_non_owner_anonymous_viewer
   permission: programmer
-  description: Non-owners see invalid anonymous objects in task_stack() - requires
-    fork/suspend/set_verb_code
-  skip: Requires complex verb setup with fork/suspend
-  code: '1'
-  expect:
-    value: 1
+  description: Non-owners cannot inspect a suspended anonymous object's task stack
+  steps:
+  - run: |
+      class = #-1;
+      anon = #-1;
+      task_id = 0;
+      setup_complete = 0;
+      try
+        class = create($object);
+        add_property(class, "anon", 0, {player, "r"});
+        add_verb(class, {player, "xd", "sleeper"}, {"this", "none", "this"});
+        set_verb_code(class, "sleeper", {"suspend(100);"});
+        anon = create(class, 1);
+        class.anon = anon;
+        fork task_id (0)
+          anon:sleeper();
+        endfork
+        suspend(0);
+        setup_complete = 1;
+        return {class, task_id};
+      finally
+        if (!setup_complete)
+          try
+            if (task_id)
+              kill_task(task_id);
+            endif
+          except (ANY)
+          endtry
+          try
+            if (valid(anon))
+              recycle(anon);
+            endif
+          except (ANY)
+          endtry
+          try
+            if (valid(class))
+              recycle(class);
+            endif
+          except (ANY)
+          endtry
+        endif
+      endtry
+    capture: state
+  - run: |
+      class = {state}[1];
+      class.anon.owner = #0;
+      return 1;
+    as: wizard
+    expect:
+      value: 1
+  - run: "return task_stack({state}[2]);"
+    as: programmer
+    expect:
+      error: E_PERM
+  cleanup:
+  - run: |
+      try
+        kill_task({state}[2]);
+      except (ANY)
+      endtry
+      try
+        class = {state}[1];
+        if (valid(class))
+          try
+            anon = class.anon;
+            if (valid(anon))
+              recycle(anon);
+            endif
+          except (ANY)
+          endtry
+          try
+            recycle(class);
+          except (ANY)
+          endtry
+        endif
+      except (ANY)
+      endtry
+    as: wizard
 - name: queued_tasks_returns_valid_anonymous_for_wizards
   skip: "requires anonymous verb stack behavior not present in upstream Toast master"
   permission: wizard

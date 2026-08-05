@@ -154,5 +154,8 @@ def test_load_baseline_rejects_malformed_shape(tmp_path: Path) -> None:
 def test_reviewed_toast_baseline_contains_only_packaged_cases() -> None:
     baseline = load_baseline(Path("ci/toast-never-executed.json"))
 
-    assert len(baseline) == 40
+    assert len(baseline) == 41
+    assert baseline["builtins/math.yaml::minint_modulus_edge_case"] == (
+        "Pinned 32-bit Toast crashes on -2147483648 % -1"
+    )
     assert set(baseline) <= packaged_case_ids()

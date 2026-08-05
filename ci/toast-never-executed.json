@@ -26,6 +26,7 @@
     "builtins/gc.yaml::object_pointing_to_map_cycle": "requires anonymous local-property GC behavior not present in upstream Toast master",
     "builtins/gc.yaml::single_cyclic_self_reference_basic": "requires anonymous local-property GC behavior not present in upstream Toast master",
     "builtins/gc.yaml::single_cyclic_self_reference_with_recycle": "requires anonymous local-property GC behavior not present in upstream Toast master",
+    "builtins/math.yaml::minint_modulus_edge_case": "Pinned 32-bit Toast crashes on -2147483648 % -1",
     "builtins/read_stdin.yaml::read_stdin_a_prefixed_input_returns_e_nacc": "Requires builtin: read_stdin",
     "builtins/read_stdin.yaml::read_stdin_blocks_until_process_stdin_arrives": "Requires builtin: read_stdin",
     "builtins/read_stdin.yaml::read_stdin_function_info_signature_matches_source": "Requires builtin: read_stdin",

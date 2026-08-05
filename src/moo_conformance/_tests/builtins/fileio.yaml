@@ -201,15 +201,13 @@ tests:
     expect:
       error: E_PERM
 
-  # file_version - may not exist on all builds
+  # file_version exists only in legacy extension documentation and is absent
+  # from the pinned Toast source and builtin registry.
   - name: file_version_public
     permission: programmer
-    skip_if: "missing builtin.file_version"
-    statement: |
-      result = file_version();
-      return typeof(result) == STR;
+    code: 'function_info("file_version")'
     expect:
-      value: 1
+      error: E_INVARG
 
   # Text file operations
   - name: text_file_write_read

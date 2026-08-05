@@ -27,7 +27,7 @@ def test_paired_workflow_uses_default_branch_repository_dispatch() -> None:
     assert load_workflow()["on"]["repository_dispatch"]["types"] == ["paired-candidate"]
 
 
-def test_complete_three_profile_toast_admission_remains_unconditional() -> None:
+def test_complete_toast_admission_remains_unconditional() -> None:
     workflow = load_workflow()
     assert workflow["jobs"]["toast-admission"] == {
         "name": "Complete Toast admission",
@@ -36,6 +36,29 @@ def test_complete_three_profile_toast_admission_remains_unconditional() -> None:
         "with": {"conformance_sha": "${{ needs.validate-inputs.outputs.conformance_sha }}"},
     }
     assert workflow["jobs"]["paired"]["needs"] == ["validate-inputs", "toast-admission"]
+
+
+def test_toast_matrix_includes_the_pinned_example_extension_build() -> None:
+    workflow = load_workflow(TOAST_WORKFLOW_PATH)
+    profiles = workflow["jobs"]["full-suite"]["strategy"]["matrix"]["include"]
+
+    assert [profile["profile"] for profile in profiles] == [
+        "64bit-outbound-on",
+        "64bit-outbound-off",
+        "32bit-outbound-on",
+        "64bit-example-outbound-on",
+    ]
+    assert [profile["example_extensions"] for profile in profiles] == [
+        "false",
+        "false",
+        "false",
+        "true",
+    ]
+    build = steps_by_name(workflow, "full-suite")["Build Toast oracle"]["run"]
+    assert "grep -Fxc '#define EXAMPLE 0'" in build
+    assert "sed -i 's/^#define EXAMPLE 0$/#define EXAMPLE 1/'" in build
+    assert "diff --numstat -- src/extensions.cc" in build
+    assert 'tee "${REPORTS_DIR}/toast-source-config.patch"' in build
 
 
 def test_toast_workflow_uses_exact_candidate_in_every_profile_job() -> None:

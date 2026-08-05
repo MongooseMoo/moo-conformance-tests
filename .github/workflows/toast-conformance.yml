@@ -93,14 +93,22 @@ jobs:
             only_32_bits: "OFF"
             outbound: "true"
             outbound_argument: --outbound
+            example_extensions: "false"
           - profile: 64bit-outbound-off
             only_32_bits: "OFF"
             outbound: "false"
             outbound_argument: --no-outbound
+            example_extensions: "false"
           - profile: 32bit-outbound-on
             only_32_bits: "ON"
             outbound: "true"
             outbound_argument: --outbound
+            example_extensions: "false"
+          - profile: 64bit-example-outbound-on
+            only_32_bits: "OFF"
+            outbound: "true"
+            outbound_argument: --outbound
+            example_extensions: "true"
 
     steps:
       - name: Prepare evidence directory
@@ -187,6 +195,17 @@ jobs:
         run: |
           set -o pipefail
           (
+            if [[ "${{ matrix.example_extensions }}" == "true" ]]; then
+              test "$(grep -Fxc '#define EXAMPLE 0' "${GITHUB_WORKSPACE}/toast-oracle/src/extensions.cc")" = 1
+              sed -i 's/^#define EXAMPLE 0$/#define EXAMPLE 1/' \
+                "${GITHUB_WORKSPACE}/toast-oracle/src/extensions.cc"
+              test "$(grep -Fxc '#define EXAMPLE 1' "${GITHUB_WORKSPACE}/toast-oracle/src/extensions.cc")" = 1
+              test "$(git -C "${GITHUB_WORKSPACE}/toast-oracle" diff --numstat -- src/extensions.cc)" = $'1\t1\tsrc/extensions.cc'
+            else
+              git -C "${GITHUB_WORKSPACE}/toast-oracle" diff --exit-code
+            fi
+            git -C "${GITHUB_WORKSPACE}/toast-oracle" diff -- src/extensions.cc \
+              | tee "${REPORTS_DIR}/toast-source-config.patch"
             build_dir="${RUNNER_TEMP}/toast-build-${{ matrix.profile }}"
             mkdir -p "$build_dir"
             cd "$build_dir"
@@ -207,6 +226,7 @@ jobs:
           PROFILE_ID: ${{ matrix.profile }}
           PROFILE_OUTBOUND: ${{ matrix.outbound }}
           PROFILE_32BIT: ${{ matrix.only_32_bits }}
+          PROFILE_EXAMPLE_EXTENSIONS: ${{ matrix.example_extensions }}
         run: |
           uv run --project . --frozen python - <<'PY'
           from pathlib import Path
@@ -226,6 +246,7 @@ jobs:
                   "option.OUTBOUND_NETWORK": os.environ["PROFILE_OUTBOUND"] == "true",
                   "option.PROMOTE_NUMBERS": False,
                   "option.ONLY_32_BITS": os.environ["PROFILE_32BIT"] == "ON",
+                  "feature.example_extensions": os.environ["PROFILE_EXAMPLE_EXTENSIONS"] == "true",
                   "feature.maps": True,
                   "feature.anonymous": True,
                   "feature.index_extensions": True,
@@ -342,6 +363,7 @@ jobs:
             --report=64bit-outbound-on="${RUNNER_TEMP}/toast-profile-reports/toast-conformance-64bit-outbound-on/toast-conformance.xml" \
             --report=64bit-outbound-off="${RUNNER_TEMP}/toast-profile-reports/toast-conformance-64bit-outbound-off/toast-conformance.xml" \
             --report=32bit-outbound-on="${RUNNER_TEMP}/toast-profile-reports/toast-conformance-32bit-outbound-on/toast-conformance.xml" \
+            --report=64bit-example-outbound-on="${RUNNER_TEMP}/toast-profile-reports/toast-conformance-64bit-example-outbound-on/toast-conformance.xml" \
             --output="${RUNNER_TEMP}/toast-execution-ledger.json"
 
       - name: Upload Toast execution ledger

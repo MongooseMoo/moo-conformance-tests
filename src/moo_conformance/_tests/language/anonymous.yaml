@@ -452,22 +452,23 @@ tests:
   expect:
     value: 1
 - name: callers_returns_valid_anonymous_for_wizards
-  skip: "requires anonymous verb stack behavior not present in upstream Toast master"
   permission: wizard
   description: Wizard sees valid anonymous objects in callers()
   statement: |
-    o = create($anonymous, 1);
-    add_verb(o, {player, "xd", "a"}, {"this", "none", "this"});
-    set_verb_code(o, "a", {"return callers();"});
-    add_verb(o, {player, "xd", "b"}, {"this", "none", "this"});
-    set_verb_code(o, "b", {"return this:a();"});
-    add_verb(o, {player, "xd", "c"}, {"this", "none", "this"});
-    set_verb_code(o, "c", {
+    class = create($nothing);
+    add_verb(class, {player, "xd", "a"}, {"this", "none", "this"});
+    set_verb_code(class, "a", {"return callers();"});
+    add_verb(class, {player, "xd", "b"}, {"this", "none", "this"});
+    set_verb_code(class, "b", {"return this:a();"});
+    add_verb(class, {player, "xd", "c"}, {"this", "none", "this"});
+    set_verb_code(class, "c", {
       "c = this:b();",
       "return {{c[1][2], valid(c[1][1]), valid(c[1][4])}, {c[2][2], valid(c[2][1]), valid(c[2][4])}};"
     });
+    o = create(class, 1);
     result = o:c();
     recycle(o);
+    recycle(class);
     return result;
   expect:
     value:
@@ -480,17 +481,16 @@ tests:
   expect:
     value: 1
 - name: task_stack_returns_valid_anonymous_for_wizards
-  skip: "requires anonymous verb stack behavior not present in upstream Toast master"
   permission: wizard
   description: Wizard sees valid anonymous objects in task_stack()
   statement: |
-    o = create($anonymous, 1);
-    add_verb(o, {player, "xd", "a"}, {"this", "none", "this"});
-    set_verb_code(o, "a", {"suspend();"});
-    add_verb(o, {player, "xd", "b"}, {"this", "none", "this"});
-    set_verb_code(o, "b", {"return this:a();"});
-    add_verb(o, {player, "xd", "c"}, {"this", "none", "this"});
-    set_verb_code(o, "c", {
+    class = create($nothing);
+    add_verb(class, {player, "xd", "a"}, {"this", "none", "this"});
+    set_verb_code(class, "a", {"suspend();"});
+    add_verb(class, {player, "xd", "b"}, {"this", "none", "this"});
+    set_verb_code(class, "b", {"return this:a();"});
+    add_verb(class, {player, "xd", "c"}, {"this", "none", "this"});
+    set_verb_code(class, "c", {
       "fork t (0)",
       "  c = this:b();",
       "endfork",
@@ -500,8 +500,10 @@ tests:
       "kill_task(t);",
       "return result;"
     });
+    o = create(class, 1);
     result = o:c();
     recycle(o);
+    recycle(class);
     return result;
   expect:
     value:
@@ -589,17 +591,16 @@ tests:
       endtry
     as: wizard
 - name: queued_tasks_returns_valid_anonymous_for_wizards
-  skip: "requires anonymous verb stack behavior not present in upstream Toast master"
   permission: wizard
   description: Wizard sees valid anonymous objects in queued_tasks()
   statement: |
-    o = create($anonymous, 1);
-    add_verb(o, {player, "xd", "a"}, {"this", "none", "this"});
-    set_verb_code(o, "a", {"suspend();"});
-    add_verb(o, {player, "xd", "b"}, {"this", "none", "this"});
-    set_verb_code(o, "b", {"return this:a();"});
-    add_verb(o, {player, "xd", "c"}, {"this", "none", "this"});
-    set_verb_code(o, "c", {
+    class = create($nothing);
+    add_verb(class, {player, "xd", "a"}, {"this", "none", "this"});
+    set_verb_code(class, "a", {"suspend();"});
+    add_verb(class, {player, "xd", "b"}, {"this", "none", "this"});
+    set_verb_code(class, "b", {"return this:a();"});
+    add_verb(class, {player, "xd", "c"}, {"this", "none", "this"});
+    set_verb_code(class, "c", {
       "for delay in ({0, 100})",
       "  fork (delay)",
       "    c = this:b();",
@@ -612,8 +613,10 @@ tests:
       "kill_task(q[2][1]);",
       "return result;"
     });
+    o = create(class, 1);
     result = o:c();
     recycle(o);
+    recycle(class);
     return result;
   expect:
     value:

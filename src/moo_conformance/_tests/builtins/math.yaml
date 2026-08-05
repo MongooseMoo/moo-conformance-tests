@@ -1180,7 +1180,7 @@ tests:
     code: "-2147483648 % -1"
     expect:
       value: 0
-    skip: "Pinned 32-bit Toast crashes on -2147483648 % -1"
+    skip_if: "not feature.64bit"
 
   # Minint edge cases (64-bit)
   - name: minint_division_edge_case_64bit

@@ -66,12 +66,14 @@ def test_each_toast_profile_stages_admission_before_complete_packaged_surface() 
     packaged_name = "Run every packaged conformance case against Toast"
     assert names.index(admission_name) < names.index(packaged_name)
     admission = steps[admission_name]["run"]
+    assert '--candidate-root="${GITHUB_WORKSPACE}"' in admission
     assert "-m admission" in admission
     assert "--admission-evidence-output=" in admission
     assert "--admission-evidence-context=" in admission
     assert "--junitxml=" in admission
     assert "set +e" not in admission
     packaged = steps[packaged_name]["run"]
+    assert '--candidate-root="${GITHUB_WORKSPACE}"' in packaged
     assert "-m conformance" in packaged
     assert "--admission-evidence-input=" in packaged
     assert "--admission-evidence-context=" in packaged
@@ -154,7 +156,10 @@ def test_paired_candidate_checkout_is_data_only_and_inventory_is_trusted() -> No
     assert "working-directory: conformance" not in workflow_text
     inventory = steps["Recompute trusted and candidate case inventories"]["run"]
     assert "python -m moo_conformance.paired_inventory" in inventory
+    assert '--candidate-root="${GITHUB_WORKSPACE}/candidate-data"' in inventory
     assert "candidate-data/src/moo_conformance/_tests" in inventory
+    assert "candidate-data/src/moo_conformance/_db/Test.db" in inventory
+    assert "candidate-data/src/moo_conformance/_db/startup" in inventory
     assert "expected-case-ids" not in workflow_text
 
 
@@ -170,6 +175,7 @@ def test_candidate_run_is_staged_and_packaged_execution_is_success_gated() -> No
     assert "--admission-evidence-context=" in admission["run"]
     assert "--junitxml=" in admission["run"]
     assert "--project controller" in admission["run"]
+    assert '--candidate-root="${GITHUB_WORKSPACE}/candidate-data"' in admission["run"]
     assert "--moo-suite-root=" in admission["run"]
     assert "exit 0" in admission["run"]
 
@@ -184,6 +190,7 @@ def test_candidate_run_is_staged_and_packaged_execution_is_success_gated() -> No
     assert "--admission-evidence-context=" in packaged["run"]
     assert "--pyargs moo_conformance" in packaged["run"]
     assert "--project controller" in packaged["run"]
+    assert '--candidate-root="${GITHUB_WORKSPACE}/candidate-data"' in packaged["run"]
     assert "--moo-suite-root=" in packaged["run"]
     assert "--fail-on-unexpected-skip" in packaged["run"]
     assert "--moo-suite-path" not in packaged["run"]
@@ -219,7 +226,10 @@ def test_trusted_controller_validates_phase_appropriate_raw_evidence() -> None:
     assert '--admission="raw-evidence/admission.json"' in command
     assert '--admission-report="raw-evidence/admission.xml"' in command
     assert '--admission-context="$ADMISSION_CONTEXT"' in command
-    assert '--candidate-tests="candidate-data/src/moo_conformance/_tests"' in command
+    assert '--candidate-root="${GITHUB_WORKSPACE}/candidate-data"' in command
+    assert "--candidate-tests=" in command
+    assert "--candidate-db=" in command
+    assert "--candidate-db-dir=" in command
     assert '--phase="$EXPECTED_PHASE"' in command
     assert '--admission-exit-code="$ADMISSION_EXIT"' in command
     assert '--required-bad-identities="$REQUIRED_BAD_IDENTITIES"' in command
@@ -227,15 +237,20 @@ def test_trusted_controller_validates_phase_appropriate_raw_evidence() -> None:
     assert "--packaged-exit-code=" in command
 
 
-def test_schema_v4_provenance_records_trusted_inventory_and_phase_identity_sets() -> None:
+def test_schema_v5_provenance_records_trusted_inventory_and_phase_identity_sets() -> None:
     workflow = load_workflow()
     provenance = steps_by_name(workflow, "verdict")["Record final staged provenance"]["run"]
-    assert '"schema_version": 4' in provenance
+    assert '"schema_version": 5' in provenance
     assert '"phase": result["phase"]' in provenance
     assert '"declared_bad_identities": result["declared_bad_identities"]' in provenance
     assert '"observed_bad_identities": result["observed_bad_identities"]' in provenance
     assert '"admission_context": result["admission"]["context"]' in provenance
     assert '"inventory": result["inventory"]' in provenance
+    assert '"candidate_anchor": result["inventory"]["candidate_anchor"]' in provenance
+    assert (
+        '"candidate_inventory_sha256": result["inventory"]["candidate_identity_sha256"]'
+        in provenance
+    )
     summary = steps_by_name(workflow, "verdict")["Publish staged result summary"]["run"]
     assert "Declared bad identities" in summary
     assert "Observed bad identities" in summary

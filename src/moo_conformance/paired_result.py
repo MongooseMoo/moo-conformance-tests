@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -30,7 +29,10 @@ def validate_paired_result(
     admission_path: str | Path,
     admission_report_path: str | Path,
     admission_context: str,
+    candidate_root: str | Path,
     candidate_tests_dir: str | Path,
+    candidate_db_path: str | Path,
+    candidate_db_dir: str | Path,
     report_path: str | Path | None,
     expected: str,
     expected_phase: str,
@@ -46,7 +48,12 @@ def validate_paired_result(
     if expected == "success" and expected_phase != "packaged":
         raise ExecutionLedgerError("expected success requires packaged phase")
 
-    inventory = validate_candidate_inventory(candidate_tests_dir)
+    inventory = validate_candidate_inventory(
+        candidate_root,
+        candidate_tests_dir,
+        candidate_db_path=candidate_db_path,
+        candidate_db_dir=candidate_db_dir,
+    )
     candidate_case_ids = set(inventory["candidate_case_ids"])
     if expected_phase == "packaged":
         known_identities = candidate_case_ids
@@ -109,7 +116,7 @@ def validate_paired_result(
             )
         _require_exact_bad_set(admission_bad, declared_bad)
         return {
-            "schema_version": 4,
+            "schema_version": 5,
             "phase": "admission",
             "expected_result": expected,
             "declared_bad_identities": sorted(declared_bad),
@@ -166,7 +173,7 @@ def validate_paired_result(
     _require_exact_bad_set(observed_bad, declared_bad)
 
     return {
-        "schema_version": 4,
+        "schema_version": 5,
         "phase": "packaged",
         "expected_result": expected,
         "declared_bad_identities": sorted(declared_bad),
@@ -292,13 +299,13 @@ def _inventory_summary(inventory: CandidateInventory) -> dict[str, object]:
     trusted = inventory["trusted_case_ids"]
     candidate = inventory["candidate_case_ids"]
     additive = inventory["additive_case_ids"]
-    digest = hashlib.sha256(("\n".join(candidate) + "\n").encode()).hexdigest()
     return {
-        "schema_version": 1,
+        "schema_version": 2,
+        "candidate_anchor": inventory["candidate_anchor"],
         "trusted_cases": len(trusted),
         "candidate_cases": len(candidate),
         "additive_cases": len(additive),
-        "candidate_identity_sha256": digest,
+        "candidate_identity_sha256": inventory["candidate_identity_sha256"],
     }
 
 
@@ -307,7 +314,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--admission", required=True, type=Path)
     parser.add_argument("--admission-report", required=True, type=Path)
     parser.add_argument("--admission-context", required=True)
+    parser.add_argument("--candidate-root", required=True, type=Path)
     parser.add_argument("--candidate-tests", required=True, type=Path)
+    parser.add_argument("--candidate-db", required=True, type=Path)
+    parser.add_argument("--candidate-db-dir", required=True, type=Path)
     parser.add_argument("--report", type=Path)
     parser.add_argument("--expected", required=True, choices=("success", "failure"))
     parser.add_argument("--phase", required=True, choices=("admission", "packaged"))
@@ -325,7 +335,10 @@ def main(argv: list[str] | None = None) -> int:
             admission_path=args.admission,
             admission_report_path=args.admission_report,
             admission_context=args.admission_context,
+            candidate_root=args.candidate_root,
             candidate_tests_dir=args.candidate_tests,
+            candidate_db_path=args.candidate_db,
+            candidate_db_dir=args.candidate_db_dir,
             report_path=args.report,
             expected=args.expected,
             expected_phase=args.phase,

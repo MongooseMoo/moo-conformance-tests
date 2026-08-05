@@ -11,12 +11,20 @@ from .execution_ledger import ExecutionLedgerError, validate_candidate_inventory
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--candidate-root", required=True, type=Path)
     parser.add_argument("--candidate-tests", required=True, type=Path)
+    parser.add_argument("--candidate-db", required=True, type=Path)
+    parser.add_argument("--candidate-db-dir", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args(argv)
 
     try:
-        inventory = validate_candidate_inventory(args.candidate_tests)
+        inventory = validate_candidate_inventory(
+            args.candidate_root,
+            args.candidate_tests,
+            candidate_db_path=args.candidate_db,
+            candidate_db_dir=args.candidate_db_dir,
+        )
     except ExecutionLedgerError as exc:
         parser.error(str(exc))
 

@@ -245,7 +245,10 @@ jobs:
           set -euo pipefail
           printf 'OUTBOUND_NETWORK = 1\nPROMOTE_NUMBERS = 0\n' > "${REPORTS_DIR}/barn.conf"
           uv run --project controller --frozen python -m moo_conformance.paired_inventory \
-            --candidate-tests="candidate-data/src/moo_conformance/_tests" \
+            --candidate-root="${GITHUB_WORKSPACE}/candidate-data" \
+            --candidate-tests="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_tests" \
+            --candidate-db="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/Test.db" \
+            --candidate-db-dir="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/startup" \
             --output="${REPORTS_DIR}/candidate-inventory.json"
           uv run --project controller --frozen python - <<'PY'
           import hashlib
@@ -284,6 +287,7 @@ jobs:
           uv run --project controller --frozen pytest \
             --pyargs moo_conformance \
             -m admission \
+            --candidate-root="${GITHUB_WORKSPACE}/candidate-data" \
             --moo-suite-root="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_tests" \
             --server-command="${GITHUB_WORKSPACE}/barn-candidate -db {db} -port {port} -config=${REPORTS_DIR}/barn.conf -outbound -profile-id=barn-linux-testdb-outbound-on -profile-manifest=${REPORTS_DIR}/target-profile.json" \
             --server-db="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/Test.db" \
@@ -315,6 +319,7 @@ jobs:
           uv run --project controller --frozen pytest \
             --pyargs moo_conformance \
             -m conformance \
+            --candidate-root="${GITHUB_WORKSPACE}/candidate-data" \
             --moo-suite-root="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_tests" \
             --server-command="${GITHUB_WORKSPACE}/barn-candidate -db {db} -port {port} -config=${REPORTS_DIR}/barn.conf -outbound -profile-id=barn-linux-testdb-outbound-on -profile-manifest=${REPORTS_DIR}/target-profile.json" \
             --server-db="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/Test.db" \
@@ -404,7 +409,10 @@ jobs:
             --admission="raw-evidence/admission.json"
             --admission-report="raw-evidence/admission.xml"
             --admission-context="$ADMISSION_CONTEXT"
-            --candidate-tests="candidate-data/src/moo_conformance/_tests"
+            --candidate-root="${GITHUB_WORKSPACE}/candidate-data"
+            --candidate-tests="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_tests"
+            --candidate-db="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/Test.db"
+            --candidate-db-dir="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/startup"
             --expected="$EXPECTED_RESULT"
             --phase="$EXPECTED_PHASE"
             --admission-exit-code="$ADMISSION_EXIT"
@@ -446,7 +454,7 @@ jobs:
 
           result = json.loads(Path("verdict/result.json").read_text())
           provenance = {
-              "schema_version": 4,
+              "schema_version": 5,
               "repositories": {
                   "barn": "MongooseMoo/barn",
                   "conformance": "MongooseMoo/moo-conformance-tests",
@@ -459,6 +467,8 @@ jobs:
               "observed_bad_identities": result["observed_bad_identities"],
               "admission_context": result["admission"]["context"],
               "inventory": result["inventory"],
+              "candidate_anchor": result["inventory"]["candidate_anchor"],
+              "candidate_inventory_sha256": result["inventory"]["candidate_identity_sha256"],
               "correlation_id": os.environ["CORRELATION_ID"] or None,
               "workflow_repository": os.environ["WORKFLOW_REPOSITORY"],
               "workflow_ref": os.environ["WORKFLOW_REF"],

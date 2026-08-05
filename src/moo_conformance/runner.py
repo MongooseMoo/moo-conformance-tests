@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from .moo_types import MooError
+from .path_confinement import require_confined_path
 from .schema import (
     Expectation,
     FileAssertion,
@@ -40,12 +41,14 @@ class YamlTestRunner:
         server_dir: str | None = None,
         managed_server: ManagedServer | None = None,
         server_db_dir: str | None = None,
+        candidate_root: str | None = None,
     ):
         self.transport = transport
         self.log_file_path = log_file_path
         self.server_dir = server_dir
         self.managed_server = managed_server
         self.server_db_dir = server_db_dir
+        self.candidate_root = candidate_root
         self._suites_setup_done: set[str] = set()
         self._log_offset: int = 0
         self._active_server_db_path: Path | None = None
@@ -100,11 +103,26 @@ class YamlTestRunner:
             return None
 
         if suite.server_db is None:
-            return self.managed_server.default_db_path
+            default_db = Path(self.managed_server.default_db_path)
+            if self.candidate_root is not None:
+                return require_confined_path(
+                    self.candidate_root,
+                    default_db,
+                    label="managed primary database",
+                    kind="file",
+                )
+            return default_db
 
         server_db = Path(suite.server_db)
         if self.server_db_dir is not None:
             fixture_root = Path(self.server_db_dir).resolve()
+            if self.candidate_root is not None:
+                fixture_root = require_confined_path(
+                    self.candidate_root,
+                    fixture_root,
+                    label="candidate database fixture root",
+                    kind="directory",
+                )
             server_db = (
                 server_db.resolve()
                 if server_db.is_absolute()
@@ -117,7 +135,15 @@ class YamlTestRunner:
                     f"Suite server_db escapes the configured fixture directory: {suite.server_db}"
                 ) from exc
 
-        return Path(os.path.realpath(server_db))
+        resolved = Path(os.path.realpath(server_db))
+        if self.candidate_root is not None:
+            resolved = require_confined_path(
+                self.candidate_root,
+                resolved,
+                label="suite database candidate anchor",
+                kind="file",
+            )
+        return resolved
 
     def _suite_requires_transport(self, suite: MooTestSuite) -> bool:
         """Check whether any test in the suite needs a live transport connection."""

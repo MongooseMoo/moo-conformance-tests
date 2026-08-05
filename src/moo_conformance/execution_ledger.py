@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import xml.etree.ElementTree as ET
@@ -10,6 +11,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, TypedDict
 
+from .path_confinement import (
+    CandidatePathError,
+    require_confined_path,
+    resolve_candidate_anchor,
+    validate_confined_tree,
+)
 from .plugin import conformance_case_id, discover_yaml_tests, get_tests_dir
 
 _CASE_NAME = re.compile(r"^test_yaml_conformance\[(.*)]$")
@@ -27,27 +34,61 @@ class CaseOutcome:
 
 class CandidateInventory(TypedDict):
     schema_version: int
+    candidate_anchor: str
     trusted_case_ids: list[str]
     candidate_case_ids: list[str]
     additive_case_ids: list[str]
+    candidate_identity_sha256: str
 
 
-def packaged_case_ids(tests_dir: str | Path | None = None) -> set[str]:
+def packaged_case_ids(
+    tests_dir: str | Path | None = None,
+    *,
+    candidate_root: str | Path | None = None,
+) -> set[str]:
     tests_dir = Path(tests_dir).resolve() if tests_dir is not None else get_tests_dir()
     return {
         conformance_case_id(path, test, tests_dir)
-        for path, _suite, test in discover_yaml_tests(test_dir=tests_dir)
+        for path, _suite, test in discover_yaml_tests(
+            test_dir=tests_dir,
+            candidate_root=candidate_root,
+        )
     }
 
 
 def validate_candidate_inventory(
+    candidate_root: str | Path,
     candidate_tests_dir: str | Path,
     *,
+    candidate_db_path: str | Path,
+    candidate_db_dir: str | Path,
     trusted_tests_dir: str | Path | None = None,
 ) -> CandidateInventory:
     """Recompute trusted and candidate identities and reject candidate deletions."""
-    trusted = packaged_case_ids(trusted_tests_dir)
-    candidate = packaged_case_ids(candidate_tests_dir)
+    try:
+        anchor = resolve_candidate_anchor(candidate_root)
+        tests = validate_confined_tree(
+            anchor,
+            candidate_tests_dir,
+            root_label="candidate suite root",
+            entry_label="candidate suite entry",
+        )
+        require_confined_path(
+            anchor,
+            candidate_db_path,
+            label="candidate primary database",
+            kind="file",
+        )
+        validate_confined_tree(
+            anchor,
+            candidate_db_dir,
+            root_label="candidate database fixture root",
+            entry_label="candidate database fixture entry",
+        )
+        trusted = packaged_case_ids(trusted_tests_dir)
+        candidate = packaged_case_ids(tests, candidate_root=anchor)
+    except (CandidatePathError, ValueError) as exc:
+        raise ExecutionLedgerError(str(exc)) from exc
     if not trusted:
         raise ExecutionLedgerError("trusted-main packaged conformance inventory is empty")
     if not candidate:
@@ -58,11 +99,15 @@ def validate_candidate_inventory(
             "candidate conformance data deletes trusted-main identities: "
             + ", ".join(sorted(missing))
         )
+    candidate_identities = sorted(candidate)
+    digest = hashlib.sha256(("\n".join(candidate_identities) + "\n").encode()).hexdigest()
     return {
-        "schema_version": 1,
+        "schema_version": 2,
+        "candidate_anchor": str(anchor),
         "trusted_case_ids": sorted(trusted),
-        "candidate_case_ids": sorted(candidate),
+        "candidate_case_ids": candidate_identities,
         "additive_case_ids": sorted(candidate - trusted),
+        "candidate_identity_sha256": digest,
     }
 
 

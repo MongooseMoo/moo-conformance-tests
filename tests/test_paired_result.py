@@ -19,13 +19,22 @@ def trusted_inventory_boundary(monkeypatch):
     global CURRENT_CANDIDATE_IDS
     CURRENT_CANDIDATE_IDS = {"suite.yaml::case"}
 
-    def inventory(_candidate_tests_dir):
+    def inventory(
+        candidate_root,
+        _candidate_tests_dir,
+        *,
+        candidate_db_path,
+        candidate_db_dir,
+    ):
         identities = sorted(CURRENT_CANDIDATE_IDS)
+        digest = hashlib.sha256(("\n".join(identities) + "\n").encode()).hexdigest()
         return {
-            "schema_version": 1,
+            "schema_version": 2,
+            "candidate_anchor": str(candidate_root),
             "trusted_case_ids": identities,
             "candidate_case_ids": identities,
             "additive_case_ids": [],
+            "candidate_identity_sha256": digest,
         }
 
     monkeypatch.setattr(paired_result, "validate_candidate_inventory", inventory)
@@ -134,6 +143,16 @@ def write_admission(tmp_path, statuses=None, context=TEST_CONTEXT):
     return path
 
 
+def candidate_surface_kwargs(tmp_path):
+    root = tmp_path / "candidate-data"
+    return {
+        "candidate_root": root,
+        "candidate_tests_dir": root / "_tests",
+        "candidate_db_path": root / "_db" / "Test.db",
+        "candidate_db_dir": root / "_db" / "startup",
+    }
+
+
 def validate_packaged(tmp_path, outcomes, **overrides):
     global CURRENT_CANDIDATE_IDS
     CURRENT_CANDIDATE_IDS = set(overrides.pop("inventory_ids", outcomes))
@@ -141,7 +160,7 @@ def validate_packaged(tmp_path, outcomes, **overrides):
         "admission_path": write_admission(tmp_path),
         "admission_report_path": write_admission_report(tmp_path),
         "admission_context": TEST_CONTEXT,
-        "candidate_tests_dir": tmp_path / "candidate-data",
+        **candidate_surface_kwargs(tmp_path),
         "report_path": write_report(tmp_path, outcomes),
         "expected": "success",
         "expected_phase": "packaged",
@@ -160,7 +179,7 @@ def test_validate_packaged_success_requires_exact_nonempty_surface(tmp_path) -> 
     )
 
     assert result == {
-        "schema_version": 4,
+        "schema_version": 5,
         "phase": "packaged",
         "expected_result": "success",
         "declared_bad_identities": [],
@@ -177,7 +196,8 @@ def test_validate_packaged_success_requires_exact_nonempty_surface(tmp_path) -> 
             "junit_status": "passed",
         },
         "inventory": {
-            "schema_version": 1,
+            "schema_version": 2,
+            "candidate_anchor": str(tmp_path / "candidate-data"),
             "trusted_cases": 2,
             "candidate_cases": 2,
             "additive_cases": 0,
@@ -344,7 +364,7 @@ def test_validate_admission_failure_uses_exact_failed_error_set_and_blocked_evid
         admission_path=admission,
         admission_report_path=write_admission_report(tmp_path, "failure"),
         admission_context=TEST_CONTEXT,
-        candidate_tests_dir=tmp_path / "candidate-data",
+        **candidate_surface_kwargs(tmp_path),
         report_path=None,
         expected="failure",
         expected_phase="admission",
@@ -373,7 +393,7 @@ def test_validate_admission_failure_rejects_inexact_failed_error_set(tmp_path) -
             admission_path=admission,
             admission_report_path=write_admission_report(tmp_path, "failure"),
             admission_context=TEST_CONTEXT,
-            candidate_tests_dir=tmp_path / "candidate-data",
+            **candidate_surface_kwargs(tmp_path),
             report_path=None,
             expected="failure",
             expected_phase="admission",
@@ -392,7 +412,7 @@ def test_validate_admission_phase_rejects_manufactured_packaged_evidence(tmp_pat
             admission_path=admission,
             admission_report_path=write_admission_report(tmp_path, "failure"),
             admission_context=TEST_CONTEXT,
-            candidate_tests_dir=tmp_path / "candidate-data",
+            **candidate_surface_kwargs(tmp_path),
             report_path=write_report(tmp_path, {"suite.yaml::case": "passed"}),
             expected="failure",
             expected_phase="admission",
@@ -420,7 +440,7 @@ def test_validate_rejects_malformed_admission_evidence(tmp_path) -> None:
             admission_path=path,
             admission_report_path=write_admission_report(tmp_path, "failure"),
             admission_context=TEST_CONTEXT,
-            candidate_tests_dir=tmp_path / "candidate-data",
+            **candidate_surface_kwargs(tmp_path),
             report_path=None,
             expected="failure",
             expected_phase="admission",
@@ -439,7 +459,7 @@ def test_validate_rejects_packaged_phase_when_admission_did_not_succeed(tmp_path
             admission_path=admission,
             admission_report_path=write_admission_report(tmp_path, "failure"),
             admission_context=TEST_CONTEXT,
-            candidate_tests_dir=tmp_path / "candidate-data",
+            **candidate_surface_kwargs(tmp_path),
             report_path=None,
             expected="failure",
             expected_phase="packaged",
@@ -455,7 +475,7 @@ def test_validate_rejects_admission_phase_after_successful_admission(tmp_path) -
             admission_path=write_admission(tmp_path),
             admission_report_path=write_admission_report(tmp_path),
             admission_context=TEST_CONTEXT,
-            candidate_tests_dir=tmp_path / "candidate-data",
+            **candidate_surface_kwargs(tmp_path),
             report_path=None,
             expected="failure",
             expected_phase="admission",
@@ -484,7 +504,7 @@ def test_validate_rejects_unknown_malformed_duplicate_or_phase_incompatible_decl
             admission_path=write_admission(tmp_path),
             admission_report_path=write_admission_report(tmp_path),
             admission_context=TEST_CONTEXT,
-            candidate_tests_dir=tmp_path / "candidate-data",
+            **candidate_surface_kwargs(tmp_path),
             report_path=write_report(tmp_path, {"suite.yaml::case": "failed"}),
             expected="failure",
             expected_phase=phase,
@@ -500,7 +520,7 @@ def test_validate_expected_success_requires_packaged_phase(tmp_path) -> None:
             admission_path=write_admission(tmp_path),
             admission_report_path=write_admission_report(tmp_path),
             admission_context=TEST_CONTEXT,
-            candidate_tests_dir=tmp_path / "candidate-data",
+            **candidate_surface_kwargs(tmp_path),
             report_path=None,
             expected="success",
             expected_phase="admission",

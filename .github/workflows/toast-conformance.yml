@@ -228,6 +228,7 @@ jobs:
           uv run --frozen pytest \
             --pyargs moo_conformance \
             -m admission \
+            --candidate-root="${GITHUB_WORKSPACE}" \
             --server-command="${GITHUB_WORKSPACE}/toaststunt/build-release/moo --no-ipv6 --ipv4 127.0.0.1 ${{ matrix.outbound_argument }} --exec-dir {server_dir}/executables {db} {db}.new {port}" \
             --server-db-dir="${GITHUB_WORKSPACE}/src/moo_conformance/_db/startup" \
             --moo-host=127.0.0.1 \
@@ -246,6 +247,7 @@ jobs:
           uv run --frozen pytest \
             --pyargs moo_conformance \
             -m conformance \
+            --candidate-root="${GITHUB_WORKSPACE}" \
             --server-command="${GITHUB_WORKSPACE}/toaststunt/build-release/moo --no-ipv6 --ipv4 127.0.0.1 ${{ matrix.outbound_argument }} --exec-dir {server_dir}/executables {db} {db}.new {port}" \
             --server-db-dir="${GITHUB_WORKSPACE}/src/moo_conformance/_db/startup" \
             --moo-host=127.0.0.1 \

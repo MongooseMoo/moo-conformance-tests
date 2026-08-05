@@ -2,7 +2,8 @@ import pytest
 
 from moo_conformance.runner import AssertionError as RunnerAssertionError
 from moo_conformance.runner import YamlTestRunner
-from moo_conformance.schema import Expectation, MooTestCase, TestStep as MooTestStep
+from moo_conformance.schema import Expectation, MooTestCase
+from moo_conformance.schema import TestStep as MooTestStep
 from moo_conformance.transport import ExecutionResult
 
 
@@ -124,4 +125,17 @@ def test_satisfies_reports_predicate_execution_errors() -> None:
     )
 
     with pytest.raises(RunnerAssertionError, match="predicate exploded"):
+        runner.run_test(test)
+
+
+def test_satisfies_requires_an_explicit_result_binding() -> None:
+    transport = FakeTransport([ExecutionResult(success=True, value=3)])
+    runner = YamlTestRunner(transport)  # type: ignore[arg-type]
+    test = MooTestCase(
+        name="missing result binding",
+        code="3",
+        expect=Expectation(satisfies="1"),
+    )
+
+    with pytest.raises(RunnerAssertionError, match=r"must reference \{value\}"):
         runner.run_test(test)

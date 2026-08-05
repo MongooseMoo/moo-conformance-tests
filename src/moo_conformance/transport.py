@@ -552,6 +552,48 @@ class SocketTransport(MooTransport):
 
         Toast also prefixes command results with "=> " which needs to be stripped.
         """
+        response, notifications = self._split_response_notifications(response)
+        result = self._parse_response_value(response)
+        result.notifications = [{"message": message} for message in notifications]
+        return result
+
+    def _split_response_notifications(
+        self, response: str | None
+    ) -> tuple[str | None, list[str]]:
+        """Separate framed notify output from the final eval result."""
+        if response is None:
+            return None, []
+
+        lines = response.splitlines()
+        if len(lines) < 2:
+            return response, []
+
+        result_index: int | None = None
+        if lines[-1].startswith("=> ") or lines[-1].startswith("E_"):
+            result_index = len(lines) - 1
+        else:
+            for index, line in enumerate(lines):
+                if line.startswith("#-1:Input to EVAL"):
+                    result_index = index
+                    break
+
+        if result_index is None:
+            candidate = self._parse_moo_literal(lines[-1])
+            if (
+                isinstance(candidate, list)
+                and len(candidate) == 2
+                and isinstance(candidate[0], int)
+                and candidate[0] in (0, 1, 2)
+            ):
+                result_index = len(lines) - 1
+
+        if result_index is None:
+            return response, []
+
+        return "\n".join(lines[result_index:]), lines[:result_index]
+
+    def _parse_response_value(self, response: str | None) -> ExecutionResult:
+        """Parse the final eval value or traceback after notifications are removed."""
         if response is None:
             return ExecutionResult(success=True, value=None)
 

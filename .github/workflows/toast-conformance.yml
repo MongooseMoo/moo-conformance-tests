@@ -127,7 +127,7 @@ jobs:
           }
           print(totals)
           assert totals == {
-              "tests": 11_566,
+              "tests": 11_569,
               "failures": 0,
               "errors": 0,
               # All remaining skips are declared by the suite and strict skip mode.

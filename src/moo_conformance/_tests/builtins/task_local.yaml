@@ -324,19 +324,24 @@ tests:
     cleanup:
       - run: |
           if (valid({obj}))
-            if ({obj}.task_local_child_task)
-              try
-                kill_task({obj}.task_local_child_task);
-              except (ANY)
-              endtry
-            endif
-            if ({obj}.task_local_worker_task)
-              try
-                kill_task({obj}.task_local_worker_task);
-              except (ANY)
-              endtry
-            endif
-            recycle({obj});
+            try
+              child_task = {obj}.task_local_child_task;
+              if (child_task)
+                kill_task(child_task);
+              endif
+            except (ANY)
+            endtry
+            try
+              worker_task = {obj}.task_local_worker_task;
+              if (worker_task)
+                kill_task(worker_task);
+              endif
+            except (ANY)
+            endtry
+            try
+              recycle({obj});
+            except (ANY)
+            endtry
           endif
 
   # Memory leak regression tests (non-functional)

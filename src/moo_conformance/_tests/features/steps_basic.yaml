@@ -64,9 +64,9 @@ tests:
     expect:
       value: 3
 
-  # This test is skipped because 64bit feature is present
+  # This test runs only on a 32-bit server and is skipped on a 64-bit server.
   - name: skip_if_has_64bit_feature
     skip_if: "feature.64bit"
-    code: "this_would_fail_if_run()"
+    code: "1"
     expect:
-      value: 999
+      value: 1

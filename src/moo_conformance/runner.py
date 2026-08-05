@@ -53,7 +53,7 @@ class YamlTestRunner:
         if properties already exist (E_INVARG), but that's OK - we just
         want to ensure properties exist with correct values.
         """
-        self._ensure_suite_server_db(suite)
+        self.prepare_suite_environment(suite)
         if suite.setup and suite.name not in self._suites_setup_done:
             # Switch user for suite setup if permission specified
             if suite.setup.permission:
@@ -72,6 +72,12 @@ class YamlTestRunner:
                         self._ensure_transport_connected()
                         self.transport.execute(stmt)
             self._suites_setup_done.add(suite.name)
+
+    def prepare_suite_environment(self, suite: MooTestSuite) -> None:
+        """Select and connect to the suite database before admission probes."""
+        self._ensure_suite_server_db(suite)
+        if self.managed_server is not None and self._suite_requires_transport(suite):
+            self._ensure_transport_connected()
 
     def _ensure_transport_connected(self) -> None:
         """Reconnect the transport if it was disconnected by a server restart."""

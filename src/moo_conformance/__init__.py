@@ -8,7 +8,7 @@ Quick Start:
 
     # Or from source:
     cd moo-conformance-tests
-    uv run pytest tests/ --moo-port=7777
+    uv run pytest --moo-port=7777
 
 Programmatic Usage:
     from moo_conformance import SocketTransport, YamlTestRunner, discover_yaml_tests
@@ -19,18 +19,18 @@ Programmatic Usage:
     print(result.value)  # 2
 """
 
-from .transport import MooTransport, SocketTransport, ExecutionResult
+from .builtin_io_generator import extract_builtin_specs, generate_builtin_io_yamls
+from .moo_types import ERROR_CODES, TYPE_NAMES, MooError, MooType
+from .plugin import discover_yaml_tests, get_db_path, get_tests_dir
 from .runner import YamlTestRunner
 from .schema import (
-    MooTestSuite,
-    MooTestCase,
     Expectation,
+    MooTestCase,
+    MooTestSuite,
     TestStep,
     validate_test_suite,
 )
-from .moo_types import MooError, MooType, ERROR_CODES, TYPE_NAMES
-from .plugin import get_tests_dir, get_db_path, discover_yaml_tests
-from .builtin_io_generator import extract_builtin_specs, generate_builtin_io_yamls
+from .transport import ExecutionResult, MooTransport, SocketTransport
 
 __version__ = "0.1.0"
 

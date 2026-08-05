@@ -1,14 +1,15 @@
-from pathlib import Path
-from io import BytesIO
 import os
-import subprocess
 import stat
+import subprocess
+from io import BytesIO
+from pathlib import Path
 from unittest.mock import Mock
 
 import pytest
 
 from moo_conformance.plugin import _load_login_script
 from moo_conformance.runner import YamlTestRunner
+from moo_conformance.schema import MooTestCase, MooTestSuite
 from moo_conformance.server import ManagedServer
 from moo_conformance.transport import SocketTransport
 
@@ -81,6 +82,85 @@ def test_restart_waits_before_transport_reconnect(monkeypatch):
     ]
 
 
+def test_prepare_suite_environment_switches_database_before_reconnecting(tmp_path: Path):
+    default_db = tmp_path / "default.db"
+    selected_db = tmp_path / "selected.db"
+    default_db.write_text("default", encoding="utf-8")
+    selected_db.write_text("selected", encoding="utf-8")
+
+    events: list[object] = []
+    transport = Mock()
+    transport.current_user = "wizard"
+    transport.sock = object()
+
+    def disconnect() -> None:
+        events.append("disconnect")
+        transport.sock = None
+
+    def connect(user: str) -> None:
+        events.append(("connect", user))
+        transport.sock = object()
+
+    def restart(**kwargs) -> None:
+        events.append(("restart", kwargs))
+
+    transport.disconnect.side_effect = disconnect
+    transport.connect.side_effect = connect
+    server = Mock()
+    server.default_db_path = default_db
+    server.db_path = default_db
+    server.restart.side_effect = restart
+
+    runner = YamlTestRunner(
+        transport,
+        managed_server=server,
+        server_db_dir=str(tmp_path),
+    )
+    suite = MooTestSuite(
+        name="selected",
+        server_db=selected_db.name,
+        tests=[MooTestCase(name="case", code="return 1;")],
+    )
+
+    runner.prepare_suite_environment(suite)
+
+    assert events == [
+        "disconnect",
+        ("restart", {"db_path": selected_db, "wait_for_port": True}),
+        ("connect", "wizard"),
+    ]
+
+
+def test_prepare_exit_only_suite_does_not_connect(tmp_path: Path):
+    default_db = tmp_path / "default.db"
+    selected_db = tmp_path / "selected.db"
+    default_db.write_text("default", encoding="utf-8")
+    selected_db.write_text("selected", encoding="utf-8")
+
+    transport = Mock()
+    transport.current_user = "wizard"
+    transport.sock = object()
+    server = Mock()
+    server.default_db_path = default_db
+    server.db_path = default_db
+
+    runner = YamlTestRunner(
+        transport,
+        managed_server=server,
+        server_db_dir=str(tmp_path),
+    )
+    suite = MooTestSuite(
+        name="exit-only",
+        server_db=selected_db.name,
+        tests=[MooTestCase(name="inspect-output")],
+    )
+
+    runner.prepare_suite_environment(suite)
+
+    server.restart.assert_called_once_with(db_path=selected_db, wait_for_port=False)
+    transport.connect.assert_not_called()
+
+
 def test_command_template_supports_manifest_and_server_dir(monkeypatch, tmp_path: Path):
     baseline = tmp_path / "baseline.db"
     baseline.write_text("baseline", encoding="utf-8")
@@ -114,7 +194,9 @@ def test_managed_server_installs_exec_fixtures(monkeypatch, tmp_path: Path):
     baseline = tmp_path / "baseline.db"
     baseline.write_text("baseline", encoding="utf-8")
 
-    monkeypatch.setattr("moo_conformance.server.subprocess.Popen", lambda *args, **kwargs: _FakeProcess())
+    monkeypatch.setattr(
+        "moo_conformance.server.subprocess.Popen", lambda *args, **kwargs: _FakeProcess()
+    )
     monkeypatch.setattr(ManagedServer, "_find_free_port", lambda self: 17777)
     monkeypatch.setattr(ManagedServer, "_wait_for_port", lambda self, timeout=30.0: None)
 

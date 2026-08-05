@@ -10,12 +10,14 @@ tests:
   - name: listen_two_args_accepts_integer_description
     permission: wizard
     steps:
-      - run: "listen(#0, 0)"
-        capture: port
+      - allocate_port:
+          capture: listener_port
+      - run: "listen(#0, {listener_port})"
+        capture: actual_port
         expect:
           type: int
     cleanup:
-      - run: "unlisten({port})"
+      - run: "unlisten({listener_port})"
         as: wizard
 
   - name: listen_two_args_rejects_non_integer_description_{desc_kind}

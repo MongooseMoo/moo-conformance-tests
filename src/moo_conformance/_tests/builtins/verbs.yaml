@@ -80,7 +80,17 @@ tests:
   description: add_verb fails with E_PERM if programmer does not have write permission
     (owner still can)
   permission: programmer
-  skip: Owners can always add verbs regardless of .w flag - need non-owner test
+  steps:
+  - run: obj = create($nothing); obj.w = 0; return obj;
+    capture: obj
+    as: wizard
+  - run: add_verb({obj}, {player, "", "foobar"}, {"this", "none", "this"})
+    as: programmer
+    expect:
+      error: E_PERM
+  cleanup:
+  - run: recycle({obj})
+    as: wizard
 - name: add_verb_with_write_permission
   description: add_verb succeeds if programmer has write permission
   permission: programmer
@@ -175,7 +185,17 @@ tests:
   description: delete_verb fails with E_PERM if programmer does not have write permission
     (owner still can)
   permission: programmer
-  skip: Owners can always delete verbs regardless of .w flag - need non-owner test
+  steps:
+  - run: obj = create($nothing); obj.w = 0; add_verb(obj, {player, "", "foobar"}, {"this", "none", "this"}); return obj;
+    capture: obj
+    as: wizard
+  - run: delete_verb({obj}, "foobar")
+    as: programmer
+    expect:
+      error: E_PERM
+  cleanup:
+  - run: recycle({obj})
+    as: wizard
 - name: delete_verb_with_write_permission
   description: delete_verb succeeds if programmer has write permission
   permission: programmer
@@ -254,7 +274,17 @@ tests:
 - name: verb_info_no_read_permission
   description: verb_info fails with E_PERM if programmer does not have read permission
   permission: programmer
-  skip: Owners can always read verb info regardless of .r flag - need non-owner test
+  steps:
+  - run: obj = create($nothing); add_verb(obj, {player, "", "foobar"}, {"this", "none", "this"}); return obj;
+    capture: obj
+    as: wizard
+  - run: verb_info({obj}, "foobar")
+    as: programmer
+    expect:
+      error: E_PERM
+  cleanup:
+  - run: recycle({obj})
+    as: wizard
 - name: verb_info_with_read_permission
   description: verb_info succeeds if programmer has read permission
   permission: programmer
@@ -318,7 +348,17 @@ tests:
 - name: verb_args_no_read_permission
   description: verb_args fails with E_PERM if programmer does not have read permission
   permission: programmer
-  skip: Owners can always read verb args regardless of .r flag - need non-owner test
+  steps:
+  - run: obj = create($nothing); add_verb(obj, {player, "", "foobar"}, {"any", "none", "any"}); return obj;
+    capture: obj
+    as: wizard
+  - run: verb_args({obj}, "foobar")
+    as: programmer
+    expect:
+      error: E_PERM
+  cleanup:
+  - run: recycle({obj})
+    as: wizard
 - name: verb_args_with_read_permission
   description: verb_args succeeds if programmer has read permission
   permission: programmer
@@ -391,7 +431,17 @@ tests:
 - name: verb_code_no_read_permission
   description: verb_code fails with E_PERM if programmer does not have read permission
   permission: programmer
-  skip: Owners can always read verb code regardless of .r flag - need non-owner test
+  steps:
+  - run: obj = create($nothing); add_verb(obj, {player, "", "foobar"}, {"any", "none", "any"}); return obj;
+    capture: obj
+    as: wizard
+  - run: verb_code({obj}, "foobar")
+    as: programmer
+    expect:
+      error: E_PERM
+  cleanup:
+  - run: recycle({obj})
+    as: wizard
 - name: verb_code_with_read_permission
   description: verb_code succeeds if programmer has read permission
   permission: programmer
@@ -458,8 +508,22 @@ tests:
   - run: recycle({obj})
 - name: set_verb_info_basic
   description: set_verb_info changes verb owner, perms, and names
-  permission: programmer
-  skip: Needs wizard permission to change verb info - see set_verb_info_wizard_succeeds
+  permission: wizard
+  steps:
+  - run: create($nothing)
+    capture: obj
+  - run: add_verb({obj}, {player, "", "foobar"}, {"any", "none", "any"})
+  - run: set_verb_info({obj}, "foobar", {$system, "rw", "barfoo"})
+    expect:
+      value: 0
+  - run: info = verb_info({obj}, "barfoo"); return {info[1] == $system, info[2], info[3]};
+    expect:
+      value:
+      - 1
+      - rw
+      - barfoo
+  cleanup:
+  - run: recycle({obj})
 - name: set_verb_info_recycled_object
   description: set_verb_info fails with E_INVARG if object is not valid
   permission: programmer
@@ -485,7 +549,17 @@ tests:
   description: set_verb_info fails with E_PERM even if programmer has write permission
     (requires wizard)
   permission: programmer
-  skip: set_verb_info requires wizard permission - not just write
+  steps:
+  - run: obj = create($nothing); obj.w = 1; add_verb(obj, {player, "rwx", "foobar"}, {"this", "none", "this"}); return obj;
+    capture: obj
+    as: wizard
+  - run: set_verb_info({obj}, "foobar", {player, "rwx", "barfoo"})
+    as: programmer
+    expect:
+      error: E_PERM
+  cleanup:
+  - run: recycle({obj})
+    as: wizard
 - name: set_verb_info_wizard_succeeds
   description: set_verb_info succeeds if programmer is wizard
   permission: wizard
@@ -545,7 +619,17 @@ tests:
 - name: set_verb_args_no_write_permission
   description: set_verb_args fails with E_PERM if programmer does not have write permission
   permission: programmer
-  skip: Owners can always set verb args regardless of .w flag - need non-owner test
+  steps:
+  - run: obj = create($nothing); add_verb(obj, {player, "rx", "foobar"}, {"this", "none", "this"}); return obj;
+    capture: obj
+    as: wizard
+  - run: set_verb_args({obj}, "foobar", {"any", "none", "any"})
+    as: programmer
+    expect:
+      error: E_PERM
+  cleanup:
+  - run: recycle({obj})
+    as: wizard
 - name: set_verb_args_with_write_permission
   description: set_verb_args succeeds if programmer has write permission
   permission: programmer
@@ -612,7 +696,17 @@ tests:
 - name: set_verb_code_no_write_permission
   description: set_verb_code fails with E_PERM if programmer does not have write permission
   permission: programmer
-  skip: Owners can always set verb code regardless of .w flag - need non-owner test
+  steps:
+  - run: obj = create($nothing); add_verb(obj, {player, "rx", "foobar"}, {"this", "none", "this"}); return obj;
+    capture: obj
+    as: wizard
+  - run: set_verb_code({obj}, "foobar", {"7;"})
+    as: programmer
+    expect:
+      error: E_PERM
+  cleanup:
+  - run: recycle({obj})
+    as: wizard
 - name: set_verb_code_with_write_permission
   description: set_verb_code succeeds if programmer has write permission
   permission: programmer
@@ -667,7 +761,17 @@ tests:
   description: verbs fails with E_PERM if programmer does not have read permission
     (owner still can)
   permission: programmer
-  skip: Owners can always read verb list regardless of .r flag - need non-owner test
+  steps:
+  - run: obj = create($nothing); obj.r = 0; return obj;
+    capture: obj
+    as: wizard
+  - run: verbs({obj})
+    as: programmer
+    expect:
+      error: E_PERM
+  cleanup:
+  - run: recycle({obj})
+    as: wizard
 - name: verbs_with_read_permission
   description: verbs succeeds if programmer has read permission
   permission: programmer
@@ -769,8 +873,17 @@ tests:
   description: respond_to returns false (0) if verb is not callable and object is
     not readable (from non-owner perspective)
   permission: programmer
-  skip: Owners always get verb details from respond_to regardless of .r flag - need
-    non-owner test
+  steps:
+  - run: obj = create($nothing); obj.r = 0; add_verb(obj, {player, "", "foobar"}, {"this", "none", "this"}); return obj;
+    capture: obj
+    as: wizard
+  - run: respond_to({obj}, "foobar")
+    as: programmer
+    expect:
+      value: 0
+  cleanup:
+  - run: recycle({obj})
+    as: wizard
 - name: disassemble_basic
   description: disassemble returns bytecode listing for verb
   permission: programmer
@@ -809,8 +922,17 @@ tests:
 - name: disassemble_no_read_permission
   description: disassemble fails with E_PERM if programmer does not have read permission
   permission: programmer
-  skip: Owners can always disassemble verbs regardless of .r flag - need non-owner
-    test
+  steps:
+  - run: obj = create($nothing); add_verb(obj, {player, "", "foobar"}, {"any", "none", "any"}); set_verb_code(obj, "foobar", {"return 1;"}); return obj;
+    capture: obj
+    as: wizard
+  - run: disassemble({obj}, "foobar")
+    as: programmer
+    expect:
+      error: E_PERM
+  cleanup:
+  - run: recycle({obj})
+    as: wizard
 - name: disassemble_with_read_permission
   description: disassemble succeeds if programmer has read permission
   permission: programmer

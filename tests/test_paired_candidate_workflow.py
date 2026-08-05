@@ -10,6 +10,12 @@ WORKFLOW_PATH = (
     / "paired-candidates.yml"
 )
 TOAST_WORKFLOW_PATH = (
+    Path(__file__).resolve().parents[1]
+    / ".github"
+    / "workflows"
+    / "toast-conformance-core.yml"
+)
+TOAST_CHECKS_WORKFLOW_PATH = (
     Path(__file__).resolve().parents[1] / ".github" / "workflows" / "toast-conformance.yml"
 )
 TOAST_EXCEPTION_BASELINE_PATH = (
@@ -32,33 +38,60 @@ def test_paired_workflow_uses_default_branch_repository_dispatch() -> None:
 
 def test_complete_three_profile_toast_admission_remains_unconditional() -> None:
     workflow = load_workflow()
+    assert "concurrency" not in workflow
     assert workflow["jobs"]["toast-admission"] == {
         "name": "Complete Toast admission",
         "needs": ["validate-inputs"],
-        "uses": "./.github/workflows/toast-conformance.yml",
+        "permissions": {"contents": "read"},
+        "uses": "./.github/workflows/toast-conformance-core.yml",
         "with": {"conformance_sha": "${{ needs.validate-inputs.outputs.conformance_sha }}"},
     }
     assert workflow["jobs"]["paired"]["needs"] == ["validate-inputs", "toast-admission"]
 
 
-def test_toast_pr_check_is_base_owned_read_only_and_pr_scoped() -> None:
-    workflow = load_workflow(TOAST_WORKFLOW_PATH)
-    assert workflow["on"]["pull_request_target"] == ""
-    assert "pull_request" not in workflow["on"]
-    assert workflow["on"]["push"] == {"branches": ["main"]}
-    assert workflow["on"]["workflow_call"] == {
+def test_toast_core_is_read_only_reusable_and_pr_checks_are_base_owned() -> None:
+    core = load_workflow(TOAST_WORKFLOW_PATH)
+    checks = load_workflow(TOAST_CHECKS_WORKFLOW_PATH)
+    assert core["on"]["workflow_call"] == {
         "inputs": {
             "conformance_sha": {
                 "description": "Exact conformance candidate commit",
                 "required": "true",
                 "type": "string",
             }
-        }
+        },
+        "outputs": {
+            "quality_result": {
+                "description": "Trusted quality gate result",
+                "value": "${{ jobs.result.outputs.quality_result }}",
+            },
+            "full_suite_result": {
+                "description": "Complete Toast suite result",
+                "value": "${{ jobs.result.outputs.full_suite_result }}",
+            },
+        },
     }
-    assert workflow["permissions"] == {"contents": "read"}
-    concurrency = workflow["concurrency"]
+    assert core["permissions"] == {"contents": "read"}
+    assert "concurrency" not in core
+    assert "report-pr-head-checks" not in core["jobs"]
+    assert checks["on"]["pull_request_target"] == ""
+    assert "pull_request" not in checks["on"]
+    assert checks["on"]["push"] == {"branches": ["main"]}
+    assert "workflow_call" not in checks["on"]
+    assert checks["permissions"] == {"contents": "read"}
+    assert checks["jobs"]["toast-suite"] == {
+        "name": "Complete Toast conformance",
+        "permissions": {"contents": "read"},
+        "uses": "./.github/workflows/toast-conformance-core.yml",
+        "with": {
+            "conformance_sha": (
+                "${{ github.event.pull_request.head.sha || github.sha }}"
+            )
+        },
+    }
+    concurrency = checks["concurrency"]
     assert "github.event.pull_request.number" in concurrency["group"]
-    assert "inputs.conformance_sha" in concurrency["group"]
+    assert "github.sha" in concurrency["group"]
     assert concurrency["cancel-in-progress"] == (
         "${{ github.event_name == 'pull_request_target' }}"
     )
@@ -241,13 +274,13 @@ def test_required_aggregates_fail_closed_over_every_staged_result() -> None:
 
 
 def test_base_owned_reporter_attaches_required_checks_to_verified_pr_head() -> None:
-    workflow = load_workflow(TOAST_WORKFLOW_PATH)
+    workflow = load_workflow(TOAST_CHECKS_WORKFLOW_PATH)
     reporter = workflow["jobs"]["report-pr-head-checks"]
     assert reporter["name"] == "Report required checks on exact PR head"
     assert reporter["if"] == (
         "always() && github.event_name == 'pull_request_target'"
     )
-    assert reporter["needs"] == ["quality", "execution-ledger"]
+    assert reporter["needs"] == ["toast-suite"]
     assert reporter["permissions"] == {
         "checks": "write",
         "pull-requests": "read",
@@ -260,8 +293,8 @@ def test_base_owned_reporter_attaches_required_checks_to_verified_pr_head() -> N
         "PR_NUMBER": "${{ github.event.pull_request.number }}",
         "TESTED_BASE_SHA": "${{ github.event.pull_request.base.sha }}",
         "TESTED_HEAD_SHA": "${{ github.event.pull_request.head.sha }}",
-        "QUALITY_RESULT": "${{ needs.quality.result }}",
-        "FULL_SUITE_RESULT": "${{ needs.execution-ledger.result }}",
+        "QUALITY_RESULT": "${{ needs.toast-suite.outputs.quality_result }}",
+        "FULL_SUITE_RESULT": "${{ needs.toast-suite.outputs.full_suite_result }}",
     }
     command = report["run"]
     assert 'f"{api_url}/repos/{repository}/pulls/{pr_number}"' in command
@@ -278,25 +311,37 @@ def test_base_owned_reporter_attaches_required_checks_to_verified_pr_head() -> N
 
 
 def test_only_base_owned_non_candidate_reporter_can_write_checks() -> None:
-    workflow = load_workflow(TOAST_WORKFLOW_PATH)
+    workflow = load_workflow(TOAST_CHECKS_WORKFLOW_PATH)
+    core = load_workflow(TOAST_WORKFLOW_PATH)
+    paired = load_workflow()
     check_writers = {
         job_name
         for job_name, job in workflow["jobs"].items()
         if job.get("permissions", {}).get("checks") == "write"
     }
     assert check_writers == {"report-pr-head-checks"}
+    assert not any(
+        job.get("permissions", {}).get("checks") == "write"
+        for job in core["jobs"].values()
+    )
+    assert not any(
+        job.get("permissions", {}).get("checks") == "write"
+        for job in paired["jobs"].values()
+    )
     reporter_text = str(workflow["jobs"]["report-pr-head-checks"])
     assert "uses" not in workflow["jobs"]["report-pr-head-checks"]["steps"][0]
     assert "candidate" not in reporter_text.lower()
     assert "checkout" not in reporter_text.lower()
     assert "download-artifact" not in reporter_text
-    assert "GH_TOKEN" not in str(workflow["jobs"]["candidate-quality"])
+    assert "GH_TOKEN" not in str(core["jobs"]["candidate-quality"])
 
 
 def test_candidate_workflow_content_can_never_author_authoritative_evidence() -> None:
     workflow = load_workflow(TOAST_WORKFLOW_PATH)
-    assert "pull_request_target" in workflow["on"]
-    assert "pull_request" not in workflow["on"]
+    checks = load_workflow(TOAST_CHECKS_WORKFLOW_PATH)
+    assert list(workflow["on"]) == ["workflow_call"]
+    assert "pull_request_target" in checks["on"]
+    assert "pull_request" not in checks["on"]
     authoritative_jobs = {
         "classify-changes",
         "trusted-quality",
@@ -320,6 +365,23 @@ def test_toast_workflow_pins_every_action() -> None:
             action = step.get("uses")
             if action is not None:
                 assert PINNED_ACTION.fullmatch(action), f"{job_name}/{name} is not SHA-pinned"
+
+
+def test_toast_core_reports_both_gate_results_without_write_authority() -> None:
+    workflow = load_workflow(TOAST_WORKFLOW_PATH)
+    result = workflow["jobs"]["result"]
+    assert result["if"] == "always()"
+    assert result["needs"] == ["quality", "execution-ledger"]
+    assert result["permissions"] == {"contents": "none"}
+    assert result["outputs"] == {
+        "quality_result": "${{ steps.results.outputs.quality_result }}",
+        "full_suite_result": "${{ steps.results.outputs.full_suite_result }}",
+    }
+    env = steps_by_name(workflow, "result")["Record reusable gate results"]["env"]
+    assert env == {
+        "QUALITY_RESULT": "${{ needs.quality.result }}",
+        "FULL_SUITE_RESULT": "${{ needs.execution-ledger.result }}",
+    }
 
 
 def test_toast_candidate_and_oracle_are_fixed_credentialless_siblings() -> None:

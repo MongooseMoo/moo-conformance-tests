@@ -25,10 +25,14 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
+      - name: Prepare quality environment
+        run: printf 'UV_PROJECT_ENVIRONMENT=%s\n' "${RUNNER_TEMP}/toast-quality-venv" >> "${GITHUB_ENV}"
+
       - name: Check out conformance candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.conformance_sha || github.sha }}
+          path: candidate-data
           persist-credentials: false
 
       - name: Install uv and Python
@@ -39,31 +43,41 @@ jobs:
           enable-cache: false
 
       - name: Install locked development environment
-        run: uv sync --locked --extra dev
+        working-directory: candidate-data
+        run: uv sync --project . --locked --extra dev
 
       - name: Run harness unit tests
-        run: uv run --frozen pytest tests --strict-markers --junitxml=harness-units.xml -q
+        working-directory: candidate-data
+        run: >
+          uv run --project . --frozen pytest tests --strict-markers
+          --junitxml="${RUNNER_TEMP}/harness-units.xml" -q
 
       - name: Collect every packaged schema case
-        run: uv run --frozen pytest --collect-only --pyargs moo_conformance --strict-markers -q
+        working-directory: candidate-data
+        run: >
+          uv run --project . --frozen pytest --collect-only --pyargs moo_conformance
+          --strict-markers -q
 
       - name: Enforce reviewed duplicate baseline
+        working-directory: candidate-data
         run: >
-          uv run --frozen moo-lint-duplicates
+          uv run --project . --frozen moo-lint-duplicates
           --baseline ci/duplicate-baseline.json
 
       - name: Run Ruff
-        run: uv run --frozen ruff check .
+        working-directory: candidate-data
+        run: uv run --project . --frozen ruff check .
 
       - name: Run mypy
-        run: uv run --frozen mypy src/moo_conformance
+        working-directory: candidate-data
+        run: uv run --project . --frozen mypy src/moo_conformance
 
       - name: Upload harness evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: harness-quality-evidence
-          path: harness-units.xml
+          path: ${{ runner.temp }}/harness-units.xml
           if-no-files-found: error
           retention-days: 14
 
@@ -93,7 +107,18 @@ jobs:
         run: |
           reports_dir="${RUNNER_TEMP}/toast-conformance-${{ matrix.profile }}"
           printf 'REPORTS_DIR=%s\n' "${reports_dir}" >> "${GITHUB_ENV}"
+          printf 'UV_PROJECT_ENVIRONMENT=%s\n' \
+            "${RUNNER_TEMP}/toast-conformance-venv-${{ matrix.profile }}" >> "${GITHUB_ENV}"
+          nonce=$(python3 -c 'import secrets; print(secrets.token_hex(32))')
+          printf 'ADMISSION_CONTEXT=toast:%s:%s:%s:%s:%s:%s\n' \
+            "${GITHUB_RUN_ID}" \
+            "${GITHUB_RUN_ATTEMPT}" \
+            "$nonce" \
+            "${{ inputs.conformance_sha || github.sha }}" \
+            "${{ matrix.profile }}" \
+            "aecc51e9449c6e7c95272f0f044b5ba38948459e" >> "${GITHUB_ENV}"
           mkdir -p "${reports_dir}"
+          printf '%s\n' "$nonce" > "${reports_dir}/admission-nonce.txt"
           printf 'run_id=%s\nprofile=%s\nrunner_os=%s\nrunner_arch=%s\n' \
             "${GITHUB_RUN_ID}" "${{ matrix.profile }}" "${RUNNER_OS}" "${RUNNER_ARCH}" \
             > "${reports_dir}/workflow-start.txt"
@@ -102,6 +127,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.conformance_sha || github.sha }}
+          path: candidate-data
           persist-credentials: false
 
       - name: Check out pinned Toast oracle
@@ -110,7 +136,7 @@ jobs:
           repository: MongooseMoo/toaststunt
           # Commit embedded in the canonical managed WSL Toast binary.
           ref: aecc51e9449c6e7c95272f0f044b5ba38948459e
-          path: toaststunt
+          path: toast-oracle
           persist-credentials: false
 
       - name: Install uv and Python
@@ -145,42 +171,44 @@ jobs:
             2>&1 | tee -a "${REPORTS_DIR}/apt.log"
 
       - name: Install locked conformance environment
+        working-directory: candidate-data
         run: |
           set -o pipefail
-          uv sync --locked 2>&1 | tee "${REPORTS_DIR}/uv-sync.log"
+          uv sync --project . --locked 2>&1 | tee "${REPORTS_DIR}/uv-sync.log"
 
       - name: Verify conformance-owned startup fixtures
+        working-directory: candidate-data/src/moo_conformance/_db/startup
         run: |
           set -o pipefail
-          (
-            cd src/moo_conformance/_db/startup
-            sha256sum --check startup-fixtures.sha256
-          ) 2>&1 | tee "${REPORTS_DIR}/startup-fixtures.log"
+          sha256sum --check startup-fixtures.sha256 \
+            2>&1 | tee "${REPORTS_DIR}/startup-fixtures.log"
 
       - name: Build Toast oracle
         run: |
           set -o pipefail
           (
-            mkdir -p toaststunt/build-release
-            cd toaststunt/build-release
+            build_dir="${RUNNER_TEMP}/toast-build-${{ matrix.profile }}"
+            mkdir -p "$build_dir"
+            cd "$build_dir"
             cmake -G Ninja \
               -DCMAKE_BUILD_TYPE=Release \
               -DONLY_32_BITS=${{ matrix.only_32_bits }} \
               -DUSE_JEMALLOC=ON \
               -DCMAKE_C_FLAGS="-DBACKGROUND_TEST=1 -DSAVE_FINISHED_TASKS=15" \
               -DCMAKE_CXX_FLAGS="-DBACKGROUND_TEST=1 -DSAVE_FINISHED_TASKS=15" \
-              ..
+              "${GITHUB_WORKSPACE}/toast-oracle"
             cmake --build . --target moo --parallel 2
           ) 2>&1 | tee "${REPORTS_DIR}/toast-build.log"
-          test -x toaststunt/build-release/moo
+          test -x "${RUNNER_TEMP}/toast-build-${{ matrix.profile }}/moo"
 
       - name: Record the exact Toast capability profile
+        working-directory: candidate-data
         env:
           PROFILE_ID: ${{ matrix.profile }}
           PROFILE_OUTBOUND: ${{ matrix.outbound }}
           PROFILE_32BIT: ${{ matrix.only_32_bits }}
         run: |
-          uv run --frozen python - <<'PY'
+          uv run --project . --frozen python - <<'PY'
           from pathlib import Path
           import hashlib
           import json
@@ -213,18 +241,43 @@ jobs:
           output.write_text(json.dumps(profile, indent=2, sort_keys=True) + "\n")
           PY
 
-      - name: Run every packaged conformance case against Toast
+      - name: Run canonical capability admission against Toast
+        working-directory: candidate-data
         run: |
           set -o pipefail
-          uv run --frozen pytest \
+          uv run --project . --frozen pytest \
             --pyargs moo_conformance \
-            --server-command="${GITHUB_WORKSPACE}/toaststunt/build-release/moo --no-ipv6 --ipv4 127.0.0.1 ${{ matrix.outbound_argument }} --exec-dir {server_dir}/executables {db} {db}.new {port}" \
-            --server-db-dir="${GITHUB_WORKSPACE}/src/moo_conformance/_db/startup" \
+            -m admission \
+            --candidate-root="${GITHUB_WORKSPACE}/candidate-data" \
+            --server-command="${RUNNER_TEMP}/toast-build-${{ matrix.profile }}/moo --no-ipv6 --ipv4 127.0.0.1 ${{ matrix.outbound_argument }} --exec-dir {server_dir}/executables {db} {db}.new {port}" \
+            --server-db-dir="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/startup" \
+            --moo-host=127.0.0.1 \
+            --oracle-profile-manifest="${REPORTS_DIR}/profile.json" \
+            --target-profile-manifest="${REPORTS_DIR}/profile.json" \
+            --strict-markers \
+            --admission-evidence-output="${REPORTS_DIR}/admission.json" \
+            --admission-evidence-context="$ADMISSION_CONTEXT" \
+            --junitxml="${REPORTS_DIR}/admission.xml" \
+            -q -ra \
+            2>&1 | tee "${REPORTS_DIR}/admission.log"
+
+      - name: Run every packaged conformance case against Toast
+        working-directory: candidate-data
+        run: |
+          set -o pipefail
+          uv run --project . --frozen pytest \
+            --pyargs moo_conformance \
+            -m conformance \
+            --candidate-root="${GITHUB_WORKSPACE}/candidate-data" \
+            --server-command="${RUNNER_TEMP}/toast-build-${{ matrix.profile }}/moo --no-ipv6 --ipv4 127.0.0.1 ${{ matrix.outbound_argument }} --exec-dir {server_dir}/executables {db} {db}.new {port}" \
+            --server-db-dir="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/startup" \
             --moo-host=127.0.0.1 \
             --oracle-profile-manifest="${REPORTS_DIR}/profile.json" \
             --target-profile-manifest="${REPORTS_DIR}/profile.json" \
             --fail-on-unexpected-skip \
             --strict-markers \
+            --admission-evidence-input="${REPORTS_DIR}/admission.json" \
+            --admission-evidence-context="$ADMISSION_CONTEXT" \
             --junitxml="${REPORTS_DIR}/toast-conformance.xml" \
             -q -ra \
             2>&1 | tee "${REPORTS_DIR}/toast-conformance.log"
@@ -257,10 +310,14 @@ jobs:
           test "$QUALITY_RESULT" = success
           test "$TOAST_RESULT" = success
 
+      - name: Prepare ledger environment
+        run: printf 'UV_PROJECT_ENVIRONMENT=%s\n' "${RUNNER_TEMP}/toast-ledger-venv" >> "${GITHUB_ENV}"
+
       - name: Check out conformance candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.conformance_sha || github.sha }}
+          path: candidate-data
           persist-credentials: false
 
       - name: Install uv and Python
@@ -271,28 +328,28 @@ jobs:
           enable-cache: false
 
       - name: Install locked conformance environment
-        run: uv sync --locked
+        run: uv sync --project candidate-data --locked
 
       - name: Download every Toast profile report
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           pattern: toast-conformance-*
-          path: toast-profile-reports
+          path: ${{ runner.temp }}/toast-profile-reports
 
       - name: Enforce exact profile union
         run: |
-          uv run --frozen python -m moo_conformance.execution_ledger \
-            --report=64bit-outbound-on=toast-profile-reports/toast-conformance-64bit-outbound-on/toast-conformance.xml \
-            --report=64bit-outbound-off=toast-profile-reports/toast-conformance-64bit-outbound-off/toast-conformance.xml \
-            --report=32bit-outbound-on=toast-profile-reports/toast-conformance-32bit-outbound-on/toast-conformance.xml \
-            --baseline=ci/toast-never-executed.json \
-            --output=toast-execution-ledger.json
+          uv run --project candidate-data --frozen python -m moo_conformance.execution_ledger \
+            --report=64bit-outbound-on="${RUNNER_TEMP}/toast-profile-reports/toast-conformance-64bit-outbound-on/toast-conformance.xml" \
+            --report=64bit-outbound-off="${RUNNER_TEMP}/toast-profile-reports/toast-conformance-64bit-outbound-off/toast-conformance.xml" \
+            --report=32bit-outbound-on="${RUNNER_TEMP}/toast-profile-reports/toast-conformance-32bit-outbound-on/toast-conformance.xml" \
+            --baseline=candidate-data/ci/toast-never-executed.json \
+            --output="${RUNNER_TEMP}/toast-execution-ledger.json"
 
       - name: Upload Toast execution ledger
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: toast-execution-ledger
-          path: toast-execution-ledger.json
+          path: ${{ runner.temp }}/toast-execution-ledger.json
           if-no-files-found: error
           retention-days: 14

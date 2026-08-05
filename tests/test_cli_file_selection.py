@@ -78,6 +78,23 @@ def test_directory_collects_every_and_only_descendant_suite(tmp_path: Path) -> N
     }
 
 
+def test_candidate_discovery_rejects_nested_yaml_symlink_outside_checkout(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "candidate-data"
+    tests_dir = root / "src" / "moo_conformance" / "_tests"
+    tests_dir.mkdir(parents=True)
+    outside = tmp_path / "outside.yaml"
+    _write_suite(outside, "outside", "masquerade")
+    try:
+        (tests_dir / "linked.yaml").symlink_to(outside)
+    except OSError as exc:
+        pytest.skip(f"symlinks unavailable: {exc}")
+
+    with pytest.raises(pytest.UsageError, match="candidate suite entry escapes"):
+        plugin.discover_yaml_tests(tests_dir, candidate_root=root)
+
+
 @pytest.mark.parametrize(
     ("contents", "error"),
     [

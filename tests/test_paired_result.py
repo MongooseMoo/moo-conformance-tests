@@ -1,4 +1,3 @@
-import hashlib
 import json
 import xml.etree.ElementTree as ET
 
@@ -6,7 +5,10 @@ import pytest
 
 import moo_conformance.paired_result as paired_result
 from moo_conformance.admission import ADMISSION_PROBE_INVENTORY
-from moo_conformance.execution_ledger import ExecutionLedgerError
+from moo_conformance.execution_ledger import (
+    ExecutionLedgerError,
+    candidate_identity_digest,
+)
 from moo_conformance.paired_result import validate_paired_result
 
 TEST_CONTEXT = "test:paired-context"
@@ -27,7 +29,7 @@ def trusted_inventory_boundary(monkeypatch):
         candidate_db_dir,
     ):
         identities = sorted(CURRENT_CANDIDATE_IDS)
-        digest = hashlib.sha256(("\n".join(identities) + "\n").encode()).hexdigest()
+        digest = candidate_identity_digest(identities)
         return {
             "schema_version": 2,
             "candidate_anchor": str(candidate_root),
@@ -201,9 +203,9 @@ def test_validate_packaged_success_requires_exact_nonempty_surface(tmp_path) -> 
             "trusted_cases": 2,
             "candidate_cases": 2,
             "additive_cases": 0,
-            "candidate_identity_sha256": hashlib.sha256(
-                b"suite.yaml::one\nsuite.yaml::two\n"
-            ).hexdigest(),
+            "candidate_identity_sha256": candidate_identity_digest(
+                ["suite.yaml::one", "suite.yaml::two"]
+            ),
         },
         "packaged": {
             "exit_code": 0,
@@ -530,9 +532,7 @@ def test_validate_expected_success_requires_packaged_phase(tmp_path) -> None:
         )
 
 
-@pytest.mark.parametrize(
-    "payload", ["", "not json", '"one,two"', "{}", "null", "[1]", '[""]']
-)
+@pytest.mark.parametrize("payload", ["", "not json", '"one,two"', "{}", "null", "[1]", '[""]'])
 def test_parse_required_bad_identities_rejects_malformed_payload(payload) -> None:
     with pytest.raises(ExecutionLedgerError, match="required_bad_identities"):
         paired_result._parse_required_bad_identities(payload)

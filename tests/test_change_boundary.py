@@ -16,6 +16,7 @@ def test_controller_only_change_is_admitted() -> None:
     result = classify_changed_paths(
         {
             ".github/workflows/toast-conformance.yml",
+            "src/moo_conformance/_exec_fixtures/echo",
             "src/moo_conformance/runner.py",
             "tests/test_runner.py",
             "pyproject.toml",
@@ -34,7 +35,6 @@ def test_data_only_change_is_admitted() -> None:
             "ci/duplicate-baseline.json",
             "src/moo_conformance/_db/Test.db",
             "src/moo_conformance/_db/startup/startup-fixtures.sha256",
-            "src/moo_conformance/_exec_fixtures/echo",
             "src/moo_conformance/_tests/basic/arithmetic.yaml",
         }
     )
@@ -67,6 +67,16 @@ def test_mixed_controller_and_data_change_fails_closed() -> None:
         )
 
 
+def test_executable_fixture_mixed_with_test_data_fails_closed() -> None:
+    with pytest.raises(ChangeBoundaryError, match="mixes controller and data changes"):
+        classify_changed_paths(
+            {
+                "src/moo_conformance/_exec_fixtures/echo",
+                "src/moo_conformance/_tests/features/steps_basic.yaml",
+            }
+        )
+
+
 @pytest.mark.parametrize(
     "path",
     [
@@ -91,7 +101,7 @@ def test_duplicate_and_noncanonical_paths_fail_closed() -> None:
         classify_changed_paths({"tests\\test_runner.py"})
 
 
-def _git(repo: Path, *args: str) -> None:
+def _git(repo: Path, *args: str) -> str:
     result = subprocess.run(
         ["git", *args],
         cwd=repo,
@@ -100,6 +110,7 @@ def _git(repo: Path, *args: str) -> None:
         check=False,
     )
     assert result.returncode == 0, result.stderr
+    return result.stdout
 
 
 def _tracked_repo(root: Path, files: dict[str, str]) -> Path:
@@ -135,6 +146,46 @@ def test_candidate_change_compares_exact_tracked_git_trees(tmp_path: Path) -> No
 
     assert result.mode == "controller"
     assert result.changed_paths == ("src/moo_conformance/runner.py",)
+
+
+def test_candidate_change_requires_repository_top_level(tmp_path: Path) -> None:
+    trusted = _tracked_repo(
+        tmp_path / "trusted",
+        {"src/moo_conformance/runner.py": "old\n"},
+    )
+    candidate = _tracked_repo(
+        tmp_path / "candidate",
+        {"src/moo_conformance/runner.py": "new\n"},
+    )
+
+    with pytest.raises(
+        ChangeBoundaryError,
+        match="tracked-tree root must be the repository top-level",
+    ):
+        classify_candidate_change(trusted / "src", candidate)
+
+
+@pytest.mark.parametrize("mode", ["100755", "120000"])
+def test_candidate_change_rejects_non_regular_index_modes(
+    tmp_path: Path,
+    mode: str,
+) -> None:
+    trusted = _tracked_repo(tmp_path / "trusted", {"README.md": "same\n"})
+    candidate = _tracked_repo(tmp_path / "candidate", {"README.md": "same\n"})
+    object_id = _git(candidate, "rev-parse", ":README.md").strip()
+    _git(
+        candidate,
+        "update-index",
+        "--add",
+        "--cacheinfo",
+        f"{mode},{object_id},unsafe-entry",
+    )
+
+    with pytest.raises(
+        ChangeBoundaryError,
+        match=rf"unsupported git index mode.*unsafe-entry: {mode}",
+    ):
+        classify_candidate_change(trusted, candidate)
 
 
 def test_cli_writes_canonical_evidence(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:

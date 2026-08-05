@@ -11,7 +11,7 @@ from typing import Iterable
 
 _DATA_TESTS_PREFIX = "src/moo_conformance/_tests/"
 _DATA_DB_PREFIX = "src/moo_conformance/_db/"
-_DATA_EXEC_PREFIX = "src/moo_conformance/_exec_fixtures/"
+_CONTROLLER_EXEC_PREFIX = "src/moo_conformance/_exec_fixtures/"
 _CONTROLLER_PREFIXES = (
     ".github/",
     "tests/",
@@ -68,8 +68,8 @@ def _path_kind(path: str) -> str:
         if path.endswith((".db", ".sha256")):
             return "data"
         return "unknown"
-    if path.startswith(_DATA_EXEC_PREFIX):
-        return "data"
+    if path.startswith(_CONTROLLER_EXEC_PREFIX):
+        return "controller"
     if path == "ci/duplicate-baseline.json":
         return "data"
     if path in _CONTROLLER_FILES or path.startswith(_CONTROLLER_PREFIXES):
@@ -131,6 +131,28 @@ def _tracked_tree(root: str | Path) -> dict[str, tuple[str, str]]:
     checkout = Path(root).resolve()
     if not checkout.is_dir():
         raise ChangeBoundaryError(f"tracked-tree root is not a directory: {checkout}")
+    top_level_process = subprocess.run(
+        ["git", "rev-parse", "--show-toplevel"],
+        cwd=checkout,
+        capture_output=True,
+        check=False,
+    )
+    if top_level_process.returncode != 0:
+        error = top_level_process.stderr.decode("utf-8", errors="replace").strip()
+        raise ChangeBoundaryError(
+            f"tracked-tree root is not a Git repository: {checkout}: {error}"
+        )
+    try:
+        top_level = Path(top_level_process.stdout.decode("utf-8").strip()).resolve()
+    except UnicodeDecodeError as exc:
+        raise ChangeBoundaryError(
+            f"tracked-tree repository root is not UTF-8: {checkout}"
+        ) from exc
+    if top_level != checkout:
+        raise ChangeBoundaryError(
+            "tracked-tree root must be the repository top-level: "
+            f"supplied={checkout}; top-level={top_level}"
+        )
     process = subprocess.run(
         ["git", "ls-files", "--stage", "-z"],
         cwd=checkout,
@@ -160,6 +182,10 @@ def _tracked_tree(root: str | Path) -> dict[str, tuple[str, str]]:
             raise ChangeBoundaryError(f"non-UTF-8 git index entry in {checkout}") from exc
         if path in entries:
             raise ChangeBoundaryError(f"duplicate git index path in {checkout}: {path}")
+        if mode != "100644":
+            raise ChangeBoundaryError(
+                f"unsupported git index mode in {checkout}: {path}: {mode}"
+            )
         entries[path] = (mode, object_id)
     if not entries:
         raise ChangeBoundaryError(f"tracked tree is empty: {checkout}")

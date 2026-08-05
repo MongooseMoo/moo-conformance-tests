@@ -601,16 +601,24 @@ tests:
     set_verb_code(class, "b", {"return this:a();"});
     add_verb(class, {player, "xd", "c"}, {"this", "none", "this"});
     set_verb_code(class, "c", {
+      "ids = {};",
       "for delay in ({0, 100})",
-      "  fork (delay)",
+      "  fork id (delay)",
       "    c = this:b();",
       "  endfork",
+      "  ids = {@ids, id};",
       "endfor",
       "suspend(0);",
       "q = queued_tasks();",
-      "result = {length(q), {q[1][7], valid(q[1][6]), valid(q[1][9])}, {q[2][7], valid(q[2][6]), valid(q[2][9])}};",
-      "kill_task(q[1][1]);",
-      "kill_task(q[2][1]);",
+      "mine = {};",
+      "for queued in (q)",
+      "  if (queued[1] in ids)",
+      "    mine = {@mine, queued};",
+      "  endif",
+      "endfor",
+      "result = {length(mine), {mine[1][7], valid(mine[1][6]), valid(mine[1][9])}, {mine[2][7], valid(mine[2][6]), valid(mine[2][9])}};",
+      "kill_task(ids[1]);",
+      "kill_task(ids[2]);",
       "return result;"
     });
     o = create(class, 1);

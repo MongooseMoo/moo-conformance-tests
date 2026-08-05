@@ -109,6 +109,24 @@ def _has_feature(
             )
         return value
     if feature == "64bit":
+        if profile_features is not None and "runtime.arch_bits" in profile_features:
+            arch_bits = profile_features["runtime.arch_bits"]
+            if type(arch_bits) is not int or arch_bits not in (32, 64):
+                raise CapabilityProbeError(
+                    "Failed to probe feature 64bit: runtime.arch_bits must be "
+                    f"32 or 64, got {arch_bits!r}"
+                )
+            is_64bit = arch_bits == 64
+            if "option.ONLY_32_BITS" in profile_features:
+                only_32_bits = _has_option(
+                    runner, "ONLY_32_BITS", profile_features
+                )
+                if is_64bit == only_32_bits:
+                    raise CapabilityProbeError(
+                        "Failed to probe feature 64bit: conflicting architecture "
+                        "profile values"
+                    )
+            return is_64bit
         return not _has_option(runner, "ONLY_32_BITS", profile_features)
     if feature == "connectable_listener_port":
         if not _has_option(runner, "OUTBOUND_NETWORK", profile_features):

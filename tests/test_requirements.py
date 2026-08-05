@@ -191,6 +191,61 @@ def test_64bit_feature_uses_only_32_bits_option(
     ]
 
 
+@pytest.mark.parametrize(
+    ("arch_bits", "expected_skip"),
+    [
+        (32, False),
+        (64, True),
+    ],
+)
+def test_64bit_feature_uses_recorded_runtime_architecture_without_a_probe(
+    arch_bits: int, expected_skip: bool
+) -> None:
+    test = MooTestCase(name="conditional", skip_if="feature.64bit")
+    runner = runner_with()
+
+    try:
+        _enforce_skip_condition(
+            test,
+            runner,
+            {"runtime.arch_bits": arch_bits},
+        )
+        skipped = False
+    except pytest.skip.Exception:
+        skipped = True
+
+    assert skipped is expected_skip
+    assert runner.transport.executed == []
+
+
+@pytest.mark.parametrize("arch_bits", [True, 16, 128, "64"])
+def test_64bit_feature_rejects_invalid_recorded_runtime_architecture(
+    arch_bits: object,
+) -> None:
+    test = MooTestCase(name="conditional", skip_if="feature.64bit")
+
+    with pytest.raises(CapabilityProbeError, match="runtime.arch_bits"):
+        _enforce_skip_condition(
+            test,
+            runner_with(),
+            {"runtime.arch_bits": arch_bits},
+        )
+
+
+def test_64bit_feature_rejects_conflicting_recorded_architecture_options() -> None:
+    test = MooTestCase(name="conditional", skip_if="feature.64bit")
+
+    with pytest.raises(CapabilityProbeError, match="conflicting architecture"):
+        _enforce_skip_condition(
+            test,
+            runner_with(),
+            {
+                "runtime.arch_bits": 64,
+                "option.ONLY_32_BITS": True,
+            },
+        )
+
+
 def test_minimum_version_is_enforced() -> None:
     suite = MooTestSuite(
         name="requirements",

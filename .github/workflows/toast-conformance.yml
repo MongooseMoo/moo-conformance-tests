@@ -231,7 +231,7 @@ jobs:
           retention-days: 14
 
   execution-ledger:
-    name: Every packaged case executed
+    name: Full suite
     if: always()
     needs: full-suite
     runs-on: ubuntu-24.04

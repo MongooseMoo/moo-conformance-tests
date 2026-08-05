@@ -266,38 +266,14 @@ def _element_reason(element: ET.Element) -> str:
     return element.attrib.get("message") or (element.text or "").strip()
 
 
-def load_baseline(path: str | Path) -> dict[str, str]:
-    baseline_path = Path(path)
-    try:
-        data = json.loads(baseline_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        raise ExecutionLedgerError(f"cannot read skip baseline {baseline_path}: {exc}") from exc
-    if not isinstance(data, dict) or data.get("schema_version") != 1:
-        raise ExecutionLedgerError("skip baseline must be an object with schema_version 1")
-    entries = data.get("never_executed")
-    if not isinstance(entries, dict) or any(
-        not isinstance(case_id, str) or not isinstance(reason, str) or not reason
-        for case_id, reason in entries.items()
-    ):
-        raise ExecutionLedgerError("skip baseline never_executed must map case IDs to reasons")
-    return entries
-
-
 def enforce_execution_surface(
     reports: dict[str, dict[str, CaseOutcome]],
     expected_case_ids: set[str],
-    baseline: dict[str, str],
 ) -> dict[str, object]:
     if not reports:
         raise ExecutionLedgerError("no profile reports were supplied")
     if not expected_case_ids:
         raise ExecutionLedgerError("packaged conformance collection is empty")
-
-    unknown_baseline = set(baseline) - expected_case_ids
-    if unknown_baseline:
-        raise ExecutionLedgerError(
-            "skip baseline contains unknown case IDs: " + ", ".join(sorted(unknown_baseline))
-        )
 
     profile_counts: dict[str, dict[str, int]] = {}
     executed: set[str] = set()
@@ -334,36 +310,17 @@ def enforce_execution_surface(
         }
 
     never_executed = expected_case_ids - executed
-    unreviewed = never_executed - set(baseline)
-    stale = set(baseline) - never_executed
-    if unreviewed:
+    if never_executed:
         raise ExecutionLedgerError(
-            "cases never executed by any profile and absent from the reviewed baseline: "
-            + ", ".join(sorted(unreviewed))
+            "cases never executed by any profile: " + ", ".join(sorted(never_executed))
         )
-    if stale:
-        raise ExecutionLedgerError(
-            "stale skip baseline entries executed by at least one profile: "
-            + ", ".join(sorted(stale))
-        )
-
-    for case_id, expected_reason in sorted(baseline.items()):
-        for profile, outcomes in sorted(reports.items()):
-            outcome = outcomes[case_id]
-            if outcome.status != "skipped" or outcome.reason != expected_reason:
-                raise ExecutionLedgerError(
-                    f"baseline drift for {case_id} in {profile}: expected skipped with "
-                    f"{expected_reason!r}, got {outcome.status} with {outcome.reason!r}"
-                )
 
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "packaged_cases": len(expected_case_ids),
         "executed_cases": len(executed),
-        "reviewed_never_executed_cases": len(baseline),
         "profiles": profile_counts,
         "executed_case_ids": sorted(executed),
-        "reviewed_never_executed": baseline,
     }
 
 
@@ -382,27 +339,17 @@ def _parse_report_arguments(values: Iterable[str]) -> dict[str, Path]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--report", action="append", required=True, metavar="PROFILE=PATH")
-    surface = parser.add_mutually_exclusive_group(required=True)
-    surface.add_argument("--baseline", type=Path)
-    surface.add_argument("--inventory", type=Path)
+    parser.add_argument("--inventory", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args(argv)
 
     try:
         report_paths = _parse_report_arguments(args.report)
         reports = {profile: parse_junit_report(path) for profile, path in report_paths.items()}
-        if args.inventory is not None:
-            expected_case_ids = set(
-                load_candidate_inventory(args.inventory)["candidate_case_ids"]
-            )
-            baseline: dict[str, str] = {}
-        else:
-            expected_case_ids = packaged_case_ids()
-            baseline = load_baseline(args.baseline)
+        expected_case_ids = set(load_candidate_inventory(args.inventory)["candidate_case_ids"])
         ledger = enforce_execution_surface(
             reports,
             expected_case_ids,
-            baseline,
         )
     except ExecutionLedgerError as exc:
         parser.error(str(exc))
@@ -411,8 +358,7 @@ def main(argv: list[str] | None = None) -> int:
     args.output.write_text(json.dumps(ledger, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(
         f"Toast profile union executed {ledger['executed_cases']} of "
-        f"{ledger['packaged_cases']} packaged cases; "
-        f"{ledger['reviewed_never_executed_cases']} reviewed skips remain"
+        f"{ledger['packaged_cases']} packaged cases"
     )
     return 0
 

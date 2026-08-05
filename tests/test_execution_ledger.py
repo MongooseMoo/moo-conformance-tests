@@ -11,7 +11,6 @@ from moo_conformance.execution_ledger import (
     ExecutionLedgerError,
     candidate_identity_digest,
     enforce_execution_surface,
-    load_baseline,
     load_candidate_inventory,
     main,
     parse_junit_report,
@@ -575,11 +574,11 @@ def test_profile_union_requires_every_case_to_pass_once() -> None:
         },
     }
 
-    ledger = enforce_execution_surface(reports, expected, {})
+    ledger = enforce_execution_surface(reports, expected)
 
+    assert ledger["schema_version"] == 2
     assert ledger["packaged_cases"] == 2
     assert ledger["executed_cases"] == 2
-    assert ledger["reviewed_never_executed_cases"] == 0
 
 
 def test_profile_surface_must_be_exact() -> None:
@@ -589,7 +588,6 @@ def test_profile_surface_must_be_exact() -> None:
         enforce_execution_surface(
             reports,
             {"suite.yaml::present", "suite.yaml::missing"},
-            {},
         )
 
 
@@ -598,59 +596,14 @@ def test_unsuccessful_case_always_fails(status: str) -> None:
     reports = {"profile": {"suite.yaml::case": CaseOutcome(status, "broken")}}
 
     with pytest.raises(ExecutionLedgerError, match="unsuccessful cases"):
-        enforce_execution_surface(reports, {"suite.yaml::case"}, {})
+        enforce_execution_surface(reports, {"suite.yaml::case"})
 
 
-def test_unreviewed_never_executed_case_fails() -> None:
+def test_never_executed_case_fails_without_exception_path() -> None:
     reports = {"profile": {"suite.yaml::case": CaseOutcome("skipped", "unsupported")}}
 
-    with pytest.raises(ExecutionLedgerError, match="absent from the reviewed baseline"):
-        enforce_execution_surface(reports, {"suite.yaml::case"}, {})
-
-
-def test_exact_reviewed_skip_is_allowed() -> None:
-    reports = {
-        "one": {"suite.yaml::case": CaseOutcome("skipped", "unsupported")},
-        "two": {"suite.yaml::case": CaseOutcome("skipped", "unsupported")},
-    }
-
-    ledger = enforce_execution_surface(
-        reports,
-        {"suite.yaml::case"},
-        {"suite.yaml::case": "unsupported"},
-    )
-
-    assert ledger["reviewed_never_executed_cases"] == 1
-
-
-def test_skip_reason_drift_fails() -> None:
-    reports = {"profile": {"suite.yaml::case": CaseOutcome("skipped", "new reason")}}
-
-    with pytest.raises(ExecutionLedgerError, match="baseline drift"):
-        enforce_execution_surface(
-            reports,
-            {"suite.yaml::case"},
-            {"suite.yaml::case": "reviewed reason"},
-        )
-
-
-def test_stale_baseline_entry_fails_after_case_executes() -> None:
-    reports = {"profile": {"suite.yaml::case": CaseOutcome("passed")}}
-
-    with pytest.raises(ExecutionLedgerError, match="stale skip baseline"):
-        enforce_execution_surface(
-            reports,
-            {"suite.yaml::case"},
-            {"suite.yaml::case": "unsupported"},
-        )
-
-
-def test_load_baseline_rejects_malformed_shape(tmp_path: Path) -> None:
-    baseline = tmp_path / "baseline.json"
-    baseline.write_text(json.dumps({"schema_version": 1, "never_executed": []}))
-
-    with pytest.raises(ExecutionLedgerError, match="never_executed"):
-        load_baseline(baseline)
+    with pytest.raises(ExecutionLedgerError, match="cases never executed by any profile"):
+        enforce_execution_surface(reports, {"suite.yaml::case"})
 
 
 def test_cli_inventory_mode_uses_candidate_surface_with_zero_exceptions(
@@ -674,11 +627,7 @@ def test_cli_inventory_mode_uses_candidate_surface_with_zero_exceptions(
     def reject_local_discovery(*args: object, **kwargs: object) -> set[str]:
         raise AssertionError("local packaged identities must not be consulted")
 
-    def reject_baseline_load(path: str | Path) -> dict[str, str]:
-        raise AssertionError(f"baseline must not be consulted in inventory mode: {path}")
-
     monkeypatch.setattr(execution_ledger, "packaged_case_ids", reject_local_discovery)
-    monkeypatch.setattr(execution_ledger, "load_baseline", reject_baseline_load)
 
     result = main(
         [
@@ -693,18 +642,18 @@ def test_cli_inventory_mode_uses_candidate_surface_with_zero_exceptions(
 
     assert result == 0
     ledger = json.loads(output.read_text(encoding="utf-8"))
+    assert ledger["schema_version"] == 2
     assert ledger["executed_case_ids"] == [candidate_id]
-    assert ledger["reviewed_never_executed_cases"] == 0
-    assert ledger["reviewed_never_executed"] == {}
+    assert "reviewed_never_executed_cases" not in ledger
+    assert "reviewed_never_executed" not in ledger
 
 
-def test_cli_inventory_mode_rejects_baseline(
+def test_cli_rejects_removed_baseline_option(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     inventory_path = tmp_path / "paired-inventory.json"
     report = tmp_path / "report.xml"
-    baseline = tmp_path / "baseline.json"
     output = tmp_path / "ledger.json"
     candidate_id = "suite.yaml::candidate"
     write_inventory(
@@ -712,7 +661,6 @@ def test_cli_inventory_mode_rejects_baseline(
         inventory_data(trusted=[candidate_id], candidate=[candidate_id], additive=[]),
     )
     write_report(report, [case(candidate_id)])
-    write_inventory(baseline, {"schema_version": 1, "never_executed": {}})
 
     with pytest.raises(SystemExit, match="2"):
         main(
@@ -722,17 +670,17 @@ def test_cli_inventory_mode_rejects_baseline(
                 "--inventory",
                 str(inventory_path),
                 "--baseline",
-                str(baseline),
+                "removed.json",
                 "--output",
                 str(output),
             ]
         )
 
-    assert "not allowed with argument --inventory" in capsys.readouterr().err
+    assert "unrecognized arguments: --baseline removed.json" in capsys.readouterr().err
     assert not output.exists()
 
 
-def test_cli_without_inventory_rejects_missing_baseline(
+def test_cli_requires_trusted_inventory(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
@@ -750,41 +698,8 @@ def test_cli_without_inventory_rejects_missing_baseline(
             ]
         )
 
-    assert "one of the arguments --baseline --inventory is required" in capsys.readouterr().err
+    assert "the following arguments are required: --inventory" in capsys.readouterr().err
     assert not output.exists()
-
-
-def test_cli_without_inventory_preserves_local_packaged_surface(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    report = tmp_path / "report.xml"
-    baseline = tmp_path / "baseline.json"
-    output = tmp_path / "ledger.json"
-    local_id = "suite.yaml::local"
-    write_report(report, [case(local_id)])
-    write_inventory(baseline, {"schema_version": 1, "never_executed": {}})
-    monkeypatch.setattr(execution_ledger, "packaged_case_ids", lambda: {local_id})
-
-    def reject_inventory_load(path: str | Path) -> object:
-        raise AssertionError(f"unexpected inventory load: {path}")
-
-    monkeypatch.setattr(execution_ledger, "load_candidate_inventory", reject_inventory_load)
-
-    assert (
-        main(
-            [
-                "--report",
-                f"toast={report}",
-                "--baseline",
-                str(baseline),
-                "--output",
-                str(output),
-            ]
-        )
-        == 0
-    )
-    assert json.loads(output.read_text(encoding="utf-8"))["executed_case_ids"] == [local_id]
 
 
 def test_cli_fails_closed_on_tampered_inventory(
@@ -813,9 +728,3 @@ def test_cli_fails_closed_on_tampered_inventory(
 
     assert "candidate_identity_sha256 mismatch" in capsys.readouterr().err
     assert not output.exists()
-
-
-def test_reviewed_toast_baseline_is_empty() -> None:
-    baseline = load_baseline(Path("ci/toast-never-executed.json"))
-
-    assert baseline == {}

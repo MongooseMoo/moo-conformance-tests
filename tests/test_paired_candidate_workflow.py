@@ -12,6 +12,9 @@ WORKFLOW_PATH = (
 TOAST_WORKFLOW_PATH = (
     Path(__file__).resolve().parents[1] / ".github" / "workflows" / "toast-conformance.yml"
 )
+TOAST_EXCEPTION_BASELINE_PATH = (
+    Path(__file__).resolve().parents[1] / "ci" / "toast-never-executed.json"
+)
 PINNED_ACTION = re.compile(r"^[^@]+@[0-9a-f]{40}$")
 
 
@@ -59,6 +62,10 @@ def test_toast_pr_check_is_read_only_and_pr_scoped() -> None:
     assert concurrency["cancel-in-progress"] == (
         "${{ github.event_name == 'pull_request' }}"
     )
+
+
+def test_toast_exception_baseline_is_removed() -> None:
+    assert not TOAST_EXCEPTION_BASELINE_PATH.exists()
 
 
 def test_toast_workflow_uses_immutable_trusted_and_fork_candidate_checkouts() -> None:

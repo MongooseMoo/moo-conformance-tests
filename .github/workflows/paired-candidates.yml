@@ -19,6 +19,7 @@ jobs:
     outputs:
       barn_sha: ${{ steps.validate.outputs.barn_sha }}
       conformance_sha: ${{ steps.validate.outputs.conformance_sha }}
+      required_bad_cases: ${{ steps.validate.outputs.required_bad_cases }}
 
     steps:
       - name: Reject mutable or malformed candidate refs
@@ -27,7 +28,7 @@ jobs:
           BARN_SHA: ${{ github.event.client_payload.barn_sha }}
           CONFORMANCE_SHA: ${{ github.event.client_payload.conformance_sha }}
           EXPECTED_RESULT: ${{ github.event.client_payload.expected_result }}
-          REQUIRED_BAD_CASE: ${{ github.event.client_payload.required_bad_case }}
+          REQUIRED_BAD_CASES: ${{ toJSON(github.event.client_payload.required_bad_cases) }}
         run: |
           set -euo pipefail
           for candidate in "$BARN_SHA" "$CONFORMANCE_SHA"; do
@@ -40,14 +41,49 @@ jobs:
             echo "expected_result must be success or failure" >&2
             exit 2
           fi
-          if [[ "$EXPECTED_RESULT" == failure && -z "$REQUIRED_BAD_CASE" ]]; then
-            echo "required_bad_case is mandatory for an expected failure" >&2
-            exit 2
-          fi
-          if [[ "$EXPECTED_RESULT" == success && -n "$REQUIRED_BAD_CASE" ]]; then
-            echo "required_bad_case must be empty for an expected success" >&2
-            exit 2
-          fi
+          python3 - <<'PY'
+          import json
+          import os
+          import sys
+
+          raw = os.environ["REQUIRED_BAD_CASES"]
+          try:
+              required_bad_cases = json.loads(raw)
+          except json.JSONDecodeError as exc:
+              print(f"required_bad_cases must be valid JSON: {exc}", file=sys.stderr)
+              raise SystemExit(2) from exc
+          if not isinstance(required_bad_cases, list) or any(
+              not isinstance(case_id, str)
+              or not case_id
+              or case_id != case_id.strip()
+              for case_id in required_bad_cases
+          ):
+              print(
+                  "required_bad_cases must be a JSON array of non-empty strings "
+                  "without padding",
+                  file=sys.stderr,
+              )
+              raise SystemExit(2)
+          if len(set(required_bad_cases)) != len(required_bad_cases):
+              print("required_bad_cases contains duplicates", file=sys.stderr)
+              raise SystemExit(2)
+          expected = os.environ["EXPECTED_RESULT"]
+          if expected == "failure" and not required_bad_cases:
+              print(
+                  "required_bad_cases must be non-empty for an expected failure",
+                  file=sys.stderr,
+              )
+              raise SystemExit(2)
+          if expected == "success" and required_bad_cases:
+              print(
+                  "required_bad_cases must be empty for an expected success",
+                  file=sys.stderr,
+              )
+              raise SystemExit(2)
+          normalized = json.dumps(sorted(required_bad_cases), separators=(",", ":"))
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write(f"required_bad_cases={normalized}\n")
+          PY
           printf 'barn_sha=%s\n' "$BARN_SHA" >> "$GITHUB_OUTPUT"
           printf 'conformance_sha=%s\n' "$CONFORMANCE_SHA" >> "$GITHUB_OUTPUT"
 
@@ -70,6 +106,7 @@ jobs:
       barn_sha: ${{ steps.provenance.outputs.barn_sha }}
       conformance_sha: ${{ steps.provenance.outputs.conformance_sha }}
       conformance_exit: ${{ steps.conformance.outputs.exit_code }}
+      required_bad_cases: ${{ needs.validate-inputs.outputs.required_bad_cases }}
 
     steps:
       - name: Prepare evidence directory
@@ -255,7 +292,7 @@ jobs:
       - name: Validate the expected paired result
         env:
           EXPECTED_RESULT: ${{ github.event.client_payload.expected_result }}
-          REQUIRED_BAD_CASE: ${{ github.event.client_payload.required_bad_case }}
+          REQUIRED_BAD_CASES: ${{ needs.paired.outputs.required_bad_cases }}
           CONFORMANCE_EXIT: ${{ needs.paired.outputs.conformance_exit }}
         run: |
           mkdir -p verdict
@@ -263,7 +300,7 @@ jobs:
             --report="raw-evidence/conformance.xml" \
             --expected="$EXPECTED_RESULT" \
             --exit-code="$CONFORMANCE_EXIT" \
-            --required-bad-case="$REQUIRED_BAD_CASE" \
+            --required-bad-cases="$REQUIRED_BAD_CASES" \
             --expected-ids="raw-evidence/expected-case-ids.json" \
             --output="verdict/result.json"
 
@@ -272,7 +309,6 @@ jobs:
           BARN_SHA: ${{ needs.paired.outputs.barn_sha }}
           CONFORMANCE_SHA: ${{ needs.paired.outputs.conformance_sha }}
           EXPECTED_RESULT: ${{ github.event.client_payload.expected_result }}
-          REQUIRED_BAD_CASE: ${{ github.event.client_payload.required_bad_case }}
           CORRELATION_ID: ${{ github.event.client_payload.correlation_id }}
           WORKFLOW_REPOSITORY: ${{ github.repository }}
           WORKFLOW_REF: ${{ github.workflow_ref }}
@@ -295,7 +331,7 @@ jobs:
 
           result = json.loads(Path("verdict/result.json").read_text())
           provenance = {
-              "schema_version": 1,
+              "schema_version": 2,
               "repositories": {
                   "barn": "MongooseMoo/barn",
                   "conformance": "MongooseMoo/moo-conformance-tests",
@@ -303,7 +339,7 @@ jobs:
               "barn_sha": os.environ["BARN_SHA"],
               "conformance_sha": os.environ["CONFORMANCE_SHA"],
               "expected_result": os.environ["EXPECTED_RESULT"],
-              "required_bad_case": os.environ["REQUIRED_BAD_CASE"] or None,
+              "required_bad_cases": result["required_bad_cases"],
               "correlation_id": os.environ["CORRELATION_ID"] or None,
               "workflow_repository": os.environ["WORKFLOW_REPOSITORY"],
               "workflow_ref": os.environ["WORKFLOW_REF"],
@@ -331,11 +367,20 @@ jobs:
           EXPECTED_RESULT: ${{ github.event.client_payload.expected_result }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
+          required_bad_cases=$(python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          result = json.loads(Path("verdict/result.json").read_text())
+          print(json.dumps(result['required_bad_cases']))
+          PY
+          )
           {
             echo "### Paired candidate verdict: EXPECT $EXPECTED_RESULT"
             echo
             echo "- Barn SHA: \`$BARN_SHA\`"
             echo "- Conformance SHA: \`$CONFORMANCE_SHA\`"
+            echo "- Required bad cases: \`$required_bad_cases\`"
             echo "- Run: $RUN_URL"
             echo '```json'
             cat verdict/result.json

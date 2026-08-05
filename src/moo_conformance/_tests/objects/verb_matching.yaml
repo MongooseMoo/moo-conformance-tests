@@ -10,10 +10,13 @@ tests:
     permission: wizard
     statement: |
       obj = create($nothing);
-      add_verb(obj, {player, "rxd", "test_func*tion"}, {"this", "none", "this"});
-      set_verb_code(obj, 1, {"return 42;"});
-      result = obj:test_func();
-      recycle(obj);
+      try
+        add_verb(obj, {player, "rxd", "test_func*tion"}, {"this", "none", "this"});
+        set_verb_code(obj, 1, {"return 42;"});
+        result = obj:test_func();
+      finally
+        recycle(obj);
+      endtry
       return result;
     expect:
       value: 42
@@ -23,10 +26,13 @@ tests:
     permission: wizard
     statement: |
       obj = create($nothing);
-      add_verb(obj, {player, "rxd", "test_func*tion"}, {"this", "none", "this"});
-      set_verb_code(obj, 1, {"return 99;"});
-      result = obj:test_function();
-      recycle(obj);
+      try
+        add_verb(obj, {player, "rxd", "test_func*tion"}, {"this", "none", "this"});
+        set_verb_code(obj, 1, {"return 99;"});
+        result = obj:test_function();
+      finally
+        recycle(obj);
+      endtry
       return result;
     expect:
       value: 99
@@ -36,10 +42,13 @@ tests:
     permission: wizard
     statement: |
       obj = create($nothing);
-      add_verb(obj, {player, "rxd", "test_func*tion"}, {"this", "none", "this"});
-      set_verb_code(obj, 1, {"return 77;"});
-      result = obj:test_functi();
-      recycle(obj);
+      try
+        add_verb(obj, {player, "rxd", "test_func*tion"}, {"this", "none", "this"});
+        set_verb_code(obj, 1, {"return 77;"});
+        result = obj:test_functi();
+      finally
+        recycle(obj);
+      endtry
       return result;
     expect:
       value: 77

@@ -99,6 +99,15 @@ def _has_feature(
     feature: str,
     profile_features: dict[str, object] | None = None,
 ) -> bool:
+    profile_key = f"feature.{feature}"
+    if profile_features is not None and profile_key in profile_features:
+        value = profile_features[profile_key]
+        if not isinstance(value, bool):
+            raise CapabilityProbeError(
+                f"Failed to probe feature {feature}: profile value must be boolean, "
+                f"got {value!r}"
+            )
+        return value
     if feature == "64bit":
         return not _has_option(runner, "ONLY_32_BITS", profile_features)
     if feature == "connectable_listener_port":

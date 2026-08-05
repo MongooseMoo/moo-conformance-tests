@@ -7,7 +7,6 @@ requires:
     - set_task_local
     - task_id
     - suspend
-    - fork
     - resume
     - kill_task
     - create
@@ -19,7 +18,7 @@ requires:
     - valid
     - notify
     - tostr
-  features: [tasks]
+  features: [fork, tasks]
 
 tests:
   # Permission tests

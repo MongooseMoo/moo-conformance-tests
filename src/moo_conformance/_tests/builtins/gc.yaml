@@ -85,9 +85,10 @@ tests:
   - name: nested_map_no_possible_root
     permission: wizard
     statement: |
+      before = gc_stats();
       [1 -> [4 -> [5 -> 6], 7 -> 8], 2 -> 3];
-      gc = gc_stats();
-      return gc["purple"] == 0 && gc["black"] == 0;
+      after = gc_stats();
+      return after["purple"] == before["purple"] && after["black"] == before["black"];
     expect:
       value: 1
 

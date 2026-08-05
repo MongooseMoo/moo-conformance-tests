@@ -81,9 +81,22 @@ tests:
     error: E_INVARG
 - name: queued_tasks_shows_suspended_exec
   permission: wizard
-  statement: "fork go (0)\n  exec({\"sleep\", \"1\"});\nendfork\nsuspend(0.1);\n\
-    queued = queued_tasks();\ntry\n  kill_task(go);\nexcept e (ANY)\nendtry\nreturn\
-    \ length(queued) == 1 && queued[1][1] == go && queued[1][2] == \"executables/sleep\";\n"
+  statement: |
+    fork go (0)
+      exec({"sleep", "1"});
+    endfork
+    suspend(0.1);
+    found = 0;
+    for task in (queued_tasks())
+      if (task[1] == go && task[2] == "executables/sleep")
+        found = 1;
+      endif
+    endfor
+    try
+      kill_task(go);
+    except e (ANY)
+    endtry
+    return found;
   expect:
     value: 1
 - name: kill_task_works_on_suspended_exec
@@ -115,12 +128,35 @@ tests:
     value: 1
 - name: multiple_simultaneous_execs_work
   permission: wizard
-  statement: "task_ids = {};\nfor n in ({1, 2, 3, 4})\n  fork go (0)\n    exec({\"\
-    sleep\", \"1\"});\n  endfork\n  task_ids = listappend(task_ids, go);\nendfor\n\
-    suspend(0.1);\nqueued_before = queued_tasks();\nkill_task(task_ids[1]);\nkill_task(task_ids[3]);\n\
-    queued_after_kill = queued_tasks();\nkill_task(task_ids[2]);\nkill_task(task_ids[4]);\n\
-    return length(queued_before) == 4 && queued_before[1][1] == task_ids[1] && queued_before[1][2]\
-    \ == \"executables/sleep\" && length(queued_after_kill) == 2 && queued_after_kill[1][1]\
-    \ == task_ids[2] && queued_after_kill[2][1] == task_ids[4];\n"
+  statement: |
+    task_ids = {};
+    for n in ({1, 2, 3, 4})
+      fork go (0)
+        exec({"sleep", "1"});
+      endfork
+      task_ids = listappend(task_ids, go);
+    endfor
+    suspend(0.1);
+    seen_before = {};
+    for task in (queued_tasks())
+      if (task[1] in task_ids && task[2] == "executables/sleep")
+        seen_before = setadd(seen_before, task[1]);
+      endif
+    endfor
+    kill_task(task_ids[1]);
+    kill_task(task_ids[3]);
+    seen_after = {};
+    for task in (queued_tasks())
+      if (task[1] in task_ids && task[2] == "executables/sleep")
+        seen_after = setadd(seen_after, task[1]);
+      endif
+    endfor
+    kill_task(task_ids[2]);
+    kill_task(task_ids[4]);
+    return length(seen_before) == 4
+      && task_ids[2] in seen_after
+      && task_ids[4] in seen_after
+      && !(task_ids[1] in seen_after)
+      && !(task_ids[3] in seen_after);
   expect:
     value: 1

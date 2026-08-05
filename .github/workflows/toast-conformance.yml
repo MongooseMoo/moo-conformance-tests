@@ -248,6 +248,9 @@ jobs:
 
   full-suite:
     name: Toast / ${{ matrix.profile }}
+    if: >-
+      always() && needs.classify-changes.result == 'success' &&
+      needs.quality.result == 'success'
     runs-on: ubuntu-24.04
     needs:
       - classify-changes

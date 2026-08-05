@@ -141,6 +141,57 @@ def test_unknown_fields_are_rejected_in_structured_actions(
         validate_test_suite(data)
 
 
+def _suite_with_wait_for_server_exit(payload: dict) -> dict:
+    return {
+        "name": "wait_for_server_exit_schema",
+        "tests": [
+            {
+                "name": "wait_for_exit",
+                "steps": [{"wait_for_server_exit": payload}],
+            }
+        ],
+    }
+
+
+@pytest.mark.parametrize(
+    ("payload", "message"),
+    [
+        ({"exit_code": 0}, "must specify timeout_ms"),
+        ({"timeout_ms": 1000}, "exactly one"),
+        (
+            {"timeout_ms": 1000, "exit_code": 0, "termination": "abort"},
+            "exactly one",
+        ),
+        ({"timeout_ms": 1000, "termination": "SIGTERM"}, "must be 'abort'"),
+        ({"timeout_ms": 1000, "exit_code": True}, "must be an integer"),
+    ],
+    ids=[
+        "missing-timeout",
+        "missing-expectation",
+        "conflicting-expectations",
+        "unknown-termination",
+        "boolean-exit-code",
+    ],
+)
+def test_wait_for_server_exit_rejects_invalid_schema(payload: dict, message: str):
+    with pytest.raises(ValueError, match=message):
+        validate_test_suite(_suite_with_wait_for_server_exit(payload))
+
+
+def test_wait_for_server_exit_accepts_portable_abort_termination():
+    suite = validate_test_suite(
+        _suite_with_wait_for_server_exit(
+            {"timeout_ms": 5000, "termination": "abort"}
+        )
+    )
+
+    expectation = suite.tests[0].steps[0].wait_for_server_exit
+    assert expectation is not None
+    assert expectation.timeout_ms == 5000
+    assert expectation.exit_code is None
+    assert expectation.termination == "abort"
+
+
 def test_table_row_variable_mappings_remain_open() -> None:
     data = {
         "name": "open_rows",

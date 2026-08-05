@@ -18,9 +18,10 @@ from .schema import (
     MooTestCase,
     MooTestSuite,
     TestStep,
+    WaitForServerExit,
     WriteFile,
 )
-from .server import ManagedServer
+from .server import ManagedServer, normalize_process_termination
 from .transport import ExecutionResult, MooTransport, TestConnection
 
 
@@ -48,6 +49,7 @@ class YamlTestRunner:
         self.server_db_dir = server_db_dir
         self._suites_setup_done: set[str] = set()
         self._log_offset: int = 0
+        self._process_log_boundary_pending = managed_server is not None
         self._active_server_db_path: Path | None = None
 
     def run_suite_setup(self, suite: MooTestSuite) -> None:
@@ -192,6 +194,7 @@ class YamlTestRunner:
         current_user = getattr(self.transport, "current_user", "programmer")
         self.transport.disconnect()
         self.managed_server.restart(db_path=desired_db, wait_for_port=needs_transport)
+        self._process_log_boundary_pending = True
         self._active_server_db_path = desired_db
 
         if needs_transport and suite.setup is not None:
@@ -268,9 +271,14 @@ class YamlTestRunner:
     def _snapshot_log_offset(self) -> None:
         """Record the current end-of-file position of the log file.
 
-        Called at the start of each test so that assert_log only checks
-        log entries written during this test.
+        Called at the start of each test so that assert_log normally checks
+        entries written during this test.  After a managed launch, preserve
+        that process's pre-launch boundary so startup output remains visible.
         """
+        if self._process_log_boundary_pending and self.managed_server is not None:
+            self._log_offset = self.managed_server.process_log_offset
+            self._process_log_boundary_pending = False
+            return
         if self.log_file_path is None:
             self._log_offset = 0
             return
@@ -440,8 +448,7 @@ class YamlTestRunner:
 
                 if step.wait_for_server_exit:
                     self._execute_wait_for_server_exit(
-                        step.wait_for_server_exit.timeout_ms,
-                        step.wait_for_server_exit.exit_code,
+                        step.wait_for_server_exit,
                         test.name,
                     )
                     continue
@@ -549,6 +556,7 @@ class YamlTestRunner:
 
         self.transport.disconnect()
         self.managed_server.restart(down_ms=down_ms)
+        self._log_offset = self.managed_server.process_log_offset
 
         # Update transport endpoint in case a dynamic port changed.
         self.transport.host = self.managed_server.host
@@ -572,30 +580,35 @@ class YamlTestRunner:
             raise AssertionError(f"Test '{test_name}' write_stdin failed: {exc}") from exc
 
     def _execute_wait_for_server_exit(
-        self, timeout_ms: int, expected_exit_code: int, test_name: str
+        self, expectation: WaitForServerExit, test_name: str
     ) -> None:
-        """Observe natural managed-server exit and assert its exact code."""
+        """Observe natural exit and assert an exact code or portable termination."""
         if self.managed_server is None:
             raise AssertionError(
                 f"Test '{test_name}' uses wait_for_server_exit but no managed server is "
                 "configured (use --server-command)"
             )
         try:
-            actual_exit_code = self.managed_server.wait_for_exit(timeout_ms)
+            actual_exit_code = self.managed_server.wait_for_exit(expectation.timeout_ms)
         except (RuntimeError, TimeoutError) as exc:
             raise AssertionError(
                 f"Test '{test_name}' wait_for_server_exit failed: {exc}"
             ) from exc
         self.transport.disconnect()
-        # Startup-only fixtures can finish before run_test snapshots the shared
-        # log. Natural exit is a stable process boundary, so later assert_log
-        # steps should inspect the complete output from that exited process.
-        self._log_offset = 0
-        if actual_exit_code != expected_exit_code:
+        self._log_offset = self.managed_server.process_log_offset
+        if expectation.exit_code is not None and actual_exit_code != expectation.exit_code:
             raise AssertionError(
                 f"Test '{test_name}' wait_for_server_exit expected exit code "
-                f"{expected_exit_code}, got {actual_exit_code}"
+                f"{expectation.exit_code}, got {actual_exit_code}"
             )
+        if expectation.termination is not None:
+            actual_termination = normalize_process_termination(actual_exit_code)
+            if actual_termination != expectation.termination:
+                raise AssertionError(
+                    f"Test '{test_name}' wait_for_server_exit expected termination "
+                    f"{expectation.termination!r}, got unrecognized process status "
+                    f"{actual_exit_code}"
+                )
 
     def _substitute_variables(self, code: str, variables: dict[str, Any]) -> str:
         """Substitute {varname} placeholders with captured values.

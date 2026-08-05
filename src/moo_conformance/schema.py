@@ -194,7 +194,7 @@ ACTION_PAYLOAD_FIELDS = {
     "write_file": frozenset({"path", "content"}),
     "write_stdin": frozenset({"text"}),
     "restart_server": frozenset({"wait_ms", "down_ms"}),
-    "wait_for_server_exit": frozenset({"timeout_ms", "exit_code"}),
+    "wait_for_server_exit": frozenset({"timeout_ms", "exit_code", "termination"}),
 }
 
 
@@ -382,9 +382,10 @@ class RestartServer:
 
 @dataclass
 class WaitForServerExit:
-    """Wait for a managed server to exit naturally without stopping it."""
+    """Require an exact clean code or narrowly normalized natural termination."""
     timeout_ms: int
-    exit_code: int
+    exit_code: int | None = None
+    termination: str | None = None
 
 
 @dataclass
@@ -410,7 +411,7 @@ class TestStep:
     - write_file: Create a file on the test host
     - write_stdin: Write text to the managed server process stdin
     - restart_server: Restart managed server process in-place
-    - wait_for_server_exit: Observe natural process exit with timeout and exact code
+    - wait_for_server_exit: Observe an exact code or portable natural termination
     """
     run: str | None = None                      # MOO code to execute
     command: str | None = None                  # Raw command (no ; prefix)
@@ -1022,21 +1023,34 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
             ACTION_PAYLOAD_FIELDS['wait_for_server_exit'],
             f"{context} wait_for_server_exit",
         )
-        if set(exit_data) != ACTION_PAYLOAD_FIELDS['wait_for_server_exit']:
+        if 'timeout_ms' not in exit_data:
             raise ValueError(
-                f"{context} wait_for_server_exit must specify timeout_ms and exit_code"
+                f"{context} wait_for_server_exit must specify timeout_ms"
             )
         timeout_ms = exit_data['timeout_ms']
-        exit_code = exit_data['exit_code']
         if type(timeout_ms) is not int or timeout_ms <= 0:
             raise ValueError(
                 f"{context} wait_for_server_exit timeout_ms must be a positive integer"
             )
-        if type(exit_code) is not int:
+        has_exit_code = 'exit_code' in exit_data
+        has_termination = 'termination' in exit_data
+        if has_exit_code == has_termination:
+            raise ValueError(
+                f"{context} wait_for_server_exit must specify exactly one of "
+                "exit_code or termination"
+            )
+        exit_code = exit_data.get('exit_code')
+        termination = exit_data.get('termination')
+        if has_exit_code and type(exit_code) is not int:
             raise ValueError(f"{context} wait_for_server_exit exit_code must be an integer")
+        if has_termination and termination != 'abort':
+            raise ValueError(
+                f"{context} wait_for_server_exit termination must be 'abort'"
+            )
         wait_for_server_exit = WaitForServerExit(
             timeout_ms=timeout_ms,
             exit_code=exit_code,
+            termination=termination,
         )
 
     return TestStep(

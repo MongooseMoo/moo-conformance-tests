@@ -10,7 +10,7 @@ requires:
 tests:
   - name: panic_dump_preserves_live_task_roots_without_pending_root_promotion
     steps:
-      - wait_for_server_exit: {timeout_ms: 5000, exit_code: -6}
+      - wait_for_server_exit: {timeout_ms: 5000, termination: abort}
       - assert_log:
           contains: "ORACLE LIVE ROOT HOLDER SUSPENDED"
       - assert_log:

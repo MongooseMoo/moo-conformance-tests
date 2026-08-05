@@ -12,6 +12,7 @@ from moo_conformance.runner import AssertionError as RunnerAssertionError
 from moo_conformance.runner import YamlTestRunner
 from moo_conformance.schema import (
     FileAssertion,
+    LogAssertion,
     MooTestCase,
     MooTestSuite,
     WaitForServerExit,
@@ -19,7 +20,7 @@ from moo_conformance.schema import (
 from moo_conformance.schema import (
     TestStep as MooTestStep,
 )
-from moo_conformance.server import ManagedServer
+from moo_conformance.server import ManagedServer, normalize_process_termination
 from moo_conformance.transport import SocketTransport
 
 
@@ -38,7 +39,9 @@ class _FakeProcess:
         return 0
 
 
-def test_restart_preserves_working_db_copy(monkeypatch, tmp_path: Path):
+def test_restart_preserves_db_and_records_fresh_process_log_boundary(
+    monkeypatch, tmp_path: Path
+):
     baseline = tmp_path / "baseline.db"
     baseline.write_text("baseline", encoding="utf-8")
 
@@ -54,15 +57,21 @@ def test_restart_preserves_working_db_copy(monkeypatch, tmp_path: Path):
 
     server = ManagedServer("fake-server {db} {port}", baseline)
     server.start()
+    assert server.process_log_offset == 0
 
     assert server._db_copy_path is not None
     assert server._db_copy_path.read_text(encoding="utf-8") == "baseline"
 
     server._db_copy_path.write_text("checkpointed", encoding="utf-8")
+    assert server._log_file is not None
+    server._log_file.write("old-process-marker\n")
+    server._log_file.flush()
+    previous_log_size = os.path.getsize(server.log_path)
     server.restart()
 
     assert server._db_copy_path.read_text(encoding="utf-8") == "checkpointed"
     assert len(created) == 2
+    assert server.process_log_offset == previous_log_size
 
 
 def test_restart_waits_before_transport_reconnect(monkeypatch):
@@ -74,6 +83,7 @@ def test_restart_waits_before_transport_reconnect(monkeypatch):
     server = Mock()
     server.host = "localhost"
     server.port = 17777
+    server.process_log_offset = 41
     server.restart.side_effect = lambda down_ms=0: events.append(("restart", down_ms))
     monkeypatch.setattr(
         "moo_conformance.runner.time.sleep",
@@ -89,31 +99,38 @@ def test_restart_waits_before_transport_reconnect(monkeypatch):
         ("sleep", 0.5),
         ("connect", "wizard"),
     ]
+    assert runner._log_offset == 41
 
 
 def test_wait_for_server_exit_accepts_exact_natural_exit_code():
     transport = Mock()
     server = Mock()
     server.wait_for_exit.return_value = 0
+    server.process_log_offset = 37
     runner = YamlTestRunner(transport, managed_server=server)
     runner._log_offset = 99
 
-    runner._execute_wait_for_server_exit(2500, 0, "natural-exit")
+    runner._execute_wait_for_server_exit(
+        WaitForServerExit(timeout_ms=2500, exit_code=0), "natural-exit"
+    )
 
     server.wait_for_exit.assert_called_once_with(2500)
     transport.disconnect.assert_called_once_with()
     server.stop.assert_not_called()
-    assert runner._log_offset == 0
+    assert runner._log_offset == 37
 
 
 def test_wait_for_server_exit_fails_on_timeout_without_stopping_process():
     transport = Mock()
     server = Mock()
     server.wait_for_exit.side_effect = TimeoutError("still running")
+    server.process_log_offset = 37
     runner = YamlTestRunner(transport, managed_server=server)
 
     with pytest.raises(RunnerAssertionError, match="still running"):
-        runner._execute_wait_for_server_exit(2500, 0, "hung-exit")
+        runner._execute_wait_for_server_exit(
+            WaitForServerExit(timeout_ms=2500, exit_code=0), "hung-exit"
+        )
 
     server.stop.assert_not_called()
     transport.disconnect.assert_not_called()
@@ -123,10 +140,13 @@ def test_wait_for_server_exit_fails_on_wrong_exit_code():
     transport = Mock()
     server = Mock()
     server.wait_for_exit.return_value = 7
+    server.process_log_offset = 37
     runner = YamlTestRunner(transport, managed_server=server)
 
     with pytest.raises(RunnerAssertionError, match="expected exit code 0, got 7"):
-        runner._execute_wait_for_server_exit(2500, 0, "wrong-exit")
+        runner._execute_wait_for_server_exit(
+            WaitForServerExit(timeout_ms=2500, exit_code=0), "wrong-exit"
+        )
 
     server.stop.assert_not_called()
 
@@ -137,6 +157,7 @@ def test_cleanup_cannot_turn_wait_for_server_exit_timeout_into_pass():
     transport.current_user = "wizard"
     server = Mock()
     server.wait_for_exit.side_effect = TimeoutError("still running")
+    server.process_log_offset = 37
     runner = YamlTestRunner(transport, managed_server=server)
     test = MooTestCase(
         name="timeout-with-cleanup",
@@ -154,6 +175,114 @@ def test_cleanup_cannot_turn_wait_for_server_exit_timeout_into_pass():
 
     transport.execute.assert_called_once_with("return 0;")
     server.stop.assert_not_called()
+
+
+def test_normalize_process_termination_accepts_linux_direct_sigabrt():
+    assert (
+        normalize_process_termination(-6, "posix", abort_signal_number=6)
+        == "abort"
+    )
+
+
+def test_normalize_process_termination_accepts_posix_wrapper_134():
+    assert (
+        normalize_process_termination(134, "posix", abort_signal_number=6)
+        == "abort"
+    )
+
+
+def test_normalize_process_termination_accepts_windows_crt_abort_status():
+    assert normalize_process_termination(3, "nt") == "abort"
+
+
+@pytest.mark.parametrize(
+    ("returncode", "platform_name"),
+    [
+        (1, "posix"),
+        (3, "posix"),
+        (-15, "posix"),
+        (134, "nt"),
+        (7, "nt"),
+    ],
+    ids=[
+        "ordinary-exit",
+        "posix-code-3-is-not-windows-abort",
+        "unknown-signal",
+        "wrapper-status-not-windows-abort",
+        "ordinary-windows-code",
+    ],
+)
+def test_normalize_process_termination_rejects_other_nonzero_statuses(
+    returncode: int, platform_name: str
+):
+    assert (
+        normalize_process_termination(
+            returncode, platform_name, abort_signal_number=6
+        )
+        is None
+    )
+
+
+def test_wait_for_server_exit_rejects_ordinary_code_as_abort():
+    transport = Mock()
+    server = Mock()
+    server.wait_for_exit.return_value = 7
+    server.process_log_offset = 37
+    runner = YamlTestRunner(transport, managed_server=server)
+
+    with pytest.raises(
+        RunnerAssertionError, match="expected termination 'abort'.*status 7"
+    ):
+        runner._execute_wait_for_server_exit(
+            WaitForServerExit(timeout_ms=2500, termination="abort"),
+            "ordinary-nonzero",
+        )
+
+    server.stop.assert_not_called()
+
+
+def test_post_exit_empty_output_rejects_stale_marker_from_previous_process(
+    tmp_path: Path,
+):
+    old_output = "REUSED PROCESS MARKER\n"
+    log_path = tmp_path / "server.log"
+    log_path.write_text(old_output, encoding="utf-8")
+    transport = Mock()
+    server = Mock()
+    server.wait_for_exit.return_value = 0
+    server.process_log_offset = len(old_output.encode("utf-8"))
+    runner = YamlTestRunner(
+        transport, log_file_path=str(log_path), managed_server=server
+    )
+
+    runner._execute_wait_for_server_exit(
+        WaitForServerExit(timeout_ms=2500, exit_code=0), "empty-new-process"
+    )
+
+    with pytest.raises(RunnerAssertionError, match="but it was not found"):
+        runner._execute_assert_log(
+            LogAssertion(contains="REUSED PROCESS MARKER"), "stale-marker"
+        )
+
+
+def test_post_exit_log_assertion_accepts_reused_marker_from_new_process(tmp_path: Path):
+    marker = "REUSED PROCESS MARKER\n"
+    log_path = tmp_path / "server.log"
+    log_path.write_text(marker + marker, encoding="utf-8")
+    transport = Mock()
+    server = Mock()
+    server.wait_for_exit.return_value = 0
+    server.process_log_offset = len(marker.encode("utf-8"))
+    runner = YamlTestRunner(
+        transport, log_file_path=str(log_path), managed_server=server
+    )
+
+    runner._execute_wait_for_server_exit(
+        WaitForServerExit(timeout_ms=2500, exit_code=0), "new-process-marker"
+    )
+    runner._execute_assert_log(
+        LogAssertion(contains="REUSED PROCESS MARKER"), "reused-marker"
+    )
 
 
 def test_assert_file_byte_compare_rejects_false_positive_text_match(tmp_path: Path):
@@ -237,6 +366,7 @@ def test_prepare_suite_environment_switches_database_before_reconnecting(tmp_pat
     server = Mock()
     server.default_db_path = default_db
     server.db_path = default_db
+    server.process_log_offset = 19
     server.restart.side_effect = restart
 
     runner = YamlTestRunner(
@@ -257,6 +387,10 @@ def test_prepare_suite_environment_switches_database_before_reconnecting(tmp_pat
         ("restart", {"db_path": selected_db, "wait_for_port": True}),
         ("connect", "wizard"),
     ]
+    assert runner._process_log_boundary_pending is True
+    runner._snapshot_log_offset()
+    assert runner._log_offset == 19
+    assert runner._process_log_boundary_pending is False
 
 
 def test_prepare_exit_only_suite_does_not_connect(tmp_path: Path):

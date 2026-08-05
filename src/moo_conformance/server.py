@@ -8,6 +8,7 @@ externally managed server (the existing behavior).
 import os
 import shlex
 import shutil
+import signal
 import socket
 import stat
 import subprocess
@@ -16,6 +17,34 @@ import time
 from importlib import resources
 from pathlib import Path
 from typing import TextIO
+
+
+def normalize_process_termination(
+    returncode: int,
+    platform_name: str | None = None,
+    *,
+    abort_signal_number: int | None = None,
+) -> str | None:
+    """Normalize narrowly proven process statuses to a portable termination.
+
+    ``abort`` accepts only a direct POSIX SIGABRT return code, the conventional
+    POSIX wrapper status ``128 + SIGABRT``, or the Windows CRT abort status 3.
+    Every other ordinary exit code or signal remains unrecognized.
+    """
+    platform_name = os.name if platform_name is None else platform_name
+    if platform_name == "nt":
+        return "abort" if returncode == 3 else None
+    abort_signal_number = (
+        int(signal.SIGABRT)
+        if abort_signal_number is None
+        else abort_signal_number
+    )
+    if platform_name == "posix" and returncode in {
+        -abort_signal_number,
+        128 + abort_signal_number,
+    }:
+        return "abort"
+    return None
 
 
 class ManagedServer:
@@ -40,6 +69,7 @@ class ManagedServer:
         self._log_file: TextIO | None = None
         self._db_copy_path: Path | None = None
         self._manifest_path: Path | None = None
+        self._process_log_offset: int | None = None
 
     @property
     def port(self) -> int:
@@ -60,6 +90,13 @@ class ManagedServer:
         if self._manifest_path is None:
             raise RuntimeError("Server not started")
         return self._manifest_path
+
+    @property
+    def process_log_offset(self) -> int:
+        """Append-only log boundary recorded immediately before this launch."""
+        if self._process_log_offset is None:
+            raise RuntimeError("Server not started")
+        return self._process_log_offset
 
     def start(self, db_path: Path | None = None, wait_for_port: bool = True) -> None:
         """Start the server subprocess.
@@ -125,6 +162,8 @@ class ManagedServer:
         # Open log file for server output
         self._log_path = os.path.join(self._temp_dir, "server.log")
         self._log_file = open(self._log_path, "a")
+        self._log_file.flush()
+        self._process_log_offset = os.path.getsize(self._log_path)
 
         # Start server process
         self._process = subprocess.Popen(
@@ -165,6 +204,7 @@ class ManagedServer:
             self._temp_dir = None
             self._db_copy_path = None
             self._manifest_path = None
+            self._process_log_offset = None
 
     def write_stdin(self, text: str) -> None:
         """Write text to the managed server process stdin."""

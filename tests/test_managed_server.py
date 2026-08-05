@@ -8,8 +8,17 @@ from unittest.mock import Mock
 import pytest
 
 from moo_conformance.plugin import _load_login_script
+from moo_conformance.runner import AssertionError as RunnerAssertionError
 from moo_conformance.runner import YamlTestRunner
-from moo_conformance.schema import MooTestCase, MooTestSuite
+from moo_conformance.schema import (
+    FileAssertion,
+    MooTestCase,
+    MooTestSuite,
+    WaitForServerExit,
+)
+from moo_conformance.schema import (
+    TestStep as MooTestStep,
+)
 from moo_conformance.server import ManagedServer
 from moo_conformance.transport import SocketTransport
 
@@ -80,6 +89,125 @@ def test_restart_waits_before_transport_reconnect(monkeypatch):
         ("sleep", 0.5),
         ("connect", "wizard"),
     ]
+
+
+def test_wait_for_server_exit_accepts_exact_natural_exit_code():
+    transport = Mock()
+    server = Mock()
+    server.wait_for_exit.return_value = 0
+    runner = YamlTestRunner(transport, managed_server=server)
+    runner._log_offset = 99
+
+    runner._execute_wait_for_server_exit(2500, 0, "natural-exit")
+
+    server.wait_for_exit.assert_called_once_with(2500)
+    transport.disconnect.assert_called_once_with()
+    server.stop.assert_not_called()
+    assert runner._log_offset == 0
+
+
+def test_wait_for_server_exit_fails_on_timeout_without_stopping_process():
+    transport = Mock()
+    server = Mock()
+    server.wait_for_exit.side_effect = TimeoutError("still running")
+    runner = YamlTestRunner(transport, managed_server=server)
+
+    with pytest.raises(RunnerAssertionError, match="still running"):
+        runner._execute_wait_for_server_exit(2500, 0, "hung-exit")
+
+    server.stop.assert_not_called()
+    transport.disconnect.assert_not_called()
+
+
+def test_wait_for_server_exit_fails_on_wrong_exit_code():
+    transport = Mock()
+    server = Mock()
+    server.wait_for_exit.return_value = 7
+    runner = YamlTestRunner(transport, managed_server=server)
+
+    with pytest.raises(RunnerAssertionError, match="expected exit code 0, got 7"):
+        runner._execute_wait_for_server_exit(2500, 0, "wrong-exit")
+
+    server.stop.assert_not_called()
+
+
+def test_cleanup_cannot_turn_wait_for_server_exit_timeout_into_pass():
+    transport = Mock()
+    transport.sock = object()
+    transport.current_user = "wizard"
+    server = Mock()
+    server.wait_for_exit.side_effect = TimeoutError("still running")
+    runner = YamlTestRunner(transport, managed_server=server)
+    test = MooTestCase(
+        name="timeout-with-cleanup",
+        permission="wizard",
+        steps=[
+            MooTestStep(
+                wait_for_server_exit=WaitForServerExit(timeout_ms=2500, exit_code=0)
+            )
+        ],
+        cleanup=[MooTestStep(run="return 0;")],
+    )
+
+    with pytest.raises(RunnerAssertionError, match="still running"):
+        runner.run_test(test)
+
+    transport.execute.assert_called_once_with("return 0;")
+    server.stop.assert_not_called()
+
+
+def test_assert_file_byte_compare_rejects_false_positive_text_match(tmp_path: Path):
+    server_dir = tmp_path / "server"
+    fixture_dir = tmp_path / "fixtures"
+    server_dir.mkdir()
+    fixture_dir.mkdir()
+    (server_dir / "out.db").write_bytes(b"1 suspended tasks\nmissing locals\n")
+    (fixture_dir / "expected.db").write_bytes(b"1 suspended tasks\nexact WAIF ANON locals\n")
+    runner = YamlTestRunner(
+        Mock(), server_dir=str(server_dir), server_db_dir=str(fixture_dir)
+    )
+
+    with pytest.raises(RunnerAssertionError, match="first mismatch offset"):
+        runner._execute_assert_file(
+            FileAssertion(
+                path="out.db",
+                contains="1 suspended tasks",
+                equals_file="expected.db",
+            ),
+            "false-positive-task-count",
+        )
+
+
+@pytest.mark.parametrize(
+    ("dump_text", "expected_fragment"),
+    [
+        (
+            "1 suspended tasks\nstate local omitted\n",
+            "state\n4\n2\n13\nc 0\n9\n3\n0\n-1\n.\n12\n10",
+        ),
+        (
+            "1 suspended tasks\nstate\n4\n2\n13\nc 0\n9\n8\n0\n-1\n.\n12\n10\n",
+            "state\n4\n2\n13\nc 0\n9\n3\n0\n-1\n.\n12\n10",
+        ),
+        (
+            "1 suspended tasks\n#10\n\n0\n8\n1\n-1\n",
+            "#10\n\n0\n3\n1\n-1",
+        ),
+    ],
+    ids=["locals-missing", "waif-owner-corrupt", "anonymous-owner-corrupt"],
+)
+def test_assert_file_rejects_task_count_without_exact_live_root_locals(
+    tmp_path: Path, dump_text: str, expected_fragment: str
+):
+    server_dir = tmp_path / "server"
+    server_dir.mkdir()
+    (server_dir / "panic.db").write_text(dump_text, encoding="utf-8")
+    runner = YamlTestRunner(Mock(), server_dir=str(server_dir))
+    with pytest.raises(RunnerAssertionError, match="but it was not found"):
+        runner._execute_assert_file(
+            FileAssertion(path="panic.db", contains=expected_fragment),
+            "exact-suspended-live-roots",
+        )
 
 
 def test_prepare_suite_environment_switches_database_before_reconnecting(tmp_path: Path):

@@ -178,6 +178,17 @@ class ManagedServer:
         self._process.stdin.write(text.encode("utf-8"))
         self._process.stdin.flush()
 
+    def wait_for_exit(self, timeout_ms: int) -> int:
+        """Wait for natural process exit without terminating or killing it."""
+        if self._process is None:
+            raise RuntimeError("Server process is not started")
+        try:
+            return self._process.wait(timeout=timeout_ms / 1000.0)
+        except subprocess.TimeoutExpired as exc:
+            raise TimeoutError(
+                f"Server did not exit naturally within {timeout_ms} ms"
+            ) from exc
+
     def restart(
         self, db_path: Path | None = None, wait_for_port: bool = True, down_ms: int = 0
     ) -> None:

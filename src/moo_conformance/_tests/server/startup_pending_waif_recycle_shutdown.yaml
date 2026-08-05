@@ -10,7 +10,7 @@ requires:
 tests:
   - name: shutdown_from_deferred_waif_recycle_returns_and_exits_cleanly
     steps:
-      - wait: 1500
+      - wait_for_server_exit: {timeout_ms: 5000, exit_code: 0}
       - assert_log:
           contains: "ORACLE WAIF RECYCLE ENTERED"
       - assert_log:

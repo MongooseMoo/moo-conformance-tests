@@ -179,7 +179,7 @@ TABLE_PRODUCT_AXIS_FIELDS = frozenset({"rows", "columns"})
 STEP_ACTION_FIELDS = frozenset({
     "run", "command", "verb_setup", "allocate_port", "new_connection", "send",
     "send_bytes", "read_connection", "close_connection", "wait", "assert_log",
-    "assert_file", "write_file", "write_stdin", "restart_server",
+    "assert_file", "write_file", "write_stdin", "restart_server", "wait_for_server_exit",
 })
 STEP_FIELDS = STEP_ACTION_FIELDS | {"capture", "as", "expect"}
 ACTION_PAYLOAD_FIELDS = {
@@ -190,10 +190,11 @@ ACTION_PAYLOAD_FIELDS = {
     "send_bytes": frozenset({"hex", "connection"}),
     "read_connection": frozenset({"connection"}),
     "assert_log": frozenset({"contains", "not_contains"}),
-    "assert_file": frozenset({"path", "exists", "contains"}),
+    "assert_file": frozenset({"path", "exists", "contains", "equals_file", "timeout_ms"}),
     "write_file": frozenset({"path", "content"}),
     "write_stdin": frozenset({"text"}),
     "restart_server": frozenset({"wait_ms", "down_ms"}),
+    "wait_for_server_exit": frozenset({"timeout_ms", "exit_code"}),
 }
 
 
@@ -350,6 +351,8 @@ class FileAssertion:
     path: str                      # Path relative to server_dir
     exists: bool = True            # Whether the file should exist
     contains: str | None = None    # Optional substring to find in file contents
+    equals_file: str | None = None  # Optional byte-exact reference under server_db_dir
+    timeout_ms: int = 0             # Optional deadline for output creation
 
 
 @dataclass
@@ -378,6 +381,13 @@ class RestartServer:
 
 
 @dataclass
+class WaitForServerExit:
+    """Wait for a managed server to exit naturally without stopping it."""
+    timeout_ms: int
+    exit_code: int
+
+
+@dataclass
 class TestStep:
     """A single step in a multi-step test.
 
@@ -400,6 +410,7 @@ class TestStep:
     - write_file: Create a file on the test host
     - write_stdin: Write text to the managed server process stdin
     - restart_server: Restart managed server process in-place
+    - wait_for_server_exit: Observe natural process exit with timeout and exact code
     """
     run: str | None = None                      # MOO code to execute
     command: str | None = None                  # Raw command (no ; prefix)
@@ -416,6 +427,7 @@ class TestStep:
     write_file: WriteFile | None = None         # Create file on test host
     write_stdin: WriteStdin | None = None       # Write to managed server process stdin
     restart_server: RestartServer | None = None # Restart managed server
+    wait_for_server_exit: WaitForServerExit | None = None  # Observe natural managed exit
     capture: str | None = None                  # Variable name to store result
     as_: str | None = None                      # Permission for this step (wizard, programmer)
     expect: Expectation | None = None           # Optional assertion on this step's result
@@ -819,19 +831,21 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
     has_write_file = 'write_file' in data
     has_write_stdin = 'write_stdin' in data
     has_restart_server = 'restart_server' in data
+    has_wait_for_server_exit = 'wait_for_server_exit' in data
 
     action_count = sum([has_run, has_command, has_verb_setup, has_allocate_port,
                         has_new_connection, has_send, has_send_bytes,
                         has_read_connection, has_close_connection,
                         has_wait, has_assert_log, has_assert_file,
-                        has_write_file, has_write_stdin, has_restart_server])
+                        has_write_file, has_write_stdin, has_restart_server,
+                        has_wait_for_server_exit])
 
     if action_count == 0:
         raise ValueError(
             "Test step must have an action field (run, command, verb_setup, "
             "allocate_port, new_connection, send, send_bytes, read_connection, "
             "close_connection, wait, assert_log, assert_file, write_file, write_stdin, "
-            "or restart_server)"
+            "restart_server, or wait_for_server_exit)"
         )
     if action_count > 1:
         raise ValueError("Test step must have exactly one action field")
@@ -945,7 +959,19 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
             path=af_data['path'],
             exists=af_data.get('exists', True),
             contains=af_data.get('contains'),
+            equals_file=af_data.get('equals_file'),
+            timeout_ms=af_data.get('timeout_ms', 0),
         )
+        if type(assert_file.exists) is not bool:
+            raise ValueError(f"{context} assert_file exists must be a boolean")
+        if type(assert_file.timeout_ms) is not int or assert_file.timeout_ms < 0:
+            raise ValueError(f"{context} assert_file timeout_ms must be a non-negative integer")
+        if not assert_file.exists and (
+            assert_file.contains is not None or assert_file.equals_file is not None
+        ):
+            raise ValueError(
+                f"{context} assert_file cannot inspect content when exists is false"
+            )
 
     # Parse write_file if present
     write_file = None
@@ -986,6 +1012,33 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
         else:
             restart_server = RestartServer()
 
+    wait_for_server_exit = None
+    if 'wait_for_server_exit' in data:
+        exit_data = _require_mapping(
+            data['wait_for_server_exit'], f"{context} wait_for_server_exit"
+        )
+        _reject_unknown_fields(
+            exit_data,
+            ACTION_PAYLOAD_FIELDS['wait_for_server_exit'],
+            f"{context} wait_for_server_exit",
+        )
+        if set(exit_data) != ACTION_PAYLOAD_FIELDS['wait_for_server_exit']:
+            raise ValueError(
+                f"{context} wait_for_server_exit must specify timeout_ms and exit_code"
+            )
+        timeout_ms = exit_data['timeout_ms']
+        exit_code = exit_data['exit_code']
+        if type(timeout_ms) is not int or timeout_ms <= 0:
+            raise ValueError(
+                f"{context} wait_for_server_exit timeout_ms must be a positive integer"
+            )
+        if type(exit_code) is not int:
+            raise ValueError(f"{context} wait_for_server_exit exit_code must be an integer")
+        wait_for_server_exit = WaitForServerExit(
+            timeout_ms=timeout_ms,
+            exit_code=exit_code,
+        )
+
     return TestStep(
         run=data.get('run'),
         command=data.get('command'),
@@ -1002,6 +1055,7 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
         write_file=write_file,
         write_stdin=write_stdin,
         restart_server=restart_server,
+        wait_for_server_exit=wait_for_server_exit,
         capture=data.get('capture'),
         as_=data.get('as'),
         expect=expect,

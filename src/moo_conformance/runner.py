@@ -438,6 +438,14 @@ class YamlTestRunner:
                     )
                     continue
 
+                if step.wait_for_server_exit:
+                    self._execute_wait_for_server_exit(
+                        step.wait_for_server_exit.timeout_ms,
+                        step.wait_for_server_exit.exit_code,
+                        test.name,
+                    )
+                    continue
+
                 # Check if this is a verb_setup step
                 if step.verb_setup:
                     self._ensure_transport_connected()
@@ -563,6 +571,32 @@ class YamlTestRunner:
         except RuntimeError as exc:
             raise AssertionError(f"Test '{test_name}' write_stdin failed: {exc}") from exc
 
+    def _execute_wait_for_server_exit(
+        self, timeout_ms: int, expected_exit_code: int, test_name: str
+    ) -> None:
+        """Observe natural managed-server exit and assert its exact code."""
+        if self.managed_server is None:
+            raise AssertionError(
+                f"Test '{test_name}' uses wait_for_server_exit but no managed server is "
+                "configured (use --server-command)"
+            )
+        try:
+            actual_exit_code = self.managed_server.wait_for_exit(timeout_ms)
+        except (RuntimeError, TimeoutError) as exc:
+            raise AssertionError(
+                f"Test '{test_name}' wait_for_server_exit failed: {exc}"
+            ) from exc
+        self.transport.disconnect()
+        # Startup-only fixtures can finish before run_test snapshots the shared
+        # log. Natural exit is a stable process boundary, so later assert_log
+        # steps should inspect the complete output from that exited process.
+        self._log_offset = 0
+        if actual_exit_code != expected_exit_code:
+            raise AssertionError(
+                f"Test '{test_name}' wait_for_server_exit expected exit code "
+                f"{expected_exit_code}, got {actual_exit_code}"
+            )
+
     def _substitute_variables(self, code: str, variables: dict[str, Any]) -> str:
         """Substitute {varname} placeholders with captured values.
 
@@ -686,7 +720,11 @@ class YamlTestRunner:
                 f"{target!r} which is outside server directory {base!r}"
             )
 
+        deadline = time.monotonic() + assertion.timeout_ms / 1000.0
         file_exists = os.path.exists(target)
+        while assertion.exists and not file_exists and time.monotonic() < deadline:
+            time.sleep(min(0.05, max(0.0, deadline - time.monotonic())))
+            file_exists = os.path.exists(target)
 
         if assertion.exists and not file_exists:
             raise AssertionError(
@@ -718,6 +756,44 @@ class YamlTestRunner:
                     f"Test '{test_name}' assert_file: expected file {assertion.path!r} to contain "
                     f"{assertion.contains!r}, but it was not found.\n"
                     f"File content:\n{excerpt}"
+                )
+
+        if assertion.exists and assertion.equals_file is not None and file_exists:
+            if self.server_db_dir is None:
+                raise AssertionError(
+                    f"Test '{test_name}' assert_file uses equals_file but no server DB "
+                    "directory is configured (use --server-db-dir)"
+                )
+            reference_base = os.path.realpath(self.server_db_dir)
+            reference = os.path.realpath(
+                os.path.join(reference_base, assertion.equals_file)
+            )
+            if not reference.startswith(reference_base + os.sep) and reference != reference_base:
+                raise AssertionError(
+                    f"Test '{test_name}' assert_file: equals_file "
+                    f"{assertion.equals_file!r} resolves outside server DB directory"
+                )
+            try:
+                actual_bytes = Path(target).read_bytes()
+                expected_bytes = Path(reference).read_bytes()
+            except OSError as exc:
+                raise AssertionError(
+                    f"Test '{test_name}' assert_file: could not compare bytes: {exc}"
+                ) from exc
+            if actual_bytes != expected_bytes:
+                shared = min(len(actual_bytes), len(expected_bytes))
+                mismatch = next(
+                    (
+                        index
+                        for index in range(shared)
+                        if actual_bytes[index] != expected_bytes[index]
+                    ),
+                    shared,
+                )
+                raise AssertionError(
+                    f"Test '{test_name}' assert_file: {assertion.path!r} does not byte-match "
+                    f"{assertion.equals_file!r}; first mismatch offset {mismatch}, "
+                    f"actual length {len(actual_bytes)}, expected length {len(expected_bytes)}"
                 )
 
     def _execute_write_file(self, write_file: WriteFile, test_name: str) -> None:

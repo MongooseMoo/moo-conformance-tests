@@ -124,6 +124,21 @@ def test_paired_workflow_is_read_only_and_pins_every_action() -> None:
                 ), f"{job_name}/{name} does not pin an action SHA: {action}"
 
 
+def test_toast_workflow_regenerates_shutdown_fixtures_before_full_suite() -> None:
+    workflow = load_toast_workflow()
+    steps = steps_by_name(workflow, "full-suite")
+    names = list(steps)
+    provenance_name = "Regenerate and byte-compare shutdown fixtures with managed Toast"
+    full_suite_name = "Run every packaged conformance case against Toast"
+
+    assert names.index(provenance_name) < names.index(full_suite_name)
+    provenance = steps[provenance_name]["run"]
+    assert "--moo-suite-path=fixture_provenance" in provenance
+    assert "--server-command=" in provenance
+    assert "--fail-on-unexpected-skip" in provenance
+    assert "toast-fixture-provenance.xml" in provenance
+
+
 def test_paired_workflow_checks_out_fixed_repositories_without_credentials() -> None:
     workflow = load_workflow()
     steps = steps_by_name(workflow)

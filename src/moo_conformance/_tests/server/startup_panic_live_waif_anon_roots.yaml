@@ -10,7 +10,7 @@ requires:
 tests:
   - name: panic_dump_preserves_live_task_roots_without_pending_root_promotion
     steps:
-      - wait: 2500
+      - wait_for_server_exit: {timeout_ms: 5000, exit_code: -6}
       - assert_log:
           contains: "ORACLE LIVE ROOT HOLDER SUSPENDED"
       - assert_log:
@@ -21,3 +21,27 @@ tests:
       - assert_file:
           path: PanicLiveWaifAnonRoots.db.new.PANIC
           contains: "1 suspended tasks"
+      - assert_file:
+          path: PanicLiveWaifAnonRoots.db.new.PANIC
+          contains: |-
+            state
+            4
+            2
+            13
+            c 0
+            9
+            3
+            0
+            -1
+            .
+            12
+            10
+      - assert_file:
+          path: PanicLiveWaifAnonRoots.db.new.PANIC
+          contains: |-
+            #10
+
+            0
+            3
+            1
+            -1

@@ -112,10 +112,20 @@ def test_unknown_fields_are_rejected_at_closed_schema_boundaries(
         ("send_bytes", {"hex": "00", "connection": "conn"}),
         ("read_connection", {"connection": "conn"}),
         ("assert_log", {"contains": "ready"}),
-        ("assert_file", {"path": "out.txt", "exists": True, "contains": "ready"}),
+        (
+            "assert_file",
+            {
+                "path": "out.txt",
+                "exists": True,
+                "contains": "ready",
+                "equals_file": "expected.txt",
+                "timeout_ms": 1000,
+            },
+        ),
         ("write_file", {"path": "in.txt", "content": "data"}),
         ("write_stdin", {"text": "quit\n"}),
         ("restart_server", {"wait_ms": 1, "down_ms": 1}),
+        ("wait_for_server_exit", {"timeout_ms": 1000, "exit_code": 0}),
     ],
 )
 def test_unknown_fields_are_rejected_in_structured_actions(

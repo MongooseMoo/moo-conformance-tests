@@ -233,12 +233,22 @@ jobs:
   execution-ledger:
     name: Full suite
     if: always()
-    needs: full-suite
+    needs:
+      - quality
+      - full-suite
     runs-on: ubuntu-24.04
     permissions:
       contents: read
 
     steps:
+      - name: Enforce prerequisite gates
+        env:
+          QUALITY_RESULT: ${{ needs.quality.result }}
+          TOAST_RESULT: ${{ needs.full-suite.result }}
+        run: |
+          test "$QUALITY_RESULT" = success
+          test "$TOAST_RESULT" = success
+
       - name: Check out conformance candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

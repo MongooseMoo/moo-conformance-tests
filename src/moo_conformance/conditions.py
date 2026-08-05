@@ -53,6 +53,16 @@ def parse_skip_condition(value: Any) -> SkipCondition:
     )
 
 
+def parse_skip_conditions(value: Any) -> tuple[SkipCondition, ...]:
+    """Parse one or more atomic conditions joined by the exact ``or`` operator."""
+    if not isinstance(value, str):
+        raise ValueError("skip_if must be a string")
+    alternatives = value.split(" or ")
+    if any(not alternative for alternative in alternatives):
+        raise ValueError(f"unsupported or malformed skip_if condition: {value!r}")
+    return tuple(parse_skip_condition(alternative) for alternative in alternatives)
+
+
 def parse_min_version(value: Any) -> tuple[int, int, int]:
     """Parse the closed ``major.minor.patch`` requirement format."""
     if not isinstance(value, str):
@@ -93,7 +103,7 @@ def declared_runtime_skip_reasons(suite, test) -> set[str]:
 
     skip_if = getattr(test, "skip_if", None)
     if skip_if is not None:
-        reasons.add(parse_skip_condition(skip_if).skip_reason)
+        reasons.update(condition.skip_reason for condition in parse_skip_conditions(skip_if))
 
     requirements = getattr(suite, "requires", None)
     if requirements is not None:

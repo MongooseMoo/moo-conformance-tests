@@ -278,6 +278,42 @@ def test_supported_skip_conditions_are_enforced(condition, probe, reason) -> Non
         _enforce_skip_condition(test, runner, profile)
 
 
+@pytest.mark.parametrize(
+    ("probe", "outbound", "reason"),
+    [
+        (
+            ExecutionResult(False, error=MooError.E_INVARG),
+            True,
+            "Requires builtin: url_encode",
+        ),
+        (
+            ExecutionResult(True, value=["url_encode", 1, 1]),
+            False,
+            "Requires option: OUTBOUND_NETWORK",
+        ),
+    ],
+)
+def test_any_skip_condition_uses_the_matching_exact_reason(
+    probe: ExecutionResult,
+    outbound: bool,
+    reason: str,
+) -> None:
+    test = MooTestCase(
+        name="conditional",
+        skip_if="missing builtin.url_encode or not option.OUTBOUND_NETWORK",
+    )
+    runner = runner_with(probe)
+
+    with pytest.raises(pytest.skip.Exception, match=reason):
+        _enforce_skip_condition(
+            test,
+            runner,
+            {"option.OUTBOUND_NETWORK": outbound},
+        )
+
+    assert len(runner.transport.executed) == 1
+
+
 def test_option_probe_error_fails_instead_of_becoming_absence() -> None:
     test = MooTestCase(name="conditional", skip_if="not option.OUTBOUND_NETWORK")
     runner = runner_with(

@@ -395,3 +395,98 @@ def test_table_rejects_list_rows_without_columns() -> None:
                 ],
             }
         )
+
+
+@pytest.mark.parametrize(
+    "condition",
+    [
+        "feature.64bit",
+        "not feature.maps",
+        "missing builtin.function_info",
+        "option.OUTBOUND_NETWORK",
+        "not option.PROMOTE_NUMBERS",
+    ],
+)
+def test_schema_accepts_supported_skip_conditions(condition: str) -> None:
+    data = _minimal_suite()
+    data["tests"][0]["skip_if"] = condition
+
+    suite = validate_test_suite(data)
+
+    assert suite.tests[0].skip_if == condition
+
+
+@pytest.mark.parametrize(
+    "condition",
+    [
+        None,
+        True,
+        "",
+        "feature.",
+        "missing feature.maps",
+        "transport == 'direct'",
+        " feature.maps",
+        "not  feature.maps",
+    ],
+)
+def test_schema_rejects_unknown_or_malformed_skip_conditions(condition) -> None:
+    data = _minimal_suite()
+    data["tests"][0]["skip_if"] = condition
+
+    with pytest.raises(ValueError, match="skip_if"):
+        validate_test_suite(data)
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("builtins", "function_info"),
+        ("builtins", ["function_info", 1]),
+        ("features", "maps"),
+        ("features", [""]),
+        ("config", ["unknown_config"]),
+        ("min_version", "1.2"),
+        ("min_version", 1),
+    ],
+)
+def test_schema_rejects_malformed_requirements(field: str, value) -> None:
+    data = _minimal_suite()
+    data["requires"] = {field: value}
+
+    with pytest.raises(ValueError, match=field):
+        validate_test_suite(data)
+
+
+def test_schema_accepts_all_enforced_requirement_forms() -> None:
+    data = _minimal_suite()
+    data["requires"] = {
+        "builtins": ["function_info"],
+        "features": ["maps"],
+        "min_version": "1.8.1",
+        "config": "server_dir",
+    }
+
+    suite = validate_test_suite(data)
+
+    assert suite.requires.builtins == ["function_info"]
+    assert suite.requires.features == ["maps"]
+    assert suite.requires.min_version == "1.8.1"
+    assert suite.requires.config == ["server_dir"]
+
+
+def test_schema_accepts_digit_prefixed_feature_requirement() -> None:
+    data = _minimal_suite()
+    data["requires"] = {"features": ["64bit"]}
+
+    suite = validate_test_suite(data)
+
+    assert suite.requires.features == ["64bit"]
+
+
+@pytest.mark.parametrize("feature", ["", "64-bit", "64.bit", "!64bit"])
+def test_schema_rejects_empty_or_punctuated_feature_requirement(feature: str) -> None:
+    data = _minimal_suite()
+    data["requires"] = {"features": [feature]}
+
+    with pytest.raises(ValueError, match="features"):
+        validate_test_suite(data)

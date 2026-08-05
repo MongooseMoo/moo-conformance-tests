@@ -382,23 +382,27 @@ def _parse_report_arguments(values: Iterable[str]) -> dict[str, Path]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--report", action="append", required=True, metavar="PROFILE=PATH")
-    parser.add_argument("--baseline", required=True, type=Path)
-    parser.add_argument("--inventory", type=Path)
+    surface = parser.add_mutually_exclusive_group(required=True)
+    surface.add_argument("--baseline", type=Path)
+    surface.add_argument("--inventory", type=Path)
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args(argv)
 
     try:
         report_paths = _parse_report_arguments(args.report)
         reports = {profile: parse_junit_report(path) for profile, path in report_paths.items()}
-        expected_case_ids = (
-            set(load_candidate_inventory(args.inventory)["candidate_case_ids"])
-            if args.inventory is not None
-            else packaged_case_ids()
-        )
+        if args.inventory is not None:
+            expected_case_ids = set(
+                load_candidate_inventory(args.inventory)["candidate_case_ids"]
+            )
+            baseline: dict[str, str] = {}
+        else:
+            expected_case_ids = packaged_case_ids()
+            baseline = load_baseline(args.baseline)
         ledger = enforce_execution_surface(
             reports,
             expected_case_ids,
-            load_baseline(args.baseline),
+            baseline,
         )
     except ExecutionLedgerError as exc:
         parser.error(str(exc))

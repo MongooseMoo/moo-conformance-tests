@@ -653,13 +653,12 @@ def test_load_baseline_rejects_malformed_shape(tmp_path: Path) -> None:
         load_baseline(baseline)
 
 
-def test_cli_uses_inventory_candidate_surface_instead_of_local_packages(
+def test_cli_inventory_mode_uses_candidate_surface_with_zero_exceptions(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     inventory_path = tmp_path / "paired-inventory.json"
     report = tmp_path / "report.xml"
-    baseline = tmp_path / "baseline.json"
     output = tmp_path / "ledger.json"
     candidate_id = "suite.yaml::candidate"
     write_inventory(
@@ -671,19 +670,20 @@ def test_cli_uses_inventory_candidate_surface_instead_of_local_packages(
         ),
     )
     write_report(report, [case(candidate_id)])
-    write_inventory(baseline, {"schema_version": 1, "never_executed": {}})
 
     def reject_local_discovery(*args: object, **kwargs: object) -> set[str]:
         raise AssertionError("local packaged identities must not be consulted")
 
+    def reject_baseline_load(path: str | Path) -> dict[str, str]:
+        raise AssertionError(f"baseline must not be consulted in inventory mode: {path}")
+
     monkeypatch.setattr(execution_ledger, "packaged_case_ids", reject_local_discovery)
+    monkeypatch.setattr(execution_ledger, "load_baseline", reject_baseline_load)
 
     result = main(
         [
             "--report",
             f"toast={report}",
-            "--baseline",
-            str(baseline),
             "--inventory",
             str(inventory_path),
             "--output",
@@ -692,7 +692,66 @@ def test_cli_uses_inventory_candidate_surface_instead_of_local_packages(
     )
 
     assert result == 0
-    assert json.loads(output.read_text(encoding="utf-8"))["executed_case_ids"] == [candidate_id]
+    ledger = json.loads(output.read_text(encoding="utf-8"))
+    assert ledger["executed_case_ids"] == [candidate_id]
+    assert ledger["reviewed_never_executed_cases"] == 0
+    assert ledger["reviewed_never_executed"] == {}
+
+
+def test_cli_inventory_mode_rejects_baseline(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    inventory_path = tmp_path / "paired-inventory.json"
+    report = tmp_path / "report.xml"
+    baseline = tmp_path / "baseline.json"
+    output = tmp_path / "ledger.json"
+    candidate_id = "suite.yaml::candidate"
+    write_inventory(
+        inventory_path,
+        inventory_data(trusted=[candidate_id], candidate=[candidate_id], additive=[]),
+    )
+    write_report(report, [case(candidate_id)])
+    write_inventory(baseline, {"schema_version": 1, "never_executed": {}})
+
+    with pytest.raises(SystemExit, match="2"):
+        main(
+            [
+                "--report",
+                f"toast={report}",
+                "--inventory",
+                str(inventory_path),
+                "--baseline",
+                str(baseline),
+                "--output",
+                str(output),
+            ]
+        )
+
+    assert "not allowed with argument --inventory" in capsys.readouterr().err
+    assert not output.exists()
+
+
+def test_cli_without_inventory_rejects_missing_baseline(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    report = tmp_path / "report.xml"
+    output = tmp_path / "ledger.json"
+    write_report(report, [case("suite.yaml::local")])
+
+    with pytest.raises(SystemExit, match="2"):
+        main(
+            [
+                "--report",
+                f"toast={report}",
+                "--output",
+                str(output),
+            ]
+        )
+
+    assert "one of the arguments --baseline --inventory is required" in capsys.readouterr().err
+    assert not output.exists()
 
 
 def test_cli_without_inventory_preserves_local_packaged_surface(
@@ -734,21 +793,17 @@ def test_cli_fails_closed_on_tampered_inventory(
 ) -> None:
     inventory_path = tmp_path / "paired-inventory.json"
     report = tmp_path / "report.xml"
-    baseline = tmp_path / "baseline.json"
     output = tmp_path / "ledger.json"
     data = inventory_data()
     data["candidate_identity_sha256"] = "tampered"
     write_inventory(inventory_path, data)
     write_report(report, [case("suite.yaml::base"), case("suite.yaml::addition")])
-    write_inventory(baseline, {"schema_version": 1, "never_executed": {}})
 
     with pytest.raises(SystemExit, match="2"):
         main(
             [
                 "--report",
                 f"toast={report}",
-                "--baseline",
-                str(baseline),
                 "--inventory",
                 str(inventory_path),
                 "--output",

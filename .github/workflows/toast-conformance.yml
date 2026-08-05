@@ -130,6 +130,14 @@ jobs:
           path: candidate-data
           persist-credentials: false
 
+      - name: Check out trusted main controller
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: MongooseMoo/moo-conformance-tests
+          ref: ${{ github.event.pull_request.base.sha || github.workflow_sha }}
+          path: trusted-controller
+          persist-credentials: false
+
       - name: Check out pinned Toast oracle
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -199,26 +207,27 @@ jobs:
           ) 2>&1 | tee "${REPORTS_DIR}/toast-build.log"
           test -x "${RUNNER_TEMP}/toast-build-${{ matrix.profile }}/moo"
 
-      - name: Install locked conformance environment
-        working-directory: candidate-data
+      - name: Install locked trusted controller
         run: |
           set -o pipefail
-          uv sync --project . --locked 2>&1 | tee "${REPORTS_DIR}/uv-sync.log"
+          uv sync --project trusted-controller --locked 2>&1 | tee "${REPORTS_DIR}/uv-sync.log"
 
       - name: Record the exact Toast capability profile
-        working-directory: candidate-data
         env:
           PROFILE_ID: ${{ matrix.profile }}
           PROFILE_OUTBOUND: ${{ matrix.outbound }}
           PROFILE_32BIT: ${{ matrix.only_32_bits }}
         run: |
-          uv run --project . --frozen python - <<'PY'
+          uv run --project trusted-controller --frozen python - <<'PY'
           from pathlib import Path
           import hashlib
           import json
           import os
 
-          fixture = Path("src/moo_conformance/_db/Test.db")
+          fixture = Path(
+              os.environ["GITHUB_WORKSPACE"],
+              "candidate-data/src/moo_conformance/_db/Test.db",
+          )
           profile = {
               "profile_id": os.environ["PROFILE_ID"],
               "implementation": "toaststunt",
@@ -246,14 +255,15 @@ jobs:
           PY
 
       - name: Run canonical capability admission against Toast
-        working-directory: candidate-data
         run: |
           set -o pipefail
-          uv run --project . --frozen pytest \
+          uv run --project trusted-controller --frozen pytest \
             --pyargs moo_conformance \
             -m admission \
             --candidate-root="${GITHUB_WORKSPACE}/candidate-data" \
+            --moo-suite-root="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_tests" \
             --server-command="${RUNNER_TEMP}/toast-build-${{ matrix.profile }}/moo --no-ipv6 --ipv4 127.0.0.1 ${{ matrix.outbound_argument }} --exec-dir {server_dir}/executables {db} {db}.new {port}" \
+            --server-db="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/Test.db" \
             --server-db-dir="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/startup" \
             --moo-host=127.0.0.1 \
             --oracle-profile-manifest="${REPORTS_DIR}/profile.json" \
@@ -266,14 +276,15 @@ jobs:
             2>&1 | tee "${REPORTS_DIR}/admission.log"
 
       - name: Run every packaged conformance case against Toast
-        working-directory: candidate-data
         run: |
           set -o pipefail
-          uv run --project . --frozen pytest \
+          uv run --project trusted-controller --frozen pytest \
             --pyargs moo_conformance \
             -m conformance \
             --candidate-root="${GITHUB_WORKSPACE}/candidate-data" \
+            --moo-suite-root="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_tests" \
             --server-command="${RUNNER_TEMP}/toast-build-${{ matrix.profile }}/moo --no-ipv6 --ipv4 127.0.0.1 ${{ matrix.outbound_argument }} --exec-dir {server_dir}/executables {db} {db}.new {port}" \
+            --server-db="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/Test.db" \
             --server-db-dir="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/startup" \
             --moo-host=127.0.0.1 \
             --oracle-profile-manifest="${REPORTS_DIR}/profile.json" \
@@ -327,7 +338,8 @@ jobs:
       - name: Check out trusted main controller
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.event.pull_request.base.sha || github.event.repository.default_branch }}
+          repository: MongooseMoo/moo-conformance-tests
+          ref: ${{ github.event.pull_request.base.sha || github.workflow_sha }}
           path: trusted-controller
           persist-credentials: false
 
@@ -338,13 +350,12 @@ jobs:
           python-version: "3.13"
           enable-cache: false
 
-      - name: Install locked conformance environment
-        run: |
-          uv sync --project candidate-data --locked
-          uv sync --project trusted-controller --locked
+      - name: Install locked trusted controller
+        run: uv sync --project trusted-controller --locked
 
       - name: Reject candidate identity deletions
         run: |
+          set -euo pipefail
           uv run --project trusted-controller --frozen python -m moo_conformance.paired_inventory \
             --candidate-root="${GITHUB_WORKSPACE}/candidate-data" \
             --candidate-tests="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_tests" \
@@ -360,10 +371,17 @@ jobs:
 
       - name: Enforce exact profile union
         run: |
-          uv run --project candidate-data --frozen python -m moo_conformance.execution_ledger \
+          set -euo pipefail
+          baseline_args=()
+          if test -f "${GITHUB_WORKSPACE}/trusted-controller/ci/toast-never-executed.json"; then
+            baseline_args+=(--baseline="${GITHUB_WORKSPACE}/trusted-controller/ci/toast-never-executed.json")
+          fi
+          uv run --project trusted-controller --frozen python -m moo_conformance.execution_ledger \
             --report=64bit-outbound-on="${RUNNER_TEMP}/toast-profile-reports/toast-conformance-64bit-outbound-on/toast-conformance.xml" \
             --report=64bit-outbound-off="${RUNNER_TEMP}/toast-profile-reports/toast-conformance-64bit-outbound-off/toast-conformance.xml" \
             --report=32bit-outbound-on="${RUNNER_TEMP}/toast-profile-reports/toast-conformance-32bit-outbound-on/toast-conformance.xml" \
+            --inventory="${RUNNER_TEMP}/toast-candidate-inventory.json" \
+            "${baseline_args[@]}" \
             --output="${RUNNER_TEMP}/toast-execution-ledger.json"
 
       - name: Upload Toast execution ledger

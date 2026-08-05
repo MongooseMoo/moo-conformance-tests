@@ -213,11 +213,29 @@ jobs:
           output.write_text(json.dumps(profile, indent=2, sort_keys=True) + "\n")
           PY
 
+      - name: Run canonical capability admission against Toast
+        run: |
+          set -o pipefail
+          uv run --frozen pytest \
+            --pyargs moo_conformance \
+            -m admission \
+            --server-command="${GITHUB_WORKSPACE}/toaststunt/build-release/moo --no-ipv6 --ipv4 127.0.0.1 ${{ matrix.outbound_argument }} --exec-dir {server_dir}/executables {db} {db}.new {port}" \
+            --server-db-dir="${GITHUB_WORKSPACE}/src/moo_conformance/_db/startup" \
+            --moo-host=127.0.0.1 \
+            --oracle-profile-manifest="${REPORTS_DIR}/profile.json" \
+            --target-profile-manifest="${REPORTS_DIR}/profile.json" \
+            --strict-markers \
+            --admission-evidence-output="${REPORTS_DIR}/admission.json" \
+            --junitxml="${REPORTS_DIR}/admission.xml" \
+            -q -ra \
+            2>&1 | tee "${REPORTS_DIR}/admission.log"
+
       - name: Run every packaged conformance case against Toast
         run: |
           set -o pipefail
           uv run --frozen pytest \
             --pyargs moo_conformance \
+            -m conformance \
             --server-command="${GITHUB_WORKSPACE}/toaststunt/build-release/moo --no-ipv6 --ipv4 127.0.0.1 ${{ matrix.outbound_argument }} --exec-dir {server_dir}/executables {db} {db}.new {port}" \
             --server-db-dir="${GITHUB_WORKSPACE}/src/moo_conformance/_db/startup" \
             --moo-host=127.0.0.1 \

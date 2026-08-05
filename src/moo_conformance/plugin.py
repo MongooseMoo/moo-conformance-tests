@@ -136,6 +136,11 @@ def pytest_addoption(parser):
         action="store_true",
         help="Fail any skip not declared by a literal YAML skip field.",
     )
+    parser.addoption(
+        "--admission-evidence-output",
+        default=None,
+        help="Write schema-versioned capability-admission evidence to this path.",
+    )
 
 
 def _load_login_script(request) -> list[str] | None:
@@ -419,12 +424,16 @@ def yaml_test_case():
 
 
 def pytest_collection_modifyitems(session, config, items):
-    """Reorder tests to run providers before consumers."""
+    """Run admission first, then capability providers before their consumers."""
+    admission = []
     providers = []
     consumers = []
     normal = []
 
     for item in items:
+        if item.get_closest_marker("admission") is not None:
+            admission.append(item)
+            continue
         # Get test case from parametrized fixture
         if hasattr(item, "callspec") and "yaml_test_case" in item.callspec.params:
             suite, test = item.callspec.params["yaml_test_case"]
@@ -444,7 +453,7 @@ def pytest_collection_modifyitems(session, config, items):
 
         normal.append(item)
 
-    items[:] = providers + normal + consumers
+    items[:] = admission + providers + normal + consumers
 
 
 def pytest_runtest_setup(item):
@@ -472,6 +481,11 @@ def pytest_runtest_makereport(item, call):
     """Track provider test results to update capability states."""
     outcome = yield
     report = outcome.get_result()
+
+    if report.failed and item.get_closest_marker("admission") is not None:
+        item.session.shouldfail = (
+            "capability admission failed; packaged conformance was not executed"
+        )
 
     if item.config.getoption("--fail-on-unexpected-skip"):
         _reject_unexpected_runtime_skip(item, report)
@@ -535,6 +549,7 @@ class _UnexpectedCollectionSkipPlugin:
 def pytest_configure(config):
     """Register custom markers."""
     config.addinivalue_line("markers", "conformance: mark test as a MOO conformance test")
+    config.addinivalue_line("markers", "admission: mark the canonical capability-admission phase")
     if config.getoption("--fail-on-unexpected-skip"):
         config.pluginmanager.register(
             _UnexpectedCollectionSkipPlugin(),

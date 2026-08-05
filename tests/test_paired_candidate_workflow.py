@@ -102,11 +102,10 @@ def test_each_toast_profile_stages_admission_before_complete_packaged_surface() 
 
 def test_toast_generated_state_stays_outside_candidate_anchor() -> None:
     workflow = load_workflow(TOAST_WORKFLOW_PATH)
-    full = workflow["jobs"]["full-suite"]
-    assert full["env"]["UV_PROJECT_ENVIRONMENT"] == (
-        "${{ runner.temp }}/toast-conformance-venv-${{ matrix.profile }}"
-    )
     steps = steps_by_name(workflow, "full-suite")
+    prepare = steps["Prepare evidence directory"]["run"]
+    assert "UV_PROJECT_ENVIRONMENT" in prepare
+    assert "${RUNNER_TEMP}/toast-conformance-venv-${{ matrix.profile }}" in prepare
     build = steps["Build Toast oracle"]["run"]
     assert "${RUNNER_TEMP}/toast-build-${{ matrix.profile }}" in build
     assert "candidate-data" not in build
@@ -117,11 +116,10 @@ def test_toast_generated_state_stays_outside_candidate_anchor() -> None:
     assert profile["working-directory"] == "candidate-data"
     assert "uv run --project . --frozen python" in profile["run"]
 
-    ledger = workflow["jobs"]["execution-ledger"]
-    assert ledger["env"]["UV_PROJECT_ENVIRONMENT"] == (
-        "${{ runner.temp }}/toast-ledger-venv"
-    )
     ledger_steps = steps_by_name(workflow, "execution-ledger")
+    ledger_environment = ledger_steps["Prepare ledger environment"]["run"]
+    assert "UV_PROJECT_ENVIRONMENT" in ledger_environment
+    assert "${RUNNER_TEMP}/toast-ledger-venv" in ledger_environment
     assert ledger_steps["Download every Toast profile report"]["with"]["path"] == (
         "${{ runner.temp }}/toast-profile-reports"
     )

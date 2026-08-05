@@ -23,10 +23,11 @@ jobs:
   quality:
     name: Harness, schema, duplicates, types, and lint
     runs-on: ubuntu-24.04
-    env:
-      UV_PROJECT_ENVIRONMENT: ${{ runner.temp }}/toast-quality-venv
 
     steps:
+      - name: Prepare quality environment
+        run: printf 'UV_PROJECT_ENVIRONMENT=%s\n' "${RUNNER_TEMP}/toast-quality-venv" >> "${GITHUB_ENV}"
+
       - name: Check out conformance candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -84,8 +85,6 @@ jobs:
     name: Toast / ${{ matrix.profile }}
     runs-on: ubuntu-24.04
     timeout-minutes: 60
-    env:
-      UV_PROJECT_ENVIRONMENT: ${{ runner.temp }}/toast-conformance-venv-${{ matrix.profile }}
     strategy:
       fail-fast: false
       matrix:
@@ -108,6 +107,8 @@ jobs:
         run: |
           reports_dir="${RUNNER_TEMP}/toast-conformance-${{ matrix.profile }}"
           printf 'REPORTS_DIR=%s\n' "${reports_dir}" >> "${GITHUB_ENV}"
+          printf 'UV_PROJECT_ENVIRONMENT=%s\n' \
+            "${RUNNER_TEMP}/toast-conformance-venv-${{ matrix.profile }}" >> "${GITHUB_ENV}"
           nonce=$(python3 -c 'import secrets; print(secrets.token_hex(32))')
           printf 'ADMISSION_CONTEXT=toast:%s:%s:%s:%s:%s:%s\n' \
             "${GITHUB_RUN_ID}" \
@@ -299,8 +300,6 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       contents: read
-    env:
-      UV_PROJECT_ENVIRONMENT: ${{ runner.temp }}/toast-ledger-venv
 
     steps:
       - name: Enforce prerequisite gates
@@ -310,6 +309,9 @@ jobs:
         run: |
           test "$QUALITY_RESULT" = success
           test "$TOAST_RESULT" = success
+
+      - name: Prepare ledger environment
+        run: printf 'UV_PROJECT_ENVIRONMENT=%s\n' "${RUNNER_TEMP}/toast-ledger-venv" >> "${GITHUB_ENV}"
 
       - name: Check out conformance candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

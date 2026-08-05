@@ -190,6 +190,21 @@ def test_paired_workflow_runs_complete_strict_suite_and_fails_closed_on_evidence
     assert final_upload["if-no-files-found"] == "error"
 
 
+def test_candidate_quality_runs_from_the_conformance_repository_root() -> None:
+    workflow = load_workflow()
+    quality = steps_by_name(workflow)["Run conformance candidate quality gates"]
+
+    assert quality["working-directory"] == "conformance"
+    commands = quality["run"]
+    assert "pytest tests --strict-markers -q" in commands
+    assert "--baseline ci/duplicate-baseline.json" in commands
+    assert "ruff check ." in commands
+    assert "mypy src/moo_conformance" in commands
+    assert "conformance/tests" not in commands
+    assert "conformance/ci" not in commands
+    assert "conformance/src" not in commands
+
+
 def test_paired_workflow_records_requested_and_resolved_provenance() -> None:
     workflow = load_workflow()
     record = steps_by_name(workflow)["Record exact candidate provenance"]

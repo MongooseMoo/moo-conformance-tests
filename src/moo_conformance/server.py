@@ -110,6 +110,8 @@ class ManagedServer:
         if self._temp_dir is None or db_path is not None or not self._db_copy_path.exists():
             shutil.copy2(self.db_path, self._db_copy_path)
         db_dest = self._db_copy_path
+        for checkpoint_output in self._checkpoint_output_candidates():
+            checkpoint_output.unlink(missing_ok=True)
 
         # Use forward slashes so shlex.split doesn't eat backslashes
         db_posix = db_dest.as_posix()
@@ -188,11 +190,16 @@ class ManagedServer:
         checkpoint and the next boot) -- unlike a post-restart wait, which
         only delays after the new process is already up and reconnected.
         """
+        if db_path is None:
+            # Capture the requested checkpoint before stopping the server.
+            # Toast performs a separate graceful-shutdown dump on SIGTERM,
+            # which can overwrite {db}.out and must not become the artifact
+            # adopted by an explicit restart checkpoint test.
+            self._sync_checkpoint_output()
         self.stop(preserve_temp=True)
         if down_ms > 0:
             time.sleep(down_ms / 1000.0)
         if db_path is None:
-            self._sync_checkpoint_output()
             self.start(wait_for_port=wait_for_port)
         else:
             self.start(db_path=db_path, wait_for_port=wait_for_port)
@@ -208,18 +215,9 @@ class ManagedServer:
         if self._db_copy_path is None:
             return
 
-        src = self._db_copy_path
-        candidates = [
-            Path(str(src) + ".out"),
-            Path(str(src) + ".new"),
-            src.with_suffix(src.suffix + ".new"),
-            src.with_suffix(".out.db"),
-            src.with_suffix(".new.db"),
-        ]
-
         best: Path | None = None
         best_mtime = -1.0
-        for cand in candidates:
+        for cand in self._checkpoint_output_candidates():
             if not cand.exists() or cand.is_dir():
                 continue
             mtime = cand.stat().st_mtime
@@ -228,7 +226,19 @@ class ManagedServer:
                 best_mtime = mtime
 
         if best is not None:
-            shutil.copy2(best, src)
+            shutil.copy2(best, self._db_copy_path)
+
+    def _checkpoint_output_candidates(self) -> list[Path]:
+        if self._db_copy_path is None:
+            return []
+        src = self._db_copy_path
+        return [
+            Path(str(src) + ".out"),
+            Path(str(src) + ".new"),
+            src.with_suffix(src.suffix + ".new"),
+            src.with_suffix(".out.db"),
+            src.with_suffix(".new.db"),
+        ]
 
     def _find_free_port(self) -> int:
         """Find an available TCP port."""

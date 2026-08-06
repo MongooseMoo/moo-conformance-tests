@@ -45,7 +45,7 @@ def test_repository_startup_fixture_manifest_is_exact() -> None:
     )
 
     assert evidence["schema_version"] == 1
-    assert evidence["fixture_count"] == 11
+    assert evidence["fixture_count"] == 12
     assert [fixture["name"] for fixture in evidence["fixtures"]] == [
         "Anon1.db",
         "Anon2.db",
@@ -53,6 +53,7 @@ def test_repository_startup_fixture_manifest_is_exact() -> None:
         "Anon4.db",
         "Anon5.db",
         "Anon6.db",
+        "Anon7.db",
         "Broken1.db",
         "Broken2.db",
         "Broken3.db",

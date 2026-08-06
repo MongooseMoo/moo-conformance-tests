@@ -1,0 +1,43 @@
+name: parser_resource_limits
+description: Portable parser resource-limit and server-liveness checks
+
+requires:
+  builtins:
+    - add_verb
+    - delete_verb
+    - set_verb_code
+
+tests:
+  - name: parser_nesting_resource_limit
+    description: Deeply nested generated source returns a list without killing the server
+    permission: programmer
+    steps:
+      - verb_setup:
+          object: player
+          name: parser_nesting_resource_limit_target
+          args: ["this", "none", "this"]
+          code: "return 7;"
+        expect:
+          type: list
+      - verb_setup:
+          object: player
+          name: parser_nesting_resource_limit_helper
+          args: ["this", "none", "this"]
+          code: |
+            source = "1";
+            for i in [1..2560]
+              source = "(" + source + ")";
+            endfor
+            return set_verb_code(player, "parser_nesting_resource_limit_target",
+                                 {"return " + source + ";"});
+        expect:
+          type: list
+      - run: "player:parser_nesting_resource_limit_helper()"
+        expect:
+          type: list
+      - run: "1 + 1"
+        expect:
+          value: 2
+    cleanup:
+      - run: 'delete_verb(player, "parser_nesting_resource_limit_helper");'
+      - run: 'delete_verb(player, "parser_nesting_resource_limit_target");'

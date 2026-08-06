@@ -1,3 +1,4 @@
+import builtins
 import os
 import stat
 import subprocess
@@ -170,6 +171,40 @@ def test_failed_restart_preserves_managed_server_database_state(monkeypatch, tmp
     assert original_copy.read_text(encoding="utf-8") == "baseline"
 
 
+def test_failed_same_name_database_switch_restores_working_copy(monkeypatch, tmp_path: Path):
+    first_source = tmp_path / "first" / "shared.db"
+    second_source = tmp_path / "second" / "shared.db"
+    first_source.parent.mkdir()
+    second_source.parent.mkdir()
+    first_source.write_text("first database", encoding="utf-8")
+    second_source.write_text("second database", encoding="utf-8")
+
+    launches = 0
+
+    def fake_popen(*args, **kwargs):
+        nonlocal launches
+        launches += 1
+        if launches == 1:
+            return _FakeProcess()
+        raise OSError("second launch failed")
+
+    monkeypatch.setattr("moo_conformance.server.subprocess.Popen", fake_popen)
+    monkeypatch.setattr(ManagedServer, "_find_free_port", lambda self: 17777)
+    monkeypatch.setattr(ManagedServer, "_wait_for_port", lambda self, timeout=30.0: None)
+
+    server = ManagedServer("fake-server {db} {port}", first_source)
+    server.start()
+    original_copy = server._db_copy_path
+    assert original_copy is not None
+
+    with pytest.raises(ManagedServerLifecycleError, match="second launch failed"):
+        server.restart(db_path=second_source)
+
+    assert server.db_path == first_source
+    assert server._db_copy_path == original_copy
+    assert original_copy.read_text(encoding="utf-8") == "first database"
+
+
 def test_expected_exit_becomes_failure_only_when_transport_is_required(
     monkeypatch, tmp_path: Path
 ):
@@ -214,6 +249,105 @@ def test_expected_exit_becomes_failure_only_when_transport_is_required(
     assert first.value.returncode == 17
     assert "final diagnostic" in first.value.log_tail
     assert "replacement output" not in first.value.log_tail
+
+
+def test_write_stdin_latches_exited_process_as_lifecycle_failure(monkeypatch, tmp_path: Path):
+    baseline = tmp_path / "baseline.db"
+    baseline.write_text("baseline", encoding="utf-8")
+
+    class _ExitedProcess(_FakeProcess):
+        def poll(self):
+            return self.returncode
+
+    process = _ExitedProcess()
+    monkeypatch.setattr("moo_conformance.server.subprocess.Popen", lambda *a, **kw: process)
+    monkeypatch.setattr(ManagedServer, "_find_free_port", lambda self: 17777)
+    monkeypatch.setattr(ManagedServer, "_wait_for_port", lambda self, timeout=30.0: None)
+
+    server = ManagedServer("fake-server {db} {port}", baseline)
+    server.start()
+    assert server._log_file is not None
+    server._log_file.write("stdin root failure\n")
+    server._log_file.flush()
+    process.returncode = 23
+
+    with pytest.raises(ManagedServerLifecycleError) as first:
+        server.write_stdin("payload\n")
+    with pytest.raises(ManagedServerLifecycleError) as repeated:
+        server.require_transport()
+
+    assert first.value is repeated.value
+    assert first.value.returncode == 23
+    assert "stdin root failure" in first.value.log_tail
+
+
+def test_runner_preserves_write_stdin_lifecycle_error() -> None:
+    failure = ManagedServerLifecycleError("server exited", returncode=23)
+    server = Mock()
+    server.write_stdin.side_effect = failure
+    runner = YamlTestRunner(Mock(), managed_server=server)
+
+    with pytest.raises(ManagedServerLifecycleError) as raised:
+        runner._execute_write_stdin("payload\n", "stdin-case")
+
+    assert raised.value is failure
+
+
+def test_server_log_tail_reads_only_bounded_suffix(monkeypatch, tmp_path: Path):
+    baseline = tmp_path / "baseline.db"
+    baseline.write_text("baseline", encoding="utf-8")
+
+    monkeypatch.setattr(
+        "moo_conformance.server.subprocess.Popen", lambda *args, **kwargs: _FakeProcess()
+    )
+    monkeypatch.setattr(ManagedServer, "_find_free_port", lambda self: 17777)
+    monkeypatch.setattr(ManagedServer, "_wait_for_port", lambda self, timeout=30.0: None)
+
+    server = ManagedServer("fake-server {db} {port}", baseline)
+    server.start()
+    assert server._log_file is not None
+    server._log_file.write("discarded\n" * 2000 + "retained tail\n")
+    server._log_file.flush()
+    assert server.log_path is not None
+
+    real_open = builtins.open
+    read_sizes: list[int] = []
+
+    class GuardedBinaryReader:
+        def __init__(self, raw):
+            self.raw = raw
+
+        def __enter__(self):
+            self.raw.__enter__()
+            return self
+
+        def __exit__(self, *args):
+            return self.raw.__exit__(*args)
+
+        def seek(self, *args):
+            return self.raw.seek(*args)
+
+        def tell(self):
+            return self.raw.tell()
+
+        def read(self, size=-1):
+            assert 0 <= size <= 8192
+            read_sizes.append(size)
+            return self.raw.read(size)
+
+    def guarded_open(path, mode="r", *args, **kwargs):
+        if os.fspath(path) == server.log_path:
+            assert mode == "rb"
+            return GuardedBinaryReader(real_open(path, mode, *args, **kwargs))
+        return real_open(path, mode, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "open", guarded_open)
+
+    tail = server._read_log_tail()
+
+    assert tail.splitlines()[-1] == "retained tail"
+    assert len(tail.encode("utf-8")) <= 8192
+    assert read_sizes == [8192]
 
 
 def test_restart_waits_before_transport_reconnect(monkeypatch):

@@ -677,6 +677,8 @@ class YamlTestRunner:
             )
         try:
             self.managed_server.write_stdin(text)
+        except ManagedServerLifecycleError:
+            raise
         except RuntimeError as exc:
             raise AssertionError(f"Test '{test_name}' write_stdin failed: {exc}") from exc
 

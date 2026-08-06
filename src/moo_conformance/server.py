@@ -101,6 +101,22 @@ class ManagedServer:
         selected_db_path = db_path if db_path is not None else self.db_path
         previous_db_copy_path = self._db_copy_path
         pending_copy_path: Path | None = None
+        rollback_copy_path: Path | None = None
+        db_copy_path: Path | None = None
+
+        def restore_failed_copy() -> None:
+            if pending_copy_path is not None:
+                pending_copy_path.unlink(missing_ok=True)
+            if rollback_copy_path is not None and rollback_copy_path.exists():
+                if db_copy_path is None:
+                    raise RuntimeError("Managed server rollback target is missing")
+                os.replace(rollback_copy_path, db_copy_path)
+            elif (
+                db_copy_path is not None
+                and db_copy_path != previous_db_copy_path
+                and db_copy_path.exists()
+            ):
+                db_copy_path.unlink()
 
         try:
             # Pick a port once (or use explicitly requested port).
@@ -135,6 +151,12 @@ class ManagedServer:
                 pending_copy_path = db_copy_path.with_name(db_copy_path.name + ".pending")
                 pending_copy_path.unlink(missing_ok=True)
                 shutil.copy2(selected_db_path, pending_copy_path)
+                if db_copy_path == previous_db_copy_path and db_copy_path.exists():
+                    rollback_copy_path = db_copy_path.with_name(
+                        db_copy_path.name + ".rollback"
+                    )
+                    rollback_copy_path.unlink(missing_ok=True)
+                    os.replace(db_copy_path, rollback_copy_path)
                 os.replace(pending_copy_path, db_copy_path)
                 pending_copy_path = None
             db_dest = db_copy_path
@@ -169,26 +191,28 @@ class ManagedServer:
             if wait_for_port:
                 self._wait_for_port(timeout=30.0)
 
-            self.db_path = selected_db_path
-            self._db_copy_path = db_copy_path
-            self._manifest_path = manifest_path
+            if rollback_copy_path is not None:
+                rollback_copy_path.unlink(missing_ok=True)
             if (
                 previous_db_copy_path is not None
                 and previous_db_copy_path != db_copy_path
                 and previous_db_copy_path.exists()
             ):
                 previous_db_copy_path.unlink()
+            self.db_path = selected_db_path
+            self._db_copy_path = db_copy_path
+            self._manifest_path = manifest_path
         except ManagedServerLifecycleError:
             self.stop(preserve_temp=True)
+            restore_failed_copy()
             raise
         except Exception as exc:
-            if pending_copy_path is not None:
-                pending_copy_path.unlink(missing_ok=True)
             failure = self._record_lifecycle_failure(
                 f"Managed server start failed for database {selected_db_path}: "
                 f"{type(exc).__name__}: {exc}"
             )
             self.stop(preserve_temp=True)
+            restore_failed_copy()
             raise failure from exc
 
     def stop(self, preserve_temp: bool = False) -> None:
@@ -219,15 +243,29 @@ class ManagedServer:
 
     def write_stdin(self, text: str) -> None:
         """Write text to the managed server process stdin."""
+        if self._lifecycle_failure is not None:
+            raise self._lifecycle_failure
         if self._process is None:
-            raise RuntimeError("Server not started")
+            raise self._record_lifecycle_failure(
+                "Managed server is not running while stdin is required"
+            )
         if self._process.stdin is None:
-            raise RuntimeError("Server process stdin is not writable")
-        if self._process.poll() is not None:
-            raise RuntimeError(f"Server process exited with code {self._process.returncode}")
+            raise self._record_lifecycle_failure("Managed server stdin is not writable")
+        returncode = self._process.poll()
+        if returncode is not None:
+            raise self._record_lifecycle_failure(
+                "Managed server exited unexpectedly while stdin is required",
+                returncode=returncode,
+            )
 
-        self._process.stdin.write(text.encode("utf-8"))
-        self._process.stdin.flush()
+        try:
+            self._process.stdin.write(text.encode("utf-8"))
+            self._process.stdin.flush()
+        except OSError as exc:
+            failure = self._record_lifecycle_failure(
+                f"Managed server stdin write failed: {type(exc).__name__}: {exc}"
+            )
+            raise failure from exc
 
     def require_transport(self) -> None:
         """Fail with stable evidence if a live managed transport is unavailable."""
@@ -377,7 +415,10 @@ class ManagedServer:
         if self._log_path is None or not os.path.exists(self._log_path):
             return ""
         try:
-            with open(self._log_path, encoding="utf-8", errors="replace") as log:
-                return log.read()[-limit:]
+            with open(self._log_path, "rb") as log:
+                log.seek(0, os.SEEK_END)
+                size = min(max(limit, 0), log.tell())
+                log.seek(-size, os.SEEK_END)
+                return log.read(size).decode("utf-8", errors="replace")
         except OSError as exc:
             return f"(could not read server log: {exc})"

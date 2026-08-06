@@ -1,58 +1,85 @@
 name: limits_dynamic
-description: Dynamic limit tests using multi-step execution (ported from Ruby)
-
-# Suite setup: create $server_options properties
-setup:
-  permission: wizard
-  code: |
-    add_property($server_options, "max_list_value_bytes", 1000000, {player, "r"});
-    load_server_options();
-
-teardown:
-  permission: wizard
-  code: |
-    delete_property($server_options, "max_list_value_bytes");
-    load_server_options();
+description: Dynamic limit tests using runtime server-option updates (ported from Ruby)
 
 tests:
   - name: setadd_checks_list_max_value_bytes
     description: Ported from test_limits.rb - verifies setadd respects max_list_value_bytes
-    skip: "Requires $server_options limit enforcement (not implemented in cow_py VM)"
-    steps:
-      # Compute the overhead of a 2-element list vs empty list
-      - run: "value_bytes({1, 2}) - value_bytes({})"
-        capture: pad
-        as: wizard
-
-      # Compute size of a 100-element list
-      - run: |
+    permission: wizard
+    statement: |
+      had_catchable = 1;
+      try
+        original_catchable = $server_options.max_concat_catchable;
+      except (E_PROPNF)
+        had_catchable = 0;
+        original_catchable = 0;
+      endtry
+      had_list_limit = 1;
+      try
+        original_list_limit = $server_options.max_list_value_bytes;
+      except (E_PROPNF)
+        had_list_limit = 0;
+        original_list_limit = 0;
+      endtry
+      outcome = E_NONE;
+      cleanup_failed = 0;
+      try
+        if (!had_catchable)
+          add_property($server_options, "max_concat_catchable", 1, {player, "r"});
+        else
+          $server_options.max_concat_catchable = 1;
+        endif
+        if (!had_list_limit)
+          add_property($server_options, "max_list_value_bytes", 1000000, {player, "r"});
+        else
+          $server_options.max_list_value_bytes = 1000000;
+        endif
+        n = 90;
+        load_server_options();
+        pad = value_bytes({1}) - value_bytes({});
+        x = {};
+        for i in [1..n]
+          x = setadd(x, i);
+        endfor
+        size = value_bytes(x);
+        $server_options.max_list_value_bytes = size + pad;
+        load_server_options();
+        try
           x = {};
-          for i in [1..100];
+          for i in [1..(n + 1)]
             x = setadd(x, i);
           endfor
-          return value_bytes(x);
-        capture: size
-
-      # Set limit to exactly fit 100 elements
-      - run: "$server_options.max_list_value_bytes = {pad} + {size}; load_server_options();"
-        as: wizard
-
-      # Verify 100 elements works (returns an integer - the byte count)
-      - run: |
-          x = {};
-          for i in [1..100];
-            x = setadd(x, i);
-          endfor
-          return value_bytes(x);
-        expect:
-          type: int
-
-      # Verify 101 elements exceeds quota
-      - run: |
-          x = {};
-          for i in [1..101];
-            x = setadd(x, i);
-          endfor
-          return value_bytes(x);
-        expect:
-          error: E_QUOTA
+          outcome = E_NONE;
+        except error (E_QUOTA)
+          outcome = error[1];
+        endtry
+      finally
+        try
+          if (had_list_limit)
+            $server_options.max_list_value_bytes = original_list_limit;
+          else
+            delete_property($server_options, "max_list_value_bytes");
+          endif
+        except (ANY)
+          cleanup_failed = 1;
+        endtry
+        try
+          if (had_catchable)
+            $server_options.max_concat_catchable = original_catchable;
+          else
+            delete_property($server_options, "max_concat_catchable");
+          endif
+        except (ANY)
+          cleanup_failed = 1;
+        endtry
+        try
+          load_server_options();
+        except (ANY)
+          cleanup_failed = 1;
+        endtry
+      endtry
+      if (cleanup_failed)
+        raise(E_INVARG);
+      endif
+      return outcome;
+    expect:
+      value: E_QUOTA

@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 import pytest
@@ -9,11 +10,13 @@ from moo_conformance.lint_duplicates import (
 from moo_conformance.lint_duplicates import (
     apply_duplicate_content_cleanup,
     apply_duplicate_semantic_cleanup,
+    build_duplicate_baseline,
     choose_occurrence_to_keep,
     detect_duplicate_content,
     detect_duplicate_names,
     detect_duplicate_semantic,
     get_semantic_engine_error,
+    run_duplicate_lint,
 )
 
 
@@ -99,6 +102,53 @@ def test_detect_duplicate_content_includes_suite_setup_context(tmp_path: Path) -
     duplicates = detect_duplicate_content(tmp_path)
 
     assert duplicates == []
+
+
+def test_exact_duplicate_baseline_passes_and_new_duplicate_fails(tmp_path: Path) -> None:
+    _write_suite(
+        tmp_path / "one.yaml",
+        [{"name": "same", "code": "1", "expect": {"value": 1}}],
+    )
+    _write_suite(
+        tmp_path / "two.yaml",
+        [{"name": "same", "code": "1", "expect": {"value": 1}}],
+    )
+    baseline = tmp_path / "duplicates.json"
+    baseline.write_text(
+        json.dumps(build_duplicate_baseline(tmp_path), indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    assert run_duplicate_lint(tmp_path, baseline=baseline) == 0
+
+    _write_suite(
+        tmp_path / "three.yaml",
+        [{"name": "same", "code": "1", "expect": {"value": 1}}],
+    )
+
+    assert run_duplicate_lint(tmp_path, baseline=baseline) == 1
+
+
+def test_stale_duplicate_baseline_fails_after_cleanup(tmp_path: Path) -> None:
+    _write_suite(
+        tmp_path / "one.yaml",
+        [{"name": "same", "code": "1", "expect": {"value": 1}}],
+    )
+    _write_suite(
+        tmp_path / "two.yaml",
+        [{"name": "same", "code": "1", "expect": {"value": 1}}],
+    )
+    baseline = tmp_path / "duplicates.json"
+    baseline.write_text(
+        json.dumps(build_duplicate_baseline(tmp_path), indent=2) + "\n",
+        encoding="utf-8",
+    )
+    _write_suite(
+        tmp_path / "two.yaml",
+        [{"name": "unique", "code": "2", "expect": {"value": 2}}],
+    )
+
+    assert run_duplicate_lint(tmp_path, baseline=baseline) == 1
 
 
 def test_choose_occurrence_to_keep_prefers_most_described() -> None:

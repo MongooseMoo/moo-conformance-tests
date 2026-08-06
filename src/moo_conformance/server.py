@@ -15,6 +15,7 @@ import tempfile
 import time
 from importlib import resources
 from pathlib import Path
+from typing import TextIO
 
 
 class ManagedServer:
@@ -36,7 +37,7 @@ class ManagedServer:
         self._process: subprocess.Popen | None = None
         self._temp_dir: str | None = None
         self._log_path: str | None = None
-        self._log_file = None
+        self._log_file: TextIO | None = None
         self._db_copy_path: Path | None = None
         self._manifest_path: Path | None = None
 
@@ -83,7 +84,9 @@ class ManagedServer:
             self._db_copy_path = Path(self._temp_dir, self.db_path.name)
         else:
             if self._db_copy_path is None:
-                raise RuntimeError("Managed server temp directory exists but DB copy path is missing")
+                raise RuntimeError(
+                    "Managed server temp directory exists but DB copy path is missing"
+                )
             if db_path is not None:
                 new_db_copy_path = Path(self._temp_dir, self.db_path.name)
                 if new_db_copy_path != self._db_copy_path and self._db_copy_path.exists():
@@ -172,14 +175,14 @@ class ManagedServer:
         if self._process.stdin is None:
             raise RuntimeError("Server process stdin is not writable")
         if self._process.poll() is not None:
-            raise RuntimeError(
-                f"Server process exited with code {self._process.returncode}"
-            )
+            raise RuntimeError(f"Server process exited with code {self._process.returncode}")
 
         self._process.stdin.write(text.encode("utf-8"))
         self._process.stdin.flush()
 
-    def restart(self, db_path: Path | None = None, wait_for_port: bool = True, down_ms: int = 0) -> None:
+    def restart(
+        self, db_path: Path | None = None, wait_for_port: bool = True, down_ms: int = 0
+    ) -> None:
         """Restart the server process in-place, preserving the working database.
 
         down_ms keeps the process fully stopped for that long before starting

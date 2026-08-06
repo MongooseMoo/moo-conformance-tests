@@ -95,8 +95,7 @@ def _get_semantic_engine() -> tuple[Any, Any, Any] | None:
         return SEMANTIC_ENGINE
     except Exception as exc:  # pragma: no cover - exercised via integration
         SEMANTIC_ENGINE_ERROR = (
-            "Semantic checks require `moo-interp`; failed to import parser/compiler: "
-            f"{exc}"
+            f"Semantic checks require `moo-interp`; failed to import parser/compiler: {exc}"
         )
         return None
 
@@ -272,6 +271,81 @@ def _format_occurrence(item: TestOccurrence, base_dir: Path) -> str:
     return f"{rel_path}::#{item.index} ({item.name})"
 
 
+def _occurrence_identity(item: TestOccurrence, base_dir: Path) -> str:
+    try:
+        rel_path = item.file.relative_to(base_dir).as_posix()
+    except ValueError:
+        rel_path = item.file.as_posix()
+    return f"{rel_path}::{item.name}"
+
+
+def build_duplicate_baseline(
+    test_dir: Path,
+    *,
+    ignored_keys: tuple[str, ...] = DEFAULT_IGNORED_KEYS,
+) -> dict[str, Any]:
+    """Return a stable, exact model of current name and content duplicate groups."""
+    name_groups = [
+        {
+            "name": name,
+            "members": sorted(_occurrence_identity(item, test_dir) for item in occurrences),
+        }
+        for name, occurrences in sorted(detect_duplicate_names(test_dir).items())
+    ]
+    content_groups = [
+        {
+            "members": sorted(_occurrence_identity(item, test_dir) for item in occurrences),
+        }
+        for occurrences in detect_duplicate_content(test_dir, ignored_keys=ignored_keys)
+    ]
+    content_groups.sort(key=lambda group: group["members"])
+    return {
+        "schema_version": 1,
+        "name_groups": name_groups,
+        "content_groups": content_groups,
+    }
+
+
+def load_duplicate_baseline(path: Path) -> dict[str, Any]:
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError(f"cannot read duplicate baseline {path}: {exc}") from exc
+    if not isinstance(data, dict) or data.get("schema_version") != 1:
+        raise ValueError("duplicate baseline must be an object with schema_version 1")
+    for key in ("name_groups", "content_groups"):
+        groups = data.get(key)
+        if not isinstance(groups, list) or any(not isinstance(group, dict) for group in groups):
+            raise ValueError(f"duplicate baseline {key} must be a list of objects")
+    return data
+
+
+def enforce_duplicate_baseline(
+    test_dir: Path,
+    baseline_path: Path,
+    *,
+    ignored_keys: tuple[str, ...] = DEFAULT_IGNORED_KEYS,
+) -> None:
+    expected = load_duplicate_baseline(baseline_path)
+    actual = build_duplicate_baseline(test_dir, ignored_keys=ignored_keys)
+    if actual != expected:
+        expected_names = {json.dumps(group, sort_keys=True) for group in expected["name_groups"]}
+        actual_names = {json.dumps(group, sort_keys=True) for group in actual["name_groups"]}
+        expected_content = {
+            json.dumps(group, sort_keys=True) for group in expected["content_groups"]
+        }
+        actual_content = {
+            json.dumps(group, sort_keys=True) for group in actual["content_groups"]
+        }
+        changes = {
+            "new_name_groups": sorted(actual_names - expected_names),
+            "stale_name_groups": sorted(expected_names - actual_names),
+            "new_content_groups": sorted(actual_content - expected_content),
+            "stale_content_groups": sorted(expected_content - actual_content),
+        }
+        raise ValueError("duplicate baseline drift: " + json.dumps(changes, sort_keys=True))
+
+
 def choose_occurrence_to_keep(
     occurrences: list[TestOccurrence], keep_strategy: str = "most-described"
 ) -> TestOccurrence:
@@ -400,12 +474,32 @@ def run_duplicate_lint(
     fix_content: bool = False,
     fix_semantic: bool = False,
     keep_strategy: str = "most-described",
+    baseline: Path | None = None,
 ) -> int:
     """Run duplicate detection and return process exit code."""
     yaml_files = _iter_yaml_files(test_dir)
     test_count = sum(len(_load_tests_from_file(path)) for path in yaml_files)
 
     print(f"Scanned {len(yaml_files)} YAML files and {test_count} tests in {test_dir.as_posix()}")
+
+    if baseline is not None:
+        if check_semantic or fix_content or fix_semantic:
+            print("A duplicate baseline cannot be combined with semantic or fix modes.")
+            return 1
+        try:
+            enforce_duplicate_baseline(test_dir, baseline, ignored_keys=ignored_keys)
+        except ValueError as exc:
+            print(exc)
+            print("Duplicate lint failed.")
+            return 1
+        current = build_duplicate_baseline(test_dir, ignored_keys=ignored_keys)
+        print(
+            "Reviewed duplicate baseline matched exactly: "
+            f"{len(current['name_groups'])} name groups, "
+            f"{len(current['content_groups'])} content groups."
+        )
+        print("Duplicate lint passed.")
+        return 0
 
     failed = False
 
@@ -503,6 +597,11 @@ def run_duplicate_lint(
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Detect duplicate conformance tests.")
     parser.add_argument(
+        "--baseline",
+        type=Path,
+        help="Exact reviewed JSON baseline for existing name/content duplicate groups.",
+    )
+    parser.add_argument(
         "--tests-dir",
         type=Path,
         default=get_tests_dir(),
@@ -554,7 +653,7 @@ def main() -> int:
         check_names = False
         check_content = False
 
-    ignored_keys = ("name",)
+    ignored_keys: tuple[str, ...] = ("name",)
     if not args.include_description:
         ignored_keys = ("name", "description")
 
@@ -567,6 +666,7 @@ def main() -> int:
         fix_content=args.fix_content,
         fix_semantic=args.fix_semantic,
         keep_strategy=args.keep_strategy,
+        baseline=args.baseline,
     )
 
 

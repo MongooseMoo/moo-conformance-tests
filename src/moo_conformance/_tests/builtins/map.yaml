@@ -508,12 +508,24 @@ tests:
   # Range operations
   - name: first_last_index
     permission: wizard
-    skip: "Requires call() builtin which needs verb execution infrastructure"
     statement: |
-      o = create($nothing);
-      add_verb(o, {player, "xd", "grow"}, {"this", "none", "this"});
-      set_verb_code(o, "grow", "x = []; r = {}; x[1] = 1; x[(a = ^)..(b = $)]; r = {@r, {a, b}}; x[2] = 2; x[(a = ^)..(b = $)]; r = {@r, {a, b}}; x[3] = 3; x[(a = ^)..(b = $)]; r = {@r, {a, b}}; x[5] = 5; x[(a = ^)..(b = $)]; r = {@r, {a, b}}; x[8] = 8; x[(a = ^)..(b = $)]; r = {@r, {a, b}}; return r;");
-      return call(o, "grow");
+      x = [];
+      r = {};
+      x[1] = 1;
+      x[(a = ^)..(b = $)];
+      r = {@r, {a, b}};
+      x[2] = 2;
+      x[(a = ^)..(b = $)];
+      r = {@r, {a, b}};
+      x[3] = 3;
+      x[(a = ^)..(b = $)];
+      r = {@r, {a, b}};
+      x[5] = 5;
+      x[(a = ^)..(b = $)];
+      r = {@r, {a, b}};
+      x[8] = 8;
+      x[(a = ^)..(b = $)];
+      return {@r, {a, b}};
     expect:
       value: [[1, 1], [1, 2], [1, 3], [1, 5], [1, 8]]
 

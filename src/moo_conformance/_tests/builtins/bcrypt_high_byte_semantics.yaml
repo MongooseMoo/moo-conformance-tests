@@ -1,0 +1,12 @@
+name: bcrypt_high_byte_semantics
+description: Toast bcrypt 2x historical sign-extension semantics for raw high-byte passwords
+
+requires:
+  builtins: [crypt, chr]
+
+tests:
+  - name: crypt_bcrypt_2x_high_byte_hash_body_differs_from_2y
+    description: "Compare beyond the variant character to prove 2x sign-extension semantics"
+    code: 'crypt(chr(128), "$2x$05$KRGxLBS0Lxe3KBCwKxOzLe")[4..60] != crypt(chr(128), "$2y$05$KRGxLBS0Lxe3KBCwKxOzLe")[4..60]'
+    expect:
+      value: 1

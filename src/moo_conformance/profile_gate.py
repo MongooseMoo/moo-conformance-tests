@@ -23,7 +23,9 @@ def load_manifest(path: str | Path) -> dict[str, Any]:
     except FileNotFoundError as exc:
         raise ProfileGateError(f"profile manifest not found: {manifest_path}") from exc
     except json.JSONDecodeError as exc:
-        raise ProfileGateError(f"profile manifest is not valid JSON: {manifest_path}: {exc}") from exc
+        raise ProfileGateError(
+            f"profile manifest is not valid JSON: {manifest_path}: {exc}"
+        ) from exc
     if not isinstance(data, dict):
         raise ProfileGateError(f"profile manifest must be a JSON object: {manifest_path}")
     return data

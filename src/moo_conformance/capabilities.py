@@ -13,20 +13,22 @@ This allows tests to declare "I use fork() to observe X" without coupling
 to specific fork tests. If fork tests fail, observation tests are skipped.
 """
 
-from enum import Enum
 from dataclasses import dataclass, field
+from enum import Enum
 
 
 class CapabilityState(Enum):
     """State of a capability."""
+
     UNVERIFIED = "unverified"  # Not yet tested
-    VERIFIED = "verified"      # All providers passed
-    FAILED = "failed"          # At least one provider failed
+    VERIFIED = "verified"  # All providers passed
+    FAILED = "failed"  # At least one provider failed
 
 
 @dataclass
 class Capability:
     """A capability that can be provided and assumed by tests."""
+
     name: str
     state: CapabilityState = CapabilityState.UNVERIFIED
     providers: list[str] = field(default_factory=list)  # Test IDs that provide this

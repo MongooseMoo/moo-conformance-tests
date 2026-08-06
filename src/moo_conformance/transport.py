@@ -10,18 +10,19 @@ Usage:
         print(result.value)  # 2
 """
 
+import re
+import socket
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any
-import re
-import socket
 
-from .moo_types import MooError, ERROR_CODES, is_error_value
+from .moo_types import MooError
 
 
 @dataclass
 class ExecutionResult:
     """Result from executing MOO code."""
+
     success: bool
     value: Any = None
     error: MooError | None = None
@@ -36,6 +37,10 @@ class MooTransport(ABC):
     Implementations connect to a MOO server (via socket, in-process, etc.)
     and execute code, returning results.
     """
+
+    host: str
+    port: int
+    current_user: str
 
     @abstractmethod
     def connect(self, user: str = "programmer") -> None:
@@ -92,6 +97,14 @@ class MooTransport(ABC):
         """
         raise NotImplementedError("send_command() not supported by this transport")
 
+    def switch_user(self, user: str = "programmer") -> None:
+        """Reconnect as a different user when the transport supports it."""
+        raise NotImplementedError("switch_user() not supported by this transport")
+
+    def open_connection(self, port: int | None = None) -> "TestConnection":
+        """Open a secondary connection when the transport supports it."""
+        raise NotImplementedError("open_connection() not supported by this transport")
+
     def __enter__(self):
         return self
 
@@ -122,7 +135,7 @@ class TestConnection:
         """Send raw text and return output lines."""
         if self.sock is None:
             raise RuntimeError("TestConnection not connected")
-        self.sock.sendall((text + "\r\n").encode('utf-8'))
+        self.sock.sendall((text + "\r\n").encode("utf-8"))
         return self._receive_until_quiet()
 
     def send_bytes(self, data: bytes) -> list[str]:
@@ -168,8 +181,8 @@ class TestConnection:
         finally:
             self.sock.settimeout(2.0)
 
-        for line in buffer.decode('utf-8', errors='replace').split('\n'):
-            line = line.rstrip('\r')
+        for line in buffer.decode("utf-8", errors="replace").split("\n"):
+            line = line.rstrip("\r")
             if line:
                 lines.append(line)
         return lines
@@ -266,7 +279,7 @@ class SocketTransport(MooTransport):
                     buffer += clean_data
 
                     # Check for connection success marker
-                    if b'*** Connected ***' in buffer or b'Connected' in buffer:
+                    if b"*** Connected ***" in buffer or b"Connected" in buffer:
                         connected = True
 
                     # Once connected, drain remaining output with shorter timeout
@@ -287,17 +300,20 @@ class SocketTransport(MooTransport):
         """
         # Properties to add: (name, value)
         properties = [
-            ("object", "#1"),      # Root object class
-            ("anonymous", "#5"),   # Anonymous class parent
-            ("anon", "#5"),        # Alias for anonymous
-            ("sysobj", "#0"),      # System object itself
-            ("nothing", "#-1"),    # Represents no object
+            ("object", "#1"),  # Root object class
+            ("anonymous", "#5"),  # Anonymous class parent
+            ("anon", "#5"),  # Alias for anonymous
+            ("sysobj", "#0"),  # System object itself
+            ("nothing", "#-1"),  # Represents no object
         ]
 
         for name, value in properties:
             # Try to add property, ignore errors (property may exist)
             # Use {#0, "rc"} for standard read perms
-            cmd = f'; try add_property(#0, "{name}", {value}, {{#0, "rc"}}); except (ANY) return 0; endtry'
+            cmd = (
+                f'; try add_property(#0, "{name}", {value}, {{#0, "rc"}}); '
+                "except (ANY) return 0; endtry"
+            )
             self._send(cmd)
             # Read and discard response
             self._receive()
@@ -379,7 +395,7 @@ class SocketTransport(MooTransport):
         # MOO servers treat each line as a separate command, so multi-line
         # code must be flattened. This matches how Ruby tests work - they
         # send all eval code on a single line.
-        code = ' '.join(line.strip() for line in code.strip().split('\n') if line.strip())
+        code = " ".join(line.strip() for line in code.strip().split("\n") if line.strip())
 
         # Send as eval command. Don't wrap with return here - the schema's
         # get_code_to_execute() handles that for expressions. Statements
@@ -422,10 +438,10 @@ class SocketTransport(MooTransport):
             raise RuntimeError("Socket not connected")
 
         lines: list[str] = []
-        state = 'looking'
+        state = "looking"
 
         buffer = b""
-        while state != 'done':
+        while state != "done":
             try:
                 data = self.sock.recv(4096)
                 if not data:
@@ -433,18 +449,18 @@ class SocketTransport(MooTransport):
                 clean_data = self._strip_telnet_commands(data)
                 buffer += clean_data
 
-                while b'\n' in buffer:
-                    line_bytes, buffer = buffer.split(b'\n', 1)
-                    line = line_bytes.decode('utf-8').rstrip('\r')
+                while b"\n" in buffer:
+                    line_bytes, buffer = buffer.split(b"\n", 1)
+                    line = line_bytes.decode("utf-8").rstrip("\r")
 
-                    if line == '-=!-^-!=-' and state in ('looking', 'found'):
-                        state = 'found'
+                    if line == "-=!-^-!=-" and state in ("looking", "found"):
+                        state = "found"
                         continue
-                    if line == '-=!-v-!=-' and state == 'found':
+                    if line == "-=!-v-!=-" and state == "found":
                         # For raw commands, stop even if no output (unlike eval)
-                        state = 'done'
+                        state = "done"
                         continue
-                    if state == 'found':
+                    if state == "found":
                         lines.append(line)
             except socket.timeout:
                 break
@@ -455,7 +471,7 @@ class SocketTransport(MooTransport):
         """Send a line to the server."""
         if self.sock is None:
             raise RuntimeError("Socket not connected")
-        self.sock.sendall((message + "\n").encode('utf-8'))
+        self.sock.sendall((message + "\n").encode("utf-8"))
 
     @staticmethod
     def _strip_telnet_commands(data: bytes) -> bytes:
@@ -514,10 +530,10 @@ class SocketTransport(MooTransport):
             raise RuntimeError("Socket not connected")
 
         lines: list[str] = []
-        state = 'looking'
+        state = "looking"
 
         buffer = b""  # Use bytes buffer for telnet handling
-        while state != 'done':
+        while state != "done":
             data = self.sock.recv(4096)
             if not data:
                 break
@@ -525,22 +541,22 @@ class SocketTransport(MooTransport):
             clean_data = self._strip_telnet_commands(data)
             buffer += clean_data
 
-            while b'\n' in buffer:
-                line_bytes, buffer = buffer.split(b'\n', 1)
-                line = line_bytes.decode('utf-8').rstrip('\r')
+            while b"\n" in buffer:
+                line_bytes, buffer = buffer.split(b"\n", 1)
+                line = line_bytes.decode("utf-8").rstrip("\r")
 
-                if line == '-=!-^-!=-' and state in ('looking', 'found'):
-                    state = 'found'
+                if line == "-=!-^-!=-" and state in ("looking", "found"):
+                    state = "found"
                     continue
-                if line == '-=!-v-!=-' and state == 'found':
+                if line == "-=!-v-!=-" and state == "found":
                     # Only stop if we have data - handles exec() early SUFFIX
                     if lines:
-                        state = 'done'
+                        state = "done"
                     continue
-                if state == 'found':
+                if state == "found":
                     lines.append(line)
 
-        return '\n'.join(lines) if lines else None
+        return "\n".join(lines) if lines else None
 
     def _parse_response(self, response: str | None) -> ExecutionResult:
         """Parse MOO response into ExecutionResult.
@@ -552,18 +568,60 @@ class SocketTransport(MooTransport):
 
         Toast also prefixes command results with "=> " which needs to be stripped.
         """
+        response, notifications = self._split_response_notifications(response)
+        result = self._parse_response_value(response)
+        result.notifications = [{"message": message} for message in notifications]
+        return result
+
+    def _split_response_notifications(
+        self, response: str | None
+    ) -> tuple[str | None, list[str]]:
+        """Separate framed notify output from the final eval result."""
+        if response is None:
+            return None, []
+
+        lines = response.splitlines()
+        if len(lines) < 2:
+            return response, []
+
+        result_index: int | None = None
+        if lines[-1].startswith("=> ") or lines[-1].startswith("E_"):
+            result_index = len(lines) - 1
+        else:
+            for index, line in enumerate(lines):
+                if line.startswith("#-1:Input to EVAL"):
+                    result_index = index
+                    break
+
+        if result_index is None:
+            candidate = self._parse_moo_literal(lines[-1])
+            if (
+                isinstance(candidate, list)
+                and len(candidate) == 2
+                and isinstance(candidate[0], int)
+                and candidate[0] in (0, 1, 2)
+            ):
+                result_index = len(lines) - 1
+
+        if result_index is None:
+            return response, []
+
+        return "\n".join(lines[result_index:]), lines[:result_index]
+
+    def _parse_response_value(self, response: str | None) -> ExecutionResult:
+        """Parse the final eval value or traceback after notifications are removed."""
         if response is None:
             return ExecutionResult(success=True, value=None)
 
         # Strip "=> " prefix that Toast adds to eval results
         # Toast returns raw values (no {status, result} wrapper), so track this
-        toast_format = response.startswith('=> ')
+        toast_format = response.startswith("=> ")
         if toast_format:
             response = response[3:]
 
         # Check for bare error codes (some commands return these directly)
-        if response.startswith('E_'):
-            error_match = re.match(r'(E_[A-Z]+)', response)
+        if response.startswith("E_"):
+            error_match = re.match(r"(E_[A-Z]+)", response)
             if error_match:
                 error_name = error_match.group(1)
                 try:
@@ -582,11 +640,15 @@ class SocketTransport(MooTransport):
 
         # Check for Toast-style error tracebacks (no "=> " prefix)
         # Format: "#-1:Input to EVAL ... line N:  Error message"
-        if isinstance(value, str) and value.startswith('#-1:Input to EVAL') and '(End of traceback)' in value:
+        if (
+            isinstance(value, str)
+            and value.startswith("#-1:Input to EVAL")
+            and "(End of traceback)" in value
+        ):
             # Extract error type from message
-            error = self._extract_toast_error(value)
-            if error:
-                return ExecutionResult(success=False, error=error)
+            toast_error = self._extract_toast_error(value)
+            if toast_error:
+                return ExecutionResult(success=False, error=toast_error)
             # Unknown error format, return as error message
             return ExecutionResult(success=False, error_message=value)
 
@@ -598,7 +660,7 @@ class SocketTransport(MooTransport):
                 # Could be parse/compile error: {0, {line, message, ...}}
                 # Or runtime error: {0, E_INVARG} (barn returns this format)
                 # Check if result is an error code first
-                if isinstance(result, str) and result.startswith('E_'):
+                if isinstance(result, str) and result.startswith("E_"):
                     try:
                         error = MooError(result)
                         return ExecutionResult(success=False, error=error)
@@ -622,7 +684,7 @@ class SocketTransport(MooTransport):
                 # Runtime error: {2, {E_TYPE, message, value}}
                 if isinstance(result, list) and len(result) >= 1:
                     error_name = result[0] if isinstance(result[0], str) else str(result[0])
-                    if error_name.startswith('E_'):
+                    if error_name.startswith("E_"):
                         try:
                             error = MooError(error_name)
                             return ExecutionResult(success=False, error=error)
@@ -640,22 +702,22 @@ class SocketTransport(MooTransport):
         text = text.strip()
 
         # Integer
-        if re.match(r'^-?\d+$', text):
+        if re.match(r"^-?\d+$", text):
             return int(text)
 
         # Float
-        if re.match(r'^-?\d+\.\d+([eE][-+]?\d+)?$', text):
+        if re.match(r"^-?\d+\.\d+([eE][-+]?\d+)?$", text):
             return float(text)
 
         # Anonymous object - multiple formats:
         # *#N (ToastStunt numbered format)
         # *anonymous* (ToastStunt string format for create($anonymous, 1) return value)
-        if re.match(r'^\*#-?\d+$', text) or text == '*anonymous*':
+        if re.match(r"^\*#-?\d+$", text) or text == "*anonymous*":
             return text  # Return as-is to preserve type info
 
         # Object - keep as string with # prefix for type checking
         # Toast may add object name like "#2  (Wizard)" - strip the name part
-        obj_match = re.match(r'^(#-?\d+)(?:\s+\(.+\))?$', text)
+        obj_match = re.match(r"^(#-?\d+)(?:\s+\(.+\))?$", text)
         if obj_match:
             return obj_match.group(1)  # Return just "#N" without name
 
@@ -664,11 +726,11 @@ class SocketTransport(MooTransport):
             return self._parse_moo_string(text)
 
         # Error
-        if text.startswith('E_'):
+        if text.startswith("E_"):
             return text  # Return as string for checking
 
         # List - proper nested parsing
-        if text.startswith('{') and text.endswith('}'):
+        if text.startswith("{") and text.endswith("}"):
             inner = text[1:-1].strip()
             if not inner:
                 return []
@@ -676,7 +738,7 @@ class SocketTransport(MooTransport):
             return [self._parse_moo_literal(e.strip()) for e in elements]
 
         # Map - proper nested parsing
-        if text.startswith('[') and text.endswith(']'):
+        if text.startswith("[") and text.endswith("]"):
             inner = text[1:-1].strip()
             if not inner:
                 return {}
@@ -691,25 +753,25 @@ class SocketTransport(MooTransport):
         result = []
         i = 0
         while i < len(inner):
-            if inner[i] == '\\' and i + 1 < len(inner):
+            if inner[i] == "\\" and i + 1 < len(inner):
                 next_char = inner[i + 1]
                 if next_char == '"':
                     result.append('"')
-                elif next_char == '\\':
-                    result.append('\\')
-                elif next_char == 'n':
-                    result.append('\n')
-                elif next_char == 't':
-                    result.append('\t')
-                elif next_char == 'r':
-                    result.append('\r')
+                elif next_char == "\\":
+                    result.append("\\")
+                elif next_char == "n":
+                    result.append("\n")
+                elif next_char == "t":
+                    result.append("\t")
+                elif next_char == "r":
+                    result.append("\r")
                 else:
                     result.append(next_char)
                 i += 2
             else:
                 result.append(inner[i])
                 i += 1
-        return ''.join(result)
+        return "".join(result)
 
     def _split_moo_elements(self, text: str) -> list[str]:
         """Split MOO elements at top-level commas, respecting nesting."""
@@ -725,7 +787,7 @@ class SocketTransport(MooTransport):
                 escape_next = False
                 continue
 
-            if char == '\\' and in_string:
+            if char == "\\" and in_string:
                 current.append(char)
                 escape_next = True
                 continue
@@ -736,19 +798,19 @@ class SocketTransport(MooTransport):
                 continue
 
             if not in_string:
-                if char in '{[':
+                if char in "{[":
                     depth += 1
-                elif char in '}]':
+                elif char in "}]":
                     depth -= 1
-                elif char == ',' and depth == 0:
-                    elements.append(''.join(current))
+                elif char == "," and depth == 0:
+                    elements.append("".join(current))
                     current = []
                     continue
 
             current.append(char)
 
         if current:
-            elements.append(''.join(current))
+            elements.append("".join(current))
 
         return elements
 
@@ -766,7 +828,7 @@ class SocketTransport(MooTransport):
             if arrow_pos == -1:
                 continue
             key_str = element[:arrow_pos].strip()
-            value_str = element[arrow_pos + 2:].strip()
+            value_str = element[arrow_pos + 2 :].strip()
             key = self._parse_moo_literal(key_str)
             value = self._parse_moo_literal(value_str)
             result[key] = value
@@ -784,7 +846,7 @@ class SocketTransport(MooTransport):
                 escape_next = False
                 continue
 
-            if char == '\\' and in_string:
+            if char == "\\" and in_string:
                 escape_next = True
                 continue
 
@@ -793,11 +855,11 @@ class SocketTransport(MooTransport):
                 continue
 
             if not in_string:
-                if char in '{[':
+                if char in "{[":
                     depth += 1
-                elif char in '}]':
+                elif char in "}]":
                     depth -= 1
-                elif char == '-' and depth == 0 and i + 1 < len(text) and text[i + 1] == '>':
+                elif char == "-" and depth == 0 and i + 1 < len(text) and text[i + 1] == ">":
                     return i
 
         return -1
@@ -813,26 +875,26 @@ class SocketTransport(MooTransport):
         """
         # Map Toast error messages to error codes
         error_map = {
-            'Type mismatch': 'E_TYPE',
-            'Division by zero': 'E_DIV',
-            'Permission denied': 'E_PERM',
-            'Property not found': 'E_PROPNF',
-            'Verb not found': 'E_VERBNF',
-            'Invalid argument': 'E_INVARG',
-            'Invalid indirection': 'E_INVIND',
-            'Resource limit exceeded': 'E_QUOTA',
-            'Out of range': 'E_RANGE',
-            'Range error': 'E_RANGE',  # Toast variant
-            'Second argument must be a list': 'E_ARGS',
-            'No object match': 'E_INVARG',
-            'Recursive move': 'E_RECMOVE',
-            'Illegal object': 'E_INVARG',
-            'Maximum object recursion reached': 'E_MAXREC',
-            'Number of seconds must be non-negative': 'E_INVARG',
-            'Incorrect number of arguments': 'E_ARGS',
-            'Wrong number of arguments': 'E_ARGS',
-            'Too many arguments': 'E_ARGS',
-            'Not enough arguments': 'E_ARGS',
+            "Type mismatch": "E_TYPE",
+            "Division by zero": "E_DIV",
+            "Permission denied": "E_PERM",
+            "Property not found": "E_PROPNF",
+            "Verb not found": "E_VERBNF",
+            "Invalid argument": "E_INVARG",
+            "Invalid indirection": "E_INVIND",
+            "Resource limit exceeded": "E_QUOTA",
+            "Out of range": "E_RANGE",
+            "Range error": "E_RANGE",  # Toast variant
+            "Second argument must be a list": "E_ARGS",
+            "No object match": "E_INVARG",
+            "Recursive move": "E_RECMOVE",
+            "Illegal object": "E_INVARG",
+            "Maximum object recursion reached": "E_MAXREC",
+            "Number of seconds must be non-negative": "E_INVARG",
+            "Incorrect number of arguments": "E_ARGS",
+            "Wrong number of arguments": "E_ARGS",
+            "Too many arguments": "E_ARGS",
+            "Not enough arguments": "E_ARGS",
         }
 
         for msg, error_code in error_map.items():

@@ -30,7 +30,6 @@ requires:
     - callers
     - suspend
     - resume
-    - fork
     - queued_tasks
     - kill_task
     - read
@@ -38,6 +37,8 @@ requires:
     - connected_players
     - yin
     - dump_database
+  features:
+    - fork
 
 tests:
   - name: audit_default_fg_ticks

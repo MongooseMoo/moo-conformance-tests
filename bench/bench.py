@@ -6,6 +6,7 @@ wall-clock round-trip time per eval. Same work on every server => fair compare.
 Usage:
     uv run python .tmp/bench.py toast=7801 barn=7802
 """
+
 from __future__ import annotations
 
 import statistics
@@ -18,43 +19,56 @@ from moo_conformance.transport import SocketTransport
 # fixed so every server does identical work; sized so the C++ reference lands in
 # the tens-to-hundreds of ms range.
 WORKLOADS = [
-    ("noop_latency",
-     "return 0;", 0),
-    ("int_arith_5M",
-     "x = 0; for i in [1..5000000]; x = x + i; endfor; return x;",
-     12500002500000),
-    ("float_arith_5M",
-     "x = 0.0; for i in [1..5000000]; x = x + 1.5; endfor; return x > 0.0;",
-     1),
-    ("string_concat_50k",
-     's = ""; for i in [1..50000]; s = s + "x"; endfor; return length(s);',
-     50000),
-    ("list_append_30k",
-     "l = {}; for i in [1..30000]; l = {@l, i}; endfor; return length(l);",
-     30000),
-    ("list_index_1M",
-     "l = {}; for i in [1..1000]; l = {@l, i}; endfor; "
-     "x = 0; for i in [1..1000000]; x = l[1 + (i % 1000)]; endfor; return x;",
-     None),
-    ("builtin_tostr_1M",
-     "n = 0; for i in [1..1000000]; n = n + length(tostr(i)); endfor; return n;",
-     None),
-    ("prop_access_1M",
-     "n = #0; x = 0; for i in [1..1000000]; x = typeof(n.name); endfor; return x;",
-     None),
-    ("verb_call_200k",
-     "x = 0; for i in [1..200000]; x = x + abs(-i); endfor; return x;",
-     20000100000),
-    ("nested_loop_2500x2500",
-     "c = 0; for i in [1..2500]; for j in [1..2500]; c = c + 1; endfor; endfor; return c;",
-     6250000),
+    ("noop_latency", "return 0;", 0),
+    ("int_arith_5M", "x = 0; for i in [1..5000000]; x = x + i; endfor; return x;", 12500002500000),
+    ("float_arith_5M", "x = 0.0; for i in [1..5000000]; x = x + 1.5; endfor; return x > 0.0;", 1),
+    (
+        "string_concat_50k",
+        's = ""; for i in [1..50000]; s = s + "x"; endfor; return length(s);',
+        50000,
+    ),
+    (
+        "list_append_30k",
+        "l = {}; for i in [1..30000]; l = {@l, i}; endfor; return length(l);",
+        30000,
+    ),
+    (
+        "list_index_1M",
+        "l = {}; for i in [1..1000]; l = {@l, i}; endfor; "
+        "x = 0; for i in [1..1000000]; x = l[1 + (i % 1000)]; endfor; return x;",
+        None,
+    ),
+    (
+        "builtin_tostr_1M",
+        "n = 0; for i in [1..1000000]; n = n + length(tostr(i)); endfor; return n;",
+        None,
+    ),
+    (
+        "prop_access_1M",
+        "n = #0; x = 0; for i in [1..1000000]; x = typeof(n.name); endfor; return x;",
+        None,
+    ),
+    (
+        "verb_call_200k",
+        "x = 0; for i in [1..200000]; x = x + abs(-i); endfor; return x;",
+        20000100000,
+    ),
+    (
+        "nested_loop_2500x2500",
+        "c = 0; for i in [1..2500]; for j in [1..2500]; c = c + 1; endfor; endfor; return c;",
+        6250000,
+    ),
 ]
 
 RAISE_LIMITS = (
-    "try add_property($server_options, \"fg_ticks\", 2000000000, {$server_options.owner, \"r\"}); except (ANY) endtry "
-    "try add_property($server_options, \"fg_seconds\", 30000, {$server_options.owner, \"r\"}); except (ANY) endtry "
-    "try add_property($server_options, \"bg_ticks\", 2000000000, {$server_options.owner, \"r\"}); except (ANY) endtry "
-    "try add_property($server_options, \"bg_seconds\", 30000, {$server_options.owner, \"r\"}); except (ANY) endtry "
+    'try add_property($server_options, "fg_ticks", 2000000000, '
+    '{$server_options.owner, "r"}); except (ANY) endtry '
+    'try add_property($server_options, "fg_seconds", 30000, '
+    '{$server_options.owner, "r"}); except (ANY) endtry '
+    'try add_property($server_options, "bg_ticks", 2000000000, '
+    '{$server_options.owner, "r"}); except (ANY) endtry '
+    'try add_property($server_options, "bg_seconds", 30000, '
+    '{$server_options.owner, "r"}); except (ANY) endtry '
     "return load_server_options();"
 )
 

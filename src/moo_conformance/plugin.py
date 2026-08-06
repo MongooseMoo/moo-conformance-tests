@@ -18,23 +18,98 @@ Usage from command line:
     pytest --pyargs moo_conformance --moo-port=7777
 """
 
+import importlib.resources
 import os
+import sys
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Iterator
 
 import pytest
 import yaml
-from pathlib import Path
-from typing import Iterator
-import importlib.resources
 
-from .transport import MooTransport, SocketTransport
-from .schema import validate_test_suite, MooTestSuite, MooTestCase
-from .runner import YamlTestRunner
-from .capabilities import CapabilityManager, CapabilityState
-from .server import ManagedServer
+from .admission import (
+    AdmissionEvidenceError,
+    admission_bad_identities,
+    admission_blocked_identities,
+    load_admission_evidence,
+)
+from .capabilities import CapabilityManager
+from .conditions import declared_literal_skip_reason, declared_runtime_skip_reasons
+from .path_confinement import (
+    CandidatePathError,
+    iter_confined_files,
+    require_confined_path,
+    resolve_candidate_anchor,
+    validate_confined_tree,
+)
 from .profile_gate import ProfileGateError, load_manifest, validate_manifest_paths
+from .runner import YamlTestRunner
+from .schema import MooTestCase, MooTestSuite, validate_test_suite
+from .server import ManagedServer
+from .transport import MooTransport, SocketTransport
 
 # Global capability manager (session-scoped)
 capability_manager = CapabilityManager()
+
+
+@dataclass
+class _AdmissionRuntimeState:
+    external_authorized: bool = False
+    canonical_setup_passed: bool = False
+    canonical_call_passed: bool = False
+    canonical_authorized: bool = False
+
+    @property
+    def authorized(self) -> bool:
+        return self.external_authorized or self.canonical_authorized
+
+
+def _admission_runtime_state(config) -> _AdmissionRuntimeState:
+    state = getattr(config, "_moo_admission_runtime_state", None)
+    if state is None:
+        state = _AdmissionRuntimeState()
+        config._moo_admission_runtime_state = state
+    return state
+
+
+def _is_canonical_admission_item(item) -> bool:
+    module = sys.modules.get("moo_conformance.test_conformance")
+    return bool(
+        module is not None
+        and getattr(item, "module", None) is module
+        and getattr(item, "obj", None)
+        is getattr(module, "test_capability_admission", None)
+        and getattr(item, "name", None) == "test_capability_admission"
+    )
+
+
+def _is_packaged_conformance_item(item) -> bool:
+    module = sys.modules.get("moo_conformance.test_conformance")
+    return bool(
+        module is not None
+        and getattr(item, "module", None) is module
+        and getattr(item, "obj", None)
+        is getattr(module, "test_yaml_conformance", None)
+    )
+
+
+def _record_canonical_admission_report(item, report) -> None:
+    state = _admission_runtime_state(item.config)
+    if report.when == "setup":
+        state.canonical_setup_passed = report.passed
+    elif report.when == "call":
+        state.canonical_call_passed = report.passed
+    elif report.when == "teardown" and report.passed:
+        state.canonical_authorized = (
+            state.canonical_setup_passed and state.canonical_call_passed
+        )
+
+    if report.failed or report.skipped:
+        item.session.shouldfail = (
+            "canonical capability admission did not pass; packaged conformance "
+            "was not executed"
+        )
 
 
 def get_tests_dir() -> Path:
@@ -70,17 +145,8 @@ def get_db_path() -> Path:
 
 def pytest_addoption(parser):
     """Add conformance test command line options."""
-    parser.addoption(
-        "--moo-host",
-        default="localhost",
-        help="MOO server host (default: localhost)"
-    )
-    parser.addoption(
-        "--moo-port",
-        default=None,
-        type=int,
-        help="MOO server port (default: 7777)"
-    )
+    parser.addoption("--moo-host", default="localhost", help="MOO server host (default: localhost)")
+    parser.addoption("--moo-port", default=None, type=int, help="MOO server port (default: 7777)")
     parser.addoption(
         "--server-command",
         default=None,
@@ -140,9 +206,34 @@ def pytest_addoption(parser):
         help="Internal packaged-suite path selected by the moo-conformance CLI.",
     )
     parser.addoption(
+        "--candidate-root",
+        default=None,
+        help="Independently supplied checkout root confining all candidate data paths.",
+    )
+    parser.addoption(
+        "--moo-suite-root",
+        default=None,
+        help="Trusted-controller data root containing candidate YAML suites.",
+    )
+    parser.addoption(
         "--fail-on-unexpected-skip",
         action="store_true",
         help="Fail any skip not declared by a literal YAML skip field.",
+    )
+    parser.addoption(
+        "--admission-evidence-output",
+        default=None,
+        help="Write schema-versioned capability-admission evidence to this path.",
+    )
+    parser.addoption(
+        "--admission-evidence-input",
+        default=None,
+        help="Read successful context-bound admission evidence for a packaged-only run.",
+    )
+    parser.addoption(
+        "--admission-evidence-context",
+        default=None,
+        help="Exact candidate/profile context bound to admission evidence.",
     )
 
 
@@ -154,7 +245,8 @@ def _load_login_script(request) -> list[str] | None:
     raw = os.environ.get(env_name)
     if raw is None or raw == "":
         raise pytest.UsageError(
-            f"--moo-login-script-env={env_name} was provided, but that environment variable is empty"
+            f"--moo-login-script-env={env_name} was provided, but that environment "
+            "variable is empty"
         )
 
     commands = [line.strip() for line in raw.splitlines() if line.strip()]
@@ -188,6 +280,18 @@ def managed_server(request) -> Iterator[ManagedServer | None]:
             raise pytest.UsageError(f"Database file not found: {db_path}")
     else:
         db_path = get_db_path()
+
+    candidate_root = request.config.getoption("--candidate-root")
+    if candidate_root is not None:
+        try:
+            db_path = require_confined_path(
+                candidate_root,
+                db_path,
+                label="candidate primary database",
+                kind="file",
+            )
+        except CandidatePathError as exc:
+            raise pytest.UsageError(str(exc)) from exc
 
     server = ManagedServer(command, db_path, port=port, host=host)
     try:
@@ -225,7 +329,21 @@ def profile_metadata_gate(request, managed_server) -> dict[str, object]:
 @pytest.fixture(scope="session")
 def moo_server_db_dir(request) -> str | None:
     """Get the directory containing canned DB fixtures, if configured."""
-    return request.config.getoption("--server-db-dir")
+    configured = request.config.getoption("--server-db-dir")
+    candidate_root = request.config.getoption("--candidate-root")
+    if configured is not None and candidate_root is not None:
+        try:
+            return str(
+                validate_confined_tree(
+                    candidate_root,
+                    configured,
+                    root_label="candidate database fixture root",
+                    entry_label="candidate database fixture entry",
+                )
+            )
+        except CandidatePathError as exc:
+            raise pytest.UsageError(str(exc)) from exc
+    return configured
 
 
 @pytest.fixture(scope="session")
@@ -257,7 +375,9 @@ def moo_log_file(request, managed_server) -> str | None:
 
 
 @pytest.fixture(scope="session")
-def moo_config(moo_server_dir, moo_log_file, moo_server_db_dir, managed_server) -> dict[str, str | None]:
+def moo_config(
+    moo_server_dir, moo_log_file, moo_server_db_dir, managed_server
+) -> dict[str, str | None]:
     """Aggregate config values available for requires.config checks.
 
     Returns a dict mapping config key names to their values (or None if unavailable).
@@ -306,16 +426,24 @@ def transport(request, managed_server) -> Iterator[MooTransport]:
 
 
 @pytest.fixture(scope="session")
-def runner(transport, moo_log_file, moo_server_dir, managed_server, moo_server_db_dir) -> YamlTestRunner:
+def runner(
+    request, transport, moo_log_file, moo_server_dir, managed_server, moo_server_db_dir
+) -> YamlTestRunner:
     """Create a test runner with the configured transport."""
-    return YamlTestRunner(transport, log_file_path=moo_log_file,
-                          server_dir=moo_server_dir, managed_server=managed_server,
-                          server_db_dir=moo_server_db_dir)
+    return YamlTestRunner(
+        transport,
+        log_file_path=moo_log_file,
+        server_dir=moo_server_dir,
+        managed_server=managed_server,
+        server_db_dir=moo_server_db_dir,
+        candidate_root=request.config.getoption("--candidate-root"),
+    )
 
 
 def discover_yaml_tests(
     test_dir: Path | None = None,
     selected_paths: list[str] | None = None,
+    candidate_root: str | Path | None = None,
 ) -> list[tuple[Path, MooTestSuite, MooTestCase]]:
     """Discover all YAML test files and their test cases.
 
@@ -329,7 +457,18 @@ def discover_yaml_tests(
     if test_dir is None:
         test_dir = get_tests_dir()
 
-    test_cases = []
+    if candidate_root is not None:
+        try:
+            test_dir = validate_confined_tree(
+                candidate_root,
+                test_dir,
+                root_label="candidate suite root",
+                entry_label="candidate suite entry",
+            )
+        except CandidatePathError as exc:
+            raise pytest.UsageError(str(exc)) from exc
+
+    test_cases: list[tuple[Path, MooTestSuite, MooTestCase]] = []
 
     if not test_dir.exists():
         return test_cases
@@ -342,10 +481,35 @@ def discover_yaml_tests(
         except ValueError as exc:
             raise pytest.UsageError(f"Suite path escapes packaged tests: {selected_path}") from exc
 
+        if candidate_root is not None:
+            try:
+                candidate = require_confined_path(
+                    candidate_root,
+                    candidate,
+                    label="candidate selected suite path",
+                )
+            except CandidatePathError as exc:
+                raise pytest.UsageError(str(exc)) from exc
+
         if candidate.is_file() and candidate.suffix == ".yaml":
             yaml_files.add(candidate)
         elif candidate.is_dir():
-            yaml_files.update(candidate.rglob("*.yaml"))
+            if candidate_root is None:
+                yaml_files.update(candidate.rglob("*.yaml"))
+            else:
+                try:
+                    yaml_files.update(
+                        path
+                        for path in iter_confined_files(
+                            candidate_root,
+                            candidate,
+                            root_label="candidate selected suite directory",
+                            entry_label="candidate suite entry",
+                        )
+                        if path.suffix == ".yaml"
+                    )
+                except CandidatePathError as exc:
+                    raise pytest.UsageError(str(exc)) from exc
         else:
             raise pytest.UsageError(f"Conformance suite path not found: {selected_path}")
 
@@ -355,26 +519,37 @@ def discover_yaml_tests(
                 data = yaml.safe_load(f)
 
             if data is None:
-                continue
+                raise ValueError("YAML document is empty")
 
             suite = validate_test_suite(data)
-
-            # Skip entire suite if suite.skip is set
-            if suite.skip:
-                continue
 
             for test in suite.tests:
                 test_cases.append((yaml_file, suite, test))
 
-        except Exception as e:
-            # Log but don't fail on bad YAML files
-            print(f"Warning: Failed to load {yaml_file}: {e}")
-            continue
+        except Exception as exc:
+            raise pytest.UsageError(f"Failed to load conformance suite {yaml_file}: {exc}") from exc
 
     return test_cases
 
 
-def pytest_generate_tests(metafunc):
+def conformance_case_id(
+    yaml_path: Path,
+    test: MooTestCase,
+    tests_dir: Path | None = None,
+) -> str:
+    """Build the stable case ID from the full YAML path and expanded test name."""
+    if tests_dir is None:
+        tests_dir = get_tests_dir()
+    try:
+        relative_path = yaml_path.resolve().relative_to(tests_dir.resolve())
+    except ValueError as exc:
+        raise pytest.UsageError(
+            f"Conformance suite is outside the configured tests directory: {yaml_path}"
+        ) from exc
+    return f"{relative_path.as_posix()}::{test.name}"
+
+
+def pytest_generate_tests(metafunc: Any) -> None:
     """Generate test cases from YAML files.
 
     This is called by pytest during test collection to create
@@ -382,23 +557,31 @@ def pytest_generate_tests(metafunc):
     """
     if "yaml_test_case" in metafunc.fixturenames:
         selected_paths = metafunc.config.getoption("--moo-suite-path")
-        test_cases = discover_yaml_tests(selected_paths=selected_paths)
+        configured_root = metafunc.config.getoption("--moo-suite-root")
+        candidate_root = metafunc.config.getoption("--candidate-root")
+        if configured_root is not None and candidate_root is None:
+            raise pytest.UsageError(
+                "--moo-suite-root requires an independently supplied --candidate-root"
+            )
+        tests_dir = (
+            Path(configured_root).resolve()
+            if configured_root is not None
+            else get_tests_dir()
+        )
+        if not tests_dir.is_dir():
+            raise pytest.UsageError(f"Conformance suite root not found: {tests_dir}")
+        test_cases = discover_yaml_tests(
+            test_dir=tests_dir,
+            selected_paths=selected_paths,
+            candidate_root=candidate_root,
+        )
 
         # Create IDs for each test case
-        ids = []
-        params = []
-
-        tests_dir = get_tests_dir()
+        ids: list[str] = []
+        params: list[tuple[MooTestSuite, MooTestCase]] = []
 
         for yaml_path, suite, test in test_cases:
-            # Create a readable test ID
-            try:
-                relative_path = yaml_path.relative_to(tests_dir)
-                test_id = f"{relative_path.stem}::{test.name}"
-            except ValueError:
-                test_id = f"{yaml_path.stem}::{test.name}"
-
-            ids.append(test_id)
+            ids.append(conformance_case_id(yaml_path, test, tests_dir))
             params.append((suite, test))
 
         metafunc.parametrize("yaml_test_case", params, ids=ids)
@@ -413,16 +596,21 @@ def yaml_test_case():
     pass
 
 
+@pytest.hookimpl(trylast=True)
 def pytest_collection_modifyitems(session, config, items):
-    """Reorder tests to run providers before consumers."""
+    """Run admission first, then capability providers before their consumers."""
+    admission = []
     providers = []
     consumers = []
     normal = []
 
     for item in items:
+        if _is_canonical_admission_item(item):
+            admission.append(item)
+            continue
         # Get test case from parametrized fixture
-        if hasattr(item, 'callspec') and 'yaml_test_case' in item.callspec.params:
-            suite, test = item.callspec.params['yaml_test_case']
+        if hasattr(item, "callspec") and "yaml_test_case" in item.callspec.params:
+            suite, test = item.callspec.params["yaml_test_case"]
 
             # Check for provides (test-level or suite-level)
             provides = test.provides or suite.provides
@@ -439,13 +627,59 @@ def pytest_collection_modifyitems(session, config, items):
 
         normal.append(item)
 
-    items[:] = providers + normal + consumers
+    packaged = [
+        item
+        for item in providers + normal + consumers
+        if _is_packaged_conformance_item(item)
+        or item.get_closest_marker("conformance") is not None
+    ]
+    if packaged and not admission:
+        evidence_path = config.getoption("--admission-evidence-input")
+        context = config.getoption("--admission-evidence-context")
+        if evidence_path is None or context is None:
+            raise pytest.UsageError(
+                "selected packaged conformance requires either a selected admission test "
+                "in the same session or both --admission-evidence-input and "
+                "--admission-evidence-context"
+            )
+        try:
+            evidence = load_admission_evidence(
+                evidence_path,
+                expected_context=context,
+            )
+        except AdmissionEvidenceError as exc:
+            raise pytest.UsageError(
+                f"selected packaged conformance has invalid admission evidence: {exc}"
+            ) from exc
+        bad = admission_bad_identities(evidence)
+        blocked = admission_blocked_identities(evidence)
+        if bad or blocked:
+            raise pytest.UsageError(
+                "selected packaged conformance requires successful admission evidence; "
+                f"failed/error={sorted(bad)!r}, blocked={sorted(blocked)!r}"
+            )
+        _admission_runtime_state(config).external_authorized = True
+
+    items[:] = admission + providers + normal + consumers
 
 
+@pytest.hookimpl(tryfirst=True)
 def pytest_runtest_setup(item):
     """Skip test if assumed capabilities aren't verified."""
-    if hasattr(item, 'callspec') and 'yaml_test_case' in item.callspec.params:
-        suite, test = item.callspec.params['yaml_test_case']
+    if (
+        (
+            _is_packaged_conformance_item(item)
+            or item.get_closest_marker("conformance") is not None
+        )
+        and not _admission_runtime_state(item.config).authorized
+    ):
+        raise pytest.UsageError(
+            "packaged conformance runtime requires successful execution of the exact "
+            "canonical admission test in this session or fully validated external evidence"
+        )
+
+    if hasattr(item, "callspec") and "yaml_test_case" in item.callspec.params:
+        suite, test = item.callspec.params["yaml_test_case"]
 
         # Get assumes from test or suite
         assumes = test.assumes or suite.assumes
@@ -455,18 +689,28 @@ def pytest_runtest_setup(item):
                 pytest.skip(reason)
 
 
+def _skip_declared_yaml_case(suite: MooTestSuite, test: MooTestCase) -> None:
+    """Skip a declared test or suite while preserving the more specific test reason."""
+    reason = declared_literal_skip_reason(suite, test)
+    if reason is not None:
+        pytest.skip(reason)
+
+
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
 def pytest_runtest_makereport(item, call):
     """Track provider test results to update capability states."""
     outcome = yield
     report = outcome.get_result()
 
+    if _is_canonical_admission_item(item):
+        _record_canonical_admission_report(item, report)
+
     if item.config.getoption("--fail-on-unexpected-skip"):
         _reject_unexpected_runtime_skip(item, report)
 
     if call.when == "call":
-        if hasattr(item, 'callspec') and 'yaml_test_case' in item.callspec.params:
-            suite, test = item.callspec.params['yaml_test_case']
+        if hasattr(item, "callspec") and "yaml_test_case" in item.callspec.params:
+            suite, test = item.callspec.params["yaml_test_case"]
 
             provides = test.provides or suite.provides
             if provides:
@@ -480,36 +724,33 @@ def _reject_unexpected_runtime_skip(item, report) -> None:
     if not report.skipped:
         return
 
-    literal_skip = False
     test = None
     if hasattr(item, "callspec") and "yaml_test_case" in item.callspec.params:
         suite, test = item.callspec.params["yaml_test_case"]
-        literal_skip = bool(suite.skip or test.skip)
-    if literal_skip:
-        return
 
-    condition = getattr(test, "skip_if", None)
-    if condition:
-        if condition.startswith("not feature."):
-            expected_reason = f"Requires feature: {condition[12:]}"
-        elif condition.startswith("feature."):
-            expected_reason = f"Incompatible with feature: {condition[8:]}"
-        elif condition.startswith("missing builtin."):
-            expected_reason = f"Requires builtin: {condition[16:]}"
-        elif condition.startswith("not option."):
-            expected_reason = f"Requires option: {condition[11:]}"
-        elif condition.startswith("option."):
-            expected_reason = f"Incompatible with option: {condition[7:]}"
-        else:
-            expected_reason = f"Skip condition: {condition}"
-        if f"Skipped: {expected_reason}" in str(report.longrepr):
+    if test is not None:
+        actual_reason = _reported_runtime_skip_reason(report.longrepr)
+        declared_reasons = declared_runtime_skip_reasons(suite, test)
+        assumes = getattr(test, "assumes", ()) or getattr(suite, "assumes", ())
+        if assumes:
+            can_run, assumption_reason = capability_manager.can_run(assumes)
+            if not can_run and assumption_reason is not None:
+                declared_reasons.add(assumption_reason)
+        if actual_reason in declared_reasons:
             return
 
     report.outcome = "failed"
-    report.longrepr = (
-        "Unexpected skip rejected by --fail-on-unexpected-skip: "
-        f"{report.longrepr}"
-    )
+    report.longrepr = f"Unexpected skip rejected by --fail-on-unexpected-skip: {report.longrepr}"
+
+
+def _reported_runtime_skip_reason(longrepr) -> str | None:
+    """Extract pytest's exact runtime skip reason without substring matching."""
+    if isinstance(longrepr, tuple) and len(longrepr) >= 3:
+        reason = str(longrepr[2])
+    else:
+        reason = str(longrepr)
+    prefix = "Skipped: "
+    return reason[len(prefix) :] if reason.startswith(prefix) else None
 
 
 class _UnexpectedCollectionSkipPlugin:
@@ -518,17 +759,46 @@ class _UnexpectedCollectionSkipPlugin:
             return
         report.outcome = "failed"
         report.longrepr = (
-            "Unexpected collection skip rejected by --fail-on-unexpected-skip: "
-            f"{report.longrepr}"
+            f"Unexpected collection skip rejected by --fail-on-unexpected-skip: {report.longrepr}"
         )
 
 
 # Register markers
 def pytest_configure(config):
     """Register custom markers."""
-    config.addinivalue_line(
-        "markers", "conformance: mark test as a MOO conformance test"
-    )
+    candidate_root = config.getoption("--candidate-root")
+    configured_suite = config.getoption("--moo-suite-root")
+    if configured_suite is not None and candidate_root is None:
+        raise pytest.UsageError(
+            "--moo-suite-root requires an independently supplied --candidate-root"
+        )
+    if candidate_root is not None:
+        try:
+            anchor = resolve_candidate_anchor(candidate_root)
+            validate_confined_tree(
+                anchor,
+                configured_suite if configured_suite is not None else get_tests_dir(),
+                root_label="candidate suite root",
+                entry_label="candidate suite entry",
+            )
+            require_confined_path(
+                anchor,
+                config.getoption("--server-db") or get_db_path(),
+                label="candidate primary database",
+                kind="file",
+            )
+            configured_db_dir = config.getoption("--server-db-dir")
+            if configured_db_dir is not None:
+                validate_confined_tree(
+                    anchor,
+                    configured_db_dir,
+                    root_label="candidate database fixture root",
+                    entry_label="candidate database fixture entry",
+                )
+        except CandidatePathError as exc:
+            raise pytest.UsageError(str(exc)) from exc
+    config.addinivalue_line("markers", "conformance: mark test as a MOO conformance test")
+    config.addinivalue_line("markers", "admission: mark the canonical capability-admission phase")
     if config.getoption("--fail-on-unexpected-skip"):
         config.pluginmanager.register(
             _UnexpectedCollectionSkipPlugin(),

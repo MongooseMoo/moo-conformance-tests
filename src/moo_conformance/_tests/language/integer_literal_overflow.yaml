@@ -7,6 +7,10 @@ description: >
   positive token 9223372036854775808 (= 2^63), which wraps to INT_MIN, and the
   unary minus of INT_MIN is INT_MIN. These pin that wrapping against the reference.
 
+requires:
+  features:
+    - 64bit
+
 tests:
   - name: literal_2pow63_wraps_to_int_min
     code: '9223372036854775808'

@@ -143,12 +143,89 @@ skip_if: str
     - "feature.64bit" - Skip if 64-bit feature is present
     - "not feature.maps" - Skip if maps feature is NOT present
     - "missing builtin.foo" - Skip if builtin 'foo' is not implemented
+    - Conditions may be joined with the exact " or " operator
 """
 
+import re
 from copy import deepcopy
 from dataclasses import dataclass, field
 from itertools import product
 from typing import Any
+
+from .conditions import (
+    SUPPORTED_CONFIG_REQUIREMENTS,
+    parse_min_version,
+    parse_skip_conditions,
+)
+
+SUITE_FIELDS = frozenset({
+    "name", "description", "version", "skip", "server_db", "requires", "setup",
+    "teardown", "tests", "provides", "assumes",
+})
+REQUIREMENTS_FIELDS = frozenset({"builtins", "features", "min_version", "config"})
+SETUP_TEARDOWN_FIELDS = frozenset({"permission", "code"})
+TEST_FIELDS = frozenset({
+    "name", "description", "skip", "skip_if", "permission", "setup", "teardown",
+    "code", "statement", "verb", "steps", "args", "argstr", "expect", "cleanup",
+    "timeout_ms", "provides", "assumes", "table",
+})
+EXPECTATION_FIELDS = frozenset({
+    "value", "error", "type", "match", "contains", "range", "satisfies",
+    "notifications", "output",
+})
+OUTPUT_EXPECT_FIELDS = frozenset({"exact", "match", "contains"})
+TABLE_FIELDS = frozenset({"rows", "product", "columns"})
+TABLE_PRODUCT_AXIS_FIELDS = frozenset({"rows", "columns"})
+STEP_ACTION_FIELDS = frozenset({
+    "run", "command", "verb_setup", "allocate_port", "new_connection", "send",
+    "send_bytes", "read_connection", "close_connection", "wait", "assert_log",
+    "assert_file", "write_file", "write_stdin", "restart_server",
+})
+STEP_FIELDS = STEP_ACTION_FIELDS | {"capture", "as", "expect"}
+ACTION_PAYLOAD_FIELDS = {
+    "verb_setup": frozenset({"object", "name", "args", "code"}),
+    "allocate_port": frozenset({"capture"}),
+    "new_connection": frozenset({"capture", "port"}),
+    "send": frozenset({"text", "connection"}),
+    "send_bytes": frozenset({"hex", "connection"}),
+    "read_connection": frozenset({"connection"}),
+    "assert_log": frozenset({"contains", "not_contains"}),
+    "assert_file": frozenset({"path", "exists", "contains"}),
+    "write_file": frozenset({"path", "content"}),
+    "write_stdin": frozenset({"text"}),
+    "restart_server": frozenset({"wait_ms", "down_ms"}),
+}
+
+
+def _require_mapping(data: Any, context: str) -> dict:
+    if not isinstance(data, dict):
+        raise ValueError(f"{context} must be a mapping")
+    return data
+
+
+def _reject_unknown_fields(data: dict, allowed: frozenset[str], context: str) -> None:
+    unknown = sorted((key for key in data if key not in allowed), key=repr)
+    if not unknown:
+        return
+    noun = "field" if len(unknown) == 1 else "fields"
+    names = ", ".join(str(key) for key in unknown)
+    raise ValueError(f"Unknown {noun} in {context}: {names}")
+
+
+_REQUIREMENT_NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_]*$")
+
+
+def _require_name_list(value: Any, field_name: str, *, allow_scalar: bool = False) -> list[str]:
+    if allow_scalar and isinstance(value, str):
+        value = [value]
+    if not isinstance(value, list):
+        raise ValueError(f"requires.{field_name} must be a list of names")
+    if any(
+        not isinstance(item, str) or _REQUIREMENT_NAME_RE.fullmatch(item) is None
+        for item in value
+    ):
+        raise ValueError(f"requires.{field_name} must contain only non-empty names")
+    return list(value)
 
 
 @dataclass
@@ -184,7 +261,9 @@ class OutputExpect:
 class Expectation:
     """Expected test outcome.
 
-    Exactly ONE of these should be set:
+    Every configured assertion is enforced. Compatible assertions may be
+    combined.
+
     - value: Exact value match
     - error: MOO error code (E_TYPE, E_DIV, etc.)
     - type: Type check (int, float, str, list, map, obj, err)
@@ -392,7 +471,9 @@ class MooTestCase:
         - steps: raises ValueError (steps are handled separately by runner)
         """
         if self.steps:
-            raise ValueError(f"Test '{self.name}' uses steps - call runner._execute_steps() instead")
+            raise ValueError(
+                f"Test '{self.name}' uses steps - call runner._execute_steps() instead"
+            )
         if self.code:
             code = self.code.strip()
             # Don't double-wrap if already has return
@@ -482,36 +563,58 @@ def validate_test_suite(data: dict) -> MooTestSuite:
     Raises:
         ValueError: If required fields are missing or invalid
     """
+    data = _require_mapping(data, "Test suite")
+    _reject_unknown_fields(data, SUITE_FIELDS, "test suite")
+
     if 'name' not in data:
         raise ValueError("Test suite must have a 'name' field")
+    if 'tests' not in data:
+        raise ValueError("Test suite must have a 'tests' field")
+    tests_data = data['tests']
+    if not isinstance(tests_data, list):
+        raise ValueError("Test suite 'tests' field must be a list")
 
     # Build requirements
     requires_data = data.get('requires', {})
-    config_val = requires_data.get('config', [])
-    # Allow single string: config: server_dir
-    if isinstance(config_val, str):
-        config_val = [config_val]
+    requires_data = _require_mapping(requires_data, "Test suite requirements")
+    _reject_unknown_fields(requires_data, REQUIREMENTS_FIELDS, "test suite requirements")
+    builtins_val = _require_name_list(requires_data.get('builtins', []), "builtins")
+    features_val = _require_name_list(requires_data.get('features', []), "features")
+    config_val = _require_name_list(
+        requires_data.get('config', []), "config", allow_scalar=True
+    )
+    unknown_config = sorted(set(config_val) - SUPPORTED_CONFIG_REQUIREMENTS)
+    if unknown_config:
+        raise ValueError(
+            "requires.config contains unsupported names: " + ", ".join(unknown_config)
+        )
+    min_version = requires_data.get('min_version')
+    if min_version is not None:
+        parse_min_version(min_version)
     requires = Requirements(
-        builtins=requires_data.get('builtins', []),
-        features=requires_data.get('features', []),
-        min_version=requires_data.get('min_version'),
+        builtins=builtins_val,
+        features=features_val,
+        min_version=min_version,
         config=config_val,
     )
 
     # Build suite-level setup/teardown
     setup = None
     if 'setup' in data:
-        setup = _parse_setup_teardown(data['setup'])
+        setup = _parse_setup_teardown(data['setup'], "suite setup")
 
     teardown = None
     if 'teardown' in data:
-        teardown = _parse_setup_teardown(data['teardown'])
+        teardown = _parse_setup_teardown(data['teardown'], "suite teardown")
 
     # Build test cases
     tests = []
-    for test_data in data.get('tests', []):
-        for expanded_test_data in _expand_table_test(test_data):
-            test = _parse_test_case(expanded_test_data)
+    for test_index, test_data in enumerate(tests_data):
+        context = f"test #{test_index + 1}"
+        test_data = _require_mapping(test_data, context)
+        _reject_unknown_fields(test_data, TEST_FIELDS, context)
+        for expanded_test_data in _expand_table_test(test_data, context):
+            test = _parse_test_case(expanded_test_data, context)
             tests.append(test)
 
     # Parse suite-level capability dependencies
@@ -536,17 +639,19 @@ def validate_test_suite(data: dict) -> MooTestSuite:
     )
 
 
-def _parse_setup_teardown(data: dict | str) -> SetupTeardown:
+def _parse_setup_teardown(data: dict | str, context: str) -> SetupTeardown:
     """Parse setup/teardown block."""
     if isinstance(data, str):
         return SetupTeardown(code=data)
+    data = _require_mapping(data, context)
+    _reject_unknown_fields(data, SETUP_TEARDOWN_FIELDS, context)
     return SetupTeardown(
         permission=data.get('permission', 'programmer'),
         code=data.get('code', ''),
     )
 
 
-def _parse_output_expect(data: dict | str | list) -> OutputExpect:
+def _parse_output_expect(data: dict | str | list, context: str) -> OutputExpect:
     """Parse an output expectation for raw commands."""
     if isinstance(data, str):
         # Simple string is exact match
@@ -555,6 +660,8 @@ def _parse_output_expect(data: dict | str | list) -> OutputExpect:
         # List of strings is exact match on lines
         return OutputExpect(exact=data)
     # Dict with match/contains/exact
+    data = _require_mapping(data, context)
+    _reject_unknown_fields(data, OUTPUT_EXPECT_FIELDS, context)
     return OutputExpect(
         exact=data.get('exact'),
         match=data.get('match'),
@@ -562,11 +669,30 @@ def _parse_output_expect(data: dict | str | list) -> OutputExpect:
     )
 
 
-def _parse_expectation(data: dict) -> Expectation:
+def _parse_expectation(data: dict, context: str, *, route: str = "result") -> Expectation:
     """Parse an expectation block."""
+    data = _require_mapping(data, context)
+    _reject_unknown_fields(data, EXPECTATION_FIELDS, context)
+    if route in {"command", "send", "send_bytes", "read_connection"}:
+        unsupported = set(data) - {"output"}
+        if unsupported:
+            raise ValueError(f"{context}: {route} only supports output expectations")
+    elif route == "result":
+        if 'output' in data:
+            raise ValueError(f"{context} does not support output expectations")
+    elif route in {"run", "verb_setup"}:
+        if 'output' in data:
+            raise ValueError(f"{context}: {route} does not support output expectations")
+    else:
+        raise ValueError(f"{context}: {route} does not produce an expectation result")
+
+    satisfies = data.get('satisfies')
+    if satisfies is not None and "__actual__" not in satisfies:
+        raise ValueError(f"{context} satisfies must reference __actual__")
+
     output = None
     if 'output' in data:
-        output = _parse_output_expect(data['output'])
+        output = _parse_output_expect(data['output'], f"{context} output")
 
     return Expectation(
         value=data.get('value'),
@@ -581,15 +707,15 @@ def _parse_expectation(data: dict) -> Expectation:
     )
 
 
-def _expand_table_test(data: dict) -> list[dict]:
+def _expand_table_test(data: dict, context: str) -> list[dict]:
     """Expand a table-driven test template into concrete test dictionaries."""
     table = data.get('table')
     if table is None:
         return [data]
-    if not isinstance(table, dict):
-        raise ValueError("Test table must be a mapping with rows")
+    table = _require_mapping(table, f"{context} table")
+    _reject_unknown_fields(table, TABLE_FIELDS, f"{context} table")
 
-    rows, columns = _table_rows(table)
+    rows, columns = _table_rows(table, context)
     expanded: list[dict] = []
     for index, row in enumerate(rows):
         variables = _table_row_variables(row, columns, index)
@@ -599,7 +725,7 @@ def _expand_table_test(data: dict) -> list[dict]:
     return expanded
 
 
-def _table_rows(table: dict) -> tuple[list[Any], Any]:
+def _table_rows(table: dict, context: str) -> tuple[list[Any], Any]:
     has_rows = 'rows' in table
     has_product = 'product' in table
     if has_rows == has_product:
@@ -611,17 +737,18 @@ def _table_rows(table: dict) -> tuple[list[Any], Any]:
             raise ValueError("Test table rows must be a list")
         return rows, table.get('columns')
 
-    return _table_product_rows(table.get('product')), None
+    return _table_product_rows(table.get('product'), context), None
 
 
-def _table_product_rows(table_product: Any) -> list[dict[str, Any]]:
+def _table_product_rows(table_product: Any, context: str) -> list[dict[str, Any]]:
     if not isinstance(table_product, list) or not table_product:
         raise ValueError("Test table product must be a non-empty list")
 
     axes: list[list[dict[str, Any]]] = []
-    for axis in table_product:
-        if not isinstance(axis, dict):
-            raise ValueError("Test table product axes must be mappings")
+    for axis_index, axis in enumerate(table_product):
+        axis_context = f"{context} table product axis #{axis_index + 1}"
+        axis = _require_mapping(axis, axis_context)
+        _reject_unknown_fields(axis, TABLE_PRODUCT_AXIS_FIELDS, axis_context)
         rows = axis.get('rows')
         if not isinstance(rows, list) or not rows:
             raise ValueError("Test table product axes must include a non-empty rows list")
@@ -691,8 +818,10 @@ def _substitute_table_string(value: str, variables: dict[str, Any]) -> Any:
     return result
 
 
-def _parse_test_step(data: dict) -> TestStep:
+def _parse_test_step(data: dict, context: str) -> TestStep:
     """Parse a single test step from YAML data."""
+    data = _require_mapping(data, context)
+    _reject_unknown_fields(data, STEP_FIELDS, context)
     # Must have exactly one action type
     has_run = 'run' in data
     has_command = 'command' in data
@@ -717,20 +846,29 @@ def _parse_test_step(data: dict) -> TestStep:
                         has_write_file, has_write_stdin, has_restart_server])
 
     if action_count == 0:
-        raise ValueError("Test step must have an action field (run, command, verb_setup, "
-                        "allocate_port, new_connection, send, send_bytes, read_connection, close_connection, wait, assert_log, "
-                        "assert_file, write_file, write_stdin, or restart_server)")
+        raise ValueError(
+            "Test step must have an action field (run, command, verb_setup, "
+            "allocate_port, new_connection, send, send_bytes, read_connection, "
+            "close_connection, wait, assert_log, assert_file, write_file, write_stdin, "
+            "or restart_server)"
+        )
     if action_count > 1:
         raise ValueError("Test step must have exactly one action field")
 
+    action = next(field for field in STEP_ACTION_FIELDS if field in data)
     expect = None
     if 'expect' in data:
-        expect = _parse_expectation(data['expect'])
+        expect = _parse_expectation(
+            data['expect'], f"{context} expectation", route=action
+        )
 
     # Parse verb_setup if present
     verb_setup = None
     if 'verb_setup' in data:
-        vs_data = data['verb_setup']
+        vs_data = _require_mapping(data['verb_setup'], f"{context} verb_setup")
+        _reject_unknown_fields(
+            vs_data, ACTION_PAYLOAD_FIELDS['verb_setup'], f"{context} verb_setup"
+        )
         verb_setup = VerbSetup(
             object=vs_data['object'],
             name=vs_data['name'],
@@ -743,6 +881,9 @@ def _parse_test_step(data: dict) -> TestStep:
     if 'allocate_port' in data:
         ap_data = data['allocate_port']
         if isinstance(ap_data, dict):
+            _reject_unknown_fields(
+                ap_data, ACTION_PAYLOAD_FIELDS['allocate_port'], f"{context} allocate_port"
+            )
             allocate_port = AllocatePort(capture=ap_data.get('capture', 'port'))
         else:
             allocate_port = AllocatePort(capture=ap_data)
@@ -752,6 +893,9 @@ def _parse_test_step(data: dict) -> TestStep:
     if 'new_connection' in data:
         nc_data = data['new_connection']
         if isinstance(nc_data, dict):
+            _reject_unknown_fields(
+                nc_data, ACTION_PAYLOAD_FIELDS['new_connection'], f"{context} new_connection"
+            )
             new_connection = NewConnection(
                 capture=nc_data.get('capture', 'conn'),
                 port=nc_data.get('port'),
@@ -763,7 +907,8 @@ def _parse_test_step(data: dict) -> TestStep:
     # Parse send if present
     send = None
     if 'send' in data:
-        s_data = data['send']
+        s_data = _require_mapping(data['send'], f"{context} send")
+        _reject_unknown_fields(s_data, ACTION_PAYLOAD_FIELDS['send'], f"{context} send")
         send = SendOnConnection(
             text=s_data['text'],
             connection=s_data['connection'],
@@ -772,7 +917,10 @@ def _parse_test_step(data: dict) -> TestStep:
     # Parse send_bytes if present
     send_bytes = None
     if 'send_bytes' in data:
-        sb_data = data['send_bytes']
+        sb_data = _require_mapping(data['send_bytes'], f"{context} send_bytes")
+        _reject_unknown_fields(
+            sb_data, ACTION_PAYLOAD_FIELDS['send_bytes'], f"{context} send_bytes"
+        )
         send_bytes = SendBytesOnConnection(
             hex=sb_data['hex'],
             connection=sb_data['connection'],
@@ -783,6 +931,11 @@ def _parse_test_step(data: dict) -> TestStep:
     if 'read_connection' in data:
         rc_data = data['read_connection']
         if isinstance(rc_data, dict):
+            _reject_unknown_fields(
+                rc_data,
+                ACTION_PAYLOAD_FIELDS['read_connection'],
+                f"{context} read_connection",
+            )
             read_connection = ReadConnection(connection=rc_data['connection'])
         else:
             read_connection = ReadConnection(connection=rc_data)
@@ -790,7 +943,10 @@ def _parse_test_step(data: dict) -> TestStep:
     # Parse assert_log if present
     assert_log = None
     if 'assert_log' in data:
-        al_data = data['assert_log']
+        al_data = _require_mapping(data['assert_log'], f"{context} assert_log")
+        _reject_unknown_fields(
+            al_data, ACTION_PAYLOAD_FIELDS['assert_log'], f"{context} assert_log"
+        )
         contains = al_data.get('contains')
         not_contains = al_data.get('not_contains')
         if contains is None and not_contains is None:
@@ -803,7 +959,10 @@ def _parse_test_step(data: dict) -> TestStep:
     # Parse assert_file if present
     assert_file = None
     if 'assert_file' in data:
-        af_data = data['assert_file']
+        af_data = _require_mapping(data['assert_file'], f"{context} assert_file")
+        _reject_unknown_fields(
+            af_data, ACTION_PAYLOAD_FIELDS['assert_file'], f"{context} assert_file"
+        )
         assert_file = FileAssertion(
             path=af_data['path'],
             exists=af_data.get('exists', True),
@@ -813,7 +972,10 @@ def _parse_test_step(data: dict) -> TestStep:
     # Parse write_file if present
     write_file = None
     if 'write_file' in data:
-        wf_data = data['write_file']
+        wf_data = _require_mapping(data['write_file'], f"{context} write_file")
+        _reject_unknown_fields(
+            wf_data, ACTION_PAYLOAD_FIELDS['write_file'], f"{context} write_file"
+        )
         write_file = WriteFile(
             path=wf_data['path'],
             content=wf_data['content'],
@@ -824,6 +986,9 @@ def _parse_test_step(data: dict) -> TestStep:
     if 'write_stdin' in data:
         ws_data = data['write_stdin']
         if isinstance(ws_data, dict):
+            _reject_unknown_fields(
+                ws_data, ACTION_PAYLOAD_FIELDS['write_stdin'], f"{context} write_stdin"
+            )
             write_stdin = WriteStdin(text=ws_data['text'])
         else:
             write_stdin = WriteStdin(text=ws_data)
@@ -833,6 +998,9 @@ def _parse_test_step(data: dict) -> TestStep:
     if 'restart_server' in data:
         rs_data = data['restart_server']
         if isinstance(rs_data, dict):
+            _reject_unknown_fields(
+                rs_data, ACTION_PAYLOAD_FIELDS['restart_server'], f"{context} restart_server"
+            )
             restart_server = RestartServer(
                 wait_ms=rs_data.get('wait_ms', 0),
                 down_ms=rs_data.get('down_ms', 0),
@@ -862,32 +1030,50 @@ def _parse_test_step(data: dict) -> TestStep:
     )
 
 
-def _parse_test_case(data: dict) -> MooTestCase:
+def _parse_test_case(data: dict, context: str) -> MooTestCase:
     """Parse a single test case from YAML data."""
+    data = _require_mapping(data, context)
+    _reject_unknown_fields(data, TEST_FIELDS - {'table'}, context)
     if 'name' not in data:
         raise ValueError("Test case must have a 'name' field")
+    if 'skip_if' in data:
+        try:
+            parse_skip_conditions(data['skip_if'])
+        except ValueError as exc:
+            raise ValueError(f"{context} skip_if: {exc}") from exc
 
-    # Parse expectation
-    expect = _parse_expectation(data.get('expect', {}))
+    if data.get('steps') and 'expect' in data:
+        raise ValueError("multi-step test cannot have a top-level expectation")
+
+    # A missing top-level expectation means only that execution must succeed.
+    expect = (
+        _parse_expectation(data['expect'], f"{context} expectation")
+        if 'expect' in data
+        else Expectation()
+    )
 
     # Parse test setup/teardown
     test_setup = None
     if 'setup' in data:
-        test_setup = _parse_setup_teardown(data['setup'])
+        test_setup = _parse_setup_teardown(data['setup'], f"{context} setup")
 
     test_teardown = None
     if 'teardown' in data:
-        test_teardown = _parse_setup_teardown(data['teardown'])
+        test_teardown = _parse_setup_teardown(data['teardown'], f"{context} teardown")
 
     # Parse steps (multi-step tests)
     steps = []
-    for step_data in data.get('steps', []):
-        steps.append(_parse_test_step(step_data))
+    for step_index, step_data in enumerate(data.get('steps', [])):
+        steps.append(_parse_test_step(step_data, f"{context} step #{step_index + 1}"))
 
     # Parse cleanup steps
     cleanup = []
-    for cleanup_data in data.get('cleanup', []):
-        cleanup.append(_parse_test_step(cleanup_data))
+    for cleanup_index, cleanup_data in enumerate(data.get('cleanup', [])):
+        if isinstance(cleanup_data, dict) and 'expect' in cleanup_data:
+            raise ValueError("cleanup steps cannot have expectations")
+        cleanup.append(
+            _parse_test_step(cleanup_data, f"{context} cleanup step #{cleanup_index + 1}")
+        )
 
     # Parse capability dependencies
     provides = data.get('provides')

@@ -1,6 +1,152 @@
+from copy import deepcopy
+
 import pytest
 
 from moo_conformance.schema import validate_test_suite
+
+
+def _minimal_suite() -> dict:
+    return {
+        "name": "strict_schema",
+        "tests": [
+            {
+                "name": "one",
+                "code": "1",
+                "expect": {"value": 1},
+            }
+        ],
+    }
+
+
+def _mapping_at(data: dict, path: tuple[str | int, ...]) -> dict:
+    current = data
+    for part in path:
+        current = current[part]
+    return current
+
+
+@pytest.mark.parametrize(
+    ("path", "addition"),
+    [
+        pytest.param((), {}, id="suite"),
+        pytest.param(("requires",), {"requires": {}}, id="requirements"),
+        pytest.param(("setup",), {"setup": {"code": "return 1;"}}, id="suite-setup"),
+        pytest.param(
+            ("tests", 0, "teardown"),
+            {"tests": [{"name": "one", "code": "1", "teardown": {"code": "return 1;"}}]},
+            id="test-teardown",
+        ),
+        pytest.param(("tests", 0), {}, id="test"),
+        pytest.param(("tests", 0, "expect"), {}, id="expectation"),
+        pytest.param(
+            ("tests", 0, "steps", 0, "expect", "output"),
+            {
+                "tests": [
+                    {
+                        "name": "one",
+                        "steps": [{"command": "look", "expect": {"output": {}}}],
+                    }
+                ]
+            },
+            id="output-expectation",
+        ),
+        pytest.param(
+            ("tests", 0, "table"),
+            {
+                "tests": [
+                    {
+                        "name": "row_{value}",
+                        "table": {"rows": [{"value": 1}]},
+                        "code": "{value}",
+                    }
+                ]
+            },
+            id="table",
+        ),
+        pytest.param(
+            ("tests", 0, "table", "product", 0),
+            {
+                "tests": [
+                    {
+                        "name": "row_{value}",
+                        "table": {"product": [{"rows": [{"value": 1}]}]},
+                        "code": "{value}",
+                    }
+                ]
+            },
+            id="table-product-axis",
+        ),
+        pytest.param(
+            ("tests", 0, "steps", 0),
+            {"tests": [{"name": "one", "steps": [{"run": "return 1;"}]}]},
+            id="step",
+        ),
+    ],
+)
+def test_unknown_fields_are_rejected_at_closed_schema_boundaries(
+    path: tuple[str | int, ...], addition: dict
+) -> None:
+    data = _minimal_suite()
+    data.update(deepcopy(addition))
+    _mapping_at(data, path)["unexpected"] = True
+
+    with pytest.raises(ValueError, match=r"Unknown field.*unexpected"):
+        validate_test_suite(data)
+
+
+@pytest.mark.parametrize(
+    ("action", "payload"),
+    [
+        (
+            "verb_setup",
+            {
+                "object": "#0",
+                "name": "v",
+                "args": ["this", "none", "this"],
+                "code": "return 1;",
+            },
+        ),
+        ("allocate_port", {"capture": "port"}),
+        ("new_connection", {"capture": "conn", "port": 7777}),
+        ("send", {"text": "look", "connection": "conn"}),
+        ("send_bytes", {"hex": "00", "connection": "conn"}),
+        ("read_connection", {"connection": "conn"}),
+        ("assert_log", {"contains": "ready"}),
+        ("assert_file", {"path": "out.txt", "exists": True, "contains": "ready"}),
+        ("write_file", {"path": "in.txt", "content": "data"}),
+        ("write_stdin", {"text": "quit\n"}),
+        ("restart_server", {"wait_ms": 1, "down_ms": 1}),
+    ],
+)
+def test_unknown_fields_are_rejected_in_structured_actions(
+    action: str, payload: dict
+) -> None:
+    payload = {**payload, "unexpected": True}
+    data = {
+        "name": "strict_action",
+        "tests": [{"name": "one", "steps": [{action: payload}]}],
+    }
+
+    with pytest.raises(ValueError, match=r"Unknown field.*unexpected"):
+        validate_test_suite(data)
+
+
+def test_table_row_variable_mappings_remain_open() -> None:
+    data = {
+        "name": "open_rows",
+        "tests": [
+            {
+                "name": "row_{agent_defined_variable}",
+                "table": {"rows": [{"agent_defined_variable": 1}]},
+                "code": "{agent_defined_variable}",
+                "expect": {"value": 1},
+            }
+        ],
+    }
+
+    suite = validate_test_suite(data)
+
+    assert suite.tests[0].name == "row_1"
 
 
 def _suite_with_assert_log(assert_log: dict) -> dict:
@@ -249,3 +395,101 @@ def test_table_rejects_list_rows_without_columns() -> None:
                 ],
             }
         )
+
+
+@pytest.mark.parametrize(
+    "condition",
+    [
+        "feature.64bit",
+        "not feature.maps",
+        "missing builtin.function_info",
+        "option.OUTBOUND_NETWORK",
+        "not option.PROMOTE_NUMBERS",
+        "missing builtin.url_encode or not option.OUTBOUND_NETWORK",
+    ],
+)
+def test_schema_accepts_supported_skip_conditions(condition: str) -> None:
+    data = _minimal_suite()
+    data["tests"][0]["skip_if"] = condition
+
+    suite = validate_test_suite(data)
+
+    assert suite.tests[0].skip_if == condition
+
+
+@pytest.mark.parametrize(
+    "condition",
+    [
+        None,
+        True,
+        "",
+        "feature.",
+        "missing feature.maps",
+        "transport == 'direct'",
+        " feature.maps",
+        "not  feature.maps",
+        "missing builtin.url_encode and not option.OUTBOUND_NETWORK",
+        "missing builtin.url_encode or",
+    ],
+)
+def test_schema_rejects_unknown_or_malformed_skip_conditions(condition) -> None:
+    data = _minimal_suite()
+    data["tests"][0]["skip_if"] = condition
+
+    with pytest.raises(ValueError, match="skip_if"):
+        validate_test_suite(data)
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("builtins", "function_info"),
+        ("builtins", ["function_info", 1]),
+        ("features", "maps"),
+        ("features", [""]),
+        ("config", ["unknown_config"]),
+        ("min_version", "1.2"),
+        ("min_version", 1),
+    ],
+)
+def test_schema_rejects_malformed_requirements(field: str, value) -> None:
+    data = _minimal_suite()
+    data["requires"] = {field: value}
+
+    with pytest.raises(ValueError, match=field):
+        validate_test_suite(data)
+
+
+def test_schema_accepts_all_enforced_requirement_forms() -> None:
+    data = _minimal_suite()
+    data["requires"] = {
+        "builtins": ["function_info"],
+        "features": ["maps"],
+        "min_version": "1.8.1",
+        "config": "server_dir",
+    }
+
+    suite = validate_test_suite(data)
+
+    assert suite.requires.builtins == ["function_info"]
+    assert suite.requires.features == ["maps"]
+    assert suite.requires.min_version == "1.8.1"
+    assert suite.requires.config == ["server_dir"]
+
+
+def test_schema_accepts_digit_prefixed_feature_requirement() -> None:
+    data = _minimal_suite()
+    data["requires"] = {"features": ["64bit"]}
+
+    suite = validate_test_suite(data)
+
+    assert suite.requires.features == ["64bit"]
+
+
+@pytest.mark.parametrize("feature", ["", "64-bit", "64.bit", "!64bit"])
+def test_schema_rejects_empty_or_punctuated_feature_requirement(feature: str) -> None:
+    data = _minimal_suite()
+    data["requires"] = {"features": [feature]}
+
+    with pytest.raises(ValueError, match="features"):
+        validate_test_suite(data)

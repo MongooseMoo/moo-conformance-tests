@@ -20,4 +20,4 @@ tests:
         - [map, "[1 -> 2]"]
     code: "all_members({expr}, {})"
     expect:
-      result: {}
+      value: []

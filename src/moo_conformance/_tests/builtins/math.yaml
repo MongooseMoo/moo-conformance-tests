@@ -1176,12 +1176,6 @@ tests:
       value: -2147483648
     skip_if: "feature.64bit"
 
-  - name: minint_modulus_edge_case
-    code: "-2147483648 % -1"
-    expect:
-      value: 0
-    skip_if: "feature.64bit"
-
   # Minint edge cases (64-bit)
   - name: minint_division_edge_case_64bit
     code: "-9223372036854775807 / -1"

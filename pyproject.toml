@@ -31,6 +31,7 @@ dependencies = [
 dev = [
     "ruff",
     "mypy",
+    "types-PyYAML",
 ]
 
 [project.urls]
@@ -61,7 +62,7 @@ moo_conformance = [
 ]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["tests", "src/moo_conformance"]
 addopts = "-v"
 
 [tool.ruff]
@@ -70,6 +71,10 @@ target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I"]
+
+[[tool.mypy.overrides]]
+module = ["moo_interp", "moo_interp.*", "pycparser", "pycparser.*"]
+ignore_missing_imports = true
 
 [tool.uv.sources]
 moo-interp = { git = "https://github.com/MongooseMoo/moo_interp.git" }

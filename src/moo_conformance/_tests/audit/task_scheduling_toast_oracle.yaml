@@ -6,6 +6,7 @@ requires:
     - add_property
     - delete_property
     - create
+    - new_waif
     - recycle
     - valid
     - set_player_flag
@@ -22,7 +23,13 @@ requires:
     - ticks_left
     - seconds_left
     - task_id
+    - task_perms
+    - task_stack
+    - task_local
+    - set_task_local
+    - callers
     - suspend
+    - resume
     - queued_tasks
     - kill_task
     - read
@@ -437,6 +444,41 @@ tests:
       - run: "kill_task({task_id});"
         as: wizard
 
+  - name: audit_queued_tasks_wizard_include_variables_exposes_other_programmer
+    description: >
+      Wizard authority exposes another programmer's delayed task, while truthy
+      argument 1 independently appends the extended runtime-environment field.
+    steps:
+      - run: "return task_perms();"
+        capture: other_programmer
+        as: programmer
+      - run: |
+          marker = "visible-in-show-all";
+          fork id (30)
+            marker;
+          endfork
+          return id;
+        capture: other_task_id
+        as: programmer
+      - run: |
+          for queued in (queued_tasks(1))
+            if (queued[1] == {other_task_id})
+              vars = queued[11];
+              return {
+                queued[5] == {other_programmer},
+                length(queued) == 11,
+                vars["marker"] == "visible-in-show-all"
+              };
+            endif
+          endfor
+          return {};
+        as: wizard
+        expect:
+          value: [1, 1, 1]
+    cleanup:
+      - run: "kill_task({other_task_id});"
+        as: wizard
+
   - name: audit_read_no_arg_from_fork_denied
     description: read() with no explicit connection is denied outside the last input task context.
     steps:
@@ -661,6 +703,867 @@ tests:
           except (ANY)
           endtry
           load_server_options();
+        as: wizard
+
+  - name: audit_delayed_fork_preserves_identity_locals_and_schedule_across_restart
+    description: >
+      A delayed fork preserves its scheduled time, task id, programmer, verb
+      location, stored verb, receiver, ordered locals, and runtime activation
+      identity across a checkpoint and managed restart. Toast reloads the fork
+      as its own program, normalizing its public queued_tasks() line from the
+      enclosing verb's line 6 to fork-program line 1.
+    steps:
+      - run: |
+          obj = create($nothing);
+          add_property(obj, "audit_result", {}, {player, "rw"});
+          add_verb(obj, {player, "xd", "persist_fork"}, {"this", "none", "this"});
+          set_verb_code(obj, "persist_fork", {
+            "zeta = \"last-declared\";",
+            "alpha = \"first-observed\";",
+            "origin_player = player;",
+            "origin_caller = caller;",
+            "fork id (8)",
+            "  this.audit_result = {task_id(), task_perms(), player, this, caller, verb, alpha, zeta, origin_player, origin_caller};",
+            "endfork",
+            "return id;"
+          });
+          return obj;
+        capture: fork_obj
+        as: wizard
+      - run: "return {fork_obj}:persist_fork();"
+        capture: fork_id
+        as: wizard
+      - run: |
+          for queued in (queued_tasks(1))
+            if (queued[1] == {fork_id})
+              return queued[2];
+            endif
+          endfor
+          return 0;
+        capture: fork_start
+        as: wizard
+      - run: |
+          for queued in (queued_tasks(1))
+            if (queued[1] == {fork_id})
+              return {queued[5], queued[6], queued[7], queued[8], queued[9]};
+            endif
+          endfor
+          return {};
+        capture: fork_metadata
+        as: wizard
+      - run: |
+          for queued in (queued_tasks(1))
+            if (queued[1] == {fork_id})
+              vars = queued[11];
+              return {
+                queued[2] > time(),
+                queued[5] == player,
+                queued[6] == {fork_obj},
+                queued[7] == "persist_fork",
+                queued[8] == 6,
+                queued[9] == {fork_obj},
+                vars["alpha"] == "first-observed",
+                vars["zeta"] == "last-declared"
+              };
+            endif
+          endfor
+          return {};
+        as: wizard
+        expect:
+          value: [1, 1, 1, 1, 1, 1, 1, 1]
+      - run: "return dump_database();"
+        as: wizard
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+          wait_ms: 300
+      - run: |
+          for queued in (queued_tasks(1))
+            if (queued[1] == {fork_id})
+              vars = queued[11];
+              return {
+                queued[2] == {fork_start},
+                queued[2] > time(),
+                queued[5] == ({fork_metadata})[1],
+                queued[6] == ({fork_metadata})[2],
+                queued[7] == ({fork_metadata})[3],
+                queued[8] == 1,
+                queued[9] == ({fork_metadata})[5],
+                vars["alpha"] == "first-observed",
+                vars["zeta"] == "last-declared",
+                vars["origin_player"] == ({fork_metadata})[1]
+              };
+            endif
+          endfor
+          return {};
+        as: wizard
+        expect:
+          value: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+      - wait: 7000
+      - run: |
+          result = {fork_obj}.audit_result;
+          still_queued = 0;
+          for queued in (queued_tasks())
+            if (queued[1] == {fork_id})
+              still_queued = 1;
+            endif
+          endfor
+          return {
+            result[1] == {fork_id},
+            result[2] == ({fork_metadata})[1],
+            result[3] == result[9],
+            result[4] == {fork_obj},
+            result[5] == result[10],
+            result[6] == "persist_fork",
+            result[7] == "first-observed",
+            result[8] == "last-declared",
+            !still_queued
+          };
+        as: wizard
+        expect:
+          value: [1, 1, 1, 1, 1, 1, 1, 1, 1]
+    cleanup:
+      - run: |
+          try
+            kill_task({fork_id});
+          except (ANY)
+          endtry
+          try
+            recycle({fork_obj});
+          except (ANY)
+          endtry
+        as: wizard
+
+  - name: audit_suspended_vm_preserves_frames_locals_continuations_and_resume_value
+    description: >
+      A ready suspended VM preserves its complete activation stack, ordered
+      locals, task-local value, operand continuation, active exception handler,
+      identity, and typed resume value across a checkpoint and managed restart.
+    steps:
+      - run: |
+          obj = create($nothing);
+          add_property(obj, "audit_result", {}, {player, "rw"});
+          add_verb(obj, {player, "xd", "inner"}, {"this", "none", "this"});
+          set_verb_code(obj, "inner", {
+            "inner_local = {\"inner-local\", 23};",
+            "try",
+            "  typed_piece = (suspend())[\"resume-kind\"];",
+            "  zero = 0;",
+            "  quotient = 1 / zero;",
+            "except error (E_DIV)",
+            "  caught = error[1];",
+            "endtry",
+            "frames = callers(1);",
+            "return {typed_piece, inner_local, task_local(), task_id(), task_perms(), player, this, caller, verb, length(frames), frames[1][2], frames[1][6], caught};"
+          });
+          add_verb(obj, {player, "xd", "outer"}, {"this", "none", "this"});
+          set_verb_code(obj, "outer", {
+            "outer_local = \"outer-local\";",
+            "inner_result = this:inner();",
+            "this.audit_result = {task_id(), task_perms(), player, this, caller, verb, outer_local, task_local(), inner_result};"
+          });
+          add_verb(obj, {player, "xd", "spawn"}, {"this", "none", "this"});
+          set_verb_code(obj, "spawn", {
+            "fork id (0)",
+            "  set_task_local({\"task-local\", 88, this, caller, player, verb});",
+            "  fork_local = \"fork-local\";",
+            "  this:outer();",
+            "endfork",
+            "suspend(0);",
+            "return id;"
+          });
+          return obj;
+        capture: suspended_obj
+        as: wizard
+      - run: "return {task_perms(), player};"
+        capture: suspended_origin
+        as: wizard
+      - run: "return {suspended_obj}:spawn();"
+        capture: suspended_id
+        as: wizard
+      - run: |
+          stack = task_stack({suspended_id}, 1, 1);
+          inner_vars = stack[1][7];
+          outer_vars = stack[2][7];
+          fork_vars = stack[3][7];
+          return {
+            length(stack) == 3,
+            stack[1][1] == {suspended_obj},
+            stack[1][2] == "inner",
+            stack[1][3] == ({suspended_origin})[1],
+            stack[1][4] == {suspended_obj},
+            stack[1][5] == ({suspended_origin})[2],
+            stack[1][6] > 0,
+            inner_vars["inner_local"] == {"inner-local", 23},
+            stack[2][1] == {suspended_obj},
+            stack[2][2] == "outer",
+            stack[2][3] == ({suspended_origin})[1],
+            stack[2][4] == {suspended_obj},
+            stack[2][5] == ({suspended_origin})[2],
+            stack[2][6] > 0,
+            outer_vars["outer_local"] == "outer-local",
+            stack[3][1] == {suspended_obj},
+            stack[3][2] == "spawn",
+            stack[3][3] == ({suspended_origin})[1],
+            stack[3][4] == {suspended_obj},
+            stack[3][5] == ({suspended_origin})[2],
+            stack[3][6] > 0,
+            fork_vars["fork_local"] == "fork-local"
+          };
+        as: wizard
+        expect:
+          value: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+      - run: |
+          resume({suspended_id}, ["resume-kind" -> {"typed", 42, E_RANGE}]);
+          return dump_database();
+        as: wizard
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+          wait_ms: 300
+      - run: |
+          result = {suspended_obj}.audit_result;
+          inner = result[9];
+          still_queued = 0;
+          for queued in (queued_tasks())
+            if (queued[1] == {suspended_id})
+              still_queued = 1;
+            endif
+          endfor
+          return {
+            result[1] == {suspended_id},
+            result[2] == ({suspended_origin})[1],
+            result[3] == ({suspended_origin})[2],
+            result[4] == {suspended_obj},
+            result[5] == result[8][3],
+            result[6] == "outer",
+            result[7] == "outer-local",
+            result[8][1] == "task-local",
+            result[8][2] == 88,
+            inner[1] == {"typed", 42, E_RANGE},
+            inner[2] == {"inner-local", 23},
+            inner[3] == result[8],
+            inner[4] == {suspended_id},
+            inner[5] == ({suspended_origin})[1],
+            inner[6] == ({suspended_origin})[2],
+            inner[7] == {suspended_obj},
+            inner[8] == {suspended_obj},
+            inner[9] == "inner",
+            inner[10] >= 2,
+            inner[11] == "outer",
+            inner[12] > 0,
+            inner[13] == E_DIV,
+            !still_queued
+          };
+        as: wizard
+        expect:
+          value: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    cleanup:
+      - run: |
+          try
+            kill_task({suspended_id});
+          except (ANY)
+          endtry
+          try
+            recycle({suspended_obj});
+          except (ANY)
+          endtry
+        as: wizard
+
+  - name: audit_suspended_vm_remaining_wake_time_survives_restart
+    description: >
+      A timed suspended VM whose wake remains in the future stays pending after
+      a genuine process-down restart, retains its rounded schedule and task id,
+      and resumes only after the saved deadline.
+    steps:
+      - run: |
+          obj = create($nothing);
+          add_property(obj, "audit_result", {}, {player, "rw"});
+          add_verb(obj, {player, "xd", "timed"}, {"this", "none", "this"});
+          set_verb_code(obj, "timed", {
+            "fork id (0)",
+            "  started = time();",
+            "  suspend(8);",
+            "  this.audit_result = {task_id(), started, time()};",
+            "endfork",
+            "suspend(0);",
+            "return id;"
+          });
+          return obj;
+        capture: remaining_obj
+        as: wizard
+      - run: "return {remaining_obj}:timed();"
+        capture: remaining_id
+        as: wizard
+      - run: |
+          for queued in (queued_tasks())
+            if (queued[1] == {remaining_id})
+              return queued[2];
+            endif
+          endfor
+          return 0;
+        capture: remaining_start
+        as: wizard
+      - run: "return dump_database();"
+        as: wizard
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+          wait_ms: 300
+          down_ms: 1000
+      - run: |
+          queued_start = 0;
+          for queued in (queued_tasks())
+            if (queued[1] == {remaining_id})
+              queued_start = queued[2];
+            endif
+          endfor
+          return {
+            {remaining_obj}.audit_result == {},
+            queued_start == {remaining_start},
+            queued_start > time()
+          };
+        as: wizard
+        expect:
+          value: [1, 1, 1]
+      - wait: 7000
+      - run: |
+          result = {remaining_obj}.audit_result;
+          still_queued = 0;
+          for queued in (queued_tasks())
+            if (queued[1] == {remaining_id})
+              still_queued = 1;
+            endif
+          endfor
+          return {
+            result[1] == {remaining_id},
+            result[3] >= result[2] + 7,
+            !still_queued
+          };
+        as: wizard
+        expect:
+          value: [1, 1, 1]
+    cleanup:
+      - run: |
+          try
+            kill_task({remaining_id});
+          except (ANY)
+          endtry
+          try
+            recycle({remaining_obj});
+          except (ANY)
+          endtry
+        as: wizard
+
+  - name: audit_suspended_vm_overdue_during_process_down_runs_after_restart
+    description: >
+      A timed suspended VM whose deadline passes while the process is down is
+      immediately eligible after restart and preserves its task id.
+    steps:
+      - run: |
+          obj = create($nothing);
+          add_property(obj, "audit_result", {}, {player, "rw"});
+          add_verb(obj, {player, "xd", "timed"}, {"this", "none", "this"});
+          set_verb_code(obj, "timed", {
+            "fork id (0)",
+            "  started = time();",
+            "  suspend(3);",
+            "  this.audit_result = {task_id(), started, time()};",
+            "endfork",
+            "suspend(0);",
+            "return id;"
+          });
+          return obj;
+        capture: overdue_obj
+        as: wizard
+      - run: "return {overdue_obj}:timed();"
+        capture: overdue_id
+        as: wizard
+      - run: "return dump_database();"
+        as: wizard
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+          wait_ms: 300
+          down_ms: 4000
+      - wait: 500
+      - run: |
+          result = {overdue_obj}.audit_result;
+          still_queued = 0;
+          for queued in (queued_tasks())
+            if (queued[1] == {overdue_id})
+              still_queued = 1;
+            endif
+          endfor
+          return {
+            result[1] == {overdue_id},
+            result[3] >= result[2] + 2,
+            !still_queued
+          };
+        as: wizard
+        expect:
+          value: [1, 1, 1]
+    cleanup:
+      - run: |
+          try
+            kill_task({overdue_id});
+          except (ANY)
+          endtry
+          try
+            recycle({overdue_obj});
+          except (ANY)
+          endtry
+        as: wizard
+
+  - name: audit_anonymous_values_in_suspended_vm_survive_restart
+    description: >
+      A valid anonymous object held in a suspended local, task-local value, and
+      resume value preserves its type, validity, identity, and property data
+      across a checkpoint and managed restart.
+    steps:
+      - run: |
+          class = create($nothing);
+          add_property(class, "saved_anon", 0, {player, "rw"});
+          add_property(class, "audit_result", {}, {player, "rw"});
+          add_property(class, "marker", "class-marker", {player, "rw"});
+          add_verb(class, {player, "xd", "hold"}, {"this", "none", "this"});
+          set_verb_code(class, "hold", {
+            "fork id (0)",
+            "  local_anon = this.saved_anon;",
+            "  set_task_local({\"task-anon\", local_anon});",
+            "  resumed_anon = suspend();",
+            "  task_anon = task_local()[2];",
+            "  this.audit_result = {task_id(), typeof(local_anon), valid(local_anon), local_anon == this.saved_anon, local_anon.marker, typeof(task_anon), valid(task_anon), task_anon == local_anon, typeof(resumed_anon), valid(resumed_anon), resumed_anon == local_anon, resumed_anon.marker};",
+            "endfork",
+            "suspend(0);",
+            "return id;"
+          });
+          anon = create(class, 1);
+          anon.marker = "anonymous-marker";
+          class.saved_anon = anon;
+          return class;
+        capture: anonymous_class
+        as: wizard
+      - run: "return {anonymous_class}:hold();"
+        capture: anonymous_task_id
+        as: wizard
+      - run: |
+          frame = task_stack({anonymous_task_id}, 1, 1)[1];
+          local_anon = frame[7]["local_anon"];
+          return {
+            typeof(local_anon),
+            valid(local_anon),
+            local_anon == {anonymous_class}.saved_anon,
+            local_anon.marker
+          };
+        as: wizard
+        expect:
+          value: [12, 1, 1, anonymous-marker]
+      - run: |
+          resume({anonymous_task_id}, {anonymous_class}.saved_anon);
+          return dump_database();
+        as: wizard
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+      - wait: 300
+      - run: |
+          result = {anonymous_class}.audit_result;
+          still_queued = 0;
+          for queued in (queued_tasks())
+            if (queued[1] == {anonymous_task_id})
+              still_queued = 1;
+            endif
+          endfor
+          return {
+            result[1] == {anonymous_task_id},
+            result[2],
+            result[3],
+            result[4],
+            result[5],
+            result[6],
+            result[7],
+            result[8],
+            result[9],
+            result[10],
+            result[11],
+            result[12],
+            still_queued
+          };
+        as: wizard
+        expect:
+          value: [1, 12, 1, 1, anonymous-marker, 12, 1, 1, 12, 1, 1, anonymous-marker, 0]
+    cleanup:
+      - run: |
+          try
+            kill_task({anonymous_task_id});
+          except (ANY)
+          endtry
+          try
+            recycle({anonymous_class}.saved_anon);
+          except (ANY)
+          endtry
+          try
+            recycle({anonymous_class});
+          except (ANY)
+          endtry
+        as: wizard
+
+  - name: audit_waif_values_in_suspended_vm_survive_restart
+    description: >
+      A WAIF held in a suspended local, task-local value, and resume value
+      preserves its class, property data, and shared alias identity across a
+      checkpoint and managed restart.
+    steps:
+      - run: |
+          class = create($waif);
+          add_property(class, "saved_waif", 0, {player, "rw"});
+          add_property(class, "audit_result", {}, {player, "rw"});
+          add_property(class, ":marker", "class-marker", {player, ""});
+          add_verb(class, {player, "xd", "hold"}, {"this", "none", "this"});
+          set_verb_code(class, "hold", {
+            "fork id (0)",
+            "  local_waif = this.saved_waif;",
+            "  set_task_local({\"task-waif\", local_waif});",
+            "  resumed_waif = suspend();",
+            "  task_waif = task_local()[2];",
+            "  before = local_waif.marker;",
+            "  resumed_waif.marker = \"resumed-marker\";",
+            "  this.audit_result = {task_id(), typeof(local_waif), typeof(task_waif), typeof(resumed_waif), local_waif == task_waif, task_waif == resumed_waif, local_waif.class == this, task_waif.class == this, resumed_waif.class == this, before, local_waif.marker, task_waif.marker, resumed_waif.marker};",
+            "endfork",
+            "suspend(0);",
+            "return id;"
+          });
+          waif = class:new();
+          waif.marker = "waif-marker";
+          class.saved_waif = waif;
+          return class;
+        capture: waif_class
+        as: wizard
+      - run: "return {waif_class}:hold();"
+        capture: waif_task_id
+        as: wizard
+      - run: |
+          frame = task_stack({waif_task_id}, 1, 1)[1];
+          local_waif = frame[7]["local_waif"];
+          return {
+            typeof(local_waif),
+            local_waif.class == {waif_class},
+            local_waif.marker
+          };
+        as: wizard
+        expect:
+          value: [13, 1, waif-marker]
+      - run: |
+          resume({waif_task_id}, {waif_class}.saved_waif);
+          return dump_database();
+        as: wizard
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+      - wait: 300
+      - run: |
+          result = {waif_class}.audit_result;
+          still_queued = 0;
+          for queued in (queued_tasks())
+            if (queued[1] == {waif_task_id})
+              still_queued = 1;
+            endif
+          endfor
+          return {
+            result[1] == {waif_task_id},
+            result[2],
+            result[3],
+            result[4],
+            result[5],
+            result[6],
+            result[7],
+            result[8],
+            result[9],
+            result[10],
+            result[11],
+            result[12],
+            result[13],
+            still_queued
+          };
+        as: wizard
+        expect:
+          value: [1, 13, 13, 13, 1, 1, 1, 1, 1, waif-marker, resumed-marker, resumed-marker, resumed-marker, 0]
+    cleanup:
+      - run: |
+          try
+            kill_task({waif_task_id});
+          except (ANY)
+          endtry
+          try
+            recycle({waif_class});
+          except (ANY)
+          endtry
+        as: wizard
+
+  - name: audit_blocked_read_resumes_with_interrupted_after_restart
+    description: >
+      A task blocked in read() on a live connection is persisted as interrupted
+      VM state and resumes with E_INTRPT after a checkpoint and managed restart.
+    steps:
+      - run: |
+          holder = create($nothing);
+          add_property(holder, "audit_result", {}, {player, "rw"});
+          add_verb(holder, {player, "xd", "block"}, {"this", "none", "this"});
+          set_verb_code(holder, "block", {
+            "connection = args[1];",
+            "fork id (0)",
+            "  try",
+            "    read(connection);",
+            "    this.audit_result = {task_id(), \"returned\", E_NONE};",
+            "  except info (ANY)",
+            "    this.audit_result = {task_id(), \"error\", info[1]};",
+            "  endtry",
+            "endfork",
+            "suspend(0);",
+            "return id;"
+          });
+          return holder;
+        capture: read_holder
+        as: wizard
+      - new_connection:
+          capture: blocked_connection
+      - run: |
+          connection = #-1;
+          for candidate in (connected_players(1))
+            if (!valid(candidate))
+              connection = candidate;
+            endif
+          endfor
+          if (connection == #-1)
+            raise(E_INVARG);
+          endif
+          return {read_holder}:block(connection);
+        capture: read_task_id
+        as: wizard
+      - run: |
+          frames = task_stack({read_task_id}, 1, 1);
+          return {
+            length(frames) >= 1,
+            frames[1][2] == "block"
+          };
+        as: wizard
+        expect:
+          value: [1, 1]
+      - run: "return dump_database();"
+        as: wizard
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+      - wait: 300
+      - run: |
+          result = {read_holder}.audit_result;
+          still_queued = 0;
+          for queued in (queued_tasks())
+            if (queued[1] == {read_task_id})
+              still_queued = 1;
+            endif
+          endfor
+          return {
+            result[1] == {read_task_id},
+            result[2],
+            result[3],
+            still_queued
+          };
+        as: wizard
+        expect:
+          value: [1, error, E_INTRPT, 0]
+    cleanup:
+      - run: |
+          try
+            kill_task({read_task_id});
+          except (ANY)
+          endtry
+          try
+            recycle({read_holder});
+          except (ANY)
+          endtry
+        as: wizard
+
+  - name: audit_blocked_read_http_resumes_with_interrupted_after_restart
+    description: >
+      A task blocked in read_http() on a live connection is persisted as
+      interrupted VM state and resumes with E_INTRPT after a checkpoint and
+      managed restart.
+    skip_if: "missing builtin.read_http"
+    steps:
+      - run: |
+          holder = create($nothing);
+          add_property(holder, "audit_result", {}, {player, "rw"});
+          add_verb(holder, {player, "xd", "block_http"}, {"this", "none", "this"});
+          set_verb_code(holder, "block_http", {
+            "connection = args[1];",
+            "fork id (0)",
+            "  try",
+            "    read_http(\"request\", connection);",
+            "    this.audit_result = {task_id(), \"returned\", E_NONE};",
+            "  except info (ANY)",
+            "    this.audit_result = {task_id(), \"error\", info[1]};",
+            "  endtry",
+            "endfork",
+            "suspend(0.1);",
+            "return id;"
+          });
+          return holder;
+        capture: http_holder
+        as: wizard
+      - new_connection:
+          capture: http_connection
+      - run: |
+          connection = #-1;
+          for candidate in (connected_players(1))
+            if (!valid(candidate))
+              connection = candidate;
+            endif
+          endfor
+          if (connection == #-1)
+            raise(E_INVARG);
+          endif
+          return {http_holder}:block_http(connection);
+        capture: http_task_id
+        as: wizard
+      - run: |
+          frames = task_stack({http_task_id}, 1, 1);
+          return {
+            length(frames) >= 1,
+            frames[1][2] == "block_http"
+          };
+        as: wizard
+        expect:
+          value: [1, 1]
+      - run: "return dump_database();"
+        as: wizard
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+      - wait: 500
+      - run: |
+          holder_valid = valid({http_holder});
+          result = holder_valid ? {http_holder}.audit_result | {};
+          has_result = length(result) == 3;
+          still_queued = 0;
+          for queued in (queued_tasks())
+            if (queued[1] == {http_task_id})
+              still_queued = 1;
+            endif
+          endfor
+          return {
+            holder_valid,
+            has_result ? result[1] == {http_task_id} | 0,
+            has_result ? result[2] | "missing",
+            has_result ? result[3] | E_NONE,
+            still_queued
+          };
+        as: wizard
+        expect:
+          value: [1, 1, error, E_INTRPT, 0]
+    cleanup:
+      - run: |
+          try
+            kill_task({http_task_id});
+          except (ANY)
+          endtry
+          try
+            recycle({http_holder});
+          except (ANY)
+          endtry
+        as: wizard
+
+  - name: audit_waiting_exec_resumes_with_interrupted_after_restart
+    description: >
+      A task waiting for the packaged sleeping executable is persisted as
+      interrupted VM state and resumes with E_INTRPT after a checkpoint and
+      managed restart.
+    skip_if: "missing builtin.exec"
+    steps:
+      - run: |
+          holder = create($nothing);
+          add_property(holder, "audit_result", {}, {player, "rw"});
+          add_verb(holder, {player, "xd", "wait_exec"}, {"this", "none", "this"});
+          set_verb_code(holder, "wait_exec", {
+            "fork id (0)",
+            "  try",
+            "    exec({\"sleep\", \"30\"}, \"\");",
+            "    this.audit_result = {task_id(), \"returned\", E_NONE};",
+            "  except info (ANY)",
+            "    this.audit_result = {task_id(), \"error\", info[1]};",
+            "  endtry",
+            "endfork",
+            "suspend(0.1);",
+            "return id;"
+          });
+          return holder;
+        capture: exec_holder
+        as: wizard
+      - run: "return {exec_holder}:wait_exec();"
+        capture: exec_task_id
+        as: wizard
+      - run: |
+          frames = task_stack({exec_task_id}, 1, 1);
+          queued_match = 0;
+          for queued in (queued_tasks())
+            if (queued[1] == {exec_task_id} && queued[2] == "executables/sleep")
+              queued_match = 1;
+            endif
+          endfor
+          return {
+            length(frames) >= 1,
+            frames[1][2] == "wait_exec",
+            queued_match
+          };
+        as: wizard
+        expect:
+          value: [1, 1, 1]
+      - run: "return dump_database();"
+        as: wizard
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+      - wait: 500
+      - run: |
+          holder_valid = valid({exec_holder});
+          result = holder_valid ? {exec_holder}.audit_result | {};
+          has_result = length(result) == 3;
+          still_queued = 0;
+          for queued in (queued_tasks())
+            if (queued[1] == {exec_task_id})
+              still_queued = 1;
+            endif
+          endfor
+          return {
+            holder_valid,
+            has_result ? result[1] == {exec_task_id} | 0,
+            has_result ? result[2] | "missing",
+            has_result ? result[3] | E_NONE,
+            still_queued
+          };
+        as: wizard
+        expect:
+          value: [1, 1, error, E_INTRPT, 0]
+    cleanup:
+      - run: |
+          try
+            kill_task({exec_task_id});
+          except (ANY)
+          endtry
+          try
+            recycle({exec_holder});
+          except (ANY)
+          endtry
         as: wizard
 
   - name: audit_force_input_live_login_connection

@@ -9,6 +9,7 @@ A portable conformance test suite for MOO (MUD Object Oriented) language impleme
 - **pytest integration**: Standard Python testing workflow
 - **pip installable**: `pip install moo-conformance-tests`
 - **Bundled database**: Includes Test.db for toaststunt compatibility
+- **Managed restart coverage**: Exercises checkpoint persistence across a real process restart
 
 ## Quick Start
 
@@ -25,7 +26,7 @@ uv add moo-conformance-tests
 1. Start your MOO server on port 7777:
    ```bash
    # Example with toaststunt
-   ./moo Test.db Test.out.db 7777
+   ./moo Test.db Test.out.db -p 7777
    ```
 
 2. Run the conformance tests:
@@ -98,20 +99,33 @@ uv run pytest tests/ --moo-port=7777
 Instead of starting a server yourself, pass `--server-command` and the tool handles the lifecycle automatically. Use `{port}` and `{db}` placeholders in the command template:
 
 ```bash
-# Toaststunt (positional args: db logfile port)
-moo-conformance --server-command "./moo {db} /dev/null {port}" -v
+# Toaststunt
+moo-conformance --server-command "./moo {db} {db}.out -p {port}" -v
 
 # Barn (flag args)
 moo-conformance --server-command "./barn -db {db} -port {port}" -v
 
 # With a specific port
-moo-conformance --server-command "./moo {db} /dev/null {port}" --moo-port 9898 -v
+moo-conformance --server-command "./moo {db} {db}.out -p {port}" --moo-port 9898 -v
 
 # With a custom database file
-moo-conformance --server-command "./moo {db} /dev/null {port}" --server-db ./MyTest.db -v
+moo-conformance --server-command "./moo {db} {db}.out -p {port}" --server-db ./MyTest.db -v
 ```
 
 The tool copies the database to a temp directory (servers write checkpoints alongside it), starts the server, waits for it to accept connections, runs the tests, and cleans everything up on exit. When `--moo-port` is omitted, a free port is selected automatically.
+
+### Checkpoint and Restart Coverage
+
+Tests containing a `restart_server` step require managed server mode. Before
+stopping the process, the harness adopts the checkpoint produced by the test;
+it then restarts from that database and reconnects as the previous user. A
+`down_ms` value can keep the process offline long enough to test remaining and
+overdue task schedules.
+
+The Toast-oracle audit suites cover queued and suspended task state, anonymous
+and WAIF values in suspended VMs, interrupted `read()`, `read_http()`, and
+`exec()` waits, former-connection startup ordering, `last_move`, and checkpoint
+hook ordering and persistence boundaries.
 
 ## Command Line Options
 
@@ -134,6 +148,7 @@ Tests are organized by category:
 | `server/` | Server feature tests |
 | `objects/` | Object system tests |
 | `features/` | Advanced feature tests |
+| `audit/` | Toast-oracle behavioral and persistence audits |
 
 Run specific categories:
 ```bash
@@ -151,7 +166,7 @@ The test suite was developed against [toaststunt](https://github.com/lisdude/toa
 ```bash
 # Start toaststunt
 cd /path/to/toaststunt
-./moo Test.db Test.out.db 9898
+./moo Test.db Test.out.db -p 9898
 
 # Run tests
 moo-conformance --moo-port=9898 -v

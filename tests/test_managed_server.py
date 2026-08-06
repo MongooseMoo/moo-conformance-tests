@@ -10,7 +10,7 @@ import pytest
 from moo_conformance.plugin import _load_login_script
 from moo_conformance.runner import YamlTestRunner
 from moo_conformance.schema import MooTestCase, MooTestSuite
-from moo_conformance.server import ManagedServer
+from moo_conformance.server import ManagedServer, ManagedServerLifecycleError
 from moo_conformance.transport import SocketTransport
 
 
@@ -54,6 +54,166 @@ def test_restart_preserves_working_db_copy(monkeypatch, tmp_path: Path):
 
     assert server._db_copy_path.read_text(encoding="utf-8") == "checkpointed"
     assert len(created) == 2
+
+
+def test_failed_database_restart_preserves_previous_runner_cache(tmp_path: Path):
+    default_db = tmp_path / "default.db"
+    selected_db = tmp_path / "selected.db"
+    default_db.write_text("default", encoding="utf-8")
+    selected_db.write_text("selected", encoding="utf-8")
+
+    transport = Mock()
+    transport.sock = object()
+    server = Mock()
+    server.default_db_path = default_db
+    server.db_path = default_db
+
+    def fail_restart(**_kwargs) -> None:
+        server.db_path = selected_db
+        raise ManagedServerLifecycleError("database copy failed")
+
+    server.restart.side_effect = fail_restart
+    runner = YamlTestRunner(
+        transport,
+        managed_server=server,
+        server_db_dir=str(tmp_path),
+    )
+    suite = MooTestSuite(
+        name="selected",
+        server_db=selected_db.name,
+        tests=[MooTestCase(name="case", code="return 1;")],
+    )
+
+    with pytest.raises(ManagedServerLifecycleError, match="database copy failed"):
+        runner.prepare_suite_environment(suite)
+    with pytest.raises(ManagedServerLifecycleError, match="database copy failed"):
+        runner.prepare_suite_environment(suite)
+
+    assert runner._active_server_db_path == default_db
+    assert server.restart.call_count == 2
+
+
+def test_missing_database_fixture_fails_before_disconnect(tmp_path: Path):
+    default_db = tmp_path / "default.db"
+    default_db.write_text("default", encoding="utf-8")
+
+    transport = Mock()
+    transport.sock = object()
+    server = Mock()
+    server.default_db_path = default_db
+    server.db_path = default_db
+    runner = YamlTestRunner(
+        transport,
+        managed_server=server,
+        server_db_dir=str(tmp_path),
+    )
+    suite = MooTestSuite(
+        name="missing",
+        server_db="missing.db",
+        tests=[MooTestCase(name="case", code="return 1;")],
+    )
+
+    with pytest.raises(ManagedServerLifecycleError, match="missing.db"):
+        runner.prepare_suite_environment(suite)
+
+    transport.disconnect.assert_not_called()
+    server.restart.assert_not_called()
+
+
+def test_cached_database_requires_live_server_before_transport_connect(tmp_path: Path):
+    default_db = tmp_path / "default.db"
+    default_db.write_text("default", encoding="utf-8")
+
+    transport = Mock()
+    transport.sock = None
+    server = Mock()
+    server.default_db_path = default_db
+    server.db_path = default_db
+    server.require_transport.side_effect = ManagedServerLifecycleError(
+        "server exited",
+        returncode=17,
+        log_tail="root failure",
+    )
+    runner = YamlTestRunner(transport, managed_server=server)
+    suite = MooTestSuite(
+        name="default",
+        tests=[MooTestCase(name="case", code="return 1;")],
+    )
+
+    with pytest.raises(ManagedServerLifecycleError, match="server exited"):
+        runner.prepare_suite_environment(suite)
+
+    assert runner._active_server_db_path is None
+    transport.connect.assert_not_called()
+
+
+def test_failed_restart_preserves_managed_server_database_state(monkeypatch, tmp_path: Path):
+    baseline = tmp_path / "baseline.db"
+    baseline.write_text("baseline", encoding="utf-8")
+
+    monkeypatch.setattr(
+        "moo_conformance.server.subprocess.Popen", lambda *args, **kwargs: _FakeProcess()
+    )
+    monkeypatch.setattr(ManagedServer, "_find_free_port", lambda self: 17777)
+    monkeypatch.setattr(ManagedServer, "_wait_for_port", lambda self, timeout=30.0: None)
+
+    server = ManagedServer("fake-server {db} {port}", baseline)
+    server.start()
+    original_copy = server._db_copy_path
+    assert original_copy is not None
+
+    with pytest.raises(ManagedServerLifecycleError, match="missing.db"):
+        server.restart(db_path=tmp_path / "missing.db")
+
+    assert server.db_path == baseline
+    assert server._db_copy_path == original_copy
+    assert original_copy.read_text(encoding="utf-8") == "baseline"
+
+
+def test_expected_exit_becomes_failure_only_when_transport_is_required(
+    monkeypatch, tmp_path: Path
+):
+    baseline = tmp_path / "baseline.db"
+    baseline.write_text("baseline", encoding="utf-8")
+
+    class _ExitedProcess(_FakeProcess):
+        def __init__(self):
+            super().__init__()
+            self.returncode = 17
+
+        def poll(self):
+            return self.returncode
+
+        def terminate(self):
+            pass
+
+    process = _ExitedProcess()
+
+    def fake_popen(*args, **kwargs):
+        kwargs["stdout"].write("early output\nfinal diagnostic\n")
+        kwargs["stdout"].flush()
+        return process
+
+    monkeypatch.setattr("moo_conformance.server.subprocess.Popen", fake_popen)
+    monkeypatch.setattr(ManagedServer, "_find_free_port", lambda self: 17777)
+
+    server = ManagedServer("fake-server {db} {port}", baseline)
+    server.start(wait_for_port=False)
+
+    with pytest.raises(ManagedServerLifecycleError) as first:
+        server.require_transport()
+
+    process.returncode = 99
+    assert server.log_path is not None
+    Path(server.log_path).write_text("replacement output", encoding="utf-8")
+
+    with pytest.raises(ManagedServerLifecycleError) as repeated:
+        server.require_transport()
+
+    assert first.value is repeated.value
+    assert first.value.returncode == 17
+    assert "final diagnostic" in first.value.log_tail
+    assert "replacement output" not in first.value.log_tail
 
 
 def test_restart_waits_before_transport_reconnect(monkeypatch):
@@ -158,6 +318,7 @@ def test_prepare_exit_only_suite_does_not_connect(tmp_path: Path):
     runner.prepare_suite_environment(suite)
 
     server.restart.assert_called_once_with(db_path=selected_db, wait_for_port=False)
+    server.require_transport.assert_not_called()
     transport.connect.assert_not_called()
 
 

@@ -21,7 +21,7 @@ from .schema import (
     TestStep,
     WriteFile,
 )
-from .server import ManagedServer
+from .server import ManagedServer, ManagedServerLifecycleError
 from .transport import ExecutionResult, MooTransport, TestConnection
 
 
@@ -143,6 +143,10 @@ class YamlTestRunner:
                 label="suite database candidate anchor",
                 kind="file",
             )
+        if not resolved.is_file():
+            raise ManagedServerLifecycleError(
+                f"Suite database fixture does not exist or is not a file: {resolved}"
+            )
         return resolved
 
     def _suite_requires_transport(self, suite: MooTestSuite) -> bool:
@@ -218,13 +222,21 @@ class YamlTestRunner:
         if self._active_server_db_path is not None:
             current_db = Path(os.path.realpath(self._active_server_db_path))
             if current_db == desired_db:
+                if needs_transport:
+                    self.managed_server.require_transport()
                 return
 
         if self._active_server_db_path is None:
             current_db = Path(os.path.realpath(self.managed_server.db_path))
             if current_db == desired_db:
+                if needs_transport:
+                    self.managed_server.require_transport()
                 self._active_server_db_path = desired_db
                 return
+            # Capture the last known-good selection before attempting a switch.
+            # A failed restart may mutate server internals, but it must not make
+            # the runner trust the requested database on the next case.
+            self._active_server_db_path = current_db
 
         current_user = getattr(self.transport, "current_user", "programmer")
         self.transport.disconnect()

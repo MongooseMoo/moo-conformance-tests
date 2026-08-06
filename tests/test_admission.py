@@ -18,7 +18,9 @@ from moo_conformance.admission import (
 from moo_conformance.plugin import (
     _admission_runtime_state,
     _record_canonical_admission_report,
+    _record_managed_lifecycle_failure,
 )
+from moo_conformance.server import ManagedServerLifecycleError
 
 pytest_plugins = ("pytester",)
 TEST_CONTEXT = "test:admission-context"
@@ -210,6 +212,46 @@ def test_exact_canonical_admission_authorizes_only_after_successful_teardown() -
     )
 
     assert _admission_runtime_state(item.config).authorized
+
+
+def test_packaged_lifecycle_failure_stops_remaining_packaged_execution() -> None:
+    item = SimpleNamespace(
+        module=canonical_tests,
+        obj=canonical_tests.test_yaml_conformance,
+        name="test_yaml_conformance[fixture]",
+        session=SimpleNamespace(shouldfail=False),
+    )
+    failure = ManagedServerLifecycleError(
+        "server died",
+        returncode=17,
+        log_tail="first diagnostic",
+    )
+
+    _record_managed_lifecycle_failure(
+        item,
+        SimpleNamespace(excinfo=SimpleNamespace(value=failure)),
+        SimpleNamespace(failed=True),
+    )
+
+    assert "managed server lifecycle failed" in item.session.shouldfail
+    assert "17" in item.session.shouldfail
+
+
+def test_ordinary_packaged_failure_does_not_stop_the_session() -> None:
+    item = SimpleNamespace(
+        module=canonical_tests,
+        obj=canonical_tests.test_yaml_conformance,
+        name="test_yaml_conformance[ordinary]",
+        session=SimpleNamespace(shouldfail=False),
+    )
+
+    _record_managed_lifecycle_failure(
+        item,
+        SimpleNamespace(excinfo=SimpleNamespace(value=AssertionError("mismatch"))),
+        SimpleNamespace(failed=True),
+    )
+
+    assert item.session.shouldfail is False
 
 
 def _write_successful_admission(path, context=TEST_CONTEXT) -> None:

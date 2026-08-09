@@ -1,0 +1,115 @@
+name: checkpoint_lifecycle_toast_oracle
+description: >
+  Toast-oracle coverage for checkpoint hook order, status, and persistence
+  boundaries.
+
+requires:
+  builtins: [dump_database]
+
+tests:
+  - name: audit_checkpoint_hooks_order_status_and_boundary
+    description: >
+      checkpoint_started runs before the database flush, checkpoint_finished
+      runs afterward with success status 1, and only the pre-flush mutation is
+      present in the adopted checkpoint.
+    steps:
+      - run: |
+          for prop in ({"audit_checkpoint_events", "audit_checkpoint_hooks_saved"})
+            try
+              add_property(#0, prop, {}, {#0, "rw"});
+            except (E_INVARG)
+            endtry
+          endfor
+          started_exists = 1;
+          try
+            started_info = verb_info(#0, "checkpoint_started");
+            started_args = verb_args(#0, "checkpoint_started");
+            started_code = verb_code(#0, "checkpoint_started");
+          except (E_VERBNF)
+            started_exists = 0;
+            started_info = {};
+            started_args = {};
+            started_code = {};
+          endtry
+          finished_exists = 1;
+          try
+            finished_info = verb_info(#0, "checkpoint_finished");
+            finished_args = verb_args(#0, "checkpoint_finished");
+            finished_code = verb_code(#0, "checkpoint_finished");
+          except (E_VERBNF)
+            finished_exists = 0;
+            finished_info = {};
+            finished_args = {};
+            finished_code = {};
+          endtry
+          #0.audit_checkpoint_hooks_saved = {
+            {started_exists, started_info, started_args, started_code},
+            {finished_exists, finished_info, finished_args, finished_code}
+          };
+          #0.audit_checkpoint_events = {};
+          try
+            add_verb(#0, {#0, "rxd", "checkpoint_started"}, {"this", "none", "this"});
+          except (E_INVARG)
+          endtry
+          set_verb_info(#0, "checkpoint_started", {player, "rxd", "checkpoint_started"});
+          set_verb_args(#0, "checkpoint_started", {"this", "none", "this"});
+          set_verb_code(#0, "checkpoint_started", {
+            "#0.audit_checkpoint_events = {@#0.audit_checkpoint_events, {\"started\"}};",
+            "return 1;"
+          });
+          try
+            add_verb(#0, {#0, "rxd", "checkpoint_finished"}, {"this", "none", "this"});
+          except (E_INVARG)
+          endtry
+          set_verb_info(#0, "checkpoint_finished", {player, "rxd", "checkpoint_finished"});
+          set_verb_args(#0, "checkpoint_finished", {"this", "none", "this"});
+          set_verb_code(#0, "checkpoint_finished", {
+            "#0.audit_checkpoint_events = {@#0.audit_checkpoint_events, {\"finished\", args[1]}};",
+            "return 1;"
+          });
+          return 1;
+        as: wizard
+      - run: "return dump_database();"
+        as: wizard
+        expect:
+          value: 0
+      - wait: 1500
+      - run: "return #0.audit_checkpoint_events;"
+        as: wizard
+        expect:
+          value: [["started"], ["finished", 1]]
+      - restart_server:
+      - wait: 500
+      - run: "return #0.audit_checkpoint_events;"
+        as: wizard
+        expect:
+          value: [["started"]]
+    cleanup:
+      - run: |
+          try
+            saved = #0.audit_checkpoint_hooks_saved;
+            started_saved = saved[1];
+            if (started_saved[1])
+              set_verb_info(#0, "checkpoint_started", started_saved[2]);
+              set_verb_args(#0, "checkpoint_started", started_saved[3]);
+              set_verb_code(#0, "checkpoint_started", started_saved[4]);
+            else
+              delete_verb(#0, "checkpoint_started");
+            endif
+            finished_saved = saved[2];
+            if (finished_saved[1])
+              set_verb_info(#0, "checkpoint_finished", finished_saved[2]);
+              set_verb_args(#0, "checkpoint_finished", finished_saved[3]);
+              set_verb_code(#0, "checkpoint_finished", finished_saved[4]);
+            else
+              delete_verb(#0, "checkpoint_finished");
+            endif
+          except (ANY)
+          endtry
+          for prop in ({"audit_checkpoint_events", "audit_checkpoint_hooks_saved"})
+            try
+              delete_property(#0, prop);
+            except (ANY)
+            endtry
+          endfor
+        as: wizard

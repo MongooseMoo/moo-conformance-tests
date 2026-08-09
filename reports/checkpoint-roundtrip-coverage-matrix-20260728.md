@@ -131,4 +131,3 @@ wrong.
    ordering/status rows.
 6. Use every Toast-green row unchanged against pre-fix Barn. Each Barn change
    must be the smallest red-first atomic slice that closes that row.
-

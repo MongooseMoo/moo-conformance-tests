@@ -359,23 +359,26 @@ tests:
 
   # ===================================================================
   # finished_tasks()
-  # CI's maximal Toast profiles compile this optional builtin.
+  # Profiles that provide this optional builtin run the behavior cases.
   # ===================================================================
 
   - name: finished_tasks_no_args_wizard
     description: "finished_tasks() returns a list for wizards"
+    skip_if: "missing builtin.finished_tasks"
     permission: wizard
     code: "typeof(finished_tasks())"
     expect:
       value: 4  # TYPE_LIST
 
   - name: finished_tasks_too_many_args
+    skip_if: "missing builtin.finished_tasks"
     permission: wizard
     code: "finished_tasks(1)"
     expect:
       error: E_ARGS
 
   - name: finished_tasks_non_wizard_perm
+    skip_if: "missing builtin.finished_tasks"
     permission: programmer
     code: "finished_tasks()"
     expect:

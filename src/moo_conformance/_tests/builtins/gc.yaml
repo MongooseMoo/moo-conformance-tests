@@ -106,6 +106,60 @@ tests:
     expect:
       value: 1
 
+  - name: gc_recycle_hook_created_anonymous_survives_current_sweep
+    description: An anonymous object created and rooted by an orphan's recycle hook is not collected by the same sweep
+    permission: wizard
+    steps:
+      - run: |
+          class = create($nothing);
+          add_property(class, "next", 0, {player, ""});
+          add_property(class, "subject", 0, {player, ""});
+          add_property(class, "stash", 0, {player, ""});
+          add_property(class, "recycle_called", 0, {player, ""});
+          add_verb(class, {player, "xd", "recycle"}, {"this", "none", "this"});
+          set_verb_code(class, "recycle", {
+            tostr(class) + ".recycle_called = " + tostr(class) + ".recycle_called + 1;",
+            tostr(class) + ".stash = create(" + tostr(class) + ", 1);"
+          });
+          return class;
+        capture: anon_class
+      - run: |
+          orphan = create({anon_class}, 1);
+          orphan.next = orphan;
+          {anon_class}.subject = orphan;
+          return 0;
+        expect:
+          value: 0
+      - run: |
+          {anon_class}.subject = 0;
+          run_gc();
+          return 0;
+        expect:
+          value: 0
+      - run: |
+          suspend(0);
+          return {anon_class}.recycle_called;
+        expect:
+          value: 1
+      - run: "typeof({anon_class}.stash) == ANON"
+        expect:
+          value: 1
+      - run: "valid({anon_class}.stash)"
+        expect:
+          value: 1
+    cleanup:
+      - run: |
+          delete_verb({anon_class}, "recycle");
+          if (typeof({anon_class}.stash) == ANON)
+            if (valid({anon_class}.stash))
+              recycle({anon_class}.stash);
+            endif
+          endif
+          {anon_class}.stash = 0;
+          recycle({anon_class});
+          run_gc();
+          return 0;
+
   # Cyclic reference tests - verify GC handles cycles without crashing
   - name: single_cyclic_self_reference_basic
     permission: wizard

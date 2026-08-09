@@ -96,6 +96,101 @@ tests:
     - try
     - finally
     - except
+- name: nested_finally_two_levels_preserve_order
+  description: An error runs both nested finalizers from inner to outer
+  statement: |
+    result = {};
+    try
+      try
+        try
+          raise(E_INVARG);
+        finally
+          result = {@result, "inner"};
+        endtry
+      finally
+        result = {@result, "outer"};
+      endtry
+    except (E_INVARG)
+      return result;
+    endtry
+  expect:
+    value:
+    - inner
+    - outer
+- name: nested_finally_three_levels_preserve_order
+  description: An error runs every nested finalizer from inner to outer
+  statement: |
+    result = {};
+    try
+      try
+        try
+          try
+            raise(E_INVARG);
+          finally
+            result = {@result, "inner"};
+          endtry
+        finally
+          result = {@result, "middle"};
+        endtry
+      finally
+        result = {@result, "outer"};
+      endtry
+    except (E_INVARG)
+      return result;
+    endtry
+  expect:
+    value:
+    - inner
+    - middle
+    - outer
+- name: nested_finally_inside_except_preserves_error
+  description: A finalizer nested in an except clause runs before its error propagates
+  statement: |
+    result = {};
+    try
+      try
+        raise(E_INVARG);
+      except (E_INVARG)
+        result = {@result, "except"};
+        try
+          raise(E_TYPE);
+        finally
+          result = {@result, "finally"};
+        endtry
+      endtry
+    except (E_TYPE)
+      result = {@result, "outer-except"};
+    endtry
+    return result;
+  expect:
+    value:
+    - except
+    - finally
+    - outer-except
+- name: nested_finally_with_inner_except_preserves_error
+  description: An except clause in a finalizer does not replace the pending error
+  statement: |
+    result = {};
+    try
+      try
+        raise(E_INVARG);
+      finally
+        try
+          raise(E_TYPE);
+        except (E_TYPE)
+          result = {@result, "inner-except"};
+        endtry
+        result = {@result, "finally"};
+      endtry
+    except (E_INVARG)
+      result = {@result, "outer-except"};
+    endtry
+    return result;
+  expect:
+    value:
+    - inner-except
+    - finally
+    - outer-except
 - name: catch_expr_no_error
   description: Expression succeeds, catch returns the expression value
   code: '`1 + 2 ! ANY => 0'''

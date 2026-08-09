@@ -160,6 +160,28 @@ tests:
       value: 0
   cleanup:
   - run: recycle({obj})
+- name: delete_verb_then_coarse_mutation_persists_across_later_error
+  description: A later add_verb observes the deletion, and both verb-list mutations persist when the task subsequently raises an error.
+  permission: programmer
+  steps:
+  - run: create($nothing)
+    capture: obj
+  - run: |
+      add_verb({obj}, {player, "xd", "target"}, {"this", "none", "this"});
+      add_verb({obj}, {player, "xd", "driver"}, {"this", "none", "this"});
+      return set_verb_code({obj}, "driver", {
+        "delete_verb(this, \"target\");",
+        "add_verb(this, {player, \"xd\", \"after\"}, {\"this\", \"none\", \"this\"});",
+        "raise(E_INVARG);"
+      });
+  - run: "{obj}:driver()"
+    expect:
+      error: E_INVARG
+  - run: "verbs({obj})"
+    expect:
+      value: ["driver", "after"]
+  cleanup:
+  - run: recycle({obj})
 - name: delete_verb_recycled_object
   description: delete_verb fails with E_INVARG if object is not valid
   permission: programmer

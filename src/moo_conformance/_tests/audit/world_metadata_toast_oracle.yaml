@@ -1,0 +1,86 @@
+name: world_metadata_toast_oracle
+description: >
+  Toast-oracle checkpoint coverage for server-maintained object metadata.
+
+requires:
+  builtins: [create, recycle, move, time, dump_database]
+
+tests:
+  - name: audit_last_move_survives_checkpoint_restart
+    description: >
+      Moving an object records exact time and source entries in last_move, and
+      the complete metadata survives a managed checkpoint restart.
+    steps:
+      - run: "return create($nothing);"
+        capture: move_source
+        as: wizard
+      - run: "return create($nothing);"
+        capture: move_destination
+        as: wizard
+      - run: "return create($nothing);"
+        capture: moved_object
+        as: wizard
+      - run: |
+          move({moved_object}, {move_source});
+          return 1;
+        as: wizard
+        expect:
+          value: 1
+      - run: "return time();"
+        capture: move_before
+        as: wizard
+      - run: |
+          move({moved_object}, {move_destination});
+          return 1;
+        as: wizard
+        expect:
+          value: 1
+      - run: "return {moved_object}.last_move[\"time\"];"
+        capture: move_time
+        as: wizard
+      - run: "return {moved_object}.last_move[\"source\"];"
+        capture: move_recorded_source
+        as: wizard
+      - run: "return time();"
+        capture: move_after
+        as: wizard
+      - run: |
+          metadata = {moved_object}.last_move;
+          return {
+            {moved_object}.location == {move_destination},
+            metadata["source"] == {move_source},
+            metadata["source"] == {move_recorded_source},
+            metadata["time"] == {move_time},
+            metadata["time"] >= {move_before},
+            metadata["time"] <= {move_after}
+          };
+        as: wizard
+        expect:
+          value: [1, 1, 1, 1, 1, 1]
+      - run: "return dump_database();"
+        as: wizard
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+      - wait: 500
+      - run: |
+          metadata = {moved_object}.last_move;
+          return {
+            {moved_object}.location == {move_destination},
+            metadata["source"] == {move_source},
+            metadata["source"] == {move_recorded_source},
+            metadata["time"] == {move_time},
+            metadata["time"] >= {move_before},
+            metadata["time"] <= {move_after}
+          };
+        as: wizard
+        expect:
+          value: [1, 1, 1, 1, 1, 1]
+    cleanup:
+      - run: |
+          recycle({moved_object});
+          recycle({move_destination});
+          recycle({move_source});
+          return 1;
+        as: wizard

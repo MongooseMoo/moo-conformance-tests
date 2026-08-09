@@ -489,6 +489,27 @@ def test_canonical_execution_prepares_suite_before_capability_probes() -> None:
     assert events == ["prepare", "setup", "test"]
 
 
+def test_missing_config_requirement_is_enforced_before_suite_preparation() -> None:
+    events: list[str] = []
+    runner = SimpleNamespace(
+        transport=QueueTransport(),
+        prepare_suite_environment=lambda _suite: events.append("prepare"),
+        run_suite_setup=lambda _suite: events.append("setup"),
+        run_test=lambda _test: events.append("test"),
+    )
+    suite = MooTestSuite(
+        name="fixture-required",
+        requires=Requirements(config=["server_db_dir"]),
+        server_db="Anon1.db",
+    )
+    test = MooTestCase(name="case")
+
+    with pytest.raises(pytest.skip.Exception, match="--server-db-dir"):
+        run_yaml_case(runner, (suite, test), {"server_db_dir": None}, {})
+
+    assert events == []
+
+
 @pytest.mark.parametrize(
     "value", [None, 0, 1, True, False, [], {}, "", "UNKNOWN"]
 )

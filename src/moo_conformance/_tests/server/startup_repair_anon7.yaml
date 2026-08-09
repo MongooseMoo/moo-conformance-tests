@@ -1,0 +1,28 @@
+name: startup_repair_anon7
+description: >
+  Preserves one complete anonymous cycle held from opposite members by two
+  suspended VMs during shutdown without misclassifying either task-owned root
+  as pending finalization.
+server_db: Anon7.db
+requires:
+  config:
+    - managed_server
+    - server_dir
+    - log_file
+    - server_db_dir
+tests:
+  - name: cross_vm_cycle_remains_owned_by_two_suspended_tasks
+    steps:
+      - wait: 750
+      - assert_file:
+          path: Anon7.db.new
+          contains: "\n0 values pending finalization\n"
+      - assert_file:
+          path: Anon7.db.new
+          contains: "\n2 suspended tasks\n"
+      - assert_file:
+          path: Anon7.db.new
+          contains: "cross-vm recycle called on A"
+      - assert_file:
+          path: Anon7.db.new
+          contains: "cross-vm recycle called on B"

@@ -1,0 +1,626 @@
+name: Toast conformance core
+
+on:
+  workflow_call:
+    inputs:
+      conformance_sha:
+        description: Exact conformance candidate commit
+        required: true
+        type: string
+    outputs:
+      quality_result:
+        description: Trusted quality gate result
+        value: ${{ jobs.result.outputs.quality_result }}
+      full_suite_result:
+        description: Complete Toast suite result
+        value: ${{ jobs.result.outputs.full_suite_result }}
+
+permissions:
+  contents: read
+
+jobs:
+  classify-changes:
+    name: Classify trusted controller and candidate data boundary
+    runs-on: ubuntu-24.04
+    outputs:
+      mode: ${{ steps.classify.outputs.mode }}
+
+    steps:
+      - name: Check out trusted controller
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: MongooseMoo/moo-conformance-tests
+          ref: ${{ github.event.pull_request.base.sha || github.workflow_sha }}
+          path: trusted-controller
+          persist-credentials: false
+
+      - name: Check out conformance candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ inputs.conformance_sha || github.event.pull_request.head.sha || github.sha }}
+          path: candidate-tree
+          persist-credentials: false
+          allow-unsafe-pr-checkout: true
+
+      - name: Install uv and Python
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: 0.8.8
+          python-version: "3.13"
+          enable-cache: false
+
+      - name: Install locked trusted controller
+        run: uv sync --project trusted-controller --locked
+
+      - name: Reject mixed, unknown, or nonregular candidate trees
+        id: classify
+        run: |
+          set -euo pipefail
+          output="${RUNNER_TEMP}/change-boundary.json"
+          log="${RUNNER_TEMP}/change-boundary.log"
+          set +e
+          uv run --project trusted-controller --frozen python -m moo_conformance.change_boundary \
+            --trusted-root="${GITHUB_WORKSPACE}/trusted-controller" \
+            --candidate-root="${GITHUB_WORKSPACE}/candidate-tree" \
+            --output="$output" 2>&1 | tee "$log"
+          classifier_status=${PIPESTATUS[0]}
+          set -e
+          test "$classifier_status" -eq 0
+          mode=$(uv run --project trusted-controller --frozen python -c \
+            'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["mode"])' \
+            "$output")
+          case "$mode" in
+            controller|data|neutral) ;;
+            *) printf 'invalid admitted change mode: %s\n' "$mode" >&2; exit 1 ;;
+          esac
+          printf 'mode=%s\n' "$mode" >> "${GITHUB_OUTPUT}"
+
+      - name: Upload trusted change-boundary evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: trusted-change-boundary
+          path: |
+            ${{ runner.temp }}/change-boundary.json
+            ${{ runner.temp }}/change-boundary.log
+          if-no-files-found: error
+          retention-days: 14
+
+  candidate-quality:
+    name: Untrusted candidate controller quality (no secrets)
+    if: needs.classify-changes.result == 'success' && needs.classify-changes.outputs.mode == 'controller'
+    needs:
+      - classify-changes
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    env:
+      UNTRUSTED_CANDIDATE_CODE: "true"
+
+    steps:
+      - name: Prepare isolated untrusted environment
+        run: printf 'UV_PROJECT_ENVIRONMENT=%s\n' "${RUNNER_TEMP}/candidate-quality-venv" >> "${GITHUB_ENV}"
+
+      - name: Check out exact untrusted candidate controller
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ inputs.conformance_sha || github.event.pull_request.head.sha || github.sha }}
+          path: candidate-controller
+          persist-credentials: false
+          allow-unsafe-pr-checkout: true
+
+      - name: Install uv and Python
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: 0.8.8
+          python-version: "3.13"
+          enable-cache: false
+
+      - name: Install locked untrusted candidate controller
+        run: uv sync --project candidate-controller --locked --extra dev
+
+      - name: Run non-authoritative candidate controller quality gates
+        working-directory: candidate-controller
+        run: |
+          set -euo pipefail
+          uv run --frozen pytest tests --strict-markers -q
+          uv run --frozen ruff check .
+          uv run --frozen mypy src/moo_conformance
+
+  trusted-quality:
+    name: Trusted controller validation
+    if: needs.classify-changes.result == 'success'
+    needs:
+      - classify-changes
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Prepare quality environment
+        run: printf 'UV_PROJECT_ENVIRONMENT=%s\n' "${RUNNER_TEMP}/toast-quality-venv" >> "${GITHUB_ENV}"
+
+      - name: Check out trusted controller
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: MongooseMoo/moo-conformance-tests
+          ref: ${{ github.event.pull_request.base.sha || github.workflow_sha }}
+          path: trusted-controller
+          persist-credentials: false
+
+      - name: Check out admitted conformance data
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ needs.classify-changes.outputs.mode == 'data' && (github.event.pull_request.head.repo.full_name || github.repository) || 'MongooseMoo/moo-conformance-tests' }}
+          ref: ${{ needs.classify-changes.outputs.mode == 'data' && (inputs.conformance_sha || github.event.pull_request.head.sha || github.sha) || (github.event.pull_request.base.sha || github.workflow_sha) }}
+          path: candidate-data
+          persist-credentials: false
+          allow-unsafe-pr-checkout: true
+
+      - name: Install uv and Python
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: 0.8.8
+          python-version: "3.13"
+          enable-cache: false
+
+      - name: Install locked trusted controller
+        run: uv sync --project trusted-controller --locked --extra dev
+
+      - name: Run trusted controller quality gates
+        working-directory: trusted-controller
+        run: |
+          set -euo pipefail
+          uv run --frozen pytest tests --strict-markers \
+            --junitxml="${RUNNER_TEMP}/harness-units.xml" -q
+          uv run --frozen ruff check .
+          uv run --frozen mypy src/moo_conformance
+
+      - name: Validate candidate data with trusted controller
+        run: |
+          set -euo pipefail
+          uv run --project trusted-controller --frozen python -m moo_conformance.paired_inventory \
+            --candidate-root="${GITHUB_WORKSPACE}/candidate-data" \
+            --candidate-tests="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_tests" \
+            --candidate-db="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/Test.db" \
+            --candidate-db-dir="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/startup" \
+            --output="${RUNNER_TEMP}/toast-candidate-inventory.json"
+          uv run --project trusted-controller --frozen pytest \
+            --collect-only --pyargs moo_conformance \
+            --candidate-root="${GITHUB_WORKSPACE}/candidate-data" \
+            --moo-suite-root="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_tests" \
+            --server-db="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/Test.db" \
+            --server-db-dir="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/startup" \
+            --strict-markers -q
+          uv run --project trusted-controller --frozen moo-lint-duplicates \
+            --tests-dir="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_tests" \
+            --baseline="${GITHUB_WORKSPACE}/trusted-controller/ci/duplicate-baseline.json"
+
+      - name: Validate candidate startup fixtures with trusted controller
+        run: |
+          set -euo pipefail
+          uv run --project trusted-controller --frozen python \
+            -m moo_conformance.startup_fixtures \
+            --candidate-root="${GITHUB_WORKSPACE}/candidate-data" \
+            --fixtures-dir="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/startup" \
+            --manifest="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/startup/startup-fixtures.sha256" \
+            --output="${RUNNER_TEMP}/startup-fixtures.json"
+
+      - name: Upload harness evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: harness-quality-evidence
+          path: |
+            ${{ runner.temp }}/harness-units.xml
+            ${{ runner.temp }}/toast-candidate-inventory.json
+            ${{ runner.temp }}/startup-fixtures.json
+          if-no-files-found: error
+          retention-days: 14
+
+  quality:
+    name: Harness, schema, duplicates, types, and lint
+    if: always()
+    needs:
+      - classify-changes
+      - candidate-quality
+      - trusted-quality
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Enforce staged quality gates
+        id: quality-gate
+        env:
+          CLASSIFICATION_RESULT: ${{ needs.classify-changes.result }}
+          CHANGE_MODE: ${{ needs.classify-changes.outputs.mode }}
+          CANDIDATE_QUALITY_RESULT: ${{ needs.candidate-quality.result }}
+          TRUSTED_QUALITY_RESULT: ${{ needs.trusted-quality.result }}
+        run: |
+          set -euo pipefail
+          test "$CLASSIFICATION_RESULT" = success
+          test "$TRUSTED_QUALITY_RESULT" = success
+          case "$CHANGE_MODE" in
+            controller) test "$CANDIDATE_QUALITY_RESULT" = success ;;
+            data|neutral) test "$CANDIDATE_QUALITY_RESULT" = skipped ;;
+            *) printf 'unadmitted change mode: %s\n' "$CHANGE_MODE" >&2; exit 1 ;;
+          esac
+
+  full-suite:
+    name: Toast / ${{ matrix.profile }}
+    if: >-
+      always() && needs.classify-changes.result == 'success' &&
+      needs.quality.result == 'success'
+    runs-on: ubuntu-24.04
+    needs:
+      - classify-changes
+      - quality
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - profile: 64bit-outbound-on
+            only_32_bits: "OFF"
+            outbound: "true"
+            outbound_argument: --outbound
+          - profile: 64bit-outbound-off
+            only_32_bits: "OFF"
+            outbound: "false"
+            outbound_argument: --no-outbound
+          - profile: 32bit-outbound-on
+            only_32_bits: "ON"
+            outbound: "true"
+            outbound_argument: --outbound
+
+    steps:
+      - name: Prepare evidence directory
+        run: |
+          reports_dir="${RUNNER_TEMP}/toast-conformance-${{ matrix.profile }}"
+          printf 'REPORTS_DIR=%s\n' "${reports_dir}" >> "${GITHUB_ENV}"
+          printf 'UV_PROJECT_ENVIRONMENT=%s\n' \
+            "${RUNNER_TEMP}/toast-conformance-venv-${{ matrix.profile }}" >> "${GITHUB_ENV}"
+          nonce=$(python3 -c 'import secrets; print(secrets.token_hex(32))')
+          printf 'ADMISSION_CONTEXT=toast:%s:%s:%s:%s:%s:%s\n' \
+            "${GITHUB_RUN_ID}" \
+            "${GITHUB_RUN_ATTEMPT}" \
+            "$nonce" \
+            "${{ inputs.conformance_sha || github.event.pull_request.head.sha || github.sha }}" \
+            "${{ matrix.profile }}" \
+            "aecc51e9449c6e7c95272f0f044b5ba38948459e" >> "${GITHUB_ENV}"
+          mkdir -p "${reports_dir}"
+          printf '%s\n' "$nonce" > "${reports_dir}/admission-nonce.txt"
+          printf 'run_id=%s\nprofile=%s\nrunner_os=%s\nrunner_arch=%s\n' \
+            "${GITHUB_RUN_ID}" "${{ matrix.profile }}" "${RUNNER_OS}" "${RUNNER_ARCH}" \
+            > "${reports_dir}/workflow-start.txt"
+
+      - name: Check out admitted conformance data
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ needs.classify-changes.outputs.mode == 'data' && (github.event.pull_request.head.repo.full_name || github.repository) || 'MongooseMoo/moo-conformance-tests' }}
+          ref: ${{ needs.classify-changes.outputs.mode == 'data' && (inputs.conformance_sha || github.event.pull_request.head.sha || github.sha) || (github.event.pull_request.base.sha || github.workflow_sha) }}
+          path: candidate-data
+          persist-credentials: false
+          allow-unsafe-pr-checkout: true
+
+      - name: Check out trusted controller
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: MongooseMoo/moo-conformance-tests
+          ref: ${{ github.event.pull_request.base.sha || github.workflow_sha }}
+          path: trusted-controller
+          persist-credentials: false
+
+      - name: Check out pinned Toast oracle
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: MongooseMoo/toaststunt
+          # Commit embedded in the canonical managed WSL Toast binary.
+          ref: aecc51e9449c6e7c95272f0f044b5ba38948459e
+          path: toast-oracle
+          persist-credentials: false
+
+      - name: Install uv and Python
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: 0.8.8
+          python-version: "3.13"
+          enable-cache: false
+
+      - name: Install Toast build dependencies
+        run: |
+          set -o pipefail
+          sudo apt-get update 2>&1 | tee "${REPORTS_DIR}/apt.log"
+          sudo apt-get install --yes --no-install-recommends \
+            aspell \
+            aspell-en \
+            bison \
+            build-essential \
+            cmake \
+            gperf \
+            libargon2-dev \
+            libaspell-dev \
+            libcrypt-dev \
+            libcurl4-openssl-dev \
+            libjemalloc-dev \
+            libpcre2-dev \
+            libsqlite3-dev \
+            libssl-dev \
+            nettle-dev \
+            ninja-build \
+            perl \
+            2>&1 | tee -a "${REPORTS_DIR}/apt.log"
+
+      - name: Install locked trusted controller
+        run: |
+          set -o pipefail
+          uv sync --project trusted-controller --locked \
+            2>&1 | tee "${REPORTS_DIR}/uv-sync.log"
+
+      - name: Validate candidate data boundary
+        run: |
+          uv run --project trusted-controller --frozen python -m moo_conformance.paired_inventory \
+            --candidate-root="${GITHUB_WORKSPACE}/candidate-data" \
+            --candidate-tests="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_tests" \
+            --candidate-db="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/Test.db" \
+            --candidate-db-dir="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/startup" \
+            --output="${REPORTS_DIR}/candidate-inventory.json"
+
+      - name: Verify tracked startup fixture manifest
+        run: |
+          set -euo pipefail
+          uv run --project trusted-controller --frozen python \
+            -m moo_conformance.startup_fixtures \
+            --candidate-root="${GITHUB_WORKSPACE}/candidate-data" \
+            --fixtures-dir="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/startup" \
+            --manifest="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/startup/startup-fixtures.sha256" \
+            --output="${REPORTS_DIR}/startup-fixtures.json" \
+            2>&1 | tee "${REPORTS_DIR}/startup-fixtures.log"
+
+      - name: Build Toast oracle
+        run: |
+          set -o pipefail
+          (
+            build_dir="${RUNNER_TEMP}/toast-build-${{ matrix.profile }}"
+            mkdir -p "$build_dir"
+            cd "$build_dir"
+            cmake -G Ninja \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DONLY_32_BITS=${{ matrix.only_32_bits }} \
+              -DUSE_JEMALLOC=ON \
+              -DCMAKE_C_FLAGS="-DBACKGROUND_TEST=1 -DSAVE_FINISHED_TASKS=15" \
+              -DCMAKE_CXX_FLAGS="-DBACKGROUND_TEST=1 -DSAVE_FINISHED_TASKS=15" \
+              "${GITHUB_WORKSPACE}/toast-oracle"
+            cmake --build . --target moo --parallel 2
+          ) 2>&1 | tee "${REPORTS_DIR}/toast-build.log"
+          test -x "${RUNNER_TEMP}/toast-build-${{ matrix.profile }}/moo"
+
+      - name: Record the exact Toast capability profile
+        env:
+          PROFILE_ID: ${{ matrix.profile }}
+          PROFILE_OUTBOUND: ${{ matrix.outbound }}
+          PROFILE_32BIT: ${{ matrix.only_32_bits }}
+        run: |
+          uv run --project trusted-controller --frozen python - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import json
+          import os
+
+          fixture = Path("candidate-data/src/moo_conformance/_db/Test.db")
+          profile = {
+              "profile_id": os.environ["PROFILE_ID"],
+              "implementation": "toaststunt",
+              "runtime_os": "linux",
+              "database_fixture": "moo_conformance/_db/Test.db",
+              "database_checksum": "sha256:" + hashlib.sha256(fixture.read_bytes()).hexdigest(),
+              "support_status": "supported",
+              "features": {
+                  "option.OUTBOUND_NETWORK": os.environ["PROFILE_OUTBOUND"] == "true",
+                  "option.PROMOTE_NUMBERS": False,
+                  "option.ONLY_32_BITS": os.environ["PROFILE_32BIT"] == "ON",
+                  "feature.maps": True,
+                  "feature.anonymous": True,
+                  "feature.index_extensions": True,
+                  "feature.fork": True,
+                  "feature.forking": True,
+                  "feature.tasks": True,
+                  "feature.exec_support": True,
+                  "feature.command_dispatch": True,
+                  "feature.server_options": True,
+              },
+          }
+          output = Path(os.environ["REPORTS_DIR"], "profile.json")
+          output.write_text(json.dumps(profile, indent=2, sort_keys=True) + "\n")
+          PY
+
+      - name: Run canonical capability admission against Toast
+        run: |
+          set -o pipefail
+          uv run --project trusted-controller --frozen pytest \
+            --pyargs moo_conformance \
+            -m admission \
+            --candidate-root="${GITHUB_WORKSPACE}/candidate-data" \
+            --moo-suite-root="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_tests" \
+            --server-command="${RUNNER_TEMP}/toast-build-${{ matrix.profile }}/moo --no-ipv6 --ipv4 127.0.0.1 ${{ matrix.outbound_argument }} --exec-dir {server_dir}/executables {db} {db}.new {port}" \
+            --server-db="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/Test.db" \
+            --server-db-dir="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/startup" \
+            --moo-host=127.0.0.1 \
+            --oracle-profile-manifest="${REPORTS_DIR}/profile.json" \
+            --target-profile-manifest="${REPORTS_DIR}/profile.json" \
+            --strict-markers \
+            --admission-evidence-output="${REPORTS_DIR}/admission.json" \
+            --admission-evidence-context="$ADMISSION_CONTEXT" \
+            --junitxml="${REPORTS_DIR}/admission.xml" \
+            -q -ra \
+            2>&1 | tee "${REPORTS_DIR}/admission.log"
+
+      - name: Regenerate and byte-compare shutdown fixtures with managed Toast
+        run: |
+          set -o pipefail
+          uv run --project trusted-controller --frozen pytest \
+            --pyargs moo_conformance \
+            -m conformance \
+            --moo-suite-path=fixture_provenance \
+            --candidate-root="${GITHUB_WORKSPACE}/candidate-data" \
+            --server-command="${RUNNER_TEMP}/toast-build-${{ matrix.profile }}/moo --no-ipv6 --ipv4 127.0.0.1 ${{ matrix.outbound_argument }} --exec-dir {server_dir}/executables {db} {db}.new {port}" \
+            --server-db-dir="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/startup" \
+            --moo-host=127.0.0.1 \
+            --oracle-profile-manifest="${REPORTS_DIR}/profile.json" \
+            --target-profile-manifest="${REPORTS_DIR}/profile.json" \
+            --fail-on-unexpected-skip \
+            --strict-markers \
+            --admission-evidence-input="${REPORTS_DIR}/admission.json" \
+            --admission-evidence-context="$ADMISSION_CONTEXT" \
+            --junitxml="${REPORTS_DIR}/toast-fixture-provenance.xml" \
+            -q -ra \
+            2>&1 | tee "${REPORTS_DIR}/toast-fixture-provenance.log"
+
+      - name: Run every packaged conformance case against Toast
+        run: |
+          set -o pipefail
+          uv run --project trusted-controller --frozen pytest \
+            --pyargs moo_conformance \
+            -m conformance \
+            --candidate-root="${GITHUB_WORKSPACE}/candidate-data" \
+            --moo-suite-root="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_tests" \
+            --server-command="${RUNNER_TEMP}/toast-build-${{ matrix.profile }}/moo --no-ipv6 --ipv4 127.0.0.1 ${{ matrix.outbound_argument }} --exec-dir {server_dir}/executables {db} {db}.new {port}" \
+            --server-db="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/Test.db" \
+            --server-db-dir="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/startup" \
+            --moo-host=127.0.0.1 \
+            --oracle-profile-manifest="${REPORTS_DIR}/profile.json" \
+            --target-profile-manifest="${REPORTS_DIR}/profile.json" \
+            --fail-on-unexpected-skip \
+            --strict-markers \
+            --admission-evidence-input="${REPORTS_DIR}/admission.json" \
+            --admission-evidence-context="$ADMISSION_CONTEXT" \
+            --junitxml="${REPORTS_DIR}/toast-conformance.xml" \
+            -q -ra \
+            2>&1 | tee "${REPORTS_DIR}/toast-conformance.log"
+
+      - name: Upload Toast conformance evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: toast-conformance-${{ matrix.profile }}
+          path: ${{ env.REPORTS_DIR }}
+          if-no-files-found: error
+          retention-days: 14
+
+  execution-ledger:
+    name: Full suite
+    if: always()
+    needs:
+      - classify-changes
+      - quality
+      - full-suite
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+
+    steps:
+      - name: Enforce prerequisite gates
+        env:
+          CLASSIFICATION_RESULT: ${{ needs.classify-changes.result }}
+          CHANGE_MODE: ${{ needs.classify-changes.outputs.mode }}
+          QUALITY_RESULT: ${{ needs.quality.result }}
+          TOAST_RESULT: ${{ needs.full-suite.result }}
+        run: |
+          test "$CLASSIFICATION_RESULT" = success
+          case "$CHANGE_MODE" in controller|data|neutral) ;; *) exit 1 ;; esac
+          test "$QUALITY_RESULT" = success
+          test "$TOAST_RESULT" = success
+
+      - name: Prepare ledger environment
+        run: printf 'UV_PROJECT_ENVIRONMENT=%s\n' "${RUNNER_TEMP}/toast-ledger-venv" >> "${GITHUB_ENV}"
+
+      - name: Check out admitted conformance data
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ needs.classify-changes.outputs.mode == 'data' && (github.event.pull_request.head.repo.full_name || github.repository) || 'MongooseMoo/moo-conformance-tests' }}
+          ref: ${{ needs.classify-changes.outputs.mode == 'data' && (inputs.conformance_sha || github.event.pull_request.head.sha || github.sha) || (github.event.pull_request.base.sha || github.workflow_sha) }}
+          path: candidate-data
+          persist-credentials: false
+          allow-unsafe-pr-checkout: true
+
+      - name: Check out trusted controller
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: MongooseMoo/moo-conformance-tests
+          ref: ${{ github.event.pull_request.base.sha || github.workflow_sha }}
+          path: trusted-controller
+          persist-credentials: false
+
+      - name: Install uv and Python
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: 0.8.8
+          python-version: "3.13"
+          enable-cache: false
+
+      - name: Install locked trusted controller
+        run: uv sync --project trusted-controller --locked
+
+      - name: Download every Toast profile report
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          pattern: toast-conformance-*
+          path: ${{ runner.temp }}/toast-profile-reports
+
+      - name: Recompute trusted candidate inventory
+        run: |
+          uv run --project trusted-controller --frozen python -m moo_conformance.paired_inventory \
+            --candidate-root="${GITHUB_WORKSPACE}/candidate-data" \
+            --candidate-tests="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_tests" \
+            --candidate-db="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/Test.db" \
+            --candidate-db-dir="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/startup" \
+            --output="${RUNNER_TEMP}/toast-candidate-inventory.json"
+
+      - name: Enforce exact profile union
+        run: |
+          uv run --project trusted-controller --frozen python -m moo_conformance.execution_ledger \
+            --report=64bit-outbound-on="${RUNNER_TEMP}/toast-profile-reports/toast-conformance-64bit-outbound-on/toast-conformance.xml" \
+            --report=64bit-outbound-off="${RUNNER_TEMP}/toast-profile-reports/toast-conformance-64bit-outbound-off/toast-conformance.xml" \
+            --report=32bit-outbound-on="${RUNNER_TEMP}/toast-profile-reports/toast-conformance-32bit-outbound-on/toast-conformance.xml" \
+            --inventory="${RUNNER_TEMP}/toast-candidate-inventory.json" \
+            --output="${RUNNER_TEMP}/toast-execution-ledger.json"
+
+      - name: Upload Toast execution ledger
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: toast-execution-ledger
+          path: |
+            ${{ runner.temp }}/toast-candidate-inventory.json
+            ${{ runner.temp }}/toast-execution-ledger.json
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Confirm exact zero-omission ledger evidence
+        id: full-suite-gate
+        run: |
+          test -s "${RUNNER_TEMP}/toast-candidate-inventory.json"
+          test -s "${RUNNER_TEMP}/toast-execution-ledger.json"
+
+  result:
+    name: Reusable Toast results
+    if: always()
+    needs:
+      - quality
+      - execution-ledger
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: none
+    outputs:
+      quality_result: ${{ steps.results.outputs.quality_result }}
+      full_suite_result: ${{ steps.results.outputs.full_suite_result }}
+
+    steps:
+      - name: Record reusable gate results
+        id: results
+        env:
+          QUALITY_RESULT: ${{ needs.quality.result }}
+          FULL_SUITE_RESULT: ${{ needs.execution-ledger.result }}
+        run: |
+          set -euo pipefail
+          printf 'quality_result=%s\n' "$QUALITY_RESULT" >> "$GITHUB_OUTPUT"
+          printf 'full_suite_result=%s\n' "$FULL_SUITE_RESULT" >> "$GITHUB_OUTPUT"

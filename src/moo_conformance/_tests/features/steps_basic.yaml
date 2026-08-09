@@ -40,6 +40,23 @@ tests:
       - run: "recycle({obj})"
         as: wizard
 
+  - name: top_level_satisfies_binds_result_value
+    code: "{1, 2, 3}"
+    expect:
+      satisfies: "length(__actual__) == 3"
+
+  - name: step_satisfies_binds_result_value
+    steps:
+      - run: "{1, 2, 3}"
+        expect:
+          satisfies: "length(__actual__) == 3"
+
+  - name: step_notifications_are_enforced
+    steps:
+      - run: 'notify(player, "step-notification"); return 1;'
+        expect:
+          notifications: ["step-notification"]
+
   # This test runs because 'length' builtin exists (not missing)
   - name: skip_if_builtin_missing_but_exists
     skip_if: "missing builtin.length"

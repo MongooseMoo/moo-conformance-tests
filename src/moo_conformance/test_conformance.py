@@ -290,6 +290,13 @@ def _enforce_suite_requirements(
             pytest.skip(config_skip_reason(key))
 
 
+def _enforce_suite_config_requirements(suite, moo_config) -> None:
+    """Reject missing harness inputs before changing managed server state."""
+    for key in suite.requires.config:
+        if moo_config.get(key) is None:
+            pytest.skip(config_skip_reason(key))
+
+
 def _enforce_skip_condition(test, runner, profile_features) -> None:
     if test.skip_if is None:
         return
@@ -364,6 +371,7 @@ def test_yaml_conformance(runner, yaml_test_case, moo_config, profile_metadata_g
 
     _skip_declared_yaml_case(suite, test)
 
+    _enforce_suite_config_requirements(suite, moo_config)
     runner.prepare_suite_environment(suite)
     _enforce_suite_requirements(suite, runner, moo_config, profile_metadata_gate)
     _enforce_skip_condition(test, runner, profile_metadata_gate)

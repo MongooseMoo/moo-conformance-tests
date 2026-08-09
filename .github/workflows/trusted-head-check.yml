@@ -1,0 +1,112 @@
+name: Trusted PR head check reporter
+
+on:
+  workflow_call:
+    inputs:
+      check_name:
+        required: true
+        type: string
+      head_sha:
+        required: true
+        type: string
+      conclusion:
+        required: true
+        type: string
+      summary:
+        required: true
+        type: string
+
+permissions: {}
+
+jobs:
+  report:
+    name: Report trusted conclusion on exact PR head
+    runs-on: ubuntu-24.04
+    permissions:
+      checks: write
+
+    steps:
+      - name: Create and verify the trusted head check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CHECK_NAME: ${{ inputs.check_name }}
+          TARGET_SHA: ${{ inputs.head_sha }}
+          CONCLUSION: ${{ inputs.conclusion }}
+          SUMMARY: ${{ inputs.summary }}
+        run: |
+          set -euo pipefail
+          [[ "$TARGET_SHA" =~ ^[0-9a-f]{40}$ ]]
+          case "$CONCLUSION" in
+            success|failure|neutral|cancelled|timed_out|action_required|skipped) ;;
+            *) printf 'unsupported check conclusion: %s\n' "$CONCLUSION" >&2; exit 1 ;;
+          esac
+          test -n "$CHECK_NAME"
+          test "${#CHECK_NAME}" -le 100
+          test -n "$SUMMARY"
+
+          details_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/attempts/${GITHUB_RUN_ATTEMPT}"
+          external_id="trusted-head-check:${GITHUB_RUN_ID}:${GITHUB_RUN_ATTEMPT}:${TARGET_SHA}:${CHECK_NAME}"
+          initial_response="${RUNNER_TEMP}/trusted-head-check-initial.json"
+          jq -n \
+            --arg name "$CHECK_NAME" \
+            --arg head_sha "$TARGET_SHA" \
+            --arg details_url "$details_url" \
+            --arg external_id "$external_id" \
+            '{
+              "name":$name,
+              "head_sha":$head_sha,
+              "status":"completed",
+              "conclusion":"failure",
+              "details_url":$details_url,
+              "external_id":$external_id,
+              "output":{
+                "title":$name,
+                "summary":"Trusted head-check reporting did not complete."
+              }
+            }' | gh api --method POST \
+              -H 'Accept: application/vnd.github+json' \
+              -H 'X-GitHub-Api-Version: 2022-11-28' \
+              "repos/${GITHUB_REPOSITORY}/check-runs" \
+              --input - > "$initial_response"
+
+          check_id=$(jq -er \
+            --arg sha "$TARGET_SHA" \
+            --arg name "$CHECK_NAME" \
+            'select(
+              .app.slug == "github-actions" and
+              .head_sha == $sha and
+              .name == $name and
+              .status == "completed" and
+              .conclusion == "failure" and
+              (.id | type == "number")
+            ) | .id' \
+            "$initial_response")
+          [[ "$check_id" =~ ^[0-9]+$ ]]
+
+          final_response="${RUNNER_TEMP}/trusted-head-check-final.json"
+          jq -n \
+            --arg name "$CHECK_NAME" \
+            --arg conclusion "$CONCLUSION" \
+            --arg summary "$SUMMARY" \
+            --arg details_url "$details_url" \
+            '{
+              "status":"completed",
+              "conclusion":$conclusion,
+              "details_url":$details_url,
+              "output":{"title":$name,"summary":$summary}
+            }' | gh api --method PATCH \
+              -H 'Accept: application/vnd.github+json' \
+              -H 'X-GitHub-Api-Version: 2022-11-28' \
+              "repos/${GITHUB_REPOSITORY}/check-runs/${check_id}" \
+              --input - > "$final_response"
+
+          jq -e \
+            --arg sha "$TARGET_SHA" \
+            --arg name "$CHECK_NAME" \
+            --arg conclusion "$CONCLUSION" \
+            '.app.slug == "github-actions" and
+             .head_sha == $sha and
+             .name == $name and
+             .status == "completed" and
+             .conclusion == $conclusion' \
+            "$final_response"

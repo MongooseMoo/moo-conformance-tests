@@ -267,7 +267,9 @@ class OutputExpect:
 class Expectation:
     """Expected test outcome.
 
-    Exactly ONE of these should be set:
+    Every configured assertion is enforced. Compatible assertions may be
+    combined.
+
     - value: Exact value match
     - error: MOO error code (E_TYPE, E_DIV, etc.)
     - type: Type check (int, float, str, list, map, obj, err)
@@ -744,10 +746,27 @@ def _parse_output_expect(data: dict | str | list, context: str) -> OutputExpect:
     )
 
 
-def _parse_expectation(data: dict, context: str) -> Expectation:
+def _parse_expectation(data: dict, context: str, *, route: str = "result") -> Expectation:
     """Parse an expectation block."""
     data = _require_mapping(data, context)
     _reject_unknown_fields(data, EXPECTATION_FIELDS, context)
+    if route in {"command", "send", "send_bytes", "read_connection"}:
+        unsupported = set(data) - {"output"}
+        if unsupported:
+            raise ValueError(f"{context}: {route} only supports output expectations")
+    elif route == "result":
+        if 'output' in data:
+            raise ValueError(f"{context} does not support output expectations")
+    elif route in {"run", "verb_setup"}:
+        if 'output' in data:
+            raise ValueError(f"{context}: {route} does not support output expectations")
+    else:
+        raise ValueError(f"{context}: {route} does not produce an expectation result")
+
+    satisfies = data.get('satisfies')
+    if satisfies is not None and "__actual__" not in satisfies:
+        raise ValueError(f"{context} satisfies must reference __actual__")
+
     output = None
     if 'output' in data:
         output = _parse_output_expect(data['output'], f"{context} output")
@@ -915,9 +934,12 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
     if action_count > 1:
         raise ValueError("Test step must have exactly one action field")
 
+    action = next(field for field in STEP_ACTION_FIELDS if field in data)
     expect = None
     if 'expect' in data:
-        expect = _parse_expectation(data['expect'], f"{context} expectation")
+        expect = _parse_expectation(
+            data['expect'], f"{context} expectation", route=action
+        )
 
     # Parse verb_setup if present
     verb_setup = None
@@ -1178,8 +1200,15 @@ def _parse_test_case(data: dict, context: str) -> MooTestCase:
         except ValueError as exc:
             raise ValueError(f"{context} skip_if: {exc}") from exc
 
-    # Parse expectation
-    expect = _parse_expectation(data.get('expect', {}), f"{context} expectation")
+    if data.get('steps') and 'expect' in data:
+        raise ValueError("multi-step test cannot have a top-level expectation")
+
+    # A missing top-level expectation means only that execution must succeed.
+    expect = (
+        _parse_expectation(data['expect'], f"{context} expectation")
+        if 'expect' in data
+        else Expectation()
+    )
 
     # Parse test setup/teardown
     test_setup = None
@@ -1198,6 +1227,8 @@ def _parse_test_case(data: dict, context: str) -> MooTestCase:
     # Parse cleanup steps
     cleanup = []
     for cleanup_index, cleanup_data in enumerate(data.get('cleanup', [])):
+        if isinstance(cleanup_data, dict) and 'expect' in cleanup_data:
+            raise ValueError("cleanup steps cannot have expectations")
         cleanup.append(
             _parse_test_step(cleanup_data, f"{context} cleanup step #{cleanup_index + 1}")
         )

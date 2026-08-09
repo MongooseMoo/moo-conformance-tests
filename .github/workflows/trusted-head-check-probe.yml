@@ -1,0 +1,22 @@
+name: Trusted PR head check probe
+
+on:
+  pull_request_target:
+
+permissions: {}
+
+concurrency:
+  group: trusted-head-check-probe-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  report:
+    name: Report trusted PR head status probe
+    uses: ./.github/workflows/trusted-head-check.yml
+    permissions:
+      checks: write
+    with:
+      check_name: Trusted PR head status probe
+      head_sha: ${{ github.event.pull_request.head.sha }}
+      conclusion: success
+      summary: Base-owned workflow reported on the exact pull request head.

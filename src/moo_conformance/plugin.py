@@ -46,7 +46,7 @@ from .path_confinement import (
 from .profile_gate import ProfileGateError, load_manifest, validate_manifest_paths
 from .runner import YamlTestRunner
 from .schema import MooTestCase, MooTestSuite, validate_test_suite
-from .server import ManagedServer
+from .server import ManagedServer, ManagedServerLifecycleError
 from .transport import MooTransport, SocketTransport
 
 # Global capability manager (session-scoped)
@@ -110,6 +110,20 @@ def _record_canonical_admission_report(item, report) -> None:
             "canonical capability admission did not pass; packaged conformance "
             "was not executed"
         )
+
+
+def _record_managed_lifecycle_failure(item, call, report) -> None:
+    """Stop packaged execution after one root managed-server lifecycle failure."""
+    if not report.failed or not _is_packaged_conformance_item(item):
+        return
+    excinfo = getattr(call, "excinfo", None)
+    failure = getattr(excinfo, "value", None)
+    if not isinstance(failure, ManagedServerLifecycleError):
+        return
+    item.session.shouldfail = (
+        "managed server lifecycle failed; remaining packaged conformance was not executed: "
+        f"{failure}"
+    )
 
 
 def get_tests_dir() -> Path:
@@ -704,6 +718,8 @@ def pytest_runtest_makereport(item, call):
 
     if _is_canonical_admission_item(item):
         _record_canonical_admission_report(item, report)
+
+    _record_managed_lifecycle_failure(item, call, report)
 
     if item.config.getoption("--fail-on-unexpected-skip"):
         _reject_unexpected_runtime_skip(item, report)

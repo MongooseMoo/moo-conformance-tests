@@ -125,7 +125,9 @@ jobs:
     name: Complete Toast admission
     needs:
       - validate-inputs
-    uses: ./.github/workflows/toast-conformance.yml
+    permissions:
+      contents: read
+    uses: ./.github/workflows/toast-conformance-core.yml
     with:
       conformance_sha: ${{ needs.validate-inputs.outputs.conformance_sha }}
 
@@ -278,13 +280,14 @@ jobs:
 
       - name: Run canonical capability admission against Barn
         id: admission
+        working-directory: controller
         env:
           REPORTS_DIR: ${{ runner.temp }}/paired-evidence
           ADMISSION_CONTEXT: ${{ steps.trust-context.outputs.admission_context }}
         run: |
           set -o pipefail
           set +e
-          uv run --project controller --frozen pytest \
+          uv run --frozen pytest \
             --pyargs moo_conformance \
             -m admission \
             --candidate-root="${GITHUB_WORKSPACE}/candidate-data" \
@@ -310,13 +313,14 @@ jobs:
       - name: Run every packaged conformance case against Barn
         id: packaged
         if: steps.admission.outputs.exit_code == '0'
+        working-directory: controller
         env:
           REPORTS_DIR: ${{ runner.temp }}/paired-evidence
           ADMISSION_CONTEXT: ${{ steps.trust-context.outputs.admission_context }}
         run: |
           set -o pipefail
           set +e
-          uv run --project controller --frozen pytest \
+          uv run --frozen pytest \
             --pyargs moo_conformance \
             -m conformance \
             --candidate-root="${GITHUB_WORKSPACE}/candidate-data" \

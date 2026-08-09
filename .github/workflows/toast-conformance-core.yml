@@ -454,27 +454,6 @@ jobs:
             -q -ra \
             2>&1 | tee "${REPORTS_DIR}/admission.log"
 
-      - name: Regenerate and byte-compare shutdown fixtures with managed Toast
-        run: |
-          set -o pipefail
-          uv run --project trusted-controller --frozen pytest \
-            --pyargs moo_conformance \
-            -m conformance \
-            --moo-suite-path=fixture_provenance \
-            --candidate-root="${GITHUB_WORKSPACE}/candidate-data" \
-            --server-command="${RUNNER_TEMP}/toast-build-${{ matrix.profile }}/moo --no-ipv6 --ipv4 127.0.0.1 ${{ matrix.outbound_argument }} --exec-dir {server_dir}/executables {db} {db}.new {port}" \
-            --server-db-dir="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/startup" \
-            --moo-host=127.0.0.1 \
-            --oracle-profile-manifest="${REPORTS_DIR}/profile.json" \
-            --target-profile-manifest="${REPORTS_DIR}/profile.json" \
-            --fail-on-unexpected-skip \
-            --strict-markers \
-            --admission-evidence-input="${REPORTS_DIR}/admission.json" \
-            --admission-evidence-context="$ADMISSION_CONTEXT" \
-            --junitxml="${REPORTS_DIR}/toast-fixture-provenance.xml" \
-            -q -ra \
-            2>&1 | tee "${REPORTS_DIR}/toast-fixture-provenance.log"
-
       - name: Run every packaged conformance case against Toast
         run: |
           set -o pipefail

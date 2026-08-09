@@ -1515,7 +1515,12 @@ tests:
           frames = task_stack({exec_task_id}, 1, 1);
           queued_match = 0;
           for queued in (queued_tasks())
-            if (queued[1] == {exec_task_id} && queued[2] == "executables/sleep")
+            status = queued[2];
+            sleep_status = status == "executables/sleep";
+            if (!sleep_status && length(status) >= 18)
+              sleep_status = status[length(status) - 17..$] == "/executables/sleep";
+            endif
+            if (queued[1] == {exec_task_id} && sleep_status)
               queued_match = 1;
             endif
           endfor

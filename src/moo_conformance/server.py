@@ -8,6 +8,7 @@ externally managed server (the existing behavior).
 import os
 import shlex
 import shutil
+import signal
 import socket
 import stat
 import subprocess
@@ -16,6 +17,68 @@ import time
 from importlib import resources
 from pathlib import Path
 from typing import TextIO
+
+FileSnapshotSignature = tuple[int, int, int, int, int]
+
+
+def file_snapshot_signature(info: os.stat_result) -> FileSnapshotSignature:
+    """Return identity and mutation fields used by launch/test freshness gates."""
+    return (
+        info.st_dev,
+        info.st_ino,
+        info.st_size,
+        info.st_mtime_ns,
+        info.st_ctime_ns,
+    )
+
+
+def snapshot_regular_files(root: str | os.PathLike[str]) -> dict[str, FileSnapshotSignature]:
+    """Snapshot regular files under ``root`` without traversing links/reparse points."""
+    snapshot: dict[str, FileSnapshotSignature] = {}
+    root_path = os.fspath(root)
+    stack = [(root_path, "")]
+    while stack:
+        directory, relative_directory = stack.pop()
+        entries = list(os.scandir(directory))
+        for entry in entries:
+            # DirEntry.stat() can report zero identity fields for regular
+            # files on Windows; os.stat() preserves the handle-comparable ID.
+            info = os.stat(entry.path, follow_symlinks=False)
+            attributes = getattr(info, "st_file_attributes", 0)
+            is_reparse = bool(attributes & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0))
+            if stat.S_ISLNK(info.st_mode) or is_reparse:
+                continue
+            relative = os.path.join(relative_directory, entry.name)
+            if stat.S_ISDIR(info.st_mode):
+                stack.append((entry.path, relative))
+            elif stat.S_ISREG(info.st_mode):
+                snapshot[relative.replace(os.sep, "/")] = file_snapshot_signature(info)
+    return snapshot
+
+
+def normalize_process_termination(
+    returncode: int,
+    platform_name: str | None = None,
+    *,
+    abort_signal_number: int | None = None,
+) -> str | None:
+    """Normalize narrowly proven process statuses to a portable termination.
+
+    ``abort`` accepts only a direct POSIX SIGABRT return code or the Windows CRT
+    abort status 3.  A positive wrapper/ordinary exit status is ambiguous and
+    therefore remains unrecognized, as does every other code or signal.
+    """
+    platform_name = os.name if platform_name is None else platform_name
+    if platform_name == "nt":
+        return "abort" if returncode == 3 else None
+    abort_signal_number = (
+        int(signal.SIGABRT)
+        if abort_signal_number is None
+        else abort_signal_number
+    )
+    if platform_name == "posix" and returncode == -abort_signal_number:
+        return "abort"
+    return None
 
 
 class ManagedServerLifecycleError(RuntimeError):
@@ -66,6 +129,8 @@ class ManagedServer:
         self._log_file: TextIO | None = None
         self._db_copy_path: Path | None = None
         self._manifest_path: Path | None = None
+        self._process_log_offset: int | None = None
+        self._process_file_snapshot: dict[str, FileSnapshotSignature] | None = None
         self._lifecycle_failure: ManagedServerLifecycleError | None = None
 
     @property
@@ -87,6 +152,20 @@ class ManagedServer:
         if self._manifest_path is None:
             raise RuntimeError("Server not started")
         return self._manifest_path
+
+    @property
+    def process_log_offset(self) -> int:
+        """Append-only log boundary recorded immediately before this launch."""
+        if self._process_log_offset is None:
+            raise RuntimeError("Server not started")
+        return self._process_log_offset
+
+    @property
+    def process_file_snapshot(self) -> dict[str, FileSnapshotSignature]:
+        """Regular-file state captured immediately before this process launch."""
+        if self._process_file_snapshot is None:
+            raise RuntimeError("Server not started")
+        return dict(self._process_file_snapshot)
 
     def start(self, db_path: Path | None = None, wait_for_port: bool = True) -> None:
         """Start the server subprocess.
@@ -178,6 +257,9 @@ class ManagedServer:
             # Open log file for server output
             self._log_path = os.path.join(self._temp_dir, "server.log")
             self._log_file = open(self._log_path, "a")
+            self._log_file.flush()
+            self._process_log_offset = os.path.getsize(self._log_path)
+            self._process_file_snapshot = snapshot_regular_files(self._temp_dir)
 
             # Start server process
             self._process = subprocess.Popen(
@@ -243,6 +325,8 @@ class ManagedServer:
             self._temp_dir = None
             self._db_copy_path = None
             self._manifest_path = None
+            self._process_log_offset = None
+            self._process_file_snapshot = None
 
     def write_stdin(self, text: str) -> None:
         """Write text to the managed server process stdin."""
@@ -284,6 +368,17 @@ class ManagedServer:
                 "Managed server exited unexpectedly while a live transport is required",
                 returncode=returncode,
             )
+
+    def wait_for_exit(self, timeout_ms: int) -> int:
+        """Wait for natural process exit without terminating or killing it."""
+        if self._process is None:
+            raise RuntimeError("Server process is not started")
+        try:
+            return self._process.wait(timeout=timeout_ms / 1000.0)
+        except subprocess.TimeoutExpired as exc:
+            raise TimeoutError(
+                f"Server did not exit naturally within {timeout_ms} ms"
+            ) from exc
 
     def restart(
         self, db_path: Path | None = None, wait_for_port: bool = True, down_ms: int = 0

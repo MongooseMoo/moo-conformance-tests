@@ -71,7 +71,7 @@ Regenerate or verify the checked-in YAML:
 
 ```powershell
 $env:UV_PROJECT_ENVIRONMENT = ".venv-win"
-uv run python tools/generate_toast_semantic_matrices.py --check
+uv run python -m moo_conformance.toast_semantic_matrix_generator --check
 ```
 
 The campaign is complete only when all of the following are true:

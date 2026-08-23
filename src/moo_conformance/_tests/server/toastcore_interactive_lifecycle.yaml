@@ -2,6 +2,8 @@ name: toastcore_interactive_lifecycle
 description: ToastCore login, room, command, and database lifecycle behavior.
 
 requires:
+  features:
+    - toastcore_fixture
   builtins:
     - add_verb
     - add_property

@@ -546,6 +546,7 @@ def test_dynamic_admission_uses_wizard_after_programmer_case(
 
     assert runner.transport.executed_as == ["wizard"] * len(results)
     assert runner.transport.current_user == "wizard"
+    assert runner.transport.executed[-1].lstrip().startswith(";")
 
 
 def test_mutable_capabilities_are_snapshotted_before_order_contamination() -> None:

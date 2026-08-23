@@ -23,6 +23,7 @@ from .schema import (
     TestStep,
     WaitForServerExit,
     WriteFile,
+    force_statement_mode,
 )
 from .server import (
     FileSnapshotSignature,
@@ -751,6 +752,8 @@ class YamlTestRunner:
                             code = f"return {stripped};"
                         else:
                             code = f"return {stripped}"
+                    else:
+                        code = force_statement_mode(code)
 
                     result = self.transport.execute(code)
 

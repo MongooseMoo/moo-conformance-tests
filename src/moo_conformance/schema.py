@@ -464,7 +464,7 @@ class MooTestCase:
 
     # Code to execute - ONE of these should be set:
     code: str | None = None       # Expression (wrapped in "return <code>;")
-    statement: str | None = None  # Statement(s) - executed as-is
+    statement: str | None = None  # Statement(s) - forced into database statement mode
     verb: str | None = None       # Verb spec like "#0:do_login_command"
     steps: list["TestStep"] = field(default_factory=list)  # Multi-step test
 
@@ -494,7 +494,7 @@ class MooTestCase:
 
         Returns the code wrapped appropriately:
         - code: wrapped in "return <code>;"
-        - statement: used as-is
+        - statement: prefixed with an explicit statement-mode marker
         - verb: generates verb call code
         - steps: raises ValueError (steps are handled separately by runner)
         """
@@ -510,13 +510,20 @@ class MooTestCase:
             return f"return {code};"
         elif self.statement:
             stmt = self.statement.strip()
-            return stmt if stmt.endswith(";") else stmt + ";"
+            stmt = stmt if stmt.endswith(";") else stmt + ";"
+            return force_statement_mode(stmt)
         elif self.verb:
             # Parse verb spec like "#0:do_login_command"
             args_str = ", ".join(_value_to_moo(a) for a in self.args)
             return f"return {self.verb}({args_str});"
         else:
             raise ValueError(f"Test '{self.name}' has no code, statement, verb, or steps")
+
+
+def force_statement_mode(code: str) -> str:
+    """Prefix a MOO program so database eval verbs cannot treat it as an expression."""
+    stripped = code.strip()
+    return stripped if stripped.startswith(";") else f"; {stripped}"
 
 
 @dataclass

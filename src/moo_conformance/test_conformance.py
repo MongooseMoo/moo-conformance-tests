@@ -21,6 +21,7 @@ from .admission import (
 from .conditions import config_skip_reason, parse_min_version, parse_skip_conditions
 from .moo_types import MooError
 from .plugin import _skip_declared_yaml_case
+from .schema import force_statement_mode
 
 _builtin_cache: dict[str, bool] = {}
 _feature_cache: set[str] | None = None
@@ -168,7 +169,15 @@ def _has_feature(
 def _dynamic_feature(feature: str, runner, statement: str) -> bool:
     """Probe runtime capabilities that are not advertised by server_version()."""
     if feature not in _dynamic_feature_cache:
-        result = _execute_probe(runner, f"feature {feature}", statement)
+        # Database eval verbs may assume expression mode unless the supplied
+        # program begins with a statement marker.  The transport supplies the
+        # eval shortcut semicolon; this second semicolon is part of the payload
+        # and forces the documented multi-statement probe to run to completion.
+        result = _execute_probe(
+            runner,
+            f"feature {feature}",
+            force_statement_mode(statement),
+        )
         if not result.success:
             raise _probe_failure(f"feature {feature}", result)
         if type(result.value) is not int or result.value not in (0, 1):

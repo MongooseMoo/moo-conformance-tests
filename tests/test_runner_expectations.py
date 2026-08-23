@@ -30,6 +30,40 @@ class FakeTransport:
         return next(self.results)
 
 
+def test_declared_statement_forces_database_statement_mode() -> None:
+    transport = FakeTransport([ExecutionResult(success=True, value=1)])
+    runner = YamlTestRunner(transport)  # type: ignore[arg-type]
+
+    runner.run_test(
+        MooTestCase(
+            name="statement mode",
+            statement="value = 1; return value;",
+            expect=Expectation(value=1),
+        )
+    )
+
+    assert transport.executed == ["; value = 1; return value;"]
+
+
+def test_multistatement_run_step_forces_database_statement_mode() -> None:
+    transport = FakeTransport([ExecutionResult(success=True, value=1)])
+    runner = YamlTestRunner(transport)  # type: ignore[arg-type]
+
+    runner.run_test(
+        MooTestCase(
+            name="step statement mode",
+            steps=[
+                MooTestStep(
+                    run="value = 1; return value;",
+                    expect=Expectation(value=1),
+                )
+            ],
+        )
+    )
+
+    assert transport.executed == ["; value = 1; return value;"]
+
+
 @pytest.mark.parametrize(
     ("expectation", "result", "message"),
     [

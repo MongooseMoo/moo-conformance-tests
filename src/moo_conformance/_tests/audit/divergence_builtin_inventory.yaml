@@ -1,15 +1,9 @@
 name: divergence_builtin_inventory
 description: >
-  ToastStunt's builtin inventory is the specification: servers must not expose
-  builtins Toast does not define. function_info(name) raises E_INVARG for every
-  name absent from the stock Toast function registry (2026-08-30 campaign).
+  Builtin names absent from every supported Toast CI profile. Compile-conditional
+  builtins are covered by feature-aware suites instead of universal absence checks.
 
 tests:
-  - name: builtin_inventory_no_background_test
-    code: "function_info(\"background_test\")"
-    expect:
-      error: E_INVARG
-
   - name: builtin_inventory_no_capitalize
     code: "function_info(\"capitalize\")"
     expect:
@@ -25,11 +19,6 @@ tests:
     expect:
       error: E_INVARG
 
-  - name: builtin_inventory_no_finished_tasks
-    code: "function_info(\"finished_tasks\")"
-    expect:
-      error: E_INVARG
-
   - name: builtin_inventory_no_implode
     code: "function_info(\"implode\")"
     expect:
@@ -37,11 +26,6 @@ tests:
 
   - name: builtin_inventory_no_ltrim
     code: "function_info(\"ltrim\")"
-    expect:
-      error: E_INVARG
-
-  - name: builtin_inventory_no_malloc_stats
-    code: "function_info(\"malloc_stats\")"
     expect:
       error: E_INVARG
 

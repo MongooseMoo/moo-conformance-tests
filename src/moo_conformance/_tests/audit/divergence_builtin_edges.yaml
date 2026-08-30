@@ -286,6 +286,7 @@ tests:
         a: 1
 
   - name: parse_json_maxint_stays_integer
+    skip_if: "not feature.64bit"
     code: "parse_json(\"9223372036854775807\") == 9223372036854775807"
     expect:
       value: 1
@@ -312,12 +313,14 @@ tests:
 
   - name: ctime_maxint_clamps_to_toast_year
     permission: wizard
+    skip_if: "not feature.64bit"
     code: "index(ctime(9223372036854775807), \"2146059811\") != 0"
     expect:
       value: 1
 
   - name: ctime_negative_maxint_is_invarg
     permission: wizard
+    skip_if: "not feature.64bit"
     code: "ctime(-9223372036854775807)"
     expect:
       error: E_INVARG

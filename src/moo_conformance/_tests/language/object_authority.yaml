@@ -58,7 +58,7 @@ tests:
         - "#-9223372036854775808"
         - "#9223372036854775807"
 
-  - name: scalar_order_and_full_width_object_map_keys_are_consistent
+  - name: scalar_equality_order_and_narrowed_map_comparator_are_distinct
     skip_if: "not feature.64bit"
     statement: |
       small = #0;

@@ -555,7 +555,7 @@ tests:
     expect:
       value: 1
 
-  - name: next_recycled_object_includes_recycled_max_object
+  - name: next_recycled_object_returns_zero_when_none
     permission: wizard
     statement: |
       o = create($nothing);

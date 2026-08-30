@@ -486,7 +486,7 @@ tests:
     expect:
       error: E_QUOTA
 
-  - name: map_literal_checks_max_map_value_bytes
+  - name: map_literal_bypasses_map_value_bytes
     permission: wizard
     statement: |
       s = "return [";

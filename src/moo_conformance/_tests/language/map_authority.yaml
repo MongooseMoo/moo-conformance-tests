@@ -15,7 +15,7 @@ requires:
     - recycle
     - toliteral
 tests:
-  - name: full_width_integer_map_keys_remain_distinct
+  - name: int_keys_separated_by_2_to_32_collide_and_replace
     skip_if: "not feature.64bit"
     statement: |
       mapping = [0 -> "zero", 4294967296 -> "wide"];

@@ -256,7 +256,7 @@ jobs:
       - quality
     timeout-minutes: 60
     env:
-      TOAST_ORACLE_SHA: ${{ needs.classify-changes.outputs.mode == 'data' && 'eaaa1972f0993a1247f787dbf2dd5a01702ef442' || 'aecc51e9449c6e7c95272f0f044b5ba38948459e' }}
+      TOAST_ORACLE_SHA: eaaa1972f0993a1247f787dbf2dd5a01702ef442
     strategy:
       fail-fast: false
       matrix:
@@ -317,8 +317,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: MongooseMoo/toaststunt
-          # Data candidates use the hardened multiple-inheritance oracle; controller
-          # validation stays on the current base-data oracle until that data lands.
+          # Hardened multiple-inheritance reference implementation for every mode.
           ref: ${{ env.TOAST_ORACLE_SHA }}
           path: toast-oracle
           persist-credentials: false

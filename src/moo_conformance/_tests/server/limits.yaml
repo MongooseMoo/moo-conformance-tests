@@ -500,14 +500,9 @@ tests:
       $server_options.max_list_value_bytes = 1000000;
       $server_options.max_map_value_bytes = 1;
       load_server_options();
-      size = value_bytes(eval(s));
-      $server_options.max_list_value_bytes = size - 1;
-      $server_options.max_map_value_bytes = 1000000;
-      load_server_options();
-      result = eval(s);
-      return value_bytes(result) > (size - 1);
+      return eval(s);
     expect:
-      value: 1
+      error: E_QUOTA
 
   - name: string_concat_limit
     permission: wizard

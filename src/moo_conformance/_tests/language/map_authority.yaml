@@ -1,7 +1,7 @@
 name: map_authority
 description: >
-  Pinned-Toast authority for unresolved MAP comparator, key-surface,
-  literal-evaluation, and multi-delete error behavior.
+  Portable MAP comparator, key-surface, literal-evaluation, and multi-delete
+  error behavior.
 requires:
   builtins:
     - create
@@ -15,7 +15,7 @@ requires:
     - recycle
     - toliteral
 tests:
-  - name: int_keys_separated_by_2_to_32_collide_and_replace
+  - name: full_width_integer_map_keys_remain_distinct
     skip_if: "not feature.64bit"
     statement: |
       mapping = [0 -> "zero", 4294967296 -> "wide"];
@@ -29,11 +29,11 @@ tests:
       };
     expect:
       value:
-        - [1, "wide", "wide", [4294967296]]
-        - 1
+        - [2, "zero", "wide", [0, 4294967296]]
+        - 2
         - "replacement"
-        - "replacement"
-        - [0]
+        - "wide"
+        - [0, 4294967296]
 
   - name: anon_keys_work_in_vm_and_mapvalues_but_not_key_builtins
     statement: |

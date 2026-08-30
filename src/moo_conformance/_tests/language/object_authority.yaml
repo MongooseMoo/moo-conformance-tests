@@ -1,7 +1,7 @@
 name: object_authority
 description: >
-  Toast-authoritative object-reference boundaries, ordering, map comparator,
-  scalar copy, and indexed-base errors.
+  Portable object-reference boundaries, ordering, map comparator, scalar copy,
+  and indexed-base errors.
 requires:
   builtins:
     - length
@@ -58,7 +58,7 @@ tests:
         - "#-9223372036854775808"
         - "#9223372036854775807"
 
-  - name: scalar_equality_order_and_narrowed_map_comparator_are_distinct
+  - name: scalar_order_and_full_width_object_map_keys_are_consistent
     skip_if: "not feature.64bit"
     statement: |
       small = #0;
@@ -75,7 +75,7 @@ tests:
         values[large]
       };
     expect:
-      value: [1, 1, 1, 1, 1, "large", "large"]
+      value: [1, 1, 1, 1, 2, "small", "large"]
 
   - name: object_scalar_index_read_is_type_error
     code: '#1[1]'

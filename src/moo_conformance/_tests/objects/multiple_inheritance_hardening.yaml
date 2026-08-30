@@ -1,0 +1,359 @@
+# Regression provenance: ToastStunt commits 384e2fb through 02f6040.
+# The assertions below define portable MOO behavior; they do not depend on
+# ToastStunt implementation details.
+# Membership assertions explicitly compare `in` with zero because MOO returns
+# the matching list position rather than a boolean.
+name: objects::multiple_inheritance_hardening
+description: >
+  Multiple-parent object graphs preserve their topology, inherited state, and
+  bounded traversal behavior across validation, renumbering, recreation, and
+  reparenting operations.
+requires:
+  builtins:
+    - add_property
+    - ancestors
+    - children
+    - chparent
+    - chparents
+    - create
+    - delete_property
+    - ftime
+    - isa
+    - max
+    - parents
+    - recreate
+    - recycle
+    - renumber
+    - valid
+tests:
+  - name: duplicate_parents_are_rejected_at_every_position
+    description: Duplicate entries are invalid anywhere in a multiple-parent list.
+    permission: wizard
+    statement: |
+      a = #-1;
+      b = #-1;
+      c = #-1;
+      x = #-1;
+      try
+        a = create($nothing);
+        b = create($nothing);
+        c = create($nothing);
+        x = create($nothing);
+        first_repeated = `chparents(x, {a, b, a}) ! ANY';
+        last_repeated = `chparents(x, {a, b, b}) ! ANY';
+        fourth_repeated = `chparents(x, {a, b, c, c}) ! ANY';
+        middle_repeated = `chparents(x, {a, b, c, b}) ! ANY';
+        distinct_result = chparents(x, {a, b, c});
+        return {first_repeated, last_repeated, fourth_repeated, middle_repeated,
+                distinct_result, parents(x) == {a, b, c}};
+      finally
+        if (valid(x))
+          chparents(x, {});
+          recycle(x);
+        endif
+        if (valid(c))
+          recycle(c);
+        endif
+        if (valid(b))
+          recycle(b);
+        endif
+        if (valid(a))
+          recycle(a);
+        endif
+      endtry
+    expect:
+      value: [E_INVARG, E_INVARG, E_INVARG, E_INVARG, 0, 1]
+
+  - name: renumbering_a_parent_preserves_the_multiple_parent_graph
+    description: >
+      Renumbering one parent updates both sides of a multiple-parent link established
+      by an explicit parent-list change, even after a rejected invalid change.
+    permission: wizard
+    statement: |
+      hole = #-1;
+      q = #-1;
+      p = #-1;
+      new_p = #-1;
+      x = #-1;
+      try
+        hole = create($nothing);
+        q = create($nothing);
+        p = create($nothing);
+        x = create($nothing);
+        rejected = `chparents(x, {q, p, p}) ! ANY';
+        if (rejected == E_INVARG)
+          chparents(x, {q, p});
+        endif
+        recycle(hole);
+        new_p = renumber(p);
+        ps = parents(x);
+        return {length(ps), valid(ps[1]), valid(ps[2]), ps == {q, new_p},
+                (x in children(new_p)) != 0};
+      finally
+        if (valid(x))
+          chparents(x, {});
+          recycle(x);
+        endif
+        if (valid(new_p))
+          recycle(new_p);
+        elseif (valid(p))
+          recycle(p);
+        endif
+        if (valid(q))
+          recycle(q);
+        endif
+        if (valid(hole))
+          recycle(hole);
+        endif
+      endtry
+    expect:
+      value: [2, 1, 1, 1, 1]
+
+  - name: recreating_with_an_invalid_parent_preserves_object_graph_integrity
+    description: A failed recreation leaves its object invalid and permits a later valid recreation.
+    permission: wizard
+    statement: |
+      parent_object = #-1;
+      invalid_parent = #-1;
+      target = #-1;
+      try
+        parent_object = create($nothing);
+        invalid_parent = create($nothing);
+        target = create($nothing);
+        recycle(invalid_parent);
+        recycle(target);
+        invalid_result = `recreate(target, invalid_parent) ! ANY';
+        still_invalid = !valid(target);
+        valid_result = recreate(target, parent_object);
+        return {invalid_result, still_invalid, valid_result == target,
+                parents(target) == {parent_object},
+                (target in children(parent_object)) != 0};
+      finally
+        if (valid(target))
+          chparents(target, {});
+          recycle(target);
+        endif
+        if (valid(invalid_parent))
+          recycle(invalid_parent);
+        endif
+        if (valid(parent_object))
+          recycle(parent_object);
+        endif
+      endtry
+    expect:
+      value: [E_INVARG, 1, 1, 1, 1]
+
+  - name: reparenting_above_a_diamond_preserves_topology_and_new_inheritance
+    description: Reparenting a shared ancestor keeps the diamond intact and exposes new ancestry.
+    permission: wizard
+    statement: |
+      a = #-1;
+      b = #-1;
+      c = #-1;
+      d = #-1;
+      p = #-1;
+      try
+        a = create($nothing);
+        b = create(a);
+        c = create(a);
+        d = create({b, c});
+        p = create($nothing);
+        add_property(p, "mi_contract_diamond_inherited", 42, {player, "r"});
+        chparent(a, p);
+        return {parents(d) == {b, c}, (p in ancestors(d)) != 0,
+                c.mi_contract_diamond_inherited, d.mi_contract_diamond_inherited};
+      finally
+        if (valid(d))
+          chparents(d, {});
+          recycle(d);
+        endif
+        if (valid(c))
+          chparents(c, {});
+          recycle(c);
+        endif
+        if (valid(b))
+          chparents(b, {});
+          recycle(b);
+        endif
+        if (valid(a))
+          chparents(a, {});
+          recycle(a);
+        endif
+        if (valid(p))
+          recycle(p);
+        endif
+      endtry
+    expect:
+      value: [1, 1, 42, 42]
+
+  - name: diamond_descendant_properties_survive_ancestor_reparenting
+    description: Distinct inherited property slots remain valid when diamond ancestry grows.
+    permission: wizard
+    statement: |
+      a = #-1;
+      b = #-1;
+      c = #-1;
+      d = #-1;
+      try
+        a = create($nothing);
+        add_property(a, "mi_contract_layout_a", 1, {player, "rc"});
+        b = create(a);
+        add_property(b, "mi_contract_layout_b", 2, {player, "rc"});
+        c = create({a, b});
+        d = create($nothing);
+        add_property(d, "mi_contract_layout_d", 3, {player, "rc"});
+        chparent(a, d);
+        all_ancestors_valid = 1;
+        for ancestor in (ancestors(c))
+          all_ancestors_valid = all_ancestors_valid && valid(ancestor);
+        endfor
+        return {all_ancestors_valid, c.mi_contract_layout_a,
+                c.mi_contract_layout_b, c.mi_contract_layout_d};
+      finally
+        if (valid(c))
+          chparents(c, {});
+          recycle(c);
+        endif
+        if (valid(b))
+          chparents(b, {});
+          recycle(b);
+        endif
+        if (valid(a))
+          chparents(a, {});
+          recycle(a);
+        endif
+        if (valid(d))
+          recycle(d);
+        endif
+      endtry
+    expect:
+      value: [1, 1, 2, 3]
+
+  - name: hierarchy_walks_remain_bounded_on_stacked_diamonds
+    description: Compound hierarchy work grows with visited objects rather than ancestor paths.
+    permission: wizard
+    timeout_ms: 15000
+    statement: |
+      shallow_objects = {};
+      deep_objects = {};
+      outsider = #-1;
+      shallow_child = #-1;
+      deep_child = #-1;
+      try
+        outsider = create($nothing);
+
+        shallow_root = create($nothing);
+        shallow_objects = {shallow_root};
+        for i in [1..8]
+          left = create(shallow_root);
+          right = create(shallow_root);
+          shallow_root = create({left, right});
+          shallow_objects = {shallow_root, left, right, @shallow_objects};
+        endfor
+        started = ftime();
+        shallow_child = create(shallow_root);
+        shallow_missing = `shallow_root:mi_contract_missing_walk() ! ANY';
+        shallow_isa = isa(shallow_root, outsider);
+        add_property(shallow_root, "mi_contract_walk_probe", 17, {player, "rc"});
+        shallow_property = shallow_child.mi_contract_walk_probe;
+        delete_property(shallow_root, "mi_contract_walk_probe");
+        shallow_seconds = ftime() - started;
+
+        deep_root = create($nothing);
+        deep_objects = {deep_root};
+        for i in [1..16]
+          left = create(deep_root);
+          right = create(deep_root);
+          deep_root = create({left, right});
+          deep_objects = {deep_root, left, right, @deep_objects};
+        endfor
+        started = ftime();
+        deep_child = create(deep_root);
+        deep_missing = `deep_root:mi_contract_missing_walk() ! ANY';
+        deep_isa = isa(deep_root, outsider);
+        add_property(deep_root, "mi_contract_walk_probe", 17, {player, "rc"});
+        deep_property = deep_child.mi_contract_walk_probe;
+        delete_property(deep_root, "mi_contract_walk_probe");
+        deep_seconds = ftime() - started;
+
+        return {shallow_missing == E_VERBNF, shallow_isa == 0, shallow_property == 17,
+                deep_missing == E_VERBNF, deep_isa == 0, deep_property == 17,
+                deep_seconds < max(shallow_seconds * 8.0, 0.05)};
+      finally
+        if (valid(deep_child))
+          recycle(deep_child);
+        endif
+        for object in (deep_objects)
+          if (valid(object))
+            recycle(object);
+          endif
+        endfor
+        if (valid(shallow_child))
+          recycle(shallow_child);
+        endif
+        for object in (shallow_objects)
+          if (valid(object))
+            recycle(object);
+          endif
+        endfor
+        if (valid(outsider))
+          recycle(outsider);
+        endif
+      endtry
+    expect:
+      value: [1, 1, 1, 1, 1, 1, 1]
+
+  - name: isa_remains_bounded_on_stacked_diamonds
+    description: isa() visits ancestor objects once even when many paths reach them.
+    permission: wizard
+    timeout_ms: 15000
+    statement: |
+      shallow_objects = {};
+      deep_objects = {};
+      outsider = #-1;
+      try
+        outsider = create($nothing);
+
+        shallow_root = create($nothing);
+        shallow_objects = {shallow_root};
+        for i in [1..8]
+          left = create(shallow_root);
+          right = create(shallow_root);
+          shallow_root = create({left, right});
+          shallow_objects = {shallow_root, left, right, @shallow_objects};
+        endfor
+        started = ftime();
+        shallow_result = isa(shallow_root, outsider);
+        shallow_seconds = ftime() - started;
+
+        deep_root = create($nothing);
+        deep_objects = {deep_root};
+        for i in [1..16]
+          left = create(deep_root);
+          right = create(deep_root);
+          deep_root = create({left, right});
+          deep_objects = {deep_root, left, right, @deep_objects};
+        endfor
+        started = ftime();
+        deep_result = isa(deep_root, outsider);
+        deep_seconds = ftime() - started;
+
+        return {shallow_result, deep_result,
+                deep_seconds < max(shallow_seconds * 8.0, 0.05)};
+      finally
+        for object in (deep_objects)
+          if (valid(object))
+            recycle(object);
+          endif
+        endfor
+        for object in (shallow_objects)
+          if (valid(object))
+            recycle(object);
+          endif
+        endfor
+        if (valid(outsider))
+          recycle(outsider);
+        endif
+      endtry
+    expect:
+      value: [0, 0, 1]

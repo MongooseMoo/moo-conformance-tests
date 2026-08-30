@@ -1,0 +1,179 @@
+name: divergence_messages_decompile_dispatch
+description: >
+  Error message texts, decompiler formatting, and verb-name matching
+  semantics (2026-08-30 campaign, batch 9). Expectations are stock WSL
+  Toast behavior.
+
+tests:
+  - name: msg_type_mismatch_names_expected_and_got
+    steps:
+      - run: |
+          try
+            x = "abc" + 5;
+          except e (ANY)
+            return e[2];
+          endtry
+          return "noerr";
+        as: wizard
+        expect:
+          value: "Type mismatch (expected string; got integer)"
+
+  - name: msg_propnf_names_the_property
+    steps:
+      - run: |
+          try
+            x = #1.nonexistent;
+          except e (ANY)
+            return e[2];
+          endtry
+          return "noerr";
+        as: wizard
+        expect:
+          value: "Property not found: #1.nonexistent"
+
+  - name: msg_args_error_names_expected_and_got
+    steps:
+      - run: |
+          try
+            x = valid();
+          except e (ANY)
+            return e[2];
+          endtry
+          return "noerr";
+        as: wizard
+        expect:
+          value: "Incorrect number of arguments (expected 1; got 0)"
+
+  - name: msg_e_file_text
+    steps:
+      - run: |
+          try
+            x = raise(E_FILE);
+          except e (ANY)
+            return e[2];
+          endtry
+          return "noerr";
+        as: wizard
+        expect:
+          value: "File error"
+
+  - name: msg_e_intrpt_text
+    steps:
+      - run: |
+          try
+            x = raise(E_INTRPT);
+          except e (ANY)
+            return e[2];
+          endtry
+          return "noerr";
+        as: wizard
+        expect:
+          value: "Interrupted"
+
+  - name: unknown_error_identifier_is_runtime_varnf
+    description: >
+      E_ASSERT is not a Toast error constant; it compiles as an ordinary
+      unbound variable and raises E_VARNF at runtime, not a compile error.
+    permission: wizard
+    code: "eval(\"try x = raise(E_ASSERT); except e (ANY) return {toliteral(e[1]), e[2]}; endtry\")"
+    expect:
+      value:
+        - 1
+        - ["E_VARNF", "Variable not found: E_ASSERT"]
+
+  - name: decompile_parenthesize_flag_adds_precedence_parens
+    steps:
+      - run: |
+          o = create($nothing);
+          add_verb(o, {player, "xd", "dcv"}, {"this", "none", "this"});
+          set_verb_code(o, "dcv", {"return 1 + 2 * 3;"});
+          r = {verb_code(o, "dcv"), verb_code(o, "dcv", 1)};
+          recycle(o);
+          return r;
+        as: wizard
+        expect:
+          value:
+            - ["return 1 + 2 * 3;"]
+            - ["return 1 + (2 * 3);"]
+
+  - name: decompile_parenthesize_logical_chain
+    steps:
+      - run: |
+          o = create($nothing);
+          add_verb(o, {player, "xd", "dcv"}, {"this", "none", "this"});
+          set_verb_code(o, "dcv", {"return 1 == 2 && 3 || 4;"});
+          r = verb_code(o, "dcv", 1);
+          recycle(o);
+          return r;
+        as: wizard
+        expect:
+          value: ["return ((1 == 2) && 3) || 4;"]
+
+  - name: decompile_parenthesize_unary_not
+    steps:
+      - run: |
+          o = create($nothing);
+          add_verb(o, {player, "xd", "dcv"}, {"this", "none", "this"});
+          set_verb_code(o, "dcv", {"return !1 + 2;"});
+          r = verb_code(o, "dcv", 1);
+          recycle(o);
+          return r;
+        as: wizard
+        expect:
+          value: ["return (!1) + 2;"]
+
+  - name: decompile_float_literal_expands_exponent
+    steps:
+      - run: |
+          o = create($nothing);
+          add_verb(o, {player, "xd", "dcv"}, {"this", "none", "this"});
+          set_verb_code(o, "dcv", {"return 1.5e10;"});
+          r = verb_code(o, "dcv");
+          recycle(o);
+          return r;
+        as: wizard
+        expect:
+          value: ["return 15000000000.0;"]
+
+  - name: verb_name_star_wildcard_matching
+    description: A verb named "foo*bar" answers foo, foob, foobar; not fo or fooxbar.
+    steps:
+      - run: |
+          o = create($nothing);
+          add_verb(o, {player, "xd", "foo*bar"}, {"this", "none", "this"});
+          set_verb_code(o, 1, {"return verb;"});
+          r = {toliteral(`o:foo() ! ANY'), toliteral(`o:foob() ! ANY'), toliteral(`o:foobar() ! ANY'),
+               toliteral(`o:fo() ! ANY'), toliteral(`o:fooxbar() ! ANY')};
+          recycle(o);
+          return r;
+        as: wizard
+        expect:
+          value: ["\"foo\"", "\"foob\"", "\"foobar\"", "E_VERBNF", "E_VERBNF"]
+
+  - name: verb_name_lone_star_matches_anything
+    steps:
+      - run: |
+          o = create($nothing);
+          add_verb(o, {player, "xd", "*"}, {"this", "none", "this"});
+          set_verb_code(o, "*", {"return verb;"});
+          r = {o:anything(), o:x()};
+          recycle(o);
+          return r;
+        as: wizard
+        expect:
+          value: ["anything", "x"]
+
+  - name: duplicate_verb_names_first_defined_wins
+    steps:
+      - run: |
+          o = create($nothing);
+          add_verb(o, {player, "xd", "dup"}, {"this", "none", "this"});
+          set_verb_code(o, 1, {"return \"first\";"});
+          add_verb(o, {player, "xd", "dup"}, {"this", "none", "this"});
+          set_verb_code(o, 2, {"return \"second\";"});
+          r = o:dup();
+          recycle(o);
+          return r;
+        as: wizard
+        expect:
+          value: "first"

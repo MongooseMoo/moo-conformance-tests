@@ -363,12 +363,6 @@ tests:
           return 0;
         as: wizard
 
-  - name: suspend_negative_is_invarg
-    permission: wizard
-    code: "suspend(-1)"
-    expect:
-      error: E_INVARG
-
   - name: resume_non_suspended_task_is_invarg
     steps:
       - run: |

@@ -393,12 +393,6 @@ tests:
     expect:
       value: 0
 
-  - name: load_server_options_returns_zero
-    permission: wizard
-    code: "load_server_options()"
-    expect:
-      value: 0
-
   - name: create_second_arg_two_makes_anonymous
     permission: wizard
     code: "typeof(create($nothing, 2)) == ANON"

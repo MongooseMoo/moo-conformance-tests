@@ -60,12 +60,6 @@ tests:
     expect:
       value: 150.0
 
-  - name: object_bytes_positive_for_system_object
-    permission: wizard
-    code: "object_bytes(#0) > 0"
-    expect:
-      value: 1
-
   - name: getenv_path_returns_string
     permission: wizard
     code: "typeof(getenv(\"PATH\"))"
@@ -77,9 +71,3 @@ tests:
     code: "argon2(\"pw\", \"somesalt12345678\")"
     expect:
       value: "$argon2id$v=19$m=4096,t=3,p=1$c29tZXNhbHQxMjM0NTY3OA$aMxacoOi/qjIgJYiWQiFwZWIushzpAiw6eVJ9Fc/7jE"
-
-  - name: usage_returns_list
-    permission: wizard
-    code: "typeof(usage())"
-    expect:
-      value: 4

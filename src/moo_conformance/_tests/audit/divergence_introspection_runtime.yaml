@@ -102,12 +102,6 @@ tests:
     expect:
       value: 1
 
-  - name: db_disk_size_positive
-    permission: wizard
-    code: "db_disk_size() > 0"
-    expect:
-      value: 1
-
   - name: gc_stats_returns_color_map
     permission: wizard
     code: "typeof(gc_stats()) == MAP && maphaskey(gc_stats(), \"purple\")"

@@ -1,0 +1,105 @@
+name: divergence_utility_builtins
+description: >
+  Utility builtin semantics: spatial helpers, noise, salt encoding, binary
+  decoding, player lookup (2026-08-30 campaign, batch 6). Expectations are
+  stock WSL Toast behavior.
+
+tests:
+  - name: distance_empty_vectors_is_zero
+    code: "distance({}, {})"
+    expect:
+      value: 0.0
+
+  - name: distance_mismatched_lengths_uses_shorter
+    description: Extra coordinates in one argument are ignored, not an error.
+    code: "distance({1, 2}, {1, 2, 3})"
+    expect:
+      value: 0.0
+
+  - name: relative_heading_two_coordinates_is_type_error
+    code: "relative_heading({0, 0}, {1, 1})"
+    expect:
+      error: E_TYPE
+
+  - name: simplex_noise_1d_reference_value
+    code: "simplex_noise({1.5})"
+    expect:
+      value: 0.11865234375
+
+  - name: simplex_noise_2d_reference_value
+    code: "simplex_noise({1.5, 2.5})"
+    expect:
+      value: 0.0514596538692168
+
+  - name: simplex_noise_3d_reference_value
+    code: "simplex_noise({1.5, 2.5, 3.5})"
+    expect:
+      value: -4.49999987273131e-08
+
+  - name: simplex_noise_4d_reference_value
+    code: "simplex_noise({1.5, 2.5, 3.5, 4.5})"
+    expect:
+      value: -0.270648633978424
+
+  - name: salt_md5_encodes_input_bytes
+    code: "salt(\"$1$\", \"abcdefghijklmnop\")"
+    expect:
+      value: "$1$V7qMYJaN"
+
+  - name: salt_sha256_encodes_input_bytes
+    code: "salt(\"$5$\", \"abcdefghijklmnop\")"
+    expect:
+      value: "$5$V7qMYJaNbVKOeh4P"
+
+  - name: salt_sha512_encodes_input_bytes
+    code: "salt(\"$6$\", \"abcdefghijklmnop\")"
+    expect:
+      value: "$6$V7qMYJaNbVKOeh4P"
+
+  - name: salt_unknown_prefix_yields_des_salt
+    description: An unrecognized prefix falls back to a two-character DES salt.
+    code: "salt(\"bogus\", \"ab\")"
+    expect:
+      value: "VW"
+
+  - name: argon2_verify_default_hash_matches
+    permission: wizard
+    code: "argon2_verify(\"$argon2id$v=19$m=4096,t=3,p=1$c29tZXNhbHQxMjM0NTY3OA$aMxacoOi/qjIgJYiWQiFwZWIushzpAiw6eVJ9Fc/7jE\", \"pw\")"
+    expect:
+      value: 1
+
+  - name: argon2_verify_garbage_hash_returns_zero
+    permission: wizard
+    code: "argon2_verify(\"bogus\", \"pw\")"
+    expect:
+      value: 0
+
+  - name: decode_binary_tab_is_part_of_string
+    description: Tab (~09) decodes into the string run, not a separate integer.
+    code: "decode_binary(\"~09\")"
+    expect:
+      value: ["\t"]
+
+  - name: locate_by_name_finds_wizard
+    permission: wizard
+    code: "locate_by_name(\"Wizard\") == {#3}"
+    expect:
+      value: 1
+
+  - name: switch_player_unconnected_is_invarg
+    permission: wizard
+    code: "switch_player(#3, #4)"
+    expect:
+      error: E_INVARG
+
+  - name: switch_player_invalid_object_is_invarg
+    permission: wizard
+    code: "switch_player(#999999, #4)"
+    expect:
+      error: E_INVARG
+
+  - name: thread_pool_bad_args_is_invarg
+    permission: wizard
+    code: "thread_pool(\"INFO\", \"MAIN\")"
+    expect:
+      error: E_INVARG

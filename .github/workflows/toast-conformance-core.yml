@@ -286,7 +286,7 @@ jobs:
             "$nonce" \
             "${{ inputs.conformance_sha || github.event.pull_request.head.sha || github.sha }}" \
             "${{ matrix.profile }}" \
-            "aecc51e9449c6e7c95272f0f044b5ba38948459e" >> "${GITHUB_ENV}"
+            "eaaa1972f0993a1247f787dbf2dd5a01702ef442" >> "${GITHUB_ENV}"
           mkdir -p "${reports_dir}"
           printf '%s\n' "$nonce" > "${reports_dir}/admission-nonce.txt"
           printf 'run_id=%s\nprofile=%s\nrunner_os=%s\nrunner_arch=%s\n' \
@@ -314,8 +314,8 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: MongooseMoo/toaststunt
-          # Commit embedded in the canonical managed WSL Toast binary.
-          ref: aecc51e9449c6e7c95272f0f044b5ba38948459e
+          # Hardened multiple-inheritance reference implementation.
+          ref: eaaa1972f0993a1247f787dbf2dd5a01702ef442
           path: toast-oracle
           persist-credentials: false
 

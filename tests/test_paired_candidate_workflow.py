@@ -22,6 +22,7 @@ TOAST_EXCEPTION_BASELINE_PATH = (
     Path(__file__).resolve().parents[1] / "ci" / "toast-never-executed.json"
 )
 PINNED_ACTION = re.compile(r"^[^@]+@[0-9a-f]{40}$")
+TOAST_ORACLE_SHA = "eaaa1972f0993a1247f787dbf2dd5a01702ef442"
 
 
 def load_workflow(path=WORKFLOW_PATH):
@@ -397,6 +398,16 @@ def test_toast_candidate_and_oracle_are_fixed_credentialless_siblings() -> None:
     assert oracle["persist-credentials"] == "false"
     assert "allow-unsafe-pr-checkout" not in oracle
     assert not oracle["path"].startswith(candidate["path"] + "/")
+
+
+def test_toast_oracle_checkout_and_admission_context_use_the_same_exact_revision() -> None:
+    steps = steps_by_name(load_workflow(TOAST_WORKFLOW_PATH), "full-suite")
+    oracle = steps["Check out pinned Toast oracle"]["with"]
+    prepare = steps["Prepare evidence directory"]["run"]
+
+    assert oracle["repository"] == "MongooseMoo/toaststunt"
+    assert oracle["ref"] == TOAST_ORACLE_SHA
+    assert prepare.count(TOAST_ORACLE_SHA) == 1
 
 
 def test_toast_quality_executes_only_trusted_code_against_candidate_data() -> None:

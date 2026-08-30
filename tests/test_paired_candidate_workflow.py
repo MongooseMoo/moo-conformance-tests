@@ -22,6 +22,13 @@ TOAST_EXCEPTION_BASELINE_PATH = (
     Path(__file__).resolve().parents[1] / "ci" / "toast-never-executed.json"
 )
 PINNED_ACTION = re.compile(r"^[^@]+@[0-9a-f]{40}$")
+CURRENT_TOAST_ORACLE_SHA = "aecc51e9449c6e7c95272f0f044b5ba38948459e"
+HARDENED_TOAST_ORACLE_SHA = "eaaa1972f0993a1247f787dbf2dd5a01702ef442"
+TOAST_ORACLE_SELECTION = (
+    "${{ needs.classify-changes.outputs.mode == 'data' && "
+    "'eaaa1972f0993a1247f787dbf2dd5a01702ef442' || "
+    "'aecc51e9449c6e7c95272f0f044b5ba38948459e' }}"
+)
 
 
 def load_workflow(path=WORKFLOW_PATH):
@@ -397,6 +404,39 @@ def test_toast_candidate_and_oracle_are_fixed_credentialless_siblings() -> None:
     assert oracle["persist-credentials"] == "false"
     assert "allow-unsafe-pr-checkout" not in oracle
     assert not oracle["path"].startswith(candidate["path"] + "/")
+
+
+def test_toast_oracle_revision_is_selected_by_admitted_change_mode() -> None:
+    full_suite = load_workflow(TOAST_WORKFLOW_PATH)["jobs"]["full-suite"]
+
+    assert full_suite["env"] == {"TOAST_ORACLE_SHA": TOAST_ORACLE_SELECTION}
+    assert "mode == 'data'" in TOAST_ORACLE_SELECTION
+    assert HARDENED_TOAST_ORACLE_SHA in TOAST_ORACLE_SELECTION
+    assert CURRENT_TOAST_ORACLE_SHA in TOAST_ORACLE_SELECTION
+
+
+def test_selected_toast_revision_couples_checkout_admission_and_profile_evidence() -> None:
+    steps = steps_by_name(load_workflow(TOAST_WORKFLOW_PATH), "full-suite")
+    oracle = steps["Check out pinned Toast oracle"]["with"]
+    prepare = steps["Prepare evidence directory"]["run"]
+    provenance = steps["Verify selected Toast oracle revision"]["run"]
+    profile = steps["Record the exact Toast capability profile"]["run"]
+
+    assert oracle["repository"] == "MongooseMoo/toaststunt"
+    assert oracle["ref"] == "${{ env.TOAST_ORACLE_SHA }}"
+    assert '"$TOAST_ORACLE_SHA" >> "${GITHUB_ENV}"' in prepare
+    assert 'toast_revision=%s\\n' in prepare
+    assert prepare.count('"$TOAST_ORACLE_SHA"') == 2
+    assert (
+        'actual_revision=$(git -C "${GITHUB_WORKSPACE}/toast-oracle" rev-parse HEAD)'
+        in provenance
+    )
+    assert 'test "$actual_revision" = "$TOAST_ORACLE_SHA"' in provenance
+    assert 'selected_revision=%s\\nactual_revision=%s\\n' in provenance
+    assert '"$TOAST_ORACLE_SHA" "$actual_revision"' in provenance
+    assert '"implementation_revision": os.environ["TOAST_ORACLE_SHA"]' in profile
+    assert CURRENT_TOAST_ORACLE_SHA not in str(steps)
+    assert HARDENED_TOAST_ORACLE_SHA not in str(steps)
 
 
 def test_toast_quality_executes_only_trusted_code_against_candidate_data() -> None:

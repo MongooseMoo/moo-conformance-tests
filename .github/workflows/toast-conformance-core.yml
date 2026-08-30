@@ -255,6 +255,8 @@ jobs:
       - classify-changes
       - quality
     timeout-minutes: 60
+    env:
+      TOAST_ORACLE_SHA: ${{ needs.classify-changes.outputs.mode == 'data' && 'eaaa1972f0993a1247f787dbf2dd5a01702ef442' || 'aecc51e9449c6e7c95272f0f044b5ba38948459e' }}
     strategy:
       fail-fast: false
       matrix:
@@ -286,11 +288,12 @@ jobs:
             "$nonce" \
             "${{ inputs.conformance_sha || github.event.pull_request.head.sha || github.sha }}" \
             "${{ matrix.profile }}" \
-            "aecc51e9449c6e7c95272f0f044b5ba38948459e" >> "${GITHUB_ENV}"
+            "$TOAST_ORACLE_SHA" >> "${GITHUB_ENV}"
           mkdir -p "${reports_dir}"
           printf '%s\n' "$nonce" > "${reports_dir}/admission-nonce.txt"
-          printf 'run_id=%s\nprofile=%s\nrunner_os=%s\nrunner_arch=%s\n' \
+          printf 'run_id=%s\nprofile=%s\nrunner_os=%s\nrunner_arch=%s\ntoast_revision=%s\n' \
             "${GITHUB_RUN_ID}" "${{ matrix.profile }}" "${RUNNER_OS}" "${RUNNER_ARCH}" \
+            "$TOAST_ORACLE_SHA" \
             > "${reports_dir}/workflow-start.txt"
 
       - name: Check out admitted conformance data
@@ -314,10 +317,20 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: MongooseMoo/toaststunt
-          # Commit embedded in the canonical managed WSL Toast binary.
-          ref: aecc51e9449c6e7c95272f0f044b5ba38948459e
+          # Data candidates use the hardened multiple-inheritance oracle; controller
+          # validation stays on the current base-data oracle until that data lands.
+          ref: ${{ env.TOAST_ORACLE_SHA }}
           path: toast-oracle
           persist-credentials: false
+
+      - name: Verify selected Toast oracle revision
+        run: |
+          set -euo pipefail
+          actual_revision=$(git -C "${GITHUB_WORKSPACE}/toast-oracle" rev-parse HEAD)
+          test "$actual_revision" = "$TOAST_ORACLE_SHA"
+          printf 'selected_revision=%s\nactual_revision=%s\n' \
+            "$TOAST_ORACLE_SHA" "$actual_revision" \
+            > "${REPORTS_DIR}/toast-provenance.txt"
 
       - name: Install uv and Python
         uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
@@ -410,6 +423,7 @@ jobs:
           profile = {
               "profile_id": os.environ["PROFILE_ID"],
               "implementation": "toaststunt",
+              "implementation_revision": os.environ["TOAST_ORACLE_SHA"],
               "runtime_os": "linux",
               "database_fixture": "moo_conformance/_db/Test.db",
               "database_checksum": "sha256:" + hashlib.sha256(fixture.read_bytes()).hexdigest(),

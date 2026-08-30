@@ -74,4 +74,3 @@ tests:
     code: "function_info(\"upcase\")"
     expect:
       error: E_INVARG
-

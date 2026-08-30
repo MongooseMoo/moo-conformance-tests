@@ -1,0 +1,409 @@
+name: divergence_builtin_edges
+description: >
+  Builtin edge-case semantics from Toast-vs-Barn differential probing
+  (2026-08-30 campaign, batch 2). Expectations are stock WSL Toast behavior.
+
+tests:
+  - name: create_ambiguous_match_parent_is_invarg
+    permission: wizard
+    code: "create(#-2)"
+    expect:
+      error: E_INVARG
+
+  - name: create_failed_match_parent_is_invarg
+    permission: wizard
+    code: "create(#-3)"
+    expect:
+      error: E_INVARG
+
+  - name: chparent_invalid_object_is_invarg
+    permission: wizard
+    code: "chparent(#999999, #1)"
+    expect:
+      error: E_INVARG
+
+  - name: parents_invalid_object_is_invarg
+    permission: wizard
+    code: "parents(#999999)"
+    expect:
+      error: E_INVARG
+
+  - name: delete_property_invalid_object_is_invarg
+    permission: wizard
+    code: "delete_property(#999999, \"x\")"
+    expect:
+      error: E_INVARG
+
+  - name: is_clear_property_invalid_object_is_invarg
+    permission: wizard
+    code: "is_clear_property(#999999, \"name\")"
+    expect:
+      error: E_INVARG
+
+  - name: verbs_invalid_object_is_invarg
+    permission: wizard
+    code: "verbs(#999999)"
+    expect:
+      error: E_INVARG
+
+  - name: verbs_nothing_is_invarg
+    permission: wizard
+    code: "verbs(#-1)"
+    expect:
+      error: E_INVARG
+
+  - name: properties_invalid_object_is_invarg
+    permission: wizard
+    code: "properties(#999999)"
+    expect:
+      error: E_INVARG
+
+  - name: properties_nothing_is_invarg
+    permission: wizard
+    code: "properties(#-1)"
+    expect:
+      error: E_INVARG
+
+  - name: object_bytes_invalid_object_is_invind
+    permission: wizard
+    code: "object_bytes(#999999)"
+    expect:
+      error: E_INVIND
+
+  - name: recreate_invalid_target_is_invarg
+    permission: wizard
+    code: "recreate(#999999, $nothing)"
+    expect:
+      error: E_INVARG
+
+  - name: reset_max_object_returns_zero
+    permission: wizard
+    code: "reset_max_object()"
+    expect:
+      value: 0
+
+  - name: add_property_empty_name_allowed
+    permission: wizard
+    steps:
+      - run: |
+          o = create($nothing);
+          r = add_property(o, "", 5, {player, "r"});
+          v = o.("");
+          recycle(o);
+          return {r, v};
+        as: wizard
+        expect:
+          value: [0, 5]
+
+  - name: add_property_name_with_space_allowed
+    permission: wizard
+    steps:
+      - run: |
+          o = create($nothing);
+          r = add_property(o, "a b", 6, {player, "r"});
+          v = o.("a b");
+          recycle(o);
+          return {r, v};
+        as: wizard
+        expect:
+          value: [0, 6]
+
+  - name: add_property_bad_perms_string_is_invarg
+    permission: wizard
+    steps:
+      - run: |
+          o = create($nothing);
+          try
+            return add_property(o, "p", 0, {player, "xyz"});
+          finally
+            recycle(o);
+          endtry
+        as: wizard
+        expect:
+          error: E_INVARG
+
+  - name: add_property_rwc_perms_allowed
+    permission: wizard
+    steps:
+      - run: |
+          o = create($nothing);
+          r = add_property(o, "p", 0, {player, "rwc"});
+          recycle(o);
+          return r;
+        as: wizard
+        expect:
+          value: 0
+
+  - name: add_property_owner_invalid_is_invarg
+    permission: wizard
+    steps:
+      - run: |
+          o = create($nothing);
+          try
+            return add_property(o, "p", 0, {#999999, "r"});
+          finally
+            recycle(o);
+          endtry
+        as: wizard
+        expect:
+          error: E_INVARG
+
+  - name: clear_property_on_definer_is_invarg
+    description: clear_property on the object that defines the property raises E_INVARG.
+    permission: wizard
+    steps:
+      - run: |
+          o = create($nothing);
+          add_property(o, "p", 7, {player, "r"});
+          try
+            return clear_property(o, "p");
+          finally
+            recycle(o);
+          endtry
+        as: wizard
+        expect:
+          error: E_INVARG
+
+  - name: add_verb_empty_names_is_invarg
+    permission: wizard
+    steps:
+      - run: |
+          o = create($nothing);
+          try
+            return add_verb(o, {player, "xd", ""}, {"this", "none", "this"});
+          finally
+            recycle(o);
+          endtry
+        as: wizard
+        expect:
+          error: E_INVARG
+
+  - name: add_verb_bad_perm_letters_is_invarg
+    permission: wizard
+    steps:
+      - run: |
+          o = create($nothing);
+          try
+            return add_verb(o, {player, "qq", "v"}, {"this", "none", "this"});
+          finally
+            recycle(o);
+          endtry
+        as: wizard
+        expect:
+          error: E_INVARG
+
+  - name: add_verb_bad_dobj_spec_is_invarg
+    permission: wizard
+    steps:
+      - run: |
+          o = create($nothing);
+          try
+            return add_verb(o, {player, "xd", "v"}, {"bogus", "none", "this"});
+          finally
+            recycle(o);
+          endtry
+        as: wizard
+        expect:
+          error: E_INVARG
+
+  - name: add_verb_returns_one_based_index
+    permission: wizard
+    steps:
+      - run: |
+          o = create($nothing);
+          r = add_verb(o, {player, "xd", "v"}, {"this", "none", "this"});
+          r2 = add_verb(o, {player, "xd", "w"}, {"this", "none", "this"});
+          recycle(o);
+          return {r, r2};
+        as: wizard
+        expect:
+          value: [1, 2]
+
+  - name: verb_info_index_zero_is_invarg
+    permission: wizard
+    steps:
+      - run: |
+          o = create($nothing);
+          add_verb(o, {player, "xd", "v"}, {"this", "none", "this"});
+          try
+            return verb_info(o, 0);
+          finally
+            recycle(o);
+          endtry
+        as: wizard
+        expect:
+          error: E_INVARG
+
+  - name: verb_info_negative_index_is_invarg
+    permission: wizard
+    steps:
+      - run: |
+          o = create($nothing);
+          add_verb(o, {player, "xd", "v"}, {"this", "none", "this"});
+          try
+            return verb_info(o, -1);
+          finally
+            recycle(o);
+          endtry
+        as: wizard
+        expect:
+          error: E_INVARG
+
+  - name: respond_to_programmer_gets_location_and_name
+    description: respond_to for a readable object returns {location, verbname} to callers who can read it.
+    permission: wizard
+    steps:
+      - run: |
+          o = create($nothing);
+          add_verb(o, {player, "xd", "dvresp"}, {"this", "none", "this"});
+          r = respond_to(o, "dvresp");
+          eq = r == {o, "dvresp"};
+          recycle(o);
+          return eq;
+        as: wizard
+        expect:
+          value: 1
+
+  - name: set_verb_info_bad_perm_string_is_invarg
+    permission: wizard
+    steps:
+      - run: |
+          o = create($nothing);
+          add_verb(o, {player, "xd", "v"}, {"this", "none", "this"});
+          try
+            return set_verb_info(o, "v", {player, "abc", "v"});
+          finally
+            recycle(o);
+          endtry
+        as: wizard
+        expect:
+          error: E_INVARG
+
+  - name: parse_json_duplicate_keys_first_wins
+    code: "parse_json(\"{\\\"a\\\":1,\\\"a\\\":2}\")"
+    expect:
+      value:
+        a: 1
+
+  - name: parse_json_maxint_stays_integer
+    skip_if: "not feature.64bit"
+    code: "parse_json(\"9223372036854775807\") == 9223372036854775807"
+    expect:
+      value: 1
+
+  - name: crypt_one_char_salt_randomizes_salt
+    description: >
+      A salt shorter than two characters is replaced with a fresh random salt
+      on every call, so repeated calls disagree.
+    permission: wizard
+    code: "crypt(\"foo\", \"x\") == crypt(\"foo\", \"x\")"
+    expect:
+      value: 0
+
+  - name: crypt_sha512_empty_salt_body_is_invarg
+    permission: wizard
+    code: "crypt(\"foo\", \"$6$salt$\")"
+    expect:
+      error: E_INVARG
+
+  - name: string_hmac_md5_is_invarg
+    code: "string_hmac(\"abc\", \"key\", \"md5\")"
+    expect:
+      error: E_INVARG
+
+  - name: ctime_maxint_clamps_to_toast_year
+    permission: wizard
+    skip_if: "not feature.64bit"
+    code: "index(ctime(9223372036854775807), \"2146059811\") != 0"
+    expect:
+      value: 1
+
+  - name: ctime_negative_maxint_is_invarg
+    permission: wizard
+    skip_if: "not feature.64bit"
+    code: "ctime(-9223372036854775807)"
+    expect:
+      error: E_INVARG
+
+  - name: ftime_with_arg_returns_monotonic_not_echo
+    description: ftime(N) for N >= 1 returns the monotonic clock, never the argument.
+    code: "ftime(2) != 2.0 && ftime(2) > 0.0"
+    expect:
+      value: 1
+
+  - name: ftime_negative_arg_returns_monotonic
+    code: "ftime(-1) >= 0.0"
+    expect:
+      value: 1
+
+  - name: queue_info_invalid_player_returns_zero
+    permission: wizard
+    code: "queue_info(#999999)"
+    expect:
+      value: 0
+
+  - name: task_local_roundtrip
+    permission: wizard
+    code: "{set_task_local(\"x\"), task_local()}"
+    expect:
+      value: [0, "x"]
+
+  - name: notify_unconnected_player_returns_one
+    permission: wizard
+    code: "notify(#4, \"divergence-probe\")"
+    expect:
+      value: 1
+
+  - name: notify_invalid_object_returns_one
+    permission: wizard
+    code: "notify(#999999, \"divergence-probe\")"
+    expect:
+      value: 1
+
+  - name: boot_player_invalid_object_returns_zero
+    permission: wizard
+    code: "boot_player(#999999)"
+    expect:
+      value: 0
+
+  - name: boot_player_unconnected_returns_zero
+    permission: wizard
+    code: "boot_player(#4)"
+    expect:
+      value: 0
+
+  - name: buffered_output_length_no_arg_returns_limit
+    permission: wizard
+    code: "buffered_output_length()"
+    expect:
+      value: 65536
+
+  - name: force_input_invalid_connection_returns_zero
+    permission: wizard
+    code: "force_input(#999999, \"x\")"
+    expect:
+      value: 0
+
+  - name: flush_input_invalid_connection_returns_zero
+    permission: wizard
+    code: "flush_input(#999999)"
+    expect:
+      value: 0
+
+  - name: server_log_returns_zero_for_wizard
+    permission: wizard
+    code: "server_log(\"divergence-hunt-conformance-probe\")"
+    expect:
+      value: 0
+
+  - name: create_second_arg_two_makes_anonymous
+    permission: wizard
+    code: "typeof(create($nothing, 2)) == ANON"
+    expect:
+      value: 1
+
+  - name: create_second_arg_negative_makes_anonymous
+    permission: wizard
+    code: "typeof(create($nothing, -1)) == ANON"
+    expect:
+      value: 1

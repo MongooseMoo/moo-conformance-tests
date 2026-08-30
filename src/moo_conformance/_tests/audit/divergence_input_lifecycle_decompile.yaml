@@ -1,0 +1,199 @@
+name: divergence_input_lifecycle_decompile
+description: >
+  read()-driven input consumption, suspending login hooks, and control-flow
+  decompilation (2026-08-30 campaign, batch 10). Expectations are stock WSL
+  Toast behavior.
+
+requires:
+  builtins:
+    - listen
+    - unlisten
+    - add_verb
+    - set_verb_code
+    - create
+    - recycle
+    - set_player_flag
+
+tests:
+  - name: decompile_elseif_preserved_and_empty_else_dropped
+    steps:
+      - run: |
+          o = create($nothing);
+          add_verb(o, {player, "xd", "dcw"}, {"this", "none", "this"});
+          set_verb_code(o, "dcw", {"if (1)", "elseif (2)", "else", "endif"});
+          r = verb_code(o, "dcw");
+          recycle(o);
+          return r;
+        as: wizard
+        expect:
+          value: ["if (1)", "elseif (2)", "endif"]
+
+  - name: msg_args_error_names_got_two
+    steps:
+      - run: |
+          try
+            x = valid(1, 2);
+          except e (ANY)
+            return e[2];
+          endtry
+          return "noerr";
+        as: wizard
+        expect:
+          value: "Incorrect number of arguments (expected 1; got 2)"
+
+  - name: read_in_command_task_consumes_next_line
+    description: >
+      A command verb calling read() receives the connection's next input line
+      instead of that line being dispatched as a command.
+    steps:
+      - allocate_port:
+          capture: rd_port
+      - run: |
+          for prop in ({"dri_handler", "dri_port", "dri_player", "dri_log"})
+            try
+              add_property(#0, prop, 0, {#0, "rw"});
+            except (E_INVARG)
+            endtry
+          endfor
+          #0.dri_log = {};
+          handler = create($nothing);
+          pl = create($nothing);
+          set_player_flag(pl, 1);
+          pl.wizard = 1;
+          #0.dri_handler = handler;
+          #0.dri_player = pl;
+          #0.dri_port = {rd_port};
+          add_verb(handler, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(handler, "do_login_command", {"return #0.dri_player;"});
+          add_verb(pl, {pl, "rxd", "ask"}, {"none", "none", "none"});
+          set_verb_code(pl, "ask", {"answer = read(player);", "#0.dri_log = {@#0.dri_log, {\"got\", answer}};"});
+          add_verb(pl, {pl, "rxd", "answer42"}, {"none", "none", "none"});
+          set_verb_code(pl, "answer42", {"#0.dri_log = {@#0.dri_log, \"ran-as-command\"};"});
+          return listen(handler, {rd_port}, ["print-messages" -> 0]);
+        as: wizard
+        expect:
+          type: int
+      - new_connection:
+          capture: rdc
+          port: "{rd_port}"
+      - send:
+          connection: rdc
+          text: "connect anything"
+      - wait: 300
+      - send:
+          connection: rdc
+          text: "ask"
+      - wait: 300
+      - send:
+          connection: rdc
+          text: "answer42"
+      - wait: 500
+      - run: |
+          return #0.dri_log;
+        as: wizard
+        expect:
+          value:
+            - ["got", "answer42"]
+      - close_connection: rdc
+    cleanup:
+      - run: |
+          try
+            unlisten(#0.dri_port);
+          except (ANY)
+          endtry
+          try
+            recycle(#0.dri_handler);
+          except (ANY)
+          endtry
+          try
+            recycle(#0.dri_player);
+          except (ANY)
+          endtry
+          for prop in ({"dri_handler", "dri_port", "dri_player", "dri_log"})
+            try
+              delete_property(#0, prop);
+            except (ANY)
+            endtry
+          endfor
+          return 0;
+        as: wizard
+
+  - name: do_login_command_suspend_discards_login_result
+    description: >
+      When do_login_command suspends, its eventual return value is ignored:
+      the connection stays unlogged-in and later lines still go to
+      do_login_command, never to player command parsing.
+    steps:
+      - allocate_port:
+          capture: sl_port
+      - run: |
+          for prop in ({"dsl_handler", "dsl_port", "dsl_player", "dsl_log"})
+            try
+              add_property(#0, prop, 0, {#0, "rw"});
+            except (E_INVARG)
+            endtry
+          endfor
+          #0.dsl_log = {};
+          handler = create($nothing);
+          pl = create($nothing);
+          set_player_flag(pl, 1);
+          #0.dsl_handler = handler;
+          #0.dsl_player = pl;
+          #0.dsl_port = {sl_port};
+          add_verb(handler, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(handler, "do_login_command", {
+            "#0.dsl_log = {@#0.dsl_log, {\"login\", argstr}};",
+            "if (argstr == \"go\")",
+            "suspend(0);",
+            "return #0.dsl_player;",
+            "endif",
+            "return 0;"
+          });
+          add_verb(pl, {pl, "rxd", "whoami"}, {"none", "none", "none"});
+          set_verb_code(pl, "whoami", {"#0.dsl_log = {@#0.dsl_log, {\"cmd\", player == this}};"});
+          return listen(handler, {sl_port}, ["print-messages" -> 0]);
+        as: wizard
+        expect:
+          type: int
+      - new_connection:
+          capture: slc
+          port: "{sl_port}"
+      - send:
+          connection: slc
+          text: "go"
+      - wait: 700
+      - send:
+          connection: slc
+          text: "whoami"
+      - wait: 500
+      - run: |
+          return #0.dsl_log;
+        as: wizard
+        expect:
+          value:
+            - ["login", ""]
+            - ["login", "go"]
+            - ["login", "whoami"]
+      - close_connection: slc
+    cleanup:
+      - run: |
+          try
+            unlisten(#0.dsl_port);
+          except (ANY)
+          endtry
+          try
+            recycle(#0.dsl_handler);
+          except (ANY)
+          endtry
+          try
+            recycle(#0.dsl_player);
+          except (ANY)
+          endtry
+          for prop in ({"dsl_handler", "dsl_port", "dsl_player", "dsl_log"})
+            try
+              delete_property(#0, prop);
+            except (ANY)
+            endtry
+          endfor
+          return 0;
+        as: wizard

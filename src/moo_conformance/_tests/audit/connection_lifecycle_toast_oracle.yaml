@@ -696,7 +696,7 @@ tests:
     description: Toast resumes user_connected after a nested zero-delay suspend while the pending fork child retains current programmer permissions, then completes location and user confunc calls with login-player permissions.
     steps:
       - run: |
-          for prop in ({"audit_connected_confunc_player", "audit_connected_confunc_location", "audit_connected_confunc_child", "audit_connected_confunc_after_suspend", "audit_connected_confunc_location_seen", "audit_connected_confunc_user_seen", "audit_connected_confunc_parent", "audit_connected_confunc_login_saved", "audit_connected_confunc_hook_saved"})
+          for prop in ({"audit_connected_confunc_player", "audit_connected_confunc_location", "audit_connected_confunc_child", "audit_connected_confunc_after_suspend", "audit_connected_confunc_location_seen", "audit_connected_confunc_user_seen", "audit_connected_confunc_order", "audit_connected_confunc_parent", "audit_connected_confunc_login_saved", "audit_connected_confunc_hook_saved"})
             try
               add_property(#0, prop, {}, {#0, "rw"});
             except (E_INVARG)
@@ -710,6 +710,7 @@ tests:
           #0.audit_connected_confunc_location = location;
           add_verb(location, {login_player, "rxd", "confunc"}, {"this", "none", "this"});
           set_verb_code(location, "confunc", {
+            "#0.audit_connected_confunc_order = {@#0.audit_connected_confunc_order, \"location\"};",
             "#0.audit_connected_confunc_location_seen = {this, args[1], task_perms()};",
             "return 1;"
           });
@@ -721,6 +722,7 @@ tests:
           });
           add_verb(login_player, {login_player, "rxd", "confunc"}, {"this", "none", "this"});
           set_verb_code(login_player, "confunc", {
+            "#0.audit_connected_confunc_order = {@#0.audit_connected_confunc_order, \"user\"};",
             "#0.audit_connected_confunc_user_seen = {this, args, task_perms()};",
             "return 1;"
           });
@@ -789,11 +791,13 @@ tests:
             #0.audit_connected_confunc_after_suspend == l,
             #0.audit_connected_confunc_location_seen == {l, p, p},
             #0.audit_connected_confunc_user_seen == {p, {}, p},
+            #0.audit_connected_confunc_order == {"location", "user"},
             #0.audit_connected_confunc_parent == {p, p}
           };
         as: wizard
         expect:
           value:
+            - 1
             - 1
             - 1
             - 1
@@ -840,7 +844,7 @@ tests:
             recycle(#0.audit_connected_confunc_location);
           except (ANY)
           endtry
-          for prop in ({"audit_connected_confunc_player", "audit_connected_confunc_location", "audit_connected_confunc_child", "audit_connected_confunc_after_suspend", "audit_connected_confunc_location_seen", "audit_connected_confunc_user_seen", "audit_connected_confunc_parent", "audit_connected_confunc_login_saved", "audit_connected_confunc_hook_saved"})
+          for prop in ({"audit_connected_confunc_player", "audit_connected_confunc_location", "audit_connected_confunc_child", "audit_connected_confunc_after_suspend", "audit_connected_confunc_location_seen", "audit_connected_confunc_user_seen", "audit_connected_confunc_order", "audit_connected_confunc_parent", "audit_connected_confunc_login_saved", "audit_connected_confunc_hook_saved"})
             try
               delete_property(#0, prop);
             except (ANY)

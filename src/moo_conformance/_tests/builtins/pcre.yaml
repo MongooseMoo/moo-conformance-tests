@@ -187,6 +187,61 @@ tests:
       value: ["John", "42"]
 
   # ===========================================================================
+  # pcre_match() - PCRE syntax beyond RE2: lookaround and backreferences.
+  # Mongoose's $url_utils.url_re ends in a negative lookbehind and every `say`
+  # runs it (#2700:say -> #1033:find_urls), so an engine without lookaround
+  # tracebacks on every line of speech.
+  # ===========================================================================
+
+  - name: pcre_match_negative_lookbehind_url_pattern_no_urls
+    description: "Mongoose url_re on plain speech: no matches, no error"
+    code: 'pcre_match("Hello there, this is a benchmark message!", "(?:\\w+://|www\\.)[^ ,.?!#%=+][^ ]*(?<![.,;:!?)])", 0, 1)'
+    expect:
+      value: []
+
+  - name: pcre_match_negative_lookbehind_url_pattern_finds_url
+    description: "Mongoose url_re strips trailing punctuation via the lookbehind"
+    statement: |
+      r = pcre_match("see https://example.com/x, now", "(?:\\w+://|www\\.)[^ ,.?!#%=+][^ ]*(?<![.,;:!?)])", 0, 1);
+      return {length(r), r[1]["0"]["match"], r[1]["0"]["position"]};
+    expect:
+      value: [1, "https://example.com/x", [5, 25]]
+
+  - name: pcre_match_positive_lookbehind
+    statement: |
+      r = pcre_match("price: $42 or $7", "(?<=\\$)\\d+", 0, 1);
+      return {length(r), r[1]["0"]["match"], r[2]["0"]["match"]};
+    expect:
+      value: [2, "42", "7"]
+
+  - name: pcre_match_positive_lookahead
+    statement: |
+      r = pcre_match("foobar foobaz", "foo(?=bar)", 0, 1);
+      return {length(r), r[1]["0"]["position"]};
+    expect:
+      value: [1, [1, 3]]
+
+  - name: pcre_match_negative_lookahead
+    statement: |
+      r = pcre_match("foobar foobaz", "foo(?!bar)", 0, 1);
+      return {length(r), r[1]["0"]["position"]};
+    expect:
+      value: [1, [8, 10]]
+
+  - name: pcre_match_backreference
+    statement: |
+      r = pcre_match("abcabc xyzxy", "(\\w{3})\\1", 0, 1);
+      return {length(r), r[1]["0"]["match"], r[1]["1"]["match"]};
+    expect:
+      value: [1, "abcabc", "abc"]
+
+  - name: pcre_replace_with_lookbehind
+    code: 'pcre_replace("price: $42", "s/(?<=\\$)\\d+/99/")'
+    expect:
+      value: "price: $99"
+
+
+  # ===========================================================================
   # pcre_match() - Edge cases
   # ===========================================================================
 

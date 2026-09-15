@@ -1,0 +1,97 @@
+name: sqlite_thread_mode
+description: |
+  SQLite statement failures and the set_thread_mode() interaction.
+  Toast's thread callbacks (sqlite.cc sqlite_query_thread_callback /
+  sqlite_execute_thread_callback) return sqlite3_errmsg() as a plain string
+  rather than raising, and background_thread() (background.cc) runs the
+  statement inline, without suspending the task, when the current activation
+  has disabled threading.
+
+requires:
+  builtins:
+    - sqlite_open
+    - sqlite_close
+    - sqlite_query
+    - sqlite_execute
+    - set_thread_mode
+    - ticks_left
+
+tests:
+  - name: sqlite_query_nested_begin_returns_sqlite_error_message
+    description: A second BEGIN on a handle already inside a transaction returns the sqlite3_errmsg text as a string.
+    permission: wizard
+    steps:
+      - run: 'sqlite_open(":memory:")'
+        capture: h
+        expect:
+          range: [1, 2147483647]
+      - run: |
+          first = sqlite_query({h}, "BEGIN TRANSACTION;");
+          second = sqlite_query({h}, "BEGIN TRANSACTION;");
+          sqlite_query({h}, "ROLLBACK;");
+          return {first, second};
+        expect:
+          value:
+            - []
+            - "cannot start a transaction within a transaction"
+    cleanup:
+      - run: "sqlite_close({h});"
+        as: wizard
+
+  - name: sqlite_query_missing_table_returns_sqlite_error_message
+    description: sqlite_query() on a missing table returns the sqlite3_errmsg text, not a raised error.
+    permission: wizard
+    steps:
+      - run: 'sqlite_open(":memory:")'
+        capture: h
+        expect:
+          range: [1, 2147483647]
+      - run: 'return sqlite_query({h}, "SELECT * FROM nosuch");'
+        expect:
+          value: "no such table: nosuch"
+    cleanup:
+      - run: "sqlite_close({h});"
+        as: wizard
+
+  - name: sqlite_execute_missing_table_returns_sqlite_error_message
+    description: sqlite_execute() on a missing table returns the sqlite3_errmsg text from the failed prepare.
+    permission: wizard
+    steps:
+      - run: 'sqlite_open(":memory:")'
+        capture: h
+        expect:
+          range: [1, 2147483647]
+      - run: 'return sqlite_execute({h}, "INSERT INTO nosuch VALUES (?)", {1});'
+        expect:
+          value: "no such table: nosuch"
+    cleanup:
+      - run: "sqlite_close({h});"
+        as: wizard
+
+  - name: sqlite_query_unthreaded_mode_does_not_suspend_task
+    description: |
+      With set_thread_mode(0) the statement runs inline and returns its rows without
+      suspending the task, so the foreground tick budget keeps counting down instead of
+      being replaced by a fresh background budget on resume.
+    permission: wizard
+    steps:
+      - run: 'sqlite_open(":memory:")'
+        capture: h
+        expect:
+          range: [1, 2147483647]
+      - run: |
+          old = set_thread_mode();
+          set_thread_mode(0);
+          before = ticks_left();
+          rows = sqlite_query({h}, "SELECT 7");
+          after = ticks_left();
+          set_thread_mode(old);
+          return {rows, before > after, before - after < 5000};
+        expect:
+          value:
+            - [[7]]
+            - 1
+            - 1
+    cleanup:
+      - run: "sqlite_close({h});"
+        as: wizard

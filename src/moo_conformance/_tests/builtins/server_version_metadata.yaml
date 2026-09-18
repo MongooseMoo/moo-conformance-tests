@@ -1,0 +1,23 @@
+name: server_version_metadata
+description: Version suffix consistency and string-valued source metadata.
+requires:
+  builtins: [server_version]
+tests:
+  - name: source_has_vcs
+    code: typeof(server_version("source/vcs"))
+    expect:
+      value: 2
+  - name: source_metadata_values_are_strings
+    statement: |
+      for entry in (server_version("source"))
+        if (typeof(entry[2]) != STR)
+          return 0;
+        endif
+      endfor
+      return 1;
+    expect:
+      value: 1
+  - name: version_extension_reconstructs_string
+    code: tostr(server_version("major"), ".", server_version("minor"), ".", server_version("release"), server_version("ext")) == server_version()
+    expect:
+      value: 1

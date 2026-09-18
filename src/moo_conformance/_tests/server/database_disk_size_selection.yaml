@@ -3,7 +3,8 @@ description: Reports one active database file, ignoring stale checkpoints before
 server_db: disk_size_selection.db
 requires:
   builtins: [db_disk_size, dump_database]
-  config: [managed_server]
+  config: [managed_server, server_dir, server_db_dir]
+# The managed server command must use {db}.new as its output database.
 tests:
   - name: chooses_input_before_dump_and_checkpoint_after_dump
     permission: wizard

@@ -3,7 +3,8 @@ description: An ordinary dump attempt enables the existing output even if writin
 server_db: disk_size_failed_dump.db
 requires:
   builtins: [db_disk_size, dump_database]
-  config: [managed_server]
+  config: [managed_server, server_dir, server_db_dir]
+# The managed server command must use {db}.new as its output database.
 tests:
   - name: failed_dump_selects_existing_output
     permission: wizard

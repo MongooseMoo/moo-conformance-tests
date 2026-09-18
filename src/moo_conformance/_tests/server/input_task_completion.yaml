@@ -1,14 +1,17 @@
 name: input_task_completion
 description: Input task identity and terminal visibility across suspension and out-of-band input.
 requires:
-  builtins: [listen, unlisten, create, recycle, add_property, delete_property, add_verb, set_verb_code, set_player_flag, notify, suspend, task_id, task_stack, queue_info]
+  builtins: [listen, unlisten, create, recycle, add_property, delete_property, add_verb, set_verb_code, set_player_flag, notify, suspend, task_id, task_stack, queue_info, boot_player, kill_task]
 tests:
   - name: completed_fork_has_no_task_stack
     permission: wizard
     statement: |
       fork finished (0)
+        suspend(1);
       endfork
       suspend(0.2);
+      if (typeof(`task_stack(finished) ! E_INVARG') != LIST) raise(E_TYPE); endif
+      suspend(1.2);
       return task_stack(finished);
     expect:
       error: E_INVARG
@@ -39,7 +42,7 @@ tests:
           add_verb(pl, {player, "rxd", "work"}, {"none", "none", "none"});
           set_verb_code(pl, "work", {
             "#0.itc_task = task_id();", "notify(player, \"before\");",
-            "suspend(1);", "notify(player, \"after\");"
+            "suspend(2);", "notify(player, \"after\");"
           });
           return listen(handler, {port}, ["print-messages" -> 0]);
         expect:
@@ -63,7 +66,10 @@ tests:
         expect:
           output:
             exact: ["==START==", before, "==END=="]
-      - wait: 1500
+      - run: 'return typeof(task_stack(#0.itc_task)) == LIST;'
+        expect:
+          value: 1
+      - wait: 2500
       - read_connection:
           connection: client
         expect:
@@ -91,9 +97,27 @@ tests:
         expect:
           value: 1
       - close_connection: client
+      - new_connection:
+          capture: miss_client
+          port: "{port}"
+      - send:
+          connection: miss_client
+          text: connect anything
+      - send:
+          connection: miss_client
+          text: nonexistent_itc_command
+        expect:
+          output:
+            exact: ["I couldn't understand that."]
+      - run: 'return queue_info(#0.itc_player)["last_input_task_id"];'
+        expect:
+          value: 0
+      - close_connection: miss_client
     cleanup:
       - run: |
           try unlisten(#0.itc_port); except (ANY) endtry
+          try kill_task(#0.itc_task); except (ANY) endtry
+          try boot_player(#0.itc_player); except (ANY) endtry
           try recycle(#0.itc_player); except (ANY) endtry
           try recycle(#0.itc_handler); except (ANY) endtry
           for p in ({"itc_handler", "itc_player", "itc_port", "itc_task"})

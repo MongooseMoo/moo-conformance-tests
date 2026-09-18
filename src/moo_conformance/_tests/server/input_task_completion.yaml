@@ -96,23 +96,16 @@ tests:
       - run: 'return queue_info(#0.itc_player)["last_input_task_id"] == #0.itc_task;'
         expect:
           value: 1
-      - close_connection: client
-      - new_connection:
-          capture: miss_client
-          port: "{port}"
       - send:
-          connection: miss_client
-          text: connect anything
-      - send:
-          connection: miss_client
+          connection: client
           text: nonexistent_itc_command
         expect:
           output:
-            exact: ["I couldn't understand that."]
+            exact: ["==START==", "I couldn't understand that.", "==END=="]
       - run: 'return queue_info(#0.itc_player)["last_input_task_id"];'
         expect:
           value: 0
-      - close_connection: miss_client
+      - close_connection: client
     cleanup:
       - run: |
           try unlisten(#0.itc_port); except (ANY) endtry

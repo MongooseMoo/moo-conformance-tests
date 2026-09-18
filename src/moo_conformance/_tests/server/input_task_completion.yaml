@@ -1,0 +1,102 @@
+name: input_task_completion
+description: Input task identity and terminal visibility across suspension and out-of-band input.
+requires:
+  builtins: [listen, unlisten, create, recycle, add_property, delete_property, add_verb, set_verb_code, set_player_flag, notify, suspend, task_id, task_stack, queue_info]
+tests:
+  - name: completed_fork_has_no_task_stack
+    permission: wizard
+    statement: |
+      fork finished (0)
+      endfork
+      suspend(0.2);
+      return task_stack(finished);
+    expect:
+      error: E_INVARG
+
+  - name: native_command_suffix_once_and_last_input_identity_survives_oob
+    permission: wizard
+    steps:
+      - allocate_port:
+          capture: port
+      - run: |
+          for p in ({"itc_handler", "itc_player", "itc_port", "itc_task"})
+            add_property(#0, p, 0, {player, "rw"});
+          endfor
+          handler = create($nothing);
+          pl = create($nothing);
+          set_player_flag(pl, 1);
+          #0.itc_handler = handler;
+          #0.itc_player = pl;
+          #0.itc_port = {port};
+          add_verb(handler, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(handler, "do_login_command", {"return #0.itc_player;"});
+          add_verb(handler, {player, "rxd", "do_command"}, {"this", "none", "this"});
+          set_verb_code(handler, "do_command", {"return 0;"});
+          add_verb(handler, {player, "rxd", "do_out_of_band_command"}, {"this", "none", "this"});
+          set_verb_code(handler, "do_out_of_band_command", {
+            "fork (0)", "suspend(1);", "notify(player, \"oob-done\");", "endfork"
+          });
+          add_verb(pl, {player, "rxd", "work"}, {"none", "none", "none"});
+          set_verb_code(pl, "work", {
+            "#0.itc_task = task_id();", "notify(player, \"before\");",
+            "suspend(1);", "notify(player, \"after\");"
+          });
+          return listen(handler, {port}, ["print-messages" -> 0]);
+        expect:
+          type: int
+      - new_connection:
+          capture: client
+          port: "{port}"
+      - send:
+          connection: client
+          text: connect anything
+      - wait: 300
+      - send:
+          connection: client
+          text: OUTPUTPREFIX ==START==
+      - send:
+          connection: client
+          text: OUTPUTSUFFIX ==END==
+      - send:
+          connection: client
+          text: work
+        expect:
+          output:
+            exact: ["==START==", before, "==END=="]
+      - wait: 1500
+      - read_connection:
+          connection: client
+        expect:
+          output:
+            exact: [after]
+      - run: 'return queue_info(#0.itc_player)["last_input_task_id"] == #0.itc_task;'
+        expect:
+          value: 1
+      - run: 'return task_stack(#0.itc_task);'
+        expect:
+          error: E_INVARG
+      - send:
+          connection: client
+          text: "#$#probe"
+        expect:
+          output:
+            exact: []
+      - wait: 1500
+      - read_connection:
+          connection: client
+        expect:
+          output:
+            exact: [oob-done]
+      - run: 'return queue_info(#0.itc_player)["last_input_task_id"] == #0.itc_task;'
+        expect:
+          value: 1
+      - close_connection: client
+    cleanup:
+      - run: |
+          try unlisten(#0.itc_port); except (ANY) endtry
+          try recycle(#0.itc_player); except (ANY) endtry
+          try recycle(#0.itc_handler); except (ANY) endtry
+          for p in ({"itc_handler", "itc_player", "itc_port", "itc_task"})
+            try delete_property(#0, p); except (ANY) endtry
+          endfor
+          return 0;

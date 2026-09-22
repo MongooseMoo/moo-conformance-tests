@@ -211,3 +211,10 @@ tests:
       return {seen, todo};
     expect:
       value: [[1, 2, 3], []]
+
+  - name: scatter_expression_with_optional_target_is_an_operand
+    description: A scatter with an optional target can be the operand of a tighter operator
+    statement: |
+      return 0 || {?a, b} = {2};
+    expect:
+      value: [2]

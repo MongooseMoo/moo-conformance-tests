@@ -179,3 +179,35 @@ tests:
       return result;
     expect:
       value: [["a", 1], ["b", 2], ["c", 3]]
+
+  # ===========================================================================
+  # Scatter as an expression with optional and rest targets
+  # ===========================================================================
+
+  - name: scatter_expression_with_rest_target
+    description: A parenthesized scatter with a rest target yields the list
+    statement: |
+      v = ({a, @b} = {1, 2, 3});
+      return {v, a, b};
+    expect:
+      value: [[1, 2, 3], 1, [2, 3]]
+
+  - name: scatter_expression_with_optional_default
+    description: A parenthesized scatter with an optional default yields the list
+    statement: |
+      v = ({?a = 5, b} = {2});
+      return {v, a, b};
+    expect:
+      value: [[2], 5, 2]
+
+  - name: scatter_expression_drains_list_in_while_condition
+    description: A while condition can pop a queue with an optional and rest scatter
+    statement: |
+      todo = {1, 2, 3};
+      seen = {};
+      while ({?x, @todo} = todo)
+        seen = {@seen, x};
+      endwhile
+      return {seen, todo};
+    expect:
+      value: [[1, 2, 3], []]

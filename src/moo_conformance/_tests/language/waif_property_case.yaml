@@ -1,0 +1,44 @@
+name: waif_property_case
+description: >
+  Waif property names are matched case-insensitively, for both reads and
+  writes, against the class's colon-prefixed property definitions and the
+  built-in owner/class/wizard/programmer names.
+requires:
+  builtins:
+    - add_property
+    - create
+    - recycle
+tests:
+  - name: waif_property_set_is_readable_under_other_case
+    statement: |
+      class = create($waif);
+      add_property(class, ":Foo", 0, {player, ""});
+      w = class:new();
+      w.Foo = 5;
+      result = {w.Foo, w.foo, w.FOO};
+      recycle(class);
+      return result;
+    expect:
+      value: [5, 5, 5]
+
+  - name: waif_property_write_under_other_case_updates_declared_property
+    statement: |
+      class = create($waif);
+      add_property(class, ":Foo", 0, {player, ""});
+      w = class:new();
+      w.foo = 7;
+      result = {w.Foo, w.foo};
+      recycle(class);
+      return result;
+    expect:
+      value: [7, 7]
+
+  - name: waif_builtin_property_names_ignore_case
+    statement: |
+      class = create($waif);
+      w = class:new();
+      result = {w.OWNER == player, w.Class == class, w.WIZARD, w.Programmer};
+      recycle(class);
+      return result;
+    expect:
+      value: [1, 1, 0, 0]

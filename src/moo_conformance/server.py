@@ -39,11 +39,24 @@ def snapshot_regular_files(root: str | os.PathLike[str]) -> dict[str, FileSnapsh
     stack = [(root_path, "")]
     while stack:
         directory, relative_directory = stack.pop()
-        entries = list(os.scandir(directory))
+        try:
+            entries = list(os.scandir(directory))
+        except FileNotFoundError:
+            # A subdirectory removed after its parent was listed no longer
+            # exists; the root itself must exist.
+            if relative_directory == "":
+                raise
+            continue
         for entry in entries:
             # DirEntry.stat() can report zero identity fields for regular
             # files on Windows; os.stat() preserves the handle-comparable ID.
-            info = os.stat(entry.path, follow_symlinks=False)
+            try:
+                info = os.stat(entry.path, follow_symlinks=False)
+            except FileNotFoundError:
+                # The server can remove a file between listing and stat, e.g.
+                # Toast renaming its "<db>.new.#N#" checkpoint temporary when a
+                # dump completes. It is absent from the resulting snapshot.
+                continue
             attributes = getattr(info, "st_file_attributes", 0)
             is_reparse = bool(attributes & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0))
             if stat.S_ISLNK(info.st_mode) or is_reparse:

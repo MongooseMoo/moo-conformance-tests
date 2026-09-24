@@ -1,0 +1,151 @@
+name: protected_builtin_redirect
+description: >
+  $server_options.protect_<name> makes call_bi_func (functions.cc) redirect a
+  protected builtin to #0:bf_<name>(@args) for every frame whose `this` is not
+  #0. The redirect does not depend on the caller's wizard bit: a wizard eval
+  frame and a verb on an ordinary object both receive the wrapper's result,
+  while the wrapper itself (this == #0) reaches the real builtin. Without a
+  wrapper verb a wizard falls through to the real builtin and a non-wizard
+  gets E_PERM.
+
+requires:
+  builtins:
+    - valid
+    - load_server_options
+    - add_property
+    - delete_property
+    - add_verb
+    - delete_verb
+    - set_verb_code
+    - create
+    - recycle
+
+tests:
+  - name: protected_valid_wizard_eval_frame_uses_wrapper
+    description: A wizard's eval frame (this == #-1) calling valid() receives #0:bf_valid's result.
+    steps:
+      - run: |
+          try
+            add_property($server_options, "protect_valid", 1, {player, "r"});
+          except (E_INVARG)
+            $server_options.protect_valid = 1;
+          endtry
+          try
+            add_verb(#0, {player, "rxd", "bf_valid"}, {"this", "none", "this"});
+          except (E_INVARG)
+          endtry
+          set_verb_code(#0, "bf_valid", {"return valid(args[1]) + 10;"});
+          load_server_options();
+          return 1;
+        as: wizard
+      - run: "return {valid(#0), valid(#-1)};"
+        as: wizard
+        expect:
+          value: [11, 10]
+    cleanup:
+      - run: |
+          try
+            delete_verb(#0, "bf_valid");
+          except (ANY)
+          endtry
+          try
+            delete_property($server_options, "protect_valid");
+          except (ANY)
+          endtry
+          load_server_options();
+        as: wizard
+
+  - name: protected_valid_verb_on_ordinary_object_uses_wrapper
+    description: A verb whose `this` is an ordinary object is redirected to #0:bf_valid.
+    steps:
+      - run: |
+          try
+            add_property($server_options, "protect_valid", 1, {player, "r"});
+          except (E_INVARG)
+            $server_options.protect_valid = 1;
+          endtry
+          try
+            add_verb(#0, {player, "rxd", "bf_valid"}, {"this", "none", "this"});
+          except (E_INVARG)
+          endtry
+          set_verb_code(#0, "bf_valid", {"return valid(args[1]) + 10;"});
+          load_server_options();
+          o = create($nothing);
+          add_verb(o, {player, "rxd", "probe"}, {"this", "none", "this"});
+          set_verb_code(o, "probe", {"return valid(args[1]);"});
+          r = {o:probe(o), o:probe(#-1)};
+          recycle(o);
+          return r;
+        as: wizard
+        expect:
+          value: [11, 10]
+    cleanup:
+      - run: |
+          try
+            delete_verb(#0, "bf_valid");
+          except (ANY)
+          endtry
+          try
+            delete_property($server_options, "protect_valid");
+          except (ANY)
+          endtry
+          load_server_options();
+        as: wizard
+
+  - name: protected_valid_without_wrapper_wizard_falls_through
+    description: With protect_valid set and no #0:bf_valid, a wizard runs the real builtin.
+    steps:
+      - run: |
+          try
+            add_property($server_options, "protect_valid", 1, {player, "r"});
+          except (E_INVARG)
+            $server_options.protect_valid = 1;
+          endtry
+          try
+            delete_verb(#0, "bf_valid");
+          except (E_VERBNF)
+          endtry
+          load_server_options();
+          return 1;
+        as: wizard
+      - run: "return {valid(#0), valid(#-1)};"
+        as: wizard
+        expect:
+          value: [1, 0]
+    cleanup:
+      - run: |
+          try
+            delete_property($server_options, "protect_valid");
+          except (ANY)
+          endtry
+          load_server_options();
+        as: wizard
+
+  - name: protected_valid_without_wrapper_programmer_gets_perm
+    description: With protect_valid set and no #0:bf_valid, a non-wizard's valid() raises E_PERM.
+    steps:
+      - run: |
+          try
+            add_property($server_options, "protect_valid", 1, {player, "r"});
+          except (E_INVARG)
+            $server_options.protect_valid = 1;
+          endtry
+          try
+            delete_verb(#0, "bf_valid");
+          except (E_VERBNF)
+          endtry
+          load_server_options();
+          return 1;
+        as: wizard
+      - run: "return valid(#0);"
+        as: programmer
+        expect:
+          error: E_PERM
+    cleanup:
+      - run: |
+          try
+            delete_property($server_options, "protect_valid");
+          except (ANY)
+          endtry
+          load_server_options();
+        as: wizard

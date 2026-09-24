@@ -1,5 +1,5 @@
 name: object_dump_persistence
-description: Verifies signed object-reference values and Toast map identity across a managed v17 restart.
+description: Verifies signed object-reference values and full-width map-key identity across a managed v17 restart.
 requires:
   builtins:
     - add_property
@@ -59,7 +59,7 @@ tests:
                "#0", "#4294967296", "#9223372036854775807"]
             - ["#-9223372036854775807", "#-9223372036854775808", "#-1",
                "#0", "#4294967296", "#9223372036854775807"]
-            - [1, "large", "large"]
+            - [2, "small", "large"]
     cleanup:
       - run: |
           delete_property(#1, "object_persist_edges");

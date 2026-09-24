@@ -1,0 +1,508 @@
+name: divergence_command_connection_lifecycle
+description: >
+  Command-line and connection lifecycle semantics: out-of-band dispatch,
+  quote-prefix unquoting, PREFIX/SUFFIX framing, hold-input, parser
+  shortcuts, and the .program intrinsic (2026-08-30 campaign, batch 8).
+  Expectations are stock WSL Toast behavior.
+
+requires:
+  builtins:
+    - listen
+    - unlisten
+    - add_verb
+    - set_verb_code
+    - create
+    - recycle
+    - set_player_flag
+    - set_connection_option
+
+tests:
+  - name: cmd_tofloat_hex_string_parses
+    code: "tofloat(\"0x10\")"
+    expect:
+      value: 16.0
+
+  - name: cmd_out_of_band_prefix_dispatches_pre_login
+    description: Input starting with #$# goes to #0:do_out_of_band_command, not do_login_command.
+    steps:
+      - allocate_port:
+          capture: oob_port
+      - run: |
+          for prop in ({"dcc_handler", "dcc_port", "dcc_oob", "dcc_login"})
+            try
+              add_property(#0, prop, 0, {#0, "rw"});
+            except (E_INVARG)
+            endtry
+          endfor
+          #0.dcc_oob = 0;
+          #0.dcc_login = 0;
+          handler = create($nothing);
+          #0.dcc_handler = handler;
+          #0.dcc_port = {oob_port};
+          add_verb(handler, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(handler, "do_login_command", {"#0.dcc_login = {args, argstr};", "return 0;"});
+          add_verb(handler, {player, "rxd", "do_out_of_band_command"}, {"this", "none", "this"});
+          set_verb_code(handler, "do_out_of_band_command", {"#0.dcc_oob = {args, argstr};"});
+          return listen(handler, {oob_port}, ["print-messages" -> 0]);
+        as: wizard
+        expect:
+          type: int
+      - new_connection:
+          capture: oobc
+          port: "{oob_port}"
+      - send:
+          connection: oobc
+          text: "#$#mcp version: 1.0"
+      - wait: 500
+      - run: |
+          return {#0.dcc_oob, #0.dcc_login};
+        as: wizard
+        expect:
+          value:
+            -
+              -
+                - "#$#mcp"
+                - "version:"
+                - "1.0"
+              - "#$#mcp version: 1.0"
+            - [[], ""]
+      - close_connection: oobc
+    cleanup:
+      - run: |
+          try
+            unlisten(#0.dcc_port);
+          except (ANY)
+          endtry
+          try
+            recycle(#0.dcc_handler);
+          except (ANY)
+          endtry
+          for prop in ({"dcc_handler", "dcc_port", "dcc_oob", "dcc_login"})
+            try
+              delete_property(#0, prop);
+            except (ANY)
+            endtry
+          endfor
+          return 0;
+        as: wizard
+
+  - name: cmd_out_of_band_quote_prefix_unquotes_to_inband
+    description: Input starting with '#$"' is stripped of the quote prefix and processed in-band.
+    steps:
+      - allocate_port:
+          capture: q_port
+      - run: |
+          for prop in ({"dcq_handler", "dcq_port", "dcq_login"})
+            try
+              add_property(#0, prop, 0, {#0, "rw"});
+            except (E_INVARG)
+            endtry
+          endfor
+          #0.dcq_login = 0;
+          handler = create($nothing);
+          #0.dcq_handler = handler;
+          #0.dcq_port = {q_port};
+          add_verb(handler, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(handler, "do_login_command", {"#0.dcq_login = {args, argstr};", "return 0;"});
+          return listen(handler, {q_port}, ["print-messages" -> 0]);
+        as: wizard
+        expect:
+          type: int
+      - new_connection:
+          capture: qc
+          port: "{q_port}"
+      - send:
+          connection: qc
+          text: "#$\"hello quoted world"
+      - wait: 500
+      - run: |
+          return #0.dcq_login;
+        as: wizard
+        expect:
+          value:
+            -
+              - "hello"
+              - "quoted"
+              - "world"
+            - "hello quoted world"
+      - close_connection: qc
+    cleanup:
+      - run: |
+          try
+            unlisten(#0.dcq_port);
+          except (ANY)
+          endtry
+          try
+            recycle(#0.dcq_handler);
+          except (ANY)
+          endtry
+          for prop in ({"dcq_handler", "dcq_port", "dcq_login"})
+            try
+              delete_property(#0, prop);
+            except (ANY)
+            endtry
+          endfor
+          return 0;
+        as: wizard
+
+  - name: cmd_prefix_suffix_frame_command_output
+    steps:
+      - allocate_port:
+          capture: pf_port
+      - run: |
+          for prop in ({"dcp_handler", "dcp_port", "dcp_player", "dcp_ran"})
+            try
+              add_property(#0, prop, 0, {#0, "rw"});
+            except (E_INVARG)
+            endtry
+          endfor
+          #0.dcp_ran = {};
+          handler = create($nothing);
+          pl = create($nothing);
+          set_player_flag(pl, 1);
+          #0.dcp_handler = handler;
+          #0.dcp_player = pl;
+          #0.dcp_port = {pf_port};
+          add_verb(handler, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(handler, "do_login_command", {"return #0.dcp_player;"});
+          add_verb(pl, {pl, "rxd", "marco"}, {"none", "none", "none"});
+          set_verb_code(pl, "marco", {"#0.dcp_ran = {@#0.dcp_ran, {player, player == this}};", "notify(player, \"polo\");"});
+          return listen(handler, {pf_port}, ["print-messages" -> 0]);
+        as: wizard
+        expect:
+          type: int
+      - new_connection:
+          capture: pfc
+          port: "{pf_port}"
+      - send:
+          connection: pfc
+          text: "connect anything"
+      - wait: 300
+      - send:
+          connection: pfc
+          text: "marco"
+        expect:
+          output:
+            exact:
+              - "polo"
+      - run: |
+          return {length(#0.dcp_ran), #0.dcp_ran != {} && #0.dcp_ran[1][1] == #0.dcp_player};
+        as: wizard
+        expect:
+          value: [1, 1]
+      - send:
+          connection: pfc
+          text: "PREFIX ==BEGIN=="
+      - send:
+          connection: pfc
+          text: "SUFFIX ==END=="
+      - send:
+          connection: pfc
+          text: "marco"
+        expect:
+          output:
+            exact:
+              - "==BEGIN=="
+              - "polo"
+              - "==END=="
+      - close_connection: pfc
+    cleanup:
+      - run: |
+          try
+            unlisten(#0.dcp_port);
+          except (ANY)
+          endtry
+          try
+            recycle(#0.dcp_handler);
+          except (ANY)
+          endtry
+          try
+            recycle(#0.dcp_player);
+          except (ANY)
+          endtry
+          for prop in ({"dcp_handler", "dcp_port", "dcp_player", "dcp_ran"})
+            try
+              delete_property(#0, prop);
+            except (ANY)
+            endtry
+          endfor
+          return 0;
+        as: wizard
+
+  - name: cmd_hold_input_defers_commands_until_released
+    steps:
+      - allocate_port:
+          capture: hi_port
+      - run: |
+          for prop in ({"dch_handler", "dch_port", "dch_player", "dch_log"})
+            try
+              add_property(#0, prop, 0, {#0, "rw"});
+            except (E_INVARG)
+            endtry
+          endfor
+          #0.dch_log = {};
+          handler = create($nothing);
+          pl = create($nothing);
+          set_player_flag(pl, 1);
+          #0.dch_handler = handler;
+          #0.dch_player = pl;
+          #0.dch_port = {hi_port};
+          add_verb(handler, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(handler, "do_login_command", {"return #0.dch_player;"});
+          add_verb(pl, {pl, "rxd", "ping"}, {"none", "none", "none"});
+          set_verb_code(pl, "ping", {"#0.dch_log = {@#0.dch_log, \"ping\"};"});
+          return listen(handler, {hi_port}, ["print-messages" -> 0]);
+        as: wizard
+        expect:
+          type: int
+      - new_connection:
+          capture: hic
+          port: "{hi_port}"
+      - send:
+          connection: hic
+          text: "connect anything"
+      - wait: 300
+      - run: |
+          return set_connection_option(#0.dch_player, "hold-input", 1);
+        as: wizard
+        expect:
+          value: 0
+      - send:
+          connection: hic
+          text: "ping"
+      - wait: 500
+      - run: |
+          return {#0.dch_log, set_connection_option(#0.dch_player, "hold-input", 0)};
+        as: wizard
+        expect:
+          value:
+            - []
+            - 0
+      - wait: 500
+      - run: |
+          return #0.dch_log;
+        as: wizard
+        expect:
+          value: ["ping"]
+      - close_connection: hic
+    cleanup:
+      - run: |
+          try
+            unlisten(#0.dch_port);
+          except (ANY)
+          endtry
+          try
+            recycle(#0.dch_handler);
+          except (ANY)
+          endtry
+          try
+            recycle(#0.dch_player);
+          except (ANY)
+          endtry
+          for prop in ({"dch_handler", "dch_port", "dch_player", "dch_log"})
+            try
+              delete_property(#0, prop);
+            except (ANY)
+            endtry
+          endfor
+          return 0;
+        as: wizard
+
+  - name: cmd_multiple_commands_one_packet_preserve_order
+    steps:
+      - allocate_port:
+          capture: mc_port
+      - run: |
+          for prop in ({"dcm_handler", "dcm_port", "dcm_log"})
+            try
+              add_property(#0, prop, 0, {#0, "rw"});
+            except (E_INVARG)
+            endtry
+          endfor
+          #0.dcm_log = {};
+          handler = create($nothing);
+          #0.dcm_handler = handler;
+          #0.dcm_port = {mc_port};
+          add_verb(handler, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(handler, "do_login_command", {"#0.dcm_log = {@#0.dcm_log, argstr};", "return 0;"});
+          return listen(handler, {mc_port}, ["print-messages" -> 0]);
+        as: wizard
+        expect:
+          type: int
+      - new_connection:
+          capture: mcc
+          port: "{mc_port}"
+      - send_bytes:
+          connection: mcc
+          hex: "636d642d6f6e650d0a636d642d74776f0d0a636d642d74687265650d0a"
+      - wait: 700
+      - run: |
+          return #0.dcm_log;
+        as: wizard
+        expect:
+          value: ["", "cmd-one", "cmd-two", "cmd-three"]
+      - close_connection: mcc
+    cleanup:
+      - run: |
+          try
+            unlisten(#0.dcm_port);
+          except (ANY)
+          endtry
+          try
+            recycle(#0.dcm_handler);
+          except (ANY)
+          endtry
+          for prop in ({"dcm_handler", "dcm_port", "dcm_log"})
+            try
+              delete_property(#0, prop);
+            except (ANY)
+            endtry
+          endfor
+          return 0;
+        as: wizard
+
+  - name: cmd_say_and_emote_shortcuts_expand
+    steps:
+      - allocate_port:
+          capture: sh_port
+      - run: |
+          for prop in ({"dcs_handler", "dcs_port", "dcs_player", "dcs_log"})
+            try
+              add_property(#0, prop, 0, {#0, "rw"});
+            except (E_INVARG)
+            endtry
+          endfor
+          #0.dcs_log = {};
+          handler = create($nothing);
+          pl = create($nothing);
+          set_player_flag(pl, 1);
+          #0.dcs_handler = handler;
+          #0.dcs_player = pl;
+          #0.dcs_port = {sh_port};
+          add_verb(handler, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(handler, "do_login_command", {"return #0.dcs_player;"});
+          add_verb(pl, {pl, "rxd", "say"}, {"any", "any", "any"});
+          set_verb_code(pl, "say", {"#0.dcs_log = {@#0.dcs_log, {verb, argstr}};"});
+          add_verb(pl, {pl, "rxd", "emote"}, {"any", "any", "any"});
+          set_verb_code(pl, "emote", {"#0.dcs_log = {@#0.dcs_log, {verb, argstr}};"});
+          return listen(handler, {sh_port}, ["print-messages" -> 0]);
+        as: wizard
+        expect:
+          type: int
+      - new_connection:
+          capture: shc
+          port: "{sh_port}"
+      - send:
+          connection: shc
+          text: "connect anything"
+      - wait: 300
+      - send:
+          connection: shc
+          text: "\"hello there"
+      - send:
+          connection: shc
+          text: ":waves happily"
+      - wait: 500
+      - run: |
+          return #0.dcs_log;
+        as: wizard
+        expect:
+          value:
+            - ["say", "hello there"]
+            - ["emote", "waves happily"]
+      - close_connection: shc
+    cleanup:
+      - run: |
+          try
+            unlisten(#0.dcs_port);
+          except (ANY)
+          endtry
+          try
+            recycle(#0.dcs_handler);
+          except (ANY)
+          endtry
+          try
+            recycle(#0.dcs_player);
+          except (ANY)
+          endtry
+          for prop in ({"dcs_handler", "dcs_port", "dcs_player", "dcs_log"})
+            try
+              delete_property(#0, prop);
+            except (ANY)
+            endtry
+          endfor
+          return 0;
+        as: wizard
+
+  - name: cmd_program_intrinsic_sets_verb_code
+    description: The .program intrinsic command reads lines until "." and programs the named verb.
+    steps:
+      - allocate_port:
+          capture: pg_port
+      - run: |
+          for prop in ({"dcg_handler", "dcg_port", "dcg_player", "dcg_target"})
+            try
+              add_property(#0, prop, 0, {#0, "rw"});
+            except (E_INVARG)
+            endtry
+          endfor
+          handler = create($nothing);
+          pl = create($nothing);
+          set_player_flag(pl, 1);
+          pl.programmer = 1;
+          target = create($nothing);
+          target.owner = pl;
+          add_verb(target, {pl, "xd", "progme"}, {"this", "none", "this"});
+          #0.dcg_handler = handler;
+          #0.dcg_player = pl;
+          #0.dcg_target = target;
+          #0.dcg_port = {pg_port};
+          add_verb(handler, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(handler, "do_login_command", {"return #0.dcg_player;"});
+          return listen(handler, {pg_port}, ["print-messages" -> 0]);
+        as: wizard
+        expect:
+          type: int
+      - new_connection:
+          capture: pgc
+          port: "{pg_port}"
+      - send:
+          connection: pgc
+          text: "connect anything"
+      - wait: 300
+      - send:
+          connection: pgc
+          text: ".program $dcg_target:progme"
+      - send:
+          connection: pgc
+          text: "return 4242;"
+      - send:
+          connection: pgc
+          text: "."
+      - wait: 700
+      - run: |
+          return verb_code(#0.dcg_target, "progme");
+        as: wizard
+        expect:
+          value: ["return 4242;"]
+      - close_connection: pgc
+    cleanup:
+      - run: |
+          try
+            unlisten(#0.dcg_port);
+          except (ANY)
+          endtry
+          for o in ({#0.dcg_handler, #0.dcg_player, #0.dcg_target})
+            try
+              recycle(o);
+            except (ANY)
+            endtry
+          endfor
+          for prop in ({"dcg_handler", "dcg_port", "dcg_player", "dcg_target"})
+            try
+              delete_property(#0, prop);
+            except (ANY)
+            endtry
+          endfor
+          return 0;
+        as: wizard

@@ -1244,3 +1244,39 @@ def test_login_script_substitutes_requested_user(monkeypatch):
     transport._login("Programmer")
 
     assert sent == ["connect Programmer"]
+
+
+def test_snapshot_skips_file_removed_between_listing_and_stat(tmp_path, monkeypatch):
+    # Toast renames its "<db>.new.#N#" checkpoint temporary when a dump
+    # finishes; a snapshot racing that rename must not fail.
+    (tmp_path / "Test.db").write_bytes(b"db")
+    (tmp_path / "Test.db.new.#1#").write_bytes(b"partial")
+    real_stat = os.stat
+
+    def racing_stat(path, *args, **kwargs):
+        if os.fspath(path).endswith("#1#"):
+            os.remove(path)
+        return real_stat(path, *args, **kwargs)
+
+    monkeypatch.setattr(os, "stat", racing_stat)
+    assert set(snapshot_regular_files(tmp_path)) == {"Test.db"}
+
+
+def test_snapshot_skips_directory_removed_after_listing(tmp_path, monkeypatch):
+    (tmp_path / "Test.db").write_bytes(b"db")
+    (tmp_path / "gone").mkdir()
+    (tmp_path / "gone" / "file").write_bytes(b"x")
+    real_scandir = os.scandir
+
+    def racing_scandir(path):
+        if os.fspath(path).endswith("gone"):
+            raise FileNotFoundError(path)
+        return real_scandir(path)
+
+    monkeypatch.setattr(os, "scandir", racing_scandir)
+    assert set(snapshot_regular_files(tmp_path)) == {"Test.db"}
+
+
+def test_snapshot_of_missing_root_still_raises(tmp_path):
+    with pytest.raises(FileNotFoundError):
+        snapshot_regular_files(tmp_path / "missing")

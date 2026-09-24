@@ -1,0 +1,32 @@
+name: database_disk_size_failed_dump
+description: An ordinary dump attempt enables the existing output even if writing fails.
+server_db: disk_size_failed_dump.db
+requires:
+  builtins: [db_disk_size, dump_database]
+  config: [managed_server, server_dir, server_db_dir]
+# The managed server command must use {db}.new as its output database.
+tests:
+  - name: failed_dump_selects_existing_output
+    permission: wizard
+    steps:
+      - write_file:
+          path: disk_size_failed_dump.db.new
+          content: stale
+      - write_file:
+          path: disk_size_failed_dump.db.new.#1#/block
+          content: block Toast temporary checkpoint
+      - write_file:
+          path: disk_size_failed_dump.db.tmp/block
+          content: block Barn temporary checkpoint
+      - run: return db_disk_size();
+        expect:
+          value: 2035
+      - run: |
+          try dump_database(); except (ANY) endtry
+          return 0;
+        expect:
+          value: 0
+      - wait: 1500
+      - run: return db_disk_size();
+        expect:
+          value: 5

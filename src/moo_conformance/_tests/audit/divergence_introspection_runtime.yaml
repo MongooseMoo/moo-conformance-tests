@@ -1,0 +1,155 @@
+name: divergence_introspection_runtime
+description: >
+  Runtime introspection semantics: function_info metadata, task budgets,
+  memory/listener/server_version shapes, raise() value passthrough
+  (2026-08-30 campaign, batch 5). Expectations are stock WSL Toast behavior.
+
+tests:
+  - name: function_info_chparent_signature
+    code: "function_info(\"chparent\")"
+    expect:
+      value: ["chparent", 2, 2, [-1, 1]]
+
+  - name: function_info_chparents_signature
+    code: "function_info(\"chparents\")"
+    expect:
+      value: ["chparents", 2, 2, [-1, 4]]
+
+  - name: function_info_curl_signature
+    code: "function_info(\"curl\")"
+    expect:
+      value: ["curl", 1, 3, [2, -1, 0]]
+
+  - name: function_info_generate_json_signature
+    code: "function_info(\"generate_json\")"
+    expect:
+      value: ["generate_json", 1, 3, [-1, 2, -1]]
+
+  - name: function_info_shutdown_signature
+    code: "function_info(\"shutdown\")"
+    expect:
+      value: ["shutdown", 0, 2, [2, -1]]
+
+  - name: function_info_simplex_noise_signature
+    code: "function_info(\"simplex_noise\")"
+    expect:
+      value: ["simplex_noise", 1, 1, [4]]
+
+  - name: function_info_spellcheck_signature
+    code: "function_info(\"spellcheck\")"
+    expect:
+      value: ["spellcheck", 1, 1, [2]]
+
+  - name: function_info_url_encode_signature
+    code: "function_info(\"url_encode\")"
+    expect:
+      value: ["url_encode", 1, 1, [2]]
+
+  - name: function_info_url_decode_signature
+    code: "function_info(\"url_decode\")"
+    expect:
+      value: ["url_decode", 1, 1, [2]]
+
+  - name: raise_non_error_value_raises_that_value
+    description: >
+      raise() accepts any value; the raised "error code" is the value itself
+      and a catch-all expression yields it back.
+    code: "`raise(1.5) ! ANY'"
+    expect:
+      value: 1.5
+
+  - name: raise_non_error_string_raises_that_value
+    code: "`raise(\"boom\") ! ANY'"
+    expect:
+      value: "boom"
+
+  - name: new_waif_outside_verb_is_invind
+    permission: wizard
+    code: "new_waif()"
+    expect:
+      error: E_INVIND
+
+  - name: foreground_ticks_budget_is_60000
+    description: A fresh foreground task starts with the DEFAULT_FG_TICKS budget of 60000.
+    code: "ticks_left() > 30000 && ticks_left() <= 60000"
+    expect:
+      value: 1
+
+  - name: foreground_seconds_budget_is_five
+    code: "seconds_left() <= 5"
+    expect:
+      value: 1
+
+  - name: memory_usage_returns_floats
+    permission: wizard
+    code: "typeof(memory_usage()[1]) == FLOAT"
+    expect:
+      value: 1
+
+  - name: exp_float_formatting_fifteen_digits
+    code: "tostr(exp(1.5))"
+    expect:
+      value: "4.48168907033806"
+
+  - name: server_version_detail_has_nine_sections
+    code: "length(server_version(1))"
+    expect:
+      value: 9
+
+  - name: listeners_entries_are_maps
+    permission: wizard
+    code: "length(listeners()) > 0 && typeof(listeners()[1]) == MAP"
+    expect:
+      value: 1
+
+  - name: gc_stats_returns_color_map
+    permission: wizard
+    code: "typeof(gc_stats()) == MAP && maphaskey(gc_stats(), \"purple\")"
+    expect:
+      value: 1
+
+  - name: pcre_cache_stats_wizard_returns_list
+    permission: wizard
+    code: "typeof(pcre_cache_stats()) == LIST"
+    expect:
+      value: 1
+
+  - name: sqlite_handles_wizard_returns_list
+    permission: wizard
+    code: "typeof(sqlite_handles()) == LIST"
+    expect:
+      value: 1
+
+  - name: threads_wizard_returns_list
+    permission: wizard
+    code: "typeof(threads()) == LIST"
+    expect:
+      value: 1
+
+  - name: reseed_random_wizard_returns_zero
+    permission: wizard
+    code: "reseed_random()"
+    expect:
+      value: 0
+
+  - name: run_gc_wizard_returns_zero
+    permission: wizard
+    code: "run_gc()"
+    expect:
+      value: 0
+
+  - name: callers_row_shape_from_nested_verb
+    description: >
+      callers() inside a verb invoked from an eval shows the eval frame with
+      this == #-1, verb name "", programmer == the evaluating wizard.
+    steps:
+      - run: |
+          o = create($nothing);
+          add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+          set_verb_code(o, "probe", {"return callers();"});
+          r = o:probe();
+          recycle(o);
+          return {length(r), r[1][1] == #-1, r[1][2], r[1][3] == player, r[1][5] == player};
+        as: wizard
+        expect:
+          value: [3, 1, "", 1, 1]

@@ -1,0 +1,169 @@
+name: connection_hook_frames_toast_oracle
+description: Toast-oracle coverage for server-origin login and same-listener lifecycle hook selection.
+
+requires:
+  builtins: [create, recycle, valid, add_property, add_verb, set_verb_code, set_player_flag, boot_player, listen, unlisten]
+
+tests:
+  - name: initial_empty_do_login_command_has_server_origin_frame
+    steps:
+      - allocate_port:
+          capture: listener_port
+      - run: |
+          handler = create($nothing);
+          add_property(handler, "seen", {}, {player, "rw"});
+          add_property(handler, "port", {listener_port}, {player, "rw"});
+          add_verb(handler, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(handler, "do_login_command", {
+            "this.seen = {this, player, caller, args, argstr};",
+            "return 0;"
+          });
+          listen(handler, {listener_port}, ["print-messages" -> 0]);
+          return handler;
+        capture: login_frame_handler
+        as: wizard
+      - new_connection:
+          capture: conn1
+          port: "{listener_port}"
+      - wait: 500
+      - run: |
+          h = {login_frame_handler};
+          seen = h.seen;
+          return {seen[1] == h, seen[2] < #0, seen[3] == #-1, seen[4] == {}, seen[5] == ""};
+        as: wizard
+        expect:
+          value: [1, 1, 1, 1, 1]
+      - close_connection: conn1
+    cleanup:
+      - run: |
+          h = {login_frame_handler};
+          try
+            unlisten(h.port);
+          except (ANY)
+          endtry
+          try
+            recycle(h);
+          except (ANY)
+          endtry
+        as: wizard
+
+  - name: new_login_object_calls_user_created_only
+    steps:
+      - allocate_port:
+          capture: listener_port
+      - run: |
+          handler = create($nothing);
+          add_property(handler, "events", {}, {player, "rw"});
+          add_property(handler, "login_player", #-1, {player, "rw"});
+          add_property(handler, "port", {listener_port}, {player, "rw"});
+          add_verb(handler, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(handler, "do_login_command", {
+            "if (!valid(this.login_player))",
+            "  this.login_player = create($nothing);",
+            "  set_player_flag(this.login_player, 1);",
+            "endif",
+            "return this.login_player;"
+          });
+          add_verb(handler, {player, "rxd", "user_created"}, {"this", "none", "this"});
+          set_verb_code(handler, "user_created", {"this.events = {@this.events, {\"created\", this, player, caller, args, argstr}};"});
+          add_verb(handler, {player, "rxd", "user_connected"}, {"this", "none", "this"});
+          set_verb_code(handler, "user_connected", {"this.events = {@this.events, {\"connected\", this, player, caller, args, argstr}};"});
+          listen(handler, {listener_port}, ["print-messages" -> 0]);
+          return handler;
+        capture: created_handler
+        as: wizard
+      - new_connection:
+          capture: conn1
+          port: "{listener_port}"
+      - wait: 500
+      - run: |
+          h = {created_handler};
+          p = h.login_player;
+          return h.events == {{"created", h, p, #-1, {p}, ""}};
+        as: wizard
+        expect:
+          value: 1
+      - close_connection: conn1
+    cleanup:
+      - run: |
+          h = {created_handler};
+          try
+            unlisten(h.port);
+          except (ANY)
+          endtry
+          try
+            boot_player(h.login_player);
+          except (ANY)
+          endtry
+          try
+            recycle(h.login_player);
+          except (ANY)
+          endtry
+          try
+            recycle(h);
+          except (ANY)
+          endtry
+        as: wizard
+
+  - name: same_listener_reconnect_calls_user_reconnected
+    steps:
+      - allocate_port:
+          capture: listener_port
+      - run: |
+          handler = create($nothing);
+          login_player = create($nothing);
+          set_player_flag(login_player, 1);
+          add_property(handler, "events", {}, {player, "rw"});
+          add_property(handler, "login_player", login_player, {player, "rw"});
+          add_property(handler, "port", {listener_port}, {player, "rw"});
+          add_verb(handler, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(handler, "do_login_command", {"return this.login_player;"});
+          add_verb(handler, {player, "rxd", "user_connected"}, {"this", "none", "this"});
+          set_verb_code(handler, "user_connected", {"this.events = {@this.events, {\"connected\", this, player, caller, args, argstr}};"});
+          add_verb(handler, {player, "rxd", "user_reconnected"}, {"this", "none", "this"});
+          set_verb_code(handler, "user_reconnected", {"this.events = {@this.events, {\"reconnected\", this, player, caller, args, argstr}};"});
+          add_verb(handler, {player, "rxd", "user_client_disconnected"}, {"this", "none", "this"});
+          set_verb_code(handler, "user_client_disconnected", {"this.events = {@this.events, {\"client-disconnected\", this, player, caller, args, argstr}};"});
+          listen(handler, {listener_port}, ["print-messages" -> 0]);
+          return handler;
+        capture: reconnect_handler
+        as: wizard
+      - new_connection:
+          capture: conn1
+          port: "{listener_port}"
+      - wait: 500
+      - new_connection:
+          capture: conn2
+          port: "{listener_port}"
+      - wait: 500
+      - run: |
+          h = {reconnect_handler};
+          p = h.login_player;
+          return h.events == {
+            {"connected", h, p, #-1, {p}, ""},
+            {"reconnected", h, p, #-1, {p}, ""}
+          };
+        as: wizard
+        expect:
+          value: 1
+      - close_connection: conn2
+    cleanup:
+      - run: |
+          h = {reconnect_handler};
+          try
+            unlisten(h.port);
+          except (ANY)
+          endtry
+          try
+            boot_player(h.login_player);
+          except (ANY)
+          endtry
+          try
+            recycle(h.login_player);
+          except (ANY)
+          endtry
+          try
+            recycle(h);
+          except (ANY)
+          endtry
+        as: wizard

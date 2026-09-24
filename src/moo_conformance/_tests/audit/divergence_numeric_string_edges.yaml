@@ -1,0 +1,73 @@
+name: divergence_numeric_string_edges
+description: >
+  Numeric and string edge-case semantics captured from Toast-vs-Barn
+  differential probing (2026-08-30 campaign). Every expectation is the
+  observed stock WSL Toast behavior.
+
+tests:
+  - name: negative_zero_toliteral_preserves_sign
+    code: "toliteral(-0.0)"
+    expect:
+      value: "-0.0"
+
+  - name: negative_zero_tostr_preserves_sign
+    code: "tostr(-0.0)"
+    expect:
+      value: "-0.0"
+
+  - name: float_divided_by_int_zero_is_type_error
+    description: >
+      Mixed float/int arithmetic raises E_TYPE before any divide-by-zero
+      check; 1.0 / 0 is E_TYPE, not E_DIV.
+    code: "1.0 / 0"
+    expect:
+      error: E_TYPE
+
+  - name: floatstr_precision_twenty_allowed
+    code: "floatstr(1.5, 20)"
+    expect:
+      value: "1.50000000000000000000"
+
+  - name: exp_underflow_raises_e_float
+    code: "exp(-1000.0)"
+    expect:
+      error: E_FLOAT
+
+  - name: index_empty_needle_in_empty_string
+    code: "index(\"\", \"\")"
+    expect:
+      value: 1
+
+  - name: chr_zero_returns_empty_string
+    permission: wizard
+    code: "chr(0)"
+    expect:
+      value: ""
+
+  - name: chr_255_returns_one_char_string
+    permission: wizard
+    code: "length(chr(255))"
+    expect:
+      value: 1
+
+  - name: parent_of_out_of_range_object_is_invarg
+    code: "parent(#999999)"
+    expect:
+      error: E_INVARG
+
+  - name: parse_json_exponent_number_is_float
+    code: "parse_json(\"1.5e2\")"
+    expect:
+      value: 150.0
+
+  - name: getenv_path_returns_string
+    permission: wizard
+    code: "typeof(getenv(\"PATH\"))"
+    expect:
+      value: 2
+
+  - name: argon2_default_parameters_hash
+    permission: wizard
+    code: "argon2(\"pw\", \"somesalt12345678\")"
+    expect:
+      value: "$argon2id$v=19$m=4096,t=3,p=1$c29tZXNhbHQxMjM0NTY3OA$aMxacoOi/qjIgJYiWQiFwZWIushzpAiw6eVJ9Fc/7jE"

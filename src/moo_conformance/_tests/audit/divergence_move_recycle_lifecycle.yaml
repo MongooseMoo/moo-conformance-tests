@@ -1,0 +1,569 @@
+name: divergence_move_recycle_lifecycle
+description: >
+  Movement and recycle lifecycle semantics from ToastStunt do_move/bf_recycle
+  (objects.cc): accept/exitfunc/enterfunc ordering, mid-hook mutation, silent
+  no-op paths, recycle hook chains. Expectations are stock WSL Toast behavior.
+
+requires:
+  builtins:
+    - add_property
+    - delete_property
+    - add_verb
+    - set_verb_code
+    - create
+    - recycle
+    - move
+    - valid
+    - set_task_perms
+
+tests:
+  - name: move_invalid_what_is_invarg
+    permission: wizard
+    code: "move(#999999, #-1)"
+    expect:
+      error: E_INVARG
+
+  - name: move_negative_position_is_invarg
+    steps:
+      - run: |
+          a = create($nothing);
+          b = create($nothing);
+          try
+            return move(a, b, -1);
+          finally
+            recycle(a);
+            recycle(b);
+          endtry
+        as: wizard
+        expect:
+          error: E_INVARG
+
+  - name: move_to_self_is_recmove
+    steps:
+      - run: |
+          a = create($nothing);
+          try
+            return move(a, a);
+          finally
+            recycle(a);
+          endtry
+        as: wizard
+        expect:
+          error: E_RECMOVE
+
+  - name: move_into_own_contents_is_recmove
+    steps:
+      - run: |
+          box = create($nothing);
+          inner = create($nothing);
+          move(inner, box);
+          try
+            return move(box, inner);
+          finally
+            recycle(inner);
+            recycle(box);
+          endtry
+        as: wizard
+        expect:
+          error: E_RECMOVE
+
+  - name: move_nonwizard_no_accept_is_enacc
+    description: Non-wizard mover, destination without an accept verb, rejects with E_NACC.
+    steps:
+      - run: |
+          try
+            add_property(#0, "dmv_cleanup", {}, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          p = create($nothing);
+          p.programmer = 1;
+          what = create($nothing);
+          what.owner = p;
+          where = create($nothing);
+          #0.dmv_cleanup = {p, what, where};
+          set_task_perms(p);
+          return move(what, where);
+        as: wizard
+        expect:
+          error: E_NACC
+    cleanup:
+      - run: |
+          for o in (#0.dmv_cleanup)
+            try
+              recycle(o);
+            except (ANY)
+            endtry
+          endfor
+          try
+            delete_property(#0, "dmv_cleanup");
+          except (ANY)
+          endtry
+          return 0;
+        as: wizard
+
+  - name: move_wizard_ignores_falsy_accept_but_still_calls_it
+    steps:
+      - run: |
+          try
+            add_property(#0, "dmv_log", {}, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          #0.dmv_log = {};
+          what = create($nothing);
+          where = create($nothing);
+          add_verb(where, {player, "xd", "accept"}, {"this", "none", "this"});
+          set_verb_code(where, "accept", {"#0.dmv_log = {@#0.dmv_log, {\"accept\", args[1]}};", "return 0;"});
+          r = move(what, where);
+          loc = what.location;
+          n = length(#0.dmv_log);
+          recycle(what);
+          recycle(where);
+          return {r, loc == where, n};
+        as: wizard
+        expect:
+          value: [0, 1, 1]
+    cleanup:
+      - run: |
+          try
+            delete_property(#0, "dmv_log");
+          except (ANY)
+          endtry
+          return 0;
+        as: wizard
+
+  - name: move_accept_not_called_when_destination_is_current_location
+    steps:
+      - run: |
+          try
+            add_property(#0, "dmv_log", {}, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          #0.dmv_log = {};
+          what = create($nothing);
+          where = create($nothing);
+          add_verb(where, {player, "xd", "accept"}, {"this", "none", "this"});
+          set_verb_code(where, "accept", {"#0.dmv_log = {@#0.dmv_log, \"accept\"};", "return 1;"});
+          move(what, where);
+          first = length(#0.dmv_log);
+          move(what, where);
+          second = length(#0.dmv_log);
+          recycle(what);
+          recycle(where);
+          return {first, second};
+        as: wizard
+        expect:
+          value: [1, 1]
+    cleanup:
+      - run: |
+          try
+            delete_property(#0, "dmv_log");
+          except (ANY)
+          endtry
+          return 0;
+        as: wizard
+
+  - name: move_accept_recycling_what_returns_silently
+    description: accept recycles the moved object; move() returns 0 with no error.
+    steps:
+      - run: |
+          try
+            add_property(#0, "dmv_what", #-1, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          what = create($nothing);
+          #0.dmv_what = what;
+          where = create($nothing);
+          add_verb(where, {player, "xd", "accept"}, {"this", "none", "this"});
+          set_verb_code(where, "accept", {"recycle(#0.dmv_what);", "return 1;"});
+          r = move(what, where);
+          v = valid(what);
+          recycle(where);
+          return {r, v};
+        as: wizard
+        expect:
+          value: [0, 0]
+    cleanup:
+      - run: |
+          try
+            delete_property(#0, "dmv_what");
+          except (ANY)
+          endtry
+          return 0;
+        as: wizard
+
+  - name: move_exitfunc_sees_new_location
+    description: db location changes before exitfunc runs; exitfunc observes what already at destination.
+    steps:
+      - run: |
+          try
+            add_property(#0, "dmv_log", {}, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          #0.dmv_log = {};
+          what = create($nothing);
+          src = create($nothing);
+          dst = create($nothing);
+          move(what, src);
+          add_verb(src, {player, "xd", "exitfunc"}, {"this", "none", "this"});
+          set_verb_code(src, "exitfunc", {"#0.dmv_log = {@#0.dmv_log, {\"exit\", args[1].location}};"});
+          move(what, dst);
+          log = #0.dmv_log;
+          recycle(what);
+          recycle(src);
+          r = {length(log), log[1][2] == dst};
+          recycle(dst);
+          return r;
+        as: wizard
+        expect:
+          value: [1, 1]
+    cleanup:
+      - run: |
+          try
+            delete_property(#0, "dmv_log");
+          except (ANY)
+          endtry
+          return 0;
+        as: wizard
+
+  - name: move_exitfunc_relocating_object_suppresses_enterfunc
+    description: >
+      If exitfunc moves the object somewhere else, the original destination's
+      enterfunc must not run (do_move case 3 re-checks the location).
+    steps:
+      - run: |
+          try
+            add_property(#0, "dmv_log", {}, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          try
+            add_property(#0, "dmv_third", #-1, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          #0.dmv_log = {};
+          what = create($nothing);
+          src = create($nothing);
+          dst = create($nothing);
+          third = create($nothing);
+          #0.dmv_third = third;
+          move(what, src);
+          add_verb(src, {player, "xd", "exitfunc"}, {"this", "none", "this"});
+          set_verb_code(src, "exitfunc", {"move(args[1], #0.dmv_third);"});
+          add_verb(dst, {player, "xd", "enterfunc"}, {"this", "none", "this"});
+          set_verb_code(dst, "enterfunc", {"#0.dmv_log = {@#0.dmv_log, \"enter-dst\"};"});
+          add_verb(third, {player, "xd", "enterfunc"}, {"this", "none", "this"});
+          set_verb_code(third, "enterfunc", {"#0.dmv_log = {@#0.dmv_log, \"enter-third\"};"});
+          move(what, dst);
+          log = #0.dmv_log;
+          loc = what.location == third;
+          recycle(what);
+          recycle(src);
+          recycle(dst);
+          recycle(third);
+          return {log, loc};
+        as: wizard
+        expect:
+          value:
+            - ["enter-third"]
+            - 1
+    cleanup:
+      - run: |
+          try
+            delete_property(#0, "dmv_log");
+          except (ANY)
+          endtry
+          try
+            delete_property(#0, "dmv_third");
+          except (ANY)
+          endtry
+          return 0;
+        as: wizard
+
+  - name: move_exitfunc_suspend_then_enterfunc_still_runs
+    steps:
+      - run: |
+          try
+            add_property(#0, "dmv_log", {}, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          #0.dmv_log = {};
+          what = create($nothing);
+          src = create($nothing);
+          dst = create($nothing);
+          move(what, src);
+          add_verb(src, {player, "xd", "exitfunc"}, {"this", "none", "this"});
+          set_verb_code(src, "exitfunc", {"suspend(0);", "#0.dmv_log = {@#0.dmv_log, \"exit-resumed\"};"});
+          add_verb(dst, {player, "xd", "enterfunc"}, {"this", "none", "this"});
+          set_verb_code(dst, "enterfunc", {"#0.dmv_log = {@#0.dmv_log, \"enter\"};"});
+          move(what, dst);
+          log = #0.dmv_log;
+          recycle(what);
+          recycle(src);
+          recycle(dst);
+          return log;
+        as: wizard
+        expect:
+          value: ["exit-resumed", "enter"]
+    cleanup:
+      - run: |
+          try
+            delete_property(#0, "dmv_log");
+          except (ANY)
+          endtry
+          return 0;
+        as: wizard
+
+  - name: move_to_nothing_runs_exitfunc_only
+    steps:
+      - run: |
+          try
+            add_property(#0, "dmv_log", {}, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          #0.dmv_log = {};
+          what = create($nothing);
+          src = create($nothing);
+          move(what, src);
+          add_verb(src, {player, "xd", "exitfunc"}, {"this", "none", "this"});
+          set_verb_code(src, "exitfunc", {"#0.dmv_log = {@#0.dmv_log, \"exit\"};"});
+          add_verb(src, {player, "xd", "accept"}, {"this", "none", "this"});
+          set_verb_code(src, "accept", {"#0.dmv_log = {@#0.dmv_log, \"accept\"};", "return 1;"});
+          r = move(what, #-1);
+          log = #0.dmv_log;
+          loc = what.location == #-1;
+          recycle(what);
+          recycle(src);
+          return {r, log, loc};
+        as: wizard
+        expect:
+          value:
+            - 0
+            - ["exit"]
+            - 1
+    cleanup:
+      - run: |
+          try
+            delete_property(#0, "dmv_log");
+          except (ANY)
+          endtry
+          return 0;
+        as: wizard
+
+  - name: move_position_inserts_into_contents
+    steps:
+      - run: |
+          box = create($nothing);
+          a = create($nothing);
+          b = create($nothing);
+          c = create($nothing);
+          move(a, box);
+          move(b, box);
+          before = box.contents;
+          move(c, box, 2);
+          after = box.contents;
+          r = {before == {a, b}, after == {a, c, b}};
+          recycle(a);
+          recycle(b);
+          recycle(c);
+          recycle(box);
+          return r;
+        as: wizard
+        expect:
+          value: [1, 1]
+
+  - name: move_same_location_with_position_reorders_without_hooks
+    steps:
+      - run: |
+          try
+            add_property(#0, "dmv_log", {}, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          #0.dmv_log = {};
+          box = create($nothing);
+          a = create($nothing);
+          b = create($nothing);
+          move(a, box);
+          move(b, box);
+          add_verb(box, {player, "xd", "accept"}, {"this", "none", "this"});
+          set_verb_code(box, "accept", {"#0.dmv_log = {@#0.dmv_log, \"accept\"};", "return 1;"});
+          add_verb(box, {player, "xd", "exitfunc"}, {"this", "none", "this"});
+          set_verb_code(box, "exitfunc", {"#0.dmv_log = {@#0.dmv_log, \"exit\"};"});
+          add_verb(box, {player, "xd", "enterfunc"}, {"this", "none", "this"});
+          set_verb_code(box, "enterfunc", {"#0.dmv_log = {@#0.dmv_log, \"enter\"};"});
+          move(a, box, 1);
+          after = box.contents;
+          log = #0.dmv_log;
+          r = {after == {a, b}, log};
+          recycle(a);
+          recycle(b);
+          recycle(box);
+          return r;
+        as: wizard
+        expect:
+          value:
+            - 1
+            - []
+    cleanup:
+      - run: |
+          try
+            delete_property(#0, "dmv_log");
+          except (ANY)
+          endtry
+          return 0;
+        as: wizard
+
+  - name: recycle_calls_recycle_verb_first
+    steps:
+      - run: |
+          try
+            add_property(#0, "dmv_log", {}, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          #0.dmv_log = {};
+          o = create($nothing);
+          add_verb(o, {player, "xd", "recycle"}, {"this", "none", "this"});
+          set_verb_code(o, "recycle", {"#0.dmv_log = {@#0.dmv_log, \"recycle\"};"});
+          recycle(o);
+          return {#0.dmv_log, valid(o)};
+        as: wizard
+        expect:
+          value:
+            - ["recycle"]
+            - 0
+    cleanup:
+      - run: |
+          try
+            delete_property(#0, "dmv_log");
+          except (ANY)
+          endtry
+          return 0;
+        as: wizard
+
+  - name: recycle_verb_recycling_self_is_invarg
+    steps:
+      - run: |
+          try
+            add_property(#0, "dmv_what", #-1, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          o = create($nothing);
+          #0.dmv_what = o;
+          add_verb(o, {player, "xd", "recycle"}, {"this", "none", "this"});
+          set_verb_code(o, "recycle", {"recycle(#0.dmv_what);"});
+          return recycle(o);
+        as: wizard
+        expect:
+          error: E_INVARG
+    cleanup:
+      - run: |
+          try
+            delete_property(#0, "dmv_what");
+          except (ANY)
+          endtry
+          return 0;
+        as: wizard
+
+  - name: recycle_moves_contents_out_with_exitfunc_on_recycled_object
+    steps:
+      - run: |
+          try
+            add_property(#0, "dmv_log", {}, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          #0.dmv_log = {};
+          box = create($nothing);
+          item = create($nothing);
+          move(item, box);
+          add_verb(box, {player, "xd", "exitfunc"}, {"this", "none", "this"});
+          set_verb_code(box, "exitfunc", {"#0.dmv_log = {@#0.dmv_log, {\"exit\", args[1], args[1].location}};"});
+          recycle(box);
+          log = #0.dmv_log;
+          r = {length(log), log[1][2] == item, log[1][3] == #-1, item.location == #-1};
+          recycle(item);
+          return r;
+        as: wizard
+        expect:
+          value:
+            - 1
+            - 1
+            - 1
+            - 1
+    cleanup:
+      - run: |
+          try
+            delete_property(#0, "dmv_log");
+          except (ANY)
+          endtry
+          return 0;
+        as: wizard
+
+  - name: recycle_runs_location_exitfunc_for_recycled_object
+    steps:
+      - run: |
+          try
+            add_property(#0, "dmv_log", {}, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          #0.dmv_log = {};
+          room = create($nothing);
+          o = create($nothing);
+          move(o, room);
+          add_verb(room, {player, "xd", "exitfunc"}, {"this", "none", "this"});
+          set_verb_code(room, "exitfunc", {"#0.dmv_log = {@#0.dmv_log, {\"exit\", valid(args[1])}};"});
+          recycle(o);
+          log = #0.dmv_log;
+          recycle(room);
+          return log;
+        as: wizard
+        expect:
+          value:
+            - ["exit", 1]
+    cleanup:
+      - run: |
+          try
+            delete_property(#0, "dmv_log");
+          except (ANY)
+          endtry
+          return 0;
+        as: wizard
+
+  - name: recycle_reparents_children_to_grandparent
+    steps:
+      - run: |
+          gp = create($nothing);
+          mid = create(gp);
+          kid = create(mid);
+          recycle(mid);
+          r = parent(kid) == gp;
+          recycle(kid);
+          recycle(gp);
+          return r;
+        as: wizard
+        expect:
+          value: 1
+
+  - name: recycle_suspending_recycle_verb_completes
+    steps:
+      - run: |
+          try
+            add_property(#0, "dmv_log", {}, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          #0.dmv_log = {};
+          o = create($nothing);
+          add_verb(o, {player, "xd", "recycle"}, {"this", "none", "this"});
+          set_verb_code(o, "recycle", {"suspend(0);", "#0.dmv_log = {@#0.dmv_log, \"recycle-resumed\"};"});
+          recycle(o);
+          return {#0.dmv_log, valid(o)};
+        as: wizard
+        expect:
+          value:
+            - ["recycle-resumed"]
+            - 0
+    cleanup:
+      - run: |
+          try
+            delete_property(#0, "dmv_log");
+          except (ANY)
+          endtry
+          return 0;
+        as: wizard

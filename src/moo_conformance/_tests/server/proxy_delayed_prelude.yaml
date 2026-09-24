@@ -1,0 +1,235 @@
+name: server_proxy_delayed_prelude
+description: >
+  A trusted-proxy PROXY prelude is a login-line concern, not a first-bytes
+  handshake. Toast (tasks.cc do_login_task) inspects every pre-login line from a
+  trusted proxy address: a blank line is swallowed, a line starting with PROXY
+  rewrites the connection name and is replaced by an empty do_login_command
+  call. A prelude that arrives seconds after connect therefore behaves exactly
+  like one sent as the first bytes, and a do_login_command that read()s the
+  next line still completes.
+
+requires:
+  builtins:
+    - add_property
+    - delete_property
+    - add_verb
+    - delete_verb
+    - verb_info
+    - set_verb_info
+    - verb_args
+    - set_verb_args
+    - verb_code
+    - set_verb_code
+    - connection_info
+    - read
+    - notify
+
+tests:
+  - name: proxy_prelude_after_delay_reaches_read_login
+    description: >
+      PROXY sent two seconds after connect on a trusted address still triggers
+      do_login_command("") whose read() consumes the following line.
+    steps:
+      - run: |
+          for prop in ({"proxy_delay_seen", "proxy_delay_login_saved", "proxy_delay_trusted_saved"})
+            try
+              add_property(#0, prop, {}, {#0, "rw"});
+            except (E_INVARG)
+            endtry
+          endfor
+          #0.proxy_delay_seen = {};
+          trusted_exists = 1;
+          try
+            trusted_saved = #6.trusted_proxies;
+          except (E_PROPNF)
+            trusted_exists = 0;
+            trusted_saved = {};
+          endtry
+          #0.proxy_delay_trusted_saved = {trusted_exists, trusted_saved};
+          try
+            add_property(#6, "trusted_proxies", {}, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          #6.trusted_proxies = {connection_info(player)["destination_ip"]};
+          old_login_exists = 1;
+          try
+            old_login_info = verb_info(#0, "do_login_command");
+            old_login_args = verb_args(#0, "do_login_command");
+            old_login_code = verb_code(#0, "do_login_command");
+          except (E_VERBNF)
+            old_login_exists = 0;
+            old_login_info = {};
+            old_login_args = {};
+            old_login_code = {};
+          endtry
+          #0.proxy_delay_login_saved = {old_login_exists, old_login_info, old_login_args, old_login_code};
+          try
+            add_verb(#0, {#0, "rxd", "do_login_command"}, {"this", "none", "this"});
+          except (E_INVARG)
+          endtry
+          set_verb_info(#0, "do_login_command", {player, "rxd", "do_login_command"});
+          set_verb_args(#0, "do_login_command", {"this", "none", "this"});
+          set_verb_code(#0, "do_login_command", {
+            "#0.proxy_delay_seen = {@#0.proxy_delay_seen, {\"login\", args, argstr}};",
+            "line = read();",
+            "#0.proxy_delay_seen = {@#0.proxy_delay_seen, {\"read\", line}};",
+            "notify(player, tostr(\"login-read: \", line));",
+            "return 0;"
+          });
+          return 1;
+        as: wizard
+      - new_connection:
+          capture: conn1
+      - wait: 2000
+      - send:
+          connection: conn1
+          text: "PROXY TCP4 198.51.100.9 127.0.0.1 4242 7777"
+        expect:
+          output:
+            exact: []
+      - send:
+          connection: conn1
+          text: "hello after prelude"
+        expect:
+          output:
+            contains: "login-read: hello after prelude"
+      - run: "return #0.proxy_delay_seen;"
+        as: wizard
+        expect:
+          value:
+            - ["login", [], ""]
+            - ["read", "hello after prelude"]
+      - close_connection: conn1
+    cleanup:
+      - run: |
+          try
+            saved = #0.proxy_delay_login_saved;
+            if (saved[1])
+              set_verb_info(#0, "do_login_command", saved[2]);
+              set_verb_args(#0, "do_login_command", saved[3]);
+              set_verb_code(#0, "do_login_command", saved[4]);
+            else
+              delete_verb(#0, "do_login_command");
+            endif
+          except (ANY)
+          endtry
+          try
+            saved = #0.proxy_delay_trusted_saved;
+            if (saved[1])
+              #6.trusted_proxies = saved[2];
+            else
+              delete_property(#6, "trusted_proxies");
+            endif
+          except (ANY)
+          endtry
+          for prop in ({"proxy_delay_seen", "proxy_delay_login_saved", "proxy_delay_trusted_saved"})
+            try
+              delete_property(#0, prop);
+            except (ANY)
+            endtry
+          endfor
+        as: wizard
+
+  - name: proxy_prelude_immediate_reaches_read_login
+    description: >
+      The same flow with PROXY as the first line after connect, so the delayed
+      case above is measured against the already-working immediate case.
+    steps:
+      - run: |
+          for prop in ({"proxy_now_seen", "proxy_now_login_saved", "proxy_now_trusted_saved"})
+            try
+              add_property(#0, prop, {}, {#0, "rw"});
+            except (E_INVARG)
+            endtry
+          endfor
+          #0.proxy_now_seen = {};
+          trusted_exists = 1;
+          try
+            trusted_saved = #6.trusted_proxies;
+          except (E_PROPNF)
+            trusted_exists = 0;
+            trusted_saved = {};
+          endtry
+          #0.proxy_now_trusted_saved = {trusted_exists, trusted_saved};
+          try
+            add_property(#6, "trusted_proxies", {}, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          #6.trusted_proxies = {connection_info(player)["destination_ip"]};
+          old_login_exists = 1;
+          try
+            old_login_info = verb_info(#0, "do_login_command");
+            old_login_args = verb_args(#0, "do_login_command");
+            old_login_code = verb_code(#0, "do_login_command");
+          except (E_VERBNF)
+            old_login_exists = 0;
+            old_login_info = {};
+            old_login_args = {};
+            old_login_code = {};
+          endtry
+          #0.proxy_now_login_saved = {old_login_exists, old_login_info, old_login_args, old_login_code};
+          try
+            add_verb(#0, {#0, "rxd", "do_login_command"}, {"this", "none", "this"});
+          except (E_INVARG)
+          endtry
+          set_verb_info(#0, "do_login_command", {player, "rxd", "do_login_command"});
+          set_verb_args(#0, "do_login_command", {"this", "none", "this"});
+          set_verb_code(#0, "do_login_command", {
+            "#0.proxy_now_seen = {@#0.proxy_now_seen, {\"login\", args, argstr}};",
+            "line = read();",
+            "#0.proxy_now_seen = {@#0.proxy_now_seen, {\"read\", line}};",
+            "notify(player, tostr(\"login-read: \", line));",
+            "return 0;"
+          });
+          return 1;
+        as: wizard
+      - new_connection:
+          capture: conn1
+      - send:
+          connection: conn1
+          text: "PROXY TCP4 198.51.100.9 127.0.0.1 4242 7777"
+        expect:
+          output:
+            exact: []
+      - send:
+          connection: conn1
+          text: "hello after prelude"
+        expect:
+          output:
+            contains: "login-read: hello after prelude"
+      - run: "return #0.proxy_now_seen;"
+        as: wizard
+        expect:
+          value:
+            - ["login", [], ""]
+            - ["read", "hello after prelude"]
+      - close_connection: conn1
+    cleanup:
+      - run: |
+          try
+            saved = #0.proxy_now_login_saved;
+            if (saved[1])
+              set_verb_info(#0, "do_login_command", saved[2]);
+              set_verb_args(#0, "do_login_command", saved[3]);
+              set_verb_code(#0, "do_login_command", saved[4]);
+            else
+              delete_verb(#0, "do_login_command");
+            endif
+          except (ANY)
+          endtry
+          try
+            saved = #0.proxy_now_trusted_saved;
+            if (saved[1])
+              #6.trusted_proxies = saved[2];
+            else
+              delete_property(#6, "trusted_proxies");
+            endif
+          except (ANY)
+          endtry
+          for prop in ({"proxy_now_seen", "proxy_now_login_saved", "proxy_now_trusted_saved"})
+            try
+              delete_property(#0, prop);
+            except (ANY)
+            endtry
+          endfor
+        as: wizard

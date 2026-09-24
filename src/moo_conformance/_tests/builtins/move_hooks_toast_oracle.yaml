@@ -1,0 +1,114 @@
+name: move_hooks_toast_oracle
+description: Toast-oracle coverage for move lifecycle callback arguments, ordering, and state.
+
+requires:
+  builtins: [create, recycle, move, add_property, add_verb, set_verb_code, task_perms]
+
+tests:
+  - name: move_calls_accept_exitfunc_enterfunc_with_post_move_state
+    permission: wizard
+    setup:
+      code: |
+        old = create($nothing);
+        dest = create($nothing);
+        what = create($nothing);
+        driver = create($nothing);
+        move(what, old);
+        add_property(what, "move_trace", {}, {player, "rw"});
+        add_property(what, "expected_old", old, {player, "rw"});
+        add_property(what, "expected_dest", dest, {player, "rw"});
+        add_property(what, "expected_player", player, {player, "rw"});
+        add_property(what, "expected_caller", driver, {player, "rw"});
+        add_verb(driver, {player, "rxd", "run_move"}, {"this", "none", "this"});
+        set_verb_code(driver, "run_move", {"move(args[1], args[2]);"});
+        add_verb(dest, {player, "rxd", "accept"}, {"this", "none", "this"});
+        set_verb_code(dest, "accept", {
+          "what = args[1];",
+          "what.move_trace = {@what.move_trace, {\"accept\", this == what.expected_dest, player == what.expected_player, caller == what.expected_caller, task_perms() == what.expected_player, args == {what}, argstr == \"\", what.location == what.expected_old, what in what.expected_old.contents, !(what in this.contents)}};",
+          "return 1;"
+        });
+        add_verb(old, {player, "rxd", "exitfunc"}, {"this", "none", "this"});
+        set_verb_code(old, "exitfunc", {
+          "what = args[1];",
+          "what.move_trace = {@what.move_trace, {\"exitfunc\", this == what.expected_old, player == what.expected_player, caller == what.expected_caller, task_perms() == what.expected_player, args == {what}, argstr == \"\", what.location == what.expected_dest, !(what in this.contents), what in what.expected_dest.contents}};"
+        });
+        add_verb(dest, {player, "rxd", "enterfunc"}, {"this", "none", "this"});
+        set_verb_code(dest, "enterfunc", {
+          "what = args[1];",
+          "what.move_trace = {@what.move_trace, {\"enterfunc\", this == what.expected_dest, player == what.expected_player, caller == what.expected_caller, task_perms() == what.expected_player, args == {what}, argstr == \"\", what.location == this, what in this.contents, !(what in what.expected_old.contents)}};"
+        });
+    statement: |
+      driver:run_move(what, dest);
+      return what.move_trace;
+    expect:
+      value:
+        - [accept, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        - [exitfunc, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        - [enterfunc, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    teardown:
+      code: |
+        recycle(what);
+        recycle(driver);
+        recycle(old);
+        recycle(dest);
+
+  - name: move_same_location_and_reorder_skip_lifecycle_callbacks
+    permission: wizard
+    setup:
+      code: |
+        room = create($nothing);
+        what = create($nothing);
+        other = create($nothing);
+        move(what, room);
+        move(other, room);
+        add_property(what, "move_trace", {}, {player, "rw"});
+        add_verb(room, {player, "rxd", "accept"}, {"this", "none", "this"});
+        set_verb_code(room, "accept", {"args[1].move_trace = {@args[1].move_trace, \"accept\"};", "return 1;"});
+        add_verb(room, {player, "rxd", "exitfunc"}, {"this", "none", "this"});
+        set_verb_code(room, "exitfunc", {"args[1].move_trace = {@args[1].move_trace, \"exitfunc\"};"});
+        add_verb(room, {player, "rxd", "enterfunc"}, {"this", "none", "this"});
+        set_verb_code(room, "enterfunc", {"args[1].move_trace = {@args[1].move_trace, \"enterfunc\"};"});
+    statement: |
+      move(what, room);
+      move(what, room, 1);
+      return {what.move_trace, room.contents[1] == what};
+    expect:
+      value: [[], 1]
+    teardown:
+      code: |
+        recycle(what);
+        recycle(other);
+        recycle(room);
+
+  - name: move_exitfunc_relocation_skips_original_destination_enterfunc
+    permission: wizard
+    setup:
+      code: |
+        old = create($nothing);
+        intended = create($nothing);
+        alternate = create($nothing);
+        what = create($nothing);
+        move(what, old);
+        add_property(what, "move_trace", {}, {player, "rw"});
+        add_property(what, "alternate", alternate, {player, "rw"});
+        add_verb(old, {player, "rxd", "exitfunc"}, {"this", "none", "this"});
+        set_verb_code(old, "exitfunc", {
+          "what = args[1];",
+          "what.move_trace = {@what.move_trace, \"old-exit\"};",
+          "move(what, what.alternate);"
+        });
+        add_verb(intended, {player, "rxd", "enterfunc"}, {"this", "none", "this"});
+        set_verb_code(intended, "enterfunc", {"args[1].move_trace = {@args[1].move_trace, \"intended-enter\"};"});
+        add_verb(alternate, {player, "rxd", "enterfunc"}, {"this", "none", "this"});
+        set_verb_code(alternate, "enterfunc", {"args[1].move_trace = {@args[1].move_trace, \"alternate-enter\"};"});
+    statement: |
+      move(what, intended);
+      return {what.move_trace, what.location == alternate};
+    expect:
+      value: [[old-exit, alternate-enter], 1]
+    teardown:
+      code: |
+        recycle(what);
+        recycle(old);
+        recycle(intended);
+        recycle(alternate);

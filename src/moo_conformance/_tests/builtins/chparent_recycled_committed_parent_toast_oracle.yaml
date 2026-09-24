@@ -1,0 +1,33 @@
+name: chparent_recycled_committed_parent_toast_oracle
+description: >
+  chparent()/chparents() to an object that was recycled in the same task
+  return E_INVARG when the objects already existed before the task started.
+  The existing rows create and recycle within one statement; this pins the
+  case where the parent was committed by an earlier task, which exercises a
+  different path in an MVCC server.
+
+requires:
+  builtins: [create, recycle, chparent, chparents, valid]
+
+tests:
+  - name: chparent_to_parent_recycled_this_task_after_earlier_commit
+    steps:
+      - run: 'return create($nothing);'
+        capture: child
+        as: wizard
+      - run: 'return create($nothing);'
+        capture: parent
+        as: wizard
+      - run: |
+          recycle({parent});
+          return {`chparent({child}, {parent}) ! ANY', valid({parent}), `chparents({child}, {{parent}}) ! ANY', valid({child})};
+        as: wizard
+        expect:
+          value: [E_INVARG, 0, E_INVARG, 1]
+    cleanup:
+      - run: |
+          try
+            recycle({child});
+          except (ANY)
+          endtry
+        as: wizard

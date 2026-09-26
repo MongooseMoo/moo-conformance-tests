@@ -1,0 +1,155 @@
+name: set_thread_mode_activation_scope
+description: |
+  set_thread_mode() changes only the current activation. Every verb call,
+  pass(), eval(), and forked task starts with thread mode enabled, and a
+  caller's mode is unchanged by what a callee does.
+
+requires:
+  builtins: [set_thread_mode, add_verb, set_verb_code, create, recycle]
+
+tests:
+  - name: called_verb_starts_threaded_after_caller_disables
+    description: A verb called from an activation with thread mode off starts with thread mode on.
+    permission: wizard
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "mode"}, {"this", "none", "this"});
+        set_verb_code(o, "mode", {"return set_thread_mode();"});
+    statement: |
+      set_thread_mode(0);
+      callee = o:mode();
+      return {callee, set_thread_mode()};
+    expect:
+      value:
+        - 1
+        - 0
+    teardown:
+      code: "recycle(o);"
+
+  - name: callee_disable_does_not_leak_to_caller
+    description: A callee that disables thread mode leaves the caller's mode enabled after it returns.
+    permission: wizard
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "disable"}, {"this", "none", "this"});
+        set_verb_code(o, "disable", {"set_thread_mode(0);", "return set_thread_mode();"});
+    statement: |
+      callee = o:disable();
+      return {callee, set_thread_mode()};
+    expect:
+      value:
+        - 0
+        - 1
+    teardown:
+      code: "recycle(o);"
+
+  - name: callee_enable_does_not_leak_to_disabled_caller
+    description: A callee that enables thread mode leaves a disabled caller disabled after it returns.
+    permission: wizard
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "enable"}, {"this", "none", "this"});
+        set_verb_code(o, "enable", {"set_thread_mode(1);", "return set_thread_mode();"});
+    statement: |
+      set_thread_mode(0);
+      callee = o:enable();
+      return {callee, set_thread_mode()};
+    expect:
+      value:
+        - 1
+        - 0
+    teardown:
+      code: "recycle(o);"
+
+  - name: callee_disable_does_not_leak_through_error_unwind
+    description: A callee that disables thread mode and raises leaves the catching caller's mode enabled.
+    permission: wizard
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "disable_and_raise"}, {"this", "none", "this"});
+        set_verb_code(o, "disable_and_raise", {"set_thread_mode(0);", "raise(E_INVARG);"});
+    statement: |
+      try
+        o:disable_and_raise();
+      except (E_INVARG)
+      endtry
+      return set_thread_mode();
+    expect:
+      value: 1
+    teardown:
+      code: "recycle(o);"
+
+  - name: passed_verb_starts_threaded
+    description: A pass() target starts with thread mode on even when the passing verb disabled it.
+    permission: wizard
+    setup:
+      code: |
+        parent = create($nothing);
+        add_verb(parent, {player, "xd", "mode"}, {"this", "none", "this"});
+        set_verb_code(parent, "mode", {"return set_thread_mode();"});
+        o = create(parent);
+        add_verb(o, {player, "xd", "mode"}, {"this", "none", "this"});
+        set_verb_code(o, "mode", {"set_thread_mode(0);", "inherited = pass();", "return {inherited, set_thread_mode()};"});
+    statement: |
+      return o:mode();
+    expect:
+      value:
+        - 1
+        - 0
+    teardown:
+      code: |
+        recycle(o);
+        recycle(parent);
+
+  - name: eval_starts_threaded_and_does_not_leak
+    description: eval() code starts with thread mode on and its changes do not reach the calling activation.
+    permission: wizard
+    statement: |
+      set_thread_mode(0);
+      inner = eval("return set_thread_mode();");
+      disabled_inside = eval("set_thread_mode(0); return set_thread_mode();");
+      after_disabled_eval = set_thread_mode();
+      set_thread_mode(1);
+      eval("set_thread_mode(0);");
+      return {inner, disabled_inside, after_disabled_eval, set_thread_mode()};
+    expect:
+      value:
+        - [1, 1]
+        - [1, 0]
+        - 0
+        - 1
+
+  - name: suspended_activation_keeps_its_mode
+    description: An activation's disabled thread mode survives suspend(0) and resumption.
+    permission: wizard
+    statement: |
+      set_thread_mode(0);
+      suspend(0);
+      return set_thread_mode();
+    expect:
+      value: 0
+
+  - name: forked_task_starts_threaded
+    description: A task forked from an activation with thread mode off starts with thread mode on.
+    permission: wizard
+    steps:
+      - run: |
+          add_property(#0, "__thread_mode_fork", -1, {#2, "r"});
+          set_thread_mode(0);
+          fork (0)
+            #0.__thread_mode_fork = set_thread_mode();
+          endfork
+          return set_thread_mode();
+        expect:
+          value: 0
+      - wait: 500
+      - run: "return #0.__thread_mode_fork;"
+        expect:
+          value: 1
+    cleanup:
+      - run: "delete_property(#0, \"__thread_mode_fork\");"
+        as: wizard

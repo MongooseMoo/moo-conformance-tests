@@ -1169,8 +1169,8 @@ tests:
         as: wizard
         expect:
           value: 0
-      - wait: 1500
       - restart_server:
+          checkpoint_timeout_ms: 5000
       - wait: 300
       - run: |
           result = {anonymous_class}.audit_result;

@@ -805,6 +805,16 @@ tests:
     '
   expect:
     value: 3
+- name: usage_load_averages_are_integers
+  description: Toast reports sysinfo() load averages as fixed-point integers, not floats.
+  permission: wizard
+  statement: 'u = usage();
+
+    return {typeof(u[1][1]), typeof(u[1][2]), typeof(u[1][3])};
+
+    '
+  expect:
+    value: [0, 0, 0]
 - name: usage_extra_args
   permission: wizard
   statement: usage(1);

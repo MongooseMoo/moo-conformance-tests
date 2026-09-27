@@ -219,6 +219,47 @@ def test_candidate_controller_quality_is_explicitly_untrusted_and_nonauthoritati
     assert "candidate-quality" not in workflow["jobs"]["full-suite"]["needs"]
 
 
+def test_candidate_controller_toast_suite_is_untrusted_and_informational() -> None:
+    workflow = load_workflow(TOAST_WORKFLOW_PATH)
+    job = workflow["jobs"]["candidate-full-suite"]
+    assert job["permissions"] == {"contents": "read"}
+    assert job["env"]["UNTRUSTED_CANDIDATE_CODE"] == "true"
+    assert job["env"]["TOAST_ORACLE_SHA"] == TOAST_ORACLE_SHA
+    assert job["needs"] == ["classify-changes"]
+    assert job["if"] == (
+        "needs.classify-changes.result == 'success' && "
+        "needs.classify-changes.outputs.mode == 'controller'"
+    )
+    job_text = str(job)
+    assert "secrets." not in job_text
+    assert "github.token" not in job_text
+    assert "GH_TOKEN" not in job_text
+    assert "trusted-controller" not in job_text
+    assert "candidate-data" not in job_text
+
+    steps = steps_by_name(workflow, "candidate-full-suite")
+    assert all("upload-artifact" not in step.get("uses", "") for step in steps.values())
+    for step in steps.values():
+        if step.get("uses", "").startswith("actions/checkout@"):
+            assert step["with"]["persist-credentials"] == "false"
+    checkout = steps["Check out exact untrusted candidate controller"]["with"]
+    assert checkout["ref"] == (
+        "${{ inputs.conformance_sha || github.event.pull_request.head.sha || github.sha }}"
+    )
+    assert checkout["path"] == "candidate-controller"
+    assert steps["Check out pinned Toast oracle"]["with"]["ref"] == "${{ env.TOAST_ORACLE_SHA }}"
+    packaged = steps["Run every packaged conformance case with the candidate controller"]["run"]
+    assert "uv run --project candidate-controller --frozen pytest" in packaged
+    assert "-m conformance" in packaged
+    assert "--fail-on-unexpected-skip" in packaged
+
+    # Nothing authoritative may wait on or read from the untrusted lane.
+    for name, other in workflow["jobs"].items():
+        if name != "candidate-full-suite":
+            assert "candidate-full-suite" not in other.get("needs", [])
+            assert "needs.candidate-full-suite" not in str(other)
+
+
 def test_push_neutral_runs_toast_after_skipped_candidate_quality_and_green_aggregate() -> None:
     workflow = load_workflow(TOAST_WORKFLOW_PATH)
     candidate_quality = workflow["jobs"]["candidate-quality"]
@@ -592,6 +633,7 @@ def test_toast_python_setup_is_cacheless_in_every_job() -> None:
     for job_name in (
         "classify-changes",
         "candidate-quality",
+        "candidate-full-suite",
         "trusted-quality",
         "full-suite",
         "execution-ledger",

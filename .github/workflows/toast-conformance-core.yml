@@ -498,6 +498,202 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  # A controller change never runs in the authoritative lanes above, so the
+  # required "Full suite" check only re-tests the base controller. This lane
+  # runs the candidate's own controller against Toast so a harness fix is
+  # visible on its PR. It is informational: nothing depends on it, it uploads
+  # nothing, and it holds no token beyond read-only contents.
+  candidate-full-suite:
+    name: Untrusted candidate controller Toast suite (informational) / ${{ matrix.profile }}
+    if: needs.classify-changes.result == 'success' && needs.classify-changes.outputs.mode == 'controller'
+    needs:
+      - classify-changes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    env:
+      UNTRUSTED_CANDIDATE_CODE: "true"
+      TOAST_ORACLE_SHA: eaaa1972f0993a1247f787dbf2dd5a01702ef442
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - profile: 64bit-outbound-on
+            only_32_bits: "OFF"
+            outbound: "true"
+            outbound_argument: --outbound
+          - profile: 64bit-outbound-off
+            only_32_bits: "OFF"
+            outbound: "false"
+            outbound_argument: --no-outbound
+          - profile: 32bit-outbound-on
+            only_32_bits: "ON"
+            outbound: "true"
+            outbound_argument: --outbound
+
+    steps:
+      - name: Prepare isolated untrusted environment
+        run: |
+          reports_dir="${RUNNER_TEMP}/candidate-toast-${{ matrix.profile }}"
+          printf 'REPORTS_DIR=%s\n' "${reports_dir}" >> "${GITHUB_ENV}"
+          printf 'UV_PROJECT_ENVIRONMENT=%s\n' \
+            "${RUNNER_TEMP}/candidate-toast-venv-${{ matrix.profile }}" >> "${GITHUB_ENV}"
+          printf 'ADMISSION_CONTEXT=candidate:%s:%s:%s:%s\n' \
+            "${GITHUB_RUN_ID}" \
+            "${GITHUB_RUN_ATTEMPT}" \
+            "${{ matrix.profile }}" \
+            "$TOAST_ORACLE_SHA" >> "${GITHUB_ENV}"
+          mkdir -p "${reports_dir}"
+
+      - name: Check out exact untrusted candidate controller
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ inputs.conformance_sha || github.event.pull_request.head.sha || github.sha }}
+          path: candidate-controller
+          persist-credentials: false
+          allow-unsafe-pr-checkout: true
+
+      - name: Check out pinned Toast oracle
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: MongooseMoo/toaststunt
+          ref: ${{ env.TOAST_ORACLE_SHA }}
+          path: toast-oracle
+          persist-credentials: false
+
+      - name: Verify selected Toast oracle revision
+        run: |
+          set -euo pipefail
+          actual_revision=$(git -C "${GITHUB_WORKSPACE}/toast-oracle" rev-parse HEAD)
+          test "$actual_revision" = "$TOAST_ORACLE_SHA"
+
+      - name: Install uv and Python
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: 0.8.8
+          python-version: "3.13"
+          enable-cache: false
+
+      - name: Install Toast build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends \
+            aspell \
+            aspell-en \
+            bison \
+            build-essential \
+            cmake \
+            gperf \
+            libargon2-dev \
+            libaspell-dev \
+            libcrypt-dev \
+            libcurl4-openssl-dev \
+            libjemalloc-dev \
+            libpcre2-dev \
+            libsqlite3-dev \
+            libssl-dev \
+            nettle-dev \
+            ninja-build \
+            perl
+
+      - name: Build Toast oracle
+        run: |
+          set -euo pipefail
+          build_dir="${RUNNER_TEMP}/toast-build-${{ matrix.profile }}"
+          mkdir -p "$build_dir"
+          cd "$build_dir"
+          cmake -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DONLY_32_BITS=${{ matrix.only_32_bits }} \
+            -DUSE_JEMALLOC=ON \
+            -DCMAKE_C_FLAGS="-DBACKGROUND_TEST=1 -DSAVE_FINISHED_TASKS=15" \
+            -DCMAKE_CXX_FLAGS="-DBACKGROUND_TEST=1 -DSAVE_FINISHED_TASKS=15" \
+            "${GITHUB_WORKSPACE}/toast-oracle"
+          cmake --build . --target moo --parallel 2
+          test -x "${build_dir}/moo"
+
+      - name: Install locked untrusted candidate controller
+        run: uv sync --project candidate-controller --locked
+
+      - name: Record the exact Toast capability profile
+        env:
+          PROFILE_ID: ${{ matrix.profile }}
+          PROFILE_OUTBOUND: ${{ matrix.outbound }}
+          PROFILE_32BIT: ${{ matrix.only_32_bits }}
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import json
+          import os
+
+          fixture = Path("candidate-controller/src/moo_conformance/_db/Test.db")
+          profile = {
+              "profile_id": os.environ["PROFILE_ID"],
+              "implementation": "toaststunt",
+              "implementation_revision": os.environ["TOAST_ORACLE_SHA"],
+              "runtime_os": "linux",
+              "database_fixture": "moo_conformance/_db/Test.db",
+              "database_checksum": "sha256:" + hashlib.sha256(fixture.read_bytes()).hexdigest(),
+              "support_status": "supported",
+              "features": {
+                  "option.OUTBOUND_NETWORK": os.environ["PROFILE_OUTBOUND"] == "true",
+                  "option.PROMOTE_NUMBERS": False,
+                  "option.ONLY_32_BITS": os.environ["PROFILE_32BIT"] == "ON",
+                  "feature.maps": True,
+                  "feature.anonymous": True,
+                  "feature.index_extensions": True,
+                  "feature.fork": True,
+                  "feature.forking": True,
+                  "feature.tasks": True,
+                  "feature.exec_support": True,
+                  "feature.command_dispatch": True,
+                  "feature.server_options": True,
+              },
+          }
+          output = Path(os.environ["REPORTS_DIR"], "profile.json")
+          output.write_text(json.dumps(profile, indent=2, sort_keys=True) + "\n")
+          PY
+
+      - name: Run candidate capability admission against Toast
+        run: |
+          uv run --project candidate-controller --frozen pytest \
+            --pyargs moo_conformance \
+            -m admission \
+            --candidate-root="${GITHUB_WORKSPACE}/candidate-controller" \
+            --moo-suite-root="${GITHUB_WORKSPACE}/candidate-controller/src/moo_conformance/_tests" \
+            --server-command="${RUNNER_TEMP}/toast-build-${{ matrix.profile }}/moo --no-ipv6 --ipv4 127.0.0.1 ${{ matrix.outbound_argument }} --exec-dir {server_dir}/executables {db} {db}.new {port}" \
+            --server-db="${GITHUB_WORKSPACE}/candidate-controller/src/moo_conformance/_db/Test.db" \
+            --server-db-dir="${GITHUB_WORKSPACE}/candidate-controller/src/moo_conformance/_db/startup" \
+            --moo-host=127.0.0.1 \
+            --oracle-profile-manifest="${REPORTS_DIR}/profile.json" \
+            --target-profile-manifest="${REPORTS_DIR}/profile.json" \
+            --strict-markers \
+            --admission-evidence-output="${REPORTS_DIR}/admission.json" \
+            --admission-evidence-context="$ADMISSION_CONTEXT" \
+            -q -ra
+
+      - name: Run every packaged conformance case with the candidate controller
+        run: |
+          uv run --project candidate-controller --frozen pytest \
+            --pyargs moo_conformance \
+            -m conformance \
+            --candidate-root="${GITHUB_WORKSPACE}/candidate-controller" \
+            --moo-suite-root="${GITHUB_WORKSPACE}/candidate-controller/src/moo_conformance/_tests" \
+            --server-command="${RUNNER_TEMP}/toast-build-${{ matrix.profile }}/moo --no-ipv6 --ipv4 127.0.0.1 ${{ matrix.outbound_argument }} --exec-dir {server_dir}/executables {db} {db}.new {port}" \
+            --server-db="${GITHUB_WORKSPACE}/candidate-controller/src/moo_conformance/_db/Test.db" \
+            --server-db-dir="${GITHUB_WORKSPACE}/candidate-controller/src/moo_conformance/_db/startup" \
+            --moo-host=127.0.0.1 \
+            --oracle-profile-manifest="${REPORTS_DIR}/profile.json" \
+            --target-profile-manifest="${REPORTS_DIR}/profile.json" \
+            --fail-on-unexpected-skip \
+            --strict-markers \
+            --admission-evidence-input="${REPORTS_DIR}/admission.json" \
+            --admission-evidence-context="$ADMISSION_CONTEXT" \
+            -q -ra
+
   execution-ledger:
     name: Full suite
     if: always()

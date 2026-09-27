@@ -688,7 +688,8 @@ class YamlTestRunner:
                 # Handle restart_server step
                 if step.restart_server:
                     self._execute_restart_server(
-                        step.restart_server.wait_ms, test.name, down_ms=step.restart_server.down_ms
+                        step.restart_server.wait_ms, test.name, down_ms=step.restart_server.down_ms,
+                        checkpoint_timeout_ms=step.restart_server.checkpoint_timeout_ms,
                     )
                     continue
 
@@ -854,7 +855,10 @@ class YamlTestRunner:
             f"Test '{test_name}' {action} does not produce an expectation result"
         )
 
-    def _execute_restart_server(self, wait_ms: int, test_name: str, down_ms: int = 0) -> None:
+    def _execute_restart_server(
+        self, wait_ms: int, test_name: str, down_ms: int = 0,
+        checkpoint_timeout_ms: int | None = None,
+    ) -> None:
         """Restart managed server and reconnect transport to the same user."""
         if self.managed_server is None:
             raise AssertionError(
@@ -869,7 +873,13 @@ class YamlTestRunner:
         current_user = getattr(self.transport, "current_user", "programmer")
 
         self.transport.disconnect()
-        self.managed_server.restart(down_ms=down_ms)
+        if checkpoint_timeout_ms is None:
+            self.managed_server.restart(down_ms=down_ms)
+        else:
+            self.managed_server.restart(
+                down_ms=down_ms, checkpoint_timeout_ms=checkpoint_timeout_ms,
+                checkpoint_boundary=self._file_boundary,
+            )
         self._log_offset = self.managed_server.process_log_offset
         self._file_boundary = self.managed_server.process_file_snapshot
 

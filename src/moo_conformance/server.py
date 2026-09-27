@@ -394,7 +394,9 @@ class ManagedServer:
             ) from exc
 
     def restart(
-        self, db_path: Path | None = None, wait_for_port: bool = True, down_ms: int = 0
+        self, db_path: Path | None = None, wait_for_port: bool = True, down_ms: int = 0,
+        checkpoint_timeout_ms: int | None = None,
+        checkpoint_boundary: dict[str, FileSnapshotSignature] | None = None,
     ) -> None:
         """Restart the server process in-place, preserving the working database.
 
@@ -405,12 +407,16 @@ class ManagedServer:
         """
         if self._lifecycle_failure is not None:
             raise self._lifecycle_failure
+        if checkpoint_timeout_ms is not None and (
+            db_path is not None or checkpoint_boundary is None
+        ):
+            raise ValueError("Checkpoint restart requires a boundary and the current database")
         if db_path is None:
             # Capture the requested checkpoint before stopping the server.
             # Toast performs a separate graceful-shutdown dump on SIGTERM,
             # which can overwrite {db}.out and must not become the artifact
             # adopted by an explicit restart checkpoint test.
-            self._sync_checkpoint_output()
+            self._sync_checkpoint_output(checkpoint_timeout_ms, checkpoint_boundary)
         self.stop(preserve_temp=True)
         if down_ms > 0:
             time.sleep(down_ms / 1000.0)
@@ -419,7 +425,10 @@ class ManagedServer:
         else:
             self.start(db_path=db_path, wait_for_port=wait_for_port)
 
-    def _sync_checkpoint_output(self) -> None:
+    def _sync_checkpoint_output(
+        self, timeout_ms: int | None = None,
+        boundary: dict[str, FileSnapshotSignature] | None = None,
+    ) -> None:
         """Adopt common external checkpoint outputs back into the input DB path.
 
         Some servers (e.g., ToastStunt) write checkpoints to a separate output
@@ -428,20 +437,42 @@ class ManagedServer:
         file to the managed input DB path if present.
         """
         if self._db_copy_path is None:
+            if timeout_ms is not None:
+                raise RuntimeError("No managed database to checkpoint")
             return
 
-        best: Path | None = None
-        best_mtime = -1.0
-        for cand in self._checkpoint_output_candidates():
-            if not cand.exists() or cand.is_dir():
-                continue
-            mtime = cand.stat().st_mtime
-            if mtime > best_mtime:
-                best = cand
-                best_mtime = mtime
+        deadline = time.monotonic() + (timeout_ms or 0) / 1000
+        while True:
+            best: Path | None = None
+            best_mtime = -1
+            for cand in self._checkpoint_output_candidates():
+                try:
+                    info = cand.lstat()
+                except FileNotFoundError:
+                    continue
+                if not stat.S_ISREG(info.st_mode):
+                    continue
+                if timeout_ms is not None:
+                    assert boundary is not None
+                    key = cand.relative_to(self._db_copy_path.parent).as_posix()
+                    previous = boundary.get(key)
+                    if previous is not None and previous[:4] == file_snapshot_signature(info)[:4]:
+                        continue
+                if info.st_mtime_ns > best_mtime:
+                    best = cand
+                    best_mtime = info.st_mtime_ns
 
-        if best is not None:
-            shutil.copy2(best, self._db_copy_path)
+            if best is not None:
+                shutil.copy2(best, self._db_copy_path)
+                return
+            if timeout_ms is None:
+                return
+            if time.monotonic() >= deadline:
+                raise TimeoutError(
+                    f"No fresh completed checkpoint within {timeout_ms} ms; "
+                    "managed server was not stopped"
+                )
+            time.sleep(min(0.05, max(0.0, deadline - time.monotonic())))
 
     def _checkpoint_output_candidates(self, db_copy_path: Path | None = None) -> list[Path]:
         src = db_copy_path if db_copy_path is not None else self._db_copy_path

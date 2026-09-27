@@ -412,6 +412,7 @@ steps:
   - run: "return dump_database();"
     as: wizard
   - restart_server:
+      checkpoint_timeout_ms: 5000
       wait_ms: 300
   - run: "return some_persisted_value();"
 ```
@@ -419,6 +420,18 @@ steps:
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `restart_server.wait_ms` | `int` | `0` | Optional pause after reconnect before the next step |
+| `restart_server.checkpoint_timeout_ms` | `int` | omitted | Require a fresh published checkpoint before stopping; fail at this deadline instead of reloading an old database |
+
+For checkpoint persistence tests, use `checkpoint_timeout_ms` instead of a fixed
+sleep. It waits for a regular completed output at one of the managed server's
+known checkpoint paths (`.new`, `.out`, `.new.db`, or `.out.db`), changed since
+the test began or the last managed launch. Temporary checkpoint files do not
+qualify. The selected output is copied into the input database **before** stopping
+the process, so a graceful-shutdown dump cannot substitute for the requested
+checkpoint. A timeout leaves the server running and does not adopt stale output.
+Request one checkpoint per test/restart boundary; this freshness check does not
+distinguish multiple checkpoint requests within that same boundary. It supports
+servers that publish completed checkpoints by replacing these output files.
 
 ## Test File Index
 

@@ -195,7 +195,7 @@ ACTION_PAYLOAD_FIELDS = {
     }),
     "write_file": frozenset({"path", "content"}),
     "write_stdin": frozenset({"text"}),
-    "restart_server": frozenset({"wait_ms", "down_ms"}),
+    "restart_server": frozenset({"wait_ms", "down_ms", "checkpoint_timeout_ms"}),
     "wait_for_server_exit": frozenset({"timeout_ms", "exit_code", "termination"}),
 }
 SUSPENDED_TASK_ASSERTION_FIELDS = frozenset({
@@ -395,6 +395,7 @@ class RestartServer:
     """Restart the managed server process and reconnect transport."""
     wait_ms: int = 0  # Optional pause after restart before next step
     down_ms: int = 0  # Optional pause while the process is fully stopped, before restart
+    checkpoint_timeout_ms: int | None = None  # Require fresh published checkpoint before stop
 
 
 @dataclass
@@ -1128,7 +1129,15 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
             restart_server = RestartServer(
                 wait_ms=rs_data.get('wait_ms', 0),
                 down_ms=rs_data.get('down_ms', 0),
+                checkpoint_timeout_ms=rs_data.get('checkpoint_timeout_ms'),
             )
+            if 'checkpoint_timeout_ms' in rs_data:
+                deadline = rs_data['checkpoint_timeout_ms']
+                if type(deadline) is not int or deadline < 0:
+                    raise ValueError(
+                        f"{context} restart_server checkpoint_timeout_ms must be "
+                        "a non-negative integer"
+                    )
         else:
             restart_server = RestartServer()
 

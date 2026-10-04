@@ -1,0 +1,96 @@
+name: parser_depth_boundary
+description: Representative generated source accepts 256 nested constructs
+
+tests:
+  - name: unary_parentheses_list_map
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+      results = {};
+      for kind in ({"unary", "parentheses", "list", "map"})
+        source = "1";
+        for i in [1..256]
+          if (kind == "unary")
+            source = "!" + source;
+          elseif (kind == "parentheses")
+            source = "(" + source + ")";
+          elseif (kind == "list")
+            source = "{" + source + "}";
+          else
+            source = "[1 -> " + source + "]";
+          endif
+        endfor
+        results = {@results, set_verb_code(o, "probe", {"return " + source + ";"})};
+      endfor
+      recycle(o);
+      return results;
+    expect:
+      value: [[], [], [], []]
+
+  - name: power_assignment_postfix
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+      results = {};
+      for kind in ({"power", "assignment", "postfix"})
+        source = "1";
+        for i in [1..256]
+          if (kind == "power")
+            source = "1 ^ " + source;
+          elseif (kind == "assignment")
+            source = "a = " + source;
+          else
+            source = source + "[1]";
+          endif
+        endfor
+        results = {@results, set_verb_code(o, "probe", {source + ";"})};
+      endfor
+      recycle(o);
+      return results;
+    expect:
+      value: [[], [], []]
+
+  - name: if_while_try
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+      results = {};
+      for kind in ({"if", "while", "try"})
+        source = {"return 1;"};
+        for i in [1..256]
+          if (kind == "if")
+            source = {"if (1)", @source, "endif"};
+          elseif (kind == "while")
+            source = {"while (0)", @source, "endwhile"};
+          else
+            source = {"try", @source, "except (ANY)", "endtry"};
+          endif
+        endfor
+        results = {@results, set_verb_code(o, "probe", source)};
+      endfor
+      recycle(o);
+      return results;
+    expect:
+      value: [[], [], []]
+
+  - name: mixed_statements_parentheses_unary
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+      expression = "1";
+      for i in [1..64]
+        expression = "!(" + expression + ")";
+      endfor
+      source = {"return " + expression + ";"};
+      for i in [1..128]
+        source = {"if (1)", @source, "endif"};
+      endfor
+      errors = set_verb_code(o, "probe", source);
+      recycle(o);
+      return errors;
+    expect:
+      value: []

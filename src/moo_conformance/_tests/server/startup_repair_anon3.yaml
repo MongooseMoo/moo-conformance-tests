@@ -14,3 +14,4 @@ tests:
       - assert_file:
           path: Anon3.db.new
           contains: "0 values pending finalization"
+          timeout_ms: 5000

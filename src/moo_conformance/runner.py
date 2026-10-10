@@ -496,6 +496,11 @@ class YamlTestRunner:
                 # Verify expectations
                 self._verify_expectations(test, result)
 
+        except TimeoutError as exc:
+            # A command got no reply. The server's own log is the only record of
+            # what it was doing, so carry it in the failure.
+            raise TimeoutError(f"{exc}\n{self._log_excerpt_for_timeout()}") from exc
+
         finally:
             # Run test teardown (always, even on failure)
             if test.teardown and not self._server_exited:
@@ -541,6 +546,17 @@ class YamlTestRunner:
                 return f.read()
         except OSError:
             return ""
+
+    def _log_excerpt_for_timeout(self, limit: int = 4000) -> str:
+        """Describe the server log written during this test for a timeout failure."""
+        if self.log_file_path is None:
+            return "Server log: no log file is configured (use --moo-log-file)."
+        content = self._read_log_since_offset()
+        if not content:
+            return "Server log since test start: empty."
+        if len(content) > limit:
+            return f"Server log since test start (last {limit} characters):\n{content[-limit:]}"
+        return f"Server log since test start:\n{content}"
 
     def _execute_steps(self, test: MooTestCase) -> None:
         """Execute a multi-step test.

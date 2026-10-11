@@ -12,6 +12,7 @@ import signal
 import socket
 import stat
 import subprocess
+import sys
 import tempfile
 import time
 from importlib import resources
@@ -180,7 +181,10 @@ class ManagedServer:
             raise RuntimeError("Server not started")
         return dict(self._process_file_snapshot)
 
-    def start(self, db_path: Path | None = None, wait_for_port: bool = True) -> None:
+    def start(
+        self, db_path: Path | None = None, wait_for_port: bool = True,
+        ignore_sighup: bool = False,
+    ) -> None:
         """Start the server subprocess.
 
         When wait_for_port is False, the process is started and may exit on its
@@ -265,6 +269,7 @@ class ManagedServer:
                 db=db_posix,
                 manifest=manifest_path.as_posix(),
                 server_dir=Path(self._temp_dir).as_posix(),
+                log=Path(self._temp_dir, "server.log").as_posix(),
             )
 
             # Open log file for server output
@@ -274,9 +279,21 @@ class ManagedServer:
             self._process_log_offset = os.path.getsize(self._log_path)
             self._process_file_snapshot = snapshot_regular_files(self._temp_dir)
 
+            argv = shlex.split(command)
+            if ignore_sighup:
+                if os.name != "posix":
+                    raise ValueError("ignore_sighup requires POSIX")
+                # exec preserves the managed PID and the inherited SIG_IGN.
+                # Avoid preexec_fn, which is unsafe in a threaded harness.
+                argv = [sys.executable, "-c", (
+                    "import os,signal,sys; "
+                    "signal.signal(signal.SIGHUP, signal.SIG_IGN); "
+                    "os.execvp(sys.argv[1], sys.argv[1:])"
+                ), *argv]
+
             # Start server process
             self._process = subprocess.Popen(
-                shlex.split(command),
+                argv,
                 stdin=subprocess.PIPE,
                 stdout=self._log_file,
                 stderr=subprocess.STDOUT,
@@ -367,6 +384,21 @@ class ManagedServer:
             )
             raise failure from exc
 
+    def send_signal(self, name: str) -> None:
+        """Deliver a named POSIX signal to the directly managed PID only."""
+        if os.name != "posix":
+            raise ValueError("signal_server requires POSIX")
+        if name not in {item.name for item in signal.Signals}:
+            raise ValueError(f"Unknown signal_server signal: {name!r}")
+        self.require_transport()
+        assert self._process is not None
+        try:
+            self._process.send_signal(signal.Signals[name])
+        except OSError as exc:
+            raise self._record_lifecycle_failure(
+                f"Managed server signal {name} delivery failed: {exc}"
+            ) from exc
+
     def require_transport(self) -> None:
         """Fail with stable evidence if a live managed transport is unavailable."""
         if self._lifecycle_failure is not None:
@@ -397,6 +429,7 @@ class ManagedServer:
         self, db_path: Path | None = None, wait_for_port: bool = True, down_ms: int = 0,
         checkpoint_timeout_ms: int | None = None,
         checkpoint_boundary: dict[str, FileSnapshotSignature] | None = None,
+        ignore_sighup: bool = False,
     ) -> None:
         """Restart the server process in-place, preserving the working database.
 
@@ -421,9 +454,15 @@ class ManagedServer:
         if down_ms > 0:
             time.sleep(down_ms / 1000.0)
         if db_path is None:
-            self.start(wait_for_port=wait_for_port)
+            if ignore_sighup:
+                self.start(wait_for_port=wait_for_port, ignore_sighup=True)
+            else:
+                self.start(wait_for_port=wait_for_port)
         else:
-            self.start(db_path=db_path, wait_for_port=wait_for_port)
+            if ignore_sighup:
+                self.start(db_path=db_path, wait_for_port=wait_for_port, ignore_sighup=True)
+            else:
+                self.start(db_path=db_path, wait_for_port=wait_for_port)
 
     def _sync_checkpoint_output(
         self, timeout_ms: int | None = None,

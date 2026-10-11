@@ -574,7 +574,8 @@ class YamlTestRunner:
             for step in test.steps:
                 self._validate_step_expectation_route(step, test.name)
 
-                if self._server_exited and step.assert_log is None and step.assert_file is None:
+                if (self._server_exited and step.assert_log is None and step.assert_file is None
+                        and step.restart_server is None and step.rename_file is None):
                     raise AssertionError(
                         f"Test '{test.name}' may use only assert_log or assert_file after "
                         "wait_for_server_exit"
@@ -702,10 +703,22 @@ class YamlTestRunner:
                     continue
 
                 # Handle restart_server step
+                if step.signal_server is not None:
+                    if self.managed_server is None:
+                        raise AssertionError("signal_server requires a managed server")
+                    self.managed_server.send_signal(step.signal_server)
+                    continue
+
+                if step.rename_file is not None:
+                    self._execute_rename_file(step.rename_file.path, step.rename_file.to)
+                    continue
+
                 if step.restart_server:
                     self._execute_restart_server(
                         step.restart_server.wait_ms, test.name, down_ms=step.restart_server.down_ms,
                         checkpoint_timeout_ms=step.restart_server.checkpoint_timeout_ms,
+                        reset_db=step.restart_server.reset_db,
+                        ignore_sighup=step.restart_server.ignore_sighup,
                     )
                     continue
 
@@ -852,6 +865,9 @@ class YamlTestRunner:
             "write_file",
             "write_stdin",
             "restart_server",
+            "signal_server",
+            "rename_file",
+            "wait_for_server_exit",
         )
         action = next((name for name in actions if getattr(step, name) is not None), "unknown")
         fields = self._declared_expectation_fields(step.expect)
@@ -874,6 +890,7 @@ class YamlTestRunner:
     def _execute_restart_server(
         self, wait_ms: int, test_name: str, down_ms: int = 0,
         checkpoint_timeout_ms: int | None = None,
+        reset_db: bool = False, ignore_sighup: bool = False,
     ) -> None:
         """Restart managed server and reconnect transport to the same user."""
         if self.managed_server is None:
@@ -881,15 +898,20 @@ class YamlTestRunner:
                 f"Test '{test_name}' uses restart_server but no managed server is configured "
                 f"(use --server-command)"
             )
-        if self._server_exited:
-            raise AssertionError(
-                f"Test '{test_name}' cannot restart a naturally exited server process"
-            )
-
         current_user = getattr(self.transport, "current_user", "programmer")
 
         self.transport.disconnect()
-        if checkpoint_timeout_ms is None:
+        if reset_db or ignore_sighup:
+            self.managed_server.restart(
+                db_path=(self._active_server_db_path or self.managed_server.db_path)
+                if reset_db else None,
+                down_ms=down_ms, ignore_sighup=ignore_sighup,
+                checkpoint_timeout_ms=checkpoint_timeout_ms,
+                checkpoint_boundary=(
+                    self._file_boundary if checkpoint_timeout_ms is not None else None
+                ),
+            )
+        elif checkpoint_timeout_ms is None:
             self.managed_server.restart(down_ms=down_ms)
         else:
             self.managed_server.restart(
@@ -898,6 +920,7 @@ class YamlTestRunner:
             )
         self._log_offset = self.managed_server.process_log_offset
         self._file_boundary = self.managed_server.process_file_snapshot
+        self._server_exited = False
 
         # Update transport endpoint in case a dynamic port changed.
         self.transport.host = self.managed_server.host
@@ -907,6 +930,30 @@ class YamlTestRunner:
             time.sleep(wait_ms / 1000.0)
 
         self.transport.connect(current_user)
+
+    def _execute_rename_file(self, source: str, destination: str) -> None:
+        """Rotate a regular file under server_dir without replacing user data."""
+        if self.server_dir is None:
+            raise AssertionError("rename_file requires server_dir")
+        base = Path(self.server_dir).resolve()
+        paths = []
+        for name in (source, destination):
+            path = base / name
+            try:
+                path.resolve().relative_to(base)
+            except ValueError as exc:
+                raise AssertionError(f"rename_file path escapes server_dir: {name!r}") from exc
+            if path.resolve() == base or path.is_symlink():
+                raise AssertionError(f"rename_file requires a regular file: {name!r}")
+            paths.append(path)
+        if paths[1].exists():
+            raise AssertionError(f"rename_file destination exists: {destination!r}")
+        if not paths[0].is_file():
+            raise AssertionError(f"rename_file source is not a regular file: {source!r}")
+        try:
+            paths[0].rename(paths[1])
+        except OSError as exc:
+            raise AssertionError(f"rename_file failed: {exc}") from exc
 
     def _execute_write_stdin(self, text: str, test_name: str) -> None:
         """Write text to the managed server process stdin."""

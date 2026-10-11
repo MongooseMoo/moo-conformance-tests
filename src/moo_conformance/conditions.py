@@ -13,13 +13,15 @@ _CONDITION_RE = re.compile(
 _VERSION_RE = re.compile(r"^(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)$")
 
 SUPPORTED_CONFIG_REQUIREMENTS = frozenset(
-    {"server_dir", "log_file", "managed_server", "server_db_dir"}
+    {"server_dir", "log_file", "managed_server", "server_db_dir", "posix_signals", "named_log_file"}
 )
 CONFIG_OPTION_MAP = {
     "server_dir": "--moo-server-dir",
     "log_file": "--moo-log-file",
     "managed_server": "--server-command",
     "server_db_dir": "--server-db-dir",
+    "posix_signals": "a POSIX host (Linux, macOS, or WSL)",
+    "named_log_file": "--server-command with the {log} placeholder",
 }
 
 

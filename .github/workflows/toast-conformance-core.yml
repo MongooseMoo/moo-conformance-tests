@@ -454,7 +454,7 @@ jobs:
             -m admission \
             --candidate-root="${GITHUB_WORKSPACE}/candidate-data" \
             --moo-suite-root="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_tests" \
-            --server-command="${RUNNER_TEMP}/toast-build-${{ matrix.profile }}/moo --no-ipv6 --ipv4 127.0.0.1 ${{ matrix.outbound_argument }} --exec-dir {server_dir}/executables {db} {db}.new {port}" \
+            --server-command="${RUNNER_TEMP}/toast-build-${{ matrix.profile }}/moo --log {log} --no-ipv6 --ipv4 127.0.0.1 ${{ matrix.outbound_argument }} --exec-dir {server_dir}/executables {db} {db}.new {port}" \
             --server-db="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/Test.db" \
             --server-db-dir="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/startup" \
             --moo-host=127.0.0.1 \
@@ -475,7 +475,7 @@ jobs:
             -m conformance \
             --candidate-root="${GITHUB_WORKSPACE}/candidate-data" \
             --moo-suite-root="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_tests" \
-            --server-command="${RUNNER_TEMP}/toast-build-${{ matrix.profile }}/moo --no-ipv6 --ipv4 127.0.0.1 ${{ matrix.outbound_argument }} --exec-dir {server_dir}/executables {db} {db}.new {port}" \
+            --server-command="${RUNNER_TEMP}/toast-build-${{ matrix.profile }}/moo --log {log} --no-ipv6 --ipv4 127.0.0.1 ${{ matrix.outbound_argument }} --exec-dir {server_dir}/executables {db} {db}.new {port}" \
             --server-db="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/Test.db" \
             --server-db-dir="${GITHUB_WORKSPACE}/candidate-data/src/moo_conformance/_db/startup" \
             --moo-host=127.0.0.1 \
@@ -664,7 +664,7 @@ jobs:
             -m admission \
             --candidate-root="${GITHUB_WORKSPACE}/candidate-controller" \
             --moo-suite-root="${GITHUB_WORKSPACE}/candidate-controller/src/moo_conformance/_tests" \
-            --server-command="${RUNNER_TEMP}/toast-build-${{ matrix.profile }}/moo --no-ipv6 --ipv4 127.0.0.1 ${{ matrix.outbound_argument }} --exec-dir {server_dir}/executables {db} {db}.new {port}" \
+            --server-command="${RUNNER_TEMP}/toast-build-${{ matrix.profile }}/moo --log {log} --no-ipv6 --ipv4 127.0.0.1 ${{ matrix.outbound_argument }} --exec-dir {server_dir}/executables {db} {db}.new {port}" \
             --server-db="${GITHUB_WORKSPACE}/candidate-controller/src/moo_conformance/_db/Test.db" \
             --server-db-dir="${GITHUB_WORKSPACE}/candidate-controller/src/moo_conformance/_db/startup" \
             --moo-host=127.0.0.1 \
@@ -682,7 +682,7 @@ jobs:
             -m conformance \
             --candidate-root="${GITHUB_WORKSPACE}/candidate-controller" \
             --moo-suite-root="${GITHUB_WORKSPACE}/candidate-controller/src/moo_conformance/_tests" \
-            --server-command="${RUNNER_TEMP}/toast-build-${{ matrix.profile }}/moo --no-ipv6 --ipv4 127.0.0.1 ${{ matrix.outbound_argument }} --exec-dir {server_dir}/executables {db} {db}.new {port}" \
+            --server-command="${RUNNER_TEMP}/toast-build-${{ matrix.profile }}/moo --log {log} --no-ipv6 --ipv4 127.0.0.1 ${{ matrix.outbound_argument }} --exec-dir {server_dir}/executables {db} {db}.new {port}" \
             --server-db="${GITHUB_WORKSPACE}/candidate-controller/src/moo_conformance/_db/Test.db" \
             --server-db-dir="${GITHUB_WORKSPACE}/candidate-controller/src/moo_conformance/_db/startup" \
             --moo-host=127.0.0.1 \

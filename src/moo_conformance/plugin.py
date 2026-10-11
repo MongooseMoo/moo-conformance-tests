@@ -401,6 +401,9 @@ def moo_config(
         "log_file": moo_log_file,
         "managed_server": "1" if managed_server is not None else None,
         "server_db_dir": moo_server_db_dir,
+        "posix_signals": "1" if os.name == "posix" else None,
+        "named_log_file": "1" if managed_server is not None
+        and "{log}" in managed_server.command_template else None,
     }
 
 

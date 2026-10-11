@@ -147,6 +147,7 @@ skip_if: str
 """
 
 import re
+import signal
 from copy import deepcopy
 from dataclasses import dataclass, field
 from itertools import product
@@ -180,6 +181,7 @@ STEP_ACTION_FIELDS = frozenset({
     "run", "command", "verb_setup", "allocate_port", "new_connection", "send",
     "send_bytes", "read_connection", "close_connection", "wait", "assert_log",
     "assert_file", "write_file", "write_stdin", "restart_server", "wait_for_server_exit",
+    "signal_server", "rename_file",
 })
 STEP_FIELDS = STEP_ACTION_FIELDS | {"capture", "as", "expect"}
 ACTION_PAYLOAD_FIELDS = {
@@ -194,8 +196,11 @@ ACTION_PAYLOAD_FIELDS = {
         "path", "exists", "contains", "equals_file", "suspended_task", "timeout_ms"
     }),
     "write_file": frozenset({"path", "content"}),
+    "rename_file": frozenset({"path", "to"}),
     "write_stdin": frozenset({"text"}),
-    "restart_server": frozenset({"wait_ms", "down_ms", "checkpoint_timeout_ms"}),
+    "restart_server": frozenset({
+        "wait_ms", "down_ms", "checkpoint_timeout_ms", "reset_db", "ignore_sighup"
+    }),
     "wait_for_server_exit": frozenset({"timeout_ms", "exit_code", "termination"}),
 }
 SUSPENDED_TASK_ASSERTION_FIELDS = frozenset({
@@ -396,6 +401,15 @@ class RestartServer:
     wait_ms: int = 0  # Optional pause after restart before next step
     down_ms: int = 0  # Optional pause while the process is fully stopped, before restart
     checkpoint_timeout_ms: int | None = None  # Require fresh published checkpoint before stop
+    reset_db: bool = False  # Reload the original fixture instead of adopting a checkpoint
+    ignore_sighup: bool = False  # Start with inherited POSIX SIGHUP ignore
+
+
+@dataclass
+class RenameFile:
+    """Rename an existing regular file within server_dir without overwriting."""
+    path: str
+    to: str
 
 
 @dataclass
@@ -447,6 +461,8 @@ class TestStep:
     write_stdin: WriteStdin | None = None       # Write to managed server process stdin
     restart_server: RestartServer | None = None # Restart managed server
     wait_for_server_exit: WaitForServerExit | None = None  # Observe natural managed exit
+    signal_server: str | None = None            # Named POSIX signal to managed PID
+    rename_file: RenameFile | None = None       # Rotate logs or promote panic output
     capture: str | None = None                  # Variable name to store result
     as_: str | None = None                      # Permission for this step (wizard, programmer)
     expect: Expectation | None = None           # Optional assertion on this step's result
@@ -690,15 +706,27 @@ def _validate_terminal_server_exits(
         ]
         if not exit_indexes:
             continue
-        if len(exit_indexes) != 1:
-            raise ValueError(
-                f"test #{test_index + 1} must contain exactly one wait_for_server_exit"
-            )
-        exit_index = exit_indexes[0]
+        pending_exit = False
+        for index, step in enumerate(test.steps):
+            if step.wait_for_server_exit is not None:
+                if pending_exit:
+                    raise ValueError("wait_for_server_exit requires restart after prior exit")
+                pending_exit = True
+            elif step.restart_server is not None:
+                pending_exit = False
+            elif pending_exit and step.assert_log is None and step.assert_file is None \
+                    and step.rename_file is None:
+                raise ValueError(
+                    f"test #{test_index + 1} may use only assert_log or assert_file after "
+                    f"wait_for_server_exit before restart_server (step #{index + 1})"
+                )
+        if not pending_exit:
+            continue
+        exit_index = exit_indexes[-1]
         invalid_post_exit = [
             index + 1
             for index, step in enumerate(test.steps[exit_index + 1 :], start=exit_index + 1)
-            if step.assert_log is None and step.assert_file is None
+            if step.assert_log is None and step.assert_file is None and step.rename_file is None
         ]
         if invalid_post_exit:
             raise ValueError(
@@ -924,20 +952,22 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
     has_write_stdin = 'write_stdin' in data
     has_restart_server = 'restart_server' in data
     has_wait_for_server_exit = 'wait_for_server_exit' in data
+    has_signal_server = 'signal_server' in data
+    has_rename_file = 'rename_file' in data
 
     action_count = sum([has_run, has_command, has_verb_setup, has_allocate_port,
                         has_new_connection, has_send, has_send_bytes,
                         has_read_connection, has_close_connection,
                         has_wait, has_assert_log, has_assert_file,
                         has_write_file, has_write_stdin, has_restart_server,
-                        has_wait_for_server_exit])
+                        has_wait_for_server_exit, has_signal_server, has_rename_file])
 
     if action_count == 0:
         raise ValueError(
             "Test step must have an action field (run, command, verb_setup, "
             "allocate_port, new_connection, send, send_bytes, read_connection, "
             "close_connection, wait, assert_log, assert_file, write_file, write_stdin, "
-            "restart_server, or wait_for_server_exit)"
+            "restart_server, wait_for_server_exit, signal_server, or rename_file)"
         )
     if action_count > 1:
         raise ValueError("Test step must have exactly one action field")
@@ -1130,7 +1160,14 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
                 wait_ms=rs_data.get('wait_ms', 0),
                 down_ms=rs_data.get('down_ms', 0),
                 checkpoint_timeout_ms=rs_data.get('checkpoint_timeout_ms'),
+                reset_db=rs_data.get('reset_db', False),
+                ignore_sighup=rs_data.get('ignore_sighup', False),
             )
+            for key in ('reset_db', 'ignore_sighup'):
+                if key in rs_data and type(rs_data[key]) is not bool:
+                    raise ValueError(f"{context} restart_server {key} must be boolean")
+            if restart_server.reset_db and restart_server.checkpoint_timeout_ms is not None:
+                raise ValueError("reset_db cannot be combined with checkpoint_timeout_ms")
             if 'checkpoint_timeout_ms' in rs_data:
                 deadline = rs_data['checkpoint_timeout_ms']
                 if type(deadline) is not int or deadline < 0:
@@ -1181,6 +1218,23 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
             termination=termination,
         )
 
+    signal_server = data.get('signal_server')
+    if has_signal_server and (
+        not isinstance(signal_server, str)
+        or signal_server not in {item.name for item in signal.Signals} | {
+            'SIGHUP', 'SIGUSR1', 'SIGUSR2', 'SIGBUS', 'SIGCHLD', 'SIGPIPE', 'SIGALRM',
+            'SIGVTALRM', 'SIGSTOP', 'SIGCONT',
+        }
+    ):
+        raise ValueError(f"{context} signal_server must be a named POSIX signal")
+    rename_file = None
+    if has_rename_file:
+        rf_data = _require_mapping(data['rename_file'], f"{context} rename_file")
+        _reject_unknown_fields(rf_data, ACTION_PAYLOAD_FIELDS['rename_file'], context)
+        if any(not isinstance(rf_data.get(key), str) or not rf_data[key] for key in ('path', 'to')):
+            raise ValueError(f"{context} rename_file requires nonempty path and to")
+        rename_file = RenameFile(path=rf_data['path'], to=rf_data['to'])
+
     return TestStep(
         run=data.get('run'),
         command=data.get('command'),
@@ -1198,6 +1252,8 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
         write_stdin=write_stdin,
         restart_server=restart_server,
         wait_for_server_exit=wait_for_server_exit,
+        signal_server=signal_server,
+        rename_file=rename_file,
         capture=data.get('capture'),
         as_=data.get('as'),
         expect=expect,

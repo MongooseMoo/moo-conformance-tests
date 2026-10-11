@@ -147,7 +147,6 @@ skip_if: str
 """
 
 import re
-import signal
 from copy import deepcopy
 from dataclasses import dataclass, field
 from itertools import product
@@ -182,6 +181,13 @@ STEP_ACTION_FIELDS = frozenset({
     "send_bytes", "read_connection", "close_connection", "wait", "assert_log",
     "assert_file", "write_file", "write_stdin", "restart_server", "wait_for_server_exit",
     "signal_server", "rename_file",
+})
+POSIX_SIGNAL_NAMES = frozenset({
+    "SIGHUP", "SIGINT", "SIGQUIT", "SIGILL", "SIGTRAP", "SIGABRT", "SIGBUS",
+    "SIGFPE", "SIGKILL", "SIGUSR1", "SIGSEGV", "SIGUSR2", "SIGPIPE", "SIGALRM",
+    "SIGTERM", "SIGCHLD", "SIGCONT", "SIGSTOP", "SIGTSTP", "SIGTTIN", "SIGTTOU",
+    "SIGURG", "SIGXCPU", "SIGXFSZ", "SIGVTALRM", "SIGPROF", "SIGWINCH", "SIGIO",
+    "SIGPWR", "SIGSYS",
 })
 STEP_FIELDS = STEP_ACTION_FIELDS | {"capture", "as", "expect"}
 ACTION_PAYLOAD_FIELDS = {
@@ -1221,10 +1227,7 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
     signal_server = data.get('signal_server')
     if has_signal_server and (
         not isinstance(signal_server, str)
-        or signal_server not in {item.name for item in signal.Signals} | {
-            'SIGHUP', 'SIGUSR1', 'SIGUSR2', 'SIGBUS', 'SIGCHLD', 'SIGPIPE', 'SIGALRM',
-            'SIGVTALRM', 'SIGSTOP', 'SIGCONT',
-        }
+        or signal_server not in POSIX_SIGNAL_NAMES
     ):
         raise ValueError(f"{context} signal_server must be a named POSIX signal")
     rename_file = None

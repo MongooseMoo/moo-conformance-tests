@@ -1,0 +1,46 @@
+name: signals_panic
+description: Toast's panic handlers create recoverable PANIC dumps then abort.
+requires:
+  config: [managed_server, posix_signals, server_dir, log_file]
+tests:
+  - name: panic_{signal}_dump_can_be_loaded
+    table:
+      rows: [[SIGHUP], [SIGILL], [SIGQUIT], [SIGSEGV], [SIGBUS]]
+      columns: [signal]
+    steps:
+      - restart_server: {reset_db: true}
+      - run: |
+          add_property(#0, "signal_marker", "panic-{signal}", {player, "rw"});
+          return 1;
+        as: wizard
+        expect: {value: 1}
+      - new_connection: {capture: observer}
+      - send: {connection: observer, text: "connect Programmer"}
+      - signal_server: "{signal}"
+      - read_connection: {connection: observer}
+        expect:
+          output: {contains: "*** Shutting down: server panic ***"}
+      - wait_for_server_exit: {timeout_ms: 10000, termination: abort}
+      - assert_log: {contains: "PANIC: Caught signal "}
+      - assert_log: {contains: "PANIC-DUMPING"}
+      - assert_file: {path: Test.db.new.PANIC, contains: "panic-{signal}"}
+      - assert_file: {path: Test.db.new, exists: false}
+      - rename_file: {path: Test.db.new.PANIC, to: Test.db.new}
+      - restart_server: {}
+      - run: 'return #0.signal_marker;'
+        as: wizard
+        expect: {value: "panic-{signal}"}
+      - restart_server: {reset_db: true}
+
+  - name: inherited_sighup_ignore_survives_repeated_delivery
+    steps:
+      - restart_server: {reset_db: true, ignore_sighup: true}
+      - signal_server: SIGHUP
+      - run: 'return 17;'
+        expect: {value: 17}
+      - signal_server: SIGHUP
+      - run: 'return 29;'
+        expect: {value: 29}
+      - assert_log: {not_contains: "PANIC:"}
+      - assert_file: {path: Test.db.new.PANIC, exists: false}
+      - restart_server: {reset_db: true}

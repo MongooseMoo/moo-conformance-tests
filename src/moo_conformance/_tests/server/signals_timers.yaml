@@ -1,0 +1,78 @@
+name: signals_timers
+description: Alarm-driven checkpoint and task timeout paths preserve server responsiveness.
+requires:
+  config: [managed_server, posix_signals, server_dir, log_file]
+tests:
+  - name: idle_sigalrm_dispatches_checkpoint_timer_and_rearms
+    description: At idle, with no outbound connect or active task, the only timer is the checkpoint timer.
+    steps:
+      - restart_server: {reset_db: true}
+      - run: |
+          add_property(#0, "signal_timer_count", 0, {player, "rw"});
+          add_property(#0, "signal_timer_marker", "alarm-checkpoint-first", {player, "rw"});
+          try delete_verb(#0, "handle_signal"); except (E_VERBNF) endtry
+          try delete_verb(#0, "checkpoint_finished"); except (E_VERBNF) endtry
+          add_verb(#0, {player, "rxd", "checkpoint_finished"}, {"this", "none", "this"});
+          set_verb_code(#0, "checkpoint_finished", {
+            "#0.signal_timer_count = #0.signal_timer_count + 1;",
+            "server_log(\"SIGNAL-TIMER-CHECKPOINT-\" + tostr(#0.signal_timer_count) + \"-\" + tostr(args[1]));"
+          });
+          return 1;
+        as: wizard
+        expect: {value: 1}
+      - signal_server: SIGALRM
+      - assert_file: {path: server.log, contains: "SIGNAL-TIMER-CHECKPOINT-1-1", timeout_ms: 10000}
+      - assert_log: {not_contains: "CHECKPOINTING due to remote request signal."}
+      - assert_file: {path: Test.db.new, contains: "alarm-checkpoint-first", timeout_ms: 10000}
+      - restart_server: {checkpoint_timeout_ms: 10000}
+      - run: '#0.signal_timer_marker = "alarm-checkpoint-second"; return #0.signal_timer_count;'
+        as: wizard
+        expect: {value: 0}
+      - signal_server: SIGALRM
+      - assert_file: {path: server.log, contains: "SIGNAL-TIMER-CHECKPOINT-1-1", timeout_ms: 10000}
+      - assert_file: {path: Test.db.new, contains: "alarm-checkpoint-second", timeout_ms: 10000}
+      - restart_server: {reset_db: true}
+
+  - name: task_seconds_alarm_aborts_only_task_and_can_fire_again
+    description: WSL uses SIGALRM; native Linux uses SIGVTALRM for this same virtual timer API.
+    steps:
+      - restart_server: {reset_db: true}
+      - run: |
+          add_property(#0, "signal_timeout_count", 0, {player, "rw"});
+          add_property(#0, "signal_timeout_kind", "", {player, "rw"});
+          for name in ({"bg_seconds", "bg_ticks"})
+            try add_property($server_options, name, 1, {player, "rw"}); except (E_INVARG) endtry
+          endfor
+          $server_options.bg_seconds = 1;
+          $server_options.bg_ticks = 2147483647;
+          load_server_options();
+          try delete_verb(#0, "handle_task_timeout"); except (E_VERBNF) endtry
+          add_verb(#0, {player, "rxd", "handle_task_timeout"}, {"this", "none", "this"});
+          set_verb_code(#0, "handle_task_timeout", {
+            "#0.signal_timeout_count = #0.signal_timeout_count + 1;",
+            "#0.signal_timeout_kind = args[1];",
+            "server_log(\"SIGNAL-TASK-TIMEOUT-\" + tostr(#0.signal_timeout_count) + \"-\" + args[1]);",
+            "return 1;"
+          });
+          fork (0)
+            while (1)
+            endwhile
+          endfork
+          return 1;
+        as: wizard
+        expect: {value: 1}
+      - assert_file: {path: server.log, contains: "SIGNAL-TASK-TIMEOUT-1-seconds", timeout_ms: 10000}
+      - run: |
+          fork (0)
+            while (1)
+            endwhile
+          endfork
+          return #0.signal_timeout_kind;
+        as: wizard
+        expect: {value: seconds}
+      - assert_file: {path: server.log, contains: "SIGNAL-TASK-TIMEOUT-2-seconds", timeout_ms: 10000}
+      - run: 'return {#0.signal_timeout_count, 211};'
+        as: wizard
+        expect: {value: [2, 211]}
+      - assert_log: {not_contains: "PANIC:"}
+      - restart_server: {reset_db: true}

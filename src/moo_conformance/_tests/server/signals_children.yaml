@@ -1,0 +1,55 @@
+name: signals_children
+description: SIGCHLD reaps exec and checkpoint children without mixing completion status.
+requires:
+  config: [managed_server, posix_signals, server_dir, log_file]
+  builtins: [exec]
+  features: [exec_support, forking, tasks]
+tests:
+  - name: child_handler_rearms_after_unsolicited_chld_and_exec_{status}
+    table:
+      columns: [status]
+      rows: [[0], [7], [23]]
+    steps:
+      - restart_server: {reset_db: true}
+      - signal_server: SIGCHLD
+      - run: 'return exec({"test_exit_status", "{status}"}, "");'
+        as: wizard
+        expect: {value: ["{status}", "", ""]}
+      - signal_server: SIGCHLD
+      - run: 'return exec({"test_io"}, "signal-child-roundtrip");'
+        as: wizard
+        expect: {value: [0, signal-child-roundtrip, signal-child-roundtrip]}
+      - run: 'return 101;'
+        expect: {value: 101}
+      - restart_server: {reset_db: true}
+
+  - name: exec_and_checkpoint_children_complete_independently
+    steps:
+      - restart_server: {reset_db: true}
+      - run: |
+          add_property(#0, "signal_exec_result", {}, {player, "rw"});
+          add_property(#0, "signal_checkpoint_status", -1, {player, "rw"});
+          try delete_verb(#0, "handle_signal"); except (E_VERBNF) endtry
+          try delete_verb(#0, "checkpoint_finished"); except (E_VERBNF) endtry
+          add_verb(#0, {player, "rxd", "checkpoint_finished"}, {"this", "none", "this"});
+          set_verb_code(#0, "checkpoint_finished", {
+            "#0.signal_checkpoint_status = args[1];",
+            "server_log(\"SIGNAL-CHILD-CHECKPOINT-\" + tostr(args[1]));"
+          });
+          fork (0)
+            #0.signal_exec_result = exec({"sleep", "2"});
+            server_log("SIGNAL-CHILD-EXEC-DONE");
+          endfork
+          return 1;
+        as: wizard
+        expect: {value: 1}
+      - signal_server: SIGUSR2
+      - assert_file: {path: server.log, contains: "SIGNAL-CHILD-CHECKPOINT-1", timeout_ms: 10000}
+      - assert_file: {path: server.log, contains: "SIGNAL-CHILD-EXEC-DONE", timeout_ms: 10000}
+      - run: 'return {#0.signal_exec_result, #0.signal_checkpoint_status};'
+        as: wizard
+        expect: {value: [[0, "", ""], 1]}
+      - run: 'return exec({"test_exit_status", "7"}, "");'
+        as: wizard
+        expect: {value: [7, "", ""]}
+      - restart_server: {reset_db: true}

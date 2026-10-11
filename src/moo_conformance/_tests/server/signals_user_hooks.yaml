@@ -1,0 +1,53 @@
+name: signals_user_hooks
+description: User-defined signals pass named arguments to #0 and honor hook completion and truth.
+requires:
+  config: [managed_server, posix_signals, server_dir, log_file, named_log_file]
+tests:
+  - name: hook_{signal}_{label}_suppresses_default
+    table:
+      product:
+        - rows: [[SIGUSR1], [SIGUSR2]]
+          columns: [signal]
+        - columns: [label, body]
+          rows:
+            - [true_integer, "return 1;"]
+            - [true_string, 'return \"handled\";']
+            - [true_list, "return {1};"]
+            - [aborted, "raise(E_PERM);"]
+            - [suspended, "suspend(10); return 0;"]
+            - [resumed_false, "suspend(0.05); return 0;"]
+    steps:
+      - restart_server: {reset_db: true}
+      - run: |
+          add_property(#0, "signal_calls", {}, {player, "rw"});
+          add_property(#0, "signal_owner", player, {player, "rw"});
+          try delete_verb(#0, "handle_signal"); except (E_VERBNF) endtry
+          add_verb(#0, {player, "rxd", "handle_signal"}, {"this", "none", "this"});
+          return set_verb_code(#0, "handle_signal", {
+            "#0.signal_calls = {@#0.signal_calls, {args, player == #-1, this == #0, verb == \"handle_signal\", task_perms() == #0.signal_owner}};",
+            "server_log(\"SIGNAL-HOOK-{signal}-{label}-\" + tostr(length(#0.signal_calls)));",
+            "{body}"
+          });
+        as: wizard
+        expect: {value: []}
+      - signal_server: "{signal}"
+      - assert_file:
+          path: server.log
+          contains: "SIGNAL-HOOK-{signal}-{label}-1"
+          timeout_ms: 5000
+      - run: 'suspend(0.1); return #0.signal_calls;'
+        as: wizard
+        expect: {value: [[["{signal}"], 1, 1, 1, 1]]}
+      - assert_file: {path: Test.db.new, exists: false}
+      - assert_log: {not_contains: "LOGFILE: Reopening due to remote request signal."}
+      - signal_server: "{signal}"
+      - assert_file:
+          path: server.log
+          contains: "SIGNAL-HOOK-{signal}-{label}-2"
+          timeout_ms: 5000
+      - run: 'suspend(0.1); return length(#0.signal_calls);'
+        as: wizard
+        expect: {value: 2}
+      - assert_file: {path: Test.db.new, exists: false}
+      - assert_log: {not_contains: "LOGFILE: Reopening due to remote request signal."}
+      - restart_server: {reset_db: true}

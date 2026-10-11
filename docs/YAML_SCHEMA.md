@@ -400,6 +400,44 @@ steps:
 
 #### `restart_server` - Restart Managed Server
 
+`reset_db: true` reloads the suite's original database fixture. The default
+adopts checkpoint output, including a graceful signal shutdown dump. An explicit
+`restart_server` may follow `wait_for_server_exit`; live steps are rejected until
+that restart. `reset_db` cannot be combined with `checkpoint_timeout_ms`.
+
+`ignore_sighup: true` launches the process with inherited POSIX SIGHUP ignore,
+using exec so signals still target the server PID. The next ordinary restart
+restores the normal launch behavior.
+
+#### `signal_server` and `rename_file` - Host Operations
+
+```yaml
+requires:
+  config: [managed_server, posix_signals, server_dir]
+tests:
+  - name: signal_shutdown
+    steps:
+      - signal_server: SIGTERM
+      - wait_for_server_exit: {timeout_ms: 5000, exit_code: 0}
+      - restart_server: {reset_db: true}
+```
+
+`signal_server` delivers a named OS signal to the directly managed process.
+Command wrappers must exec the server. It never signals a process group or an
+external server. POSIX cases must require `posix_signals`; Windows reports a
+configuration skip and can still load the YAML and run portable harness tests.
+Native Windows SIGTERM termination is not equivalent to POSIX graceful handling.
+
+Log reopen cases also require `named_log_file`, provided when `--server-command`
+uses `{log}` to give the server its named log path. For Toast, use `--log {log}`.
+The placeholder resolves to `server.log` in the managed directory.
+
+`rename_file: {path: toast.log, to: toast.rotated.log}` renames a regular file
+inside `server_dir`, rejects paths outside that directory and existing
+destinations, and supports log rotation and adopting panic dumps before restart.
+
+#### Checkpoint Restart
+
 Restarts the managed server process in-place and reconnects the test transport
 as the current user. This preserves the managed server working directory and
 database copy, so persistence across `dump_database()` can be tested.

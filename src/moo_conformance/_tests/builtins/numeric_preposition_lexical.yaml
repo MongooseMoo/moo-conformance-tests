@@ -1,0 +1,44 @@
+name: numeric_preposition_lexical
+description: Bounded lexical preposition observations through an owned driver.
+requires:
+  builtins: [create, recycle, add_verb, set_verb_code, set_verb_args, verb_args, server_log, toliteral]
+tests:
+  - name: numeric_preposition_lexical_bounded_owned_driver
+    permission: wizard
+    steps:
+      - run: |
+          target = create($nothing);
+          try
+            add_verb(target, {player, "rxd", "probe_lexical_preps"}, {"this", "none", "this"});
+            errors = set_verb_code(target, "probe_lexical_preps", {
+              "if (this != args[1]) raise(E_INVARG); endif",
+              "orig_args = verb_args(this, verb);",
+              "inputs = {\"-1\", \"-2\", \"-3\", \"+1\", \"01\", \"00015\", \" 1\", \"1 \", \"15 \", \"+15\", \"99999999999999999999999999999999\", \"1x\", \"0x1\", \"with\", \"any\", \"none\", \"\", \"99\"};",
+              "expected_outcomes = {E_INVARG, E_INVARG, E_INVARG, E_INVARG, 0, E_INVARG, E_INVARG, E_INVARG, E_INVARG, E_INVARG, E_INVARG, E_INVARG, E_INVARG, 0, 0, 0, E_INVARG, E_INVARG};",
+              "expected_preps = {\"none\", \"none\", \"none\", \"none\", \"at/to\", \"at/to\", \"at/to\", \"at/to\", \"at/to\", \"at/to\", \"at/to\", \"at/to\", \"at/to\", \"with/using\", \"any\", \"none\", \"none\", \"none\"};",
+              "outcomes = {}; unchanged = matches = 1; i = 0;",
+              "try",
+              "for input in (inputs)",
+              "i = i + 1; before_args = verb_args(this, verb);",
+              "outcome = `set_verb_args(this, verb, {\"this\", input, \"this\"}) ! ANY';",
+              "after_args = verb_args(this, verb);",
+              "same = typeof(outcome) != ERR || after_args == before_args;",
+              "unchanged = unchanged && same;",
+              "matches = matches && outcome == expected_outcomes[i] && after_args[2] == expected_preps[i];",
+              "outcomes = {@outcomes, {input, outcome, after_args[2], same}};",
+              "endfor",
+              "finally",
+              "set_verb_args(this, verb, orig_args);",
+              "endtry",
+              "restored = verb_args(this, verb) == orig_args;",
+              "server_log(\"LEXICAL_PREP_PROBE \" + toliteral({outcomes, restored}));",
+              "return {length(outcomes) == 18, unchanged, restored, matches};"
+            });
+            if (errors) raise(E_INVARG, "driver compile failed", errors); endif
+            result = target:probe_lexical_preps(target);
+          finally
+            recycle(target);
+          endtry
+          return result;
+        expect:
+          value: [1, 1, 1, 1]

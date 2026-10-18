@@ -215,3 +215,58 @@ tests:
     cleanup:
       - run: "delete_property(#0, \"__ft_resumed_child\");"
         as: wizard
+
+  - name: resume_reaches_task_waiting_in_suspend_zero
+    description: |
+      A task in suspend(0) stays suspended until it runs again
+      (find_suspended_task searches waiting_tasks). A zero-delay child, which
+      runs first, can resume it, and suspend(0) returns the resume value.
+    permission: wizard
+    steps:
+      - run: |
+          add_property(#0, "__ft_resume_zero", -1, {#2, "r"});
+          return "setup_done";
+      - run: |
+          me = task_id();
+          fork (0)
+            #0.__ft_resume_zero = `resume(me, 42) ! ANY';
+          endfork
+          v = suspend(0);
+          return {#0.__ft_resume_zero, v};
+        expect:
+          value: [0, 42]
+    cleanup:
+      - run: "delete_property(#0, \"__ft_resume_zero\");"
+        as: wizard
+
+  - name: resume_reaches_task_whose_suspension_expired_unrun
+    description: |
+      A timed suspension that expires while another task is running stays
+      suspended until the task runs again (find_suspended_task also searches
+      the background queues the expired task moves to), so the running task
+      can still resume it and suspend() returns the resume value.
+    permission: wizard
+    steps:
+      - run: |
+          add_property(#0, "__ft_resume_expired", -1, {#2, "r"});
+          return "setup_done";
+      - run: |
+          me = task_id();
+          fork (0)
+            s = "x";
+            for i in [1..24]
+              s = s + s;
+            endfor
+            start = ftime();
+            while (ftime() - start < 1.5)
+              string_hash(s);
+            endwhile
+            #0.__ft_resume_expired = `resume(me, 42) ! ANY';
+          endfork
+          v = suspend(1);
+          return {#0.__ft_resume_expired, v};
+        expect:
+          value: [0, 42]
+    cleanup:
+      - run: "delete_property(#0, \"__ft_resume_expired\");"
+        as: wizard

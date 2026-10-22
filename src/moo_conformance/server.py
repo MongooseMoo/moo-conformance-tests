@@ -6,6 +6,7 @@ externally managed server (the existing behavior).
 """
 
 import os
+import re
 import shlex
 import shutil
 import signal
@@ -130,7 +131,14 @@ class ManagedServer:
         db_path: Path,
         port: int | None = None,
         host: str = "localhost",
+        port_pattern: str | None = None,
     ):
+        self._port_pattern = re.compile(port_pattern, re.MULTILINE) if port_pattern else None
+        if self._port_pattern is not None:
+            if self._port_pattern.groups != 1:
+                raise ValueError("server port pattern must contain exactly one capture group")
+            if port not in (None, 0):
+                raise ValueError("server port pattern requires an omitted or zero port")
         self.command_template = command_template
         self._default_db_path = db_path
         self.db_path = db_path
@@ -220,7 +228,7 @@ class ManagedServer:
                 if self._requested_port is not None:
                     self._port = self._requested_port
                 else:
-                    self._port = self._find_free_port()
+                    self._port = 0 if self._port_pattern else self._find_free_port()
 
             # Create temp directory and copy the selected database into it.
             created_temp_dir = self._temp_dir is None
@@ -565,6 +573,23 @@ class ManagedServer:
                 )
 
             try:
+                if self._port == 0 and self._port_pattern is not None:
+                    assert self._log_path is not None
+                    with open(self._log_path, encoding="utf-8", errors="replace") as log:
+                        log.seek(self._process_log_offset or 0)
+                        match = self._port_pattern.search(log.read())
+                    if match is None:
+                        time.sleep(0.5)
+                        continue
+                    try:
+                        discovered = int(match.group(1))
+                    except ValueError:
+                        discovered = 0
+                    if not 1 <= discovered <= 65535:
+                        raise self._record_lifecycle_failure(
+                            "Managed server reported an invalid bound port"
+                        )
+                    self._port = discovered
                 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                     s.settimeout(1.0)
                     s.connect((self.host, self._port))

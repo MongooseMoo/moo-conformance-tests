@@ -162,6 +162,10 @@ def pytest_addoption(parser):
     parser.addoption("--moo-host", default="localhost", help="MOO server host (default: localhost)")
     parser.addoption("--moo-port", default=None, type=int, help="MOO server port (default: 7777)")
     parser.addoption(
+        "--server-port-pattern", default=None,
+        help="Bind port 0 and discover the bound port from one regex capture in the startup log",
+    )
+    parser.addoption(
         "--server-command",
         default=None,
         help=(
@@ -307,7 +311,10 @@ def managed_server(request) -> Iterator[ManagedServer | None]:
         except CandidatePathError as exc:
             raise pytest.UsageError(str(exc)) from exc
 
-    server = ManagedServer(command, db_path, port=port, host=host)
+    server = ManagedServer(
+        command, db_path, port=port, host=host,
+        port_pattern=request.config.getoption("--server-port-pattern"),
+    )
     try:
         server.start()
         yield server

@@ -114,6 +114,22 @@ moo-conformance --server-command "./moo {db} {db}.out -p {port}" --server-db ./M
 
 The tool copies the database to a temp directory (servers write checkpoints alongside it), starts the server, waits for it to accept connections, runs the tests, and cleans everything up on exit. When `--moo-port` is omitted, a free port is selected automatically.
 
+Servers that support binding port `0` can choose and retain their own socket,
+avoiding the allocation window between the harness's free-port probe and server
+startup. Supply `--server-port-pattern` with exactly one capture group for the
+actual port in the server's startup log. For Barn:
+
+```sh
+moo-conformance --server-command './barn --db {db} --listen tcp://127.0.0.1:{port}' \
+  --moo-host=127.0.0.1 \
+  --server-port-pattern='msg=listening protocol=tcp port=([0-9]+).*primary=true'
+```
+
+This passes `0` as `{port}` initially and connects only after a valid bound port
+appears in the current process's log. Missing reports and process failures remain
+startup failures. An explicit nonzero `--moo-port` cannot be combined with this
+option. Explicit restarts retain the discovered port for the existing transport.
+
 ### Checkpoint and Restart Coverage
 
 Tests containing a `restart_server` step require managed server mode. Before

@@ -1,5 +1,6 @@
 import builtins
 import os
+import socket
 import stat
 import subprocess
 from io import BytesIO
@@ -1280,3 +1281,57 @@ def test_snapshot_skips_directory_removed_after_listing(tmp_path, monkeypatch):
 def test_snapshot_of_missing_root_still_raises(tmp_path):
     with pytest.raises(FileNotFoundError):
         snapshot_regular_files(tmp_path / "missing")
+
+
+def test_server_binds_zero_and_reports_its_port_without_a_free_port_probe(tmp_path, monkeypatch):
+    baseline = tmp_path / "baseline.db"
+    baseline.write_text("baseline", encoding="utf-8")
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
+        listener.bind(("127.0.0.1", 0))
+        listener.listen()
+        port = listener.getsockname()[1]
+
+        def fake_popen(argv, **kwargs):
+            assert argv == ["fake-server", "0"]
+            kwargs["stdout"].write(f"msg=listening protocol=tcp port={port} primary=true\n")
+            kwargs["stdout"].flush()
+            return _FakeProcess()
+
+        def unexpected_probe(self):
+            pytest.fail("server-selected ports must not probe and release a port")
+
+        monkeypatch.setattr(ManagedServer, "_find_free_port", unexpected_probe)
+        monkeypatch.setattr("moo_conformance.server.subprocess.Popen", fake_popen)
+        server = ManagedServer(
+            "fake-server {port}", baseline, host="127.0.0.1",
+            port_pattern=r"msg=listening protocol=tcp port=(\d+) primary=true",
+        )
+        try:
+            server.start()
+            assert server.port == port
+        finally:
+            server.stop()
+
+
+def test_port_discovery_ignores_previous_process_log(tmp_path):
+    log = tmp_path / "server.log"
+    old = "bound=1\n"
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
+        listener.bind(("127.0.0.1", 0))
+        listener.listen()
+        port = listener.getsockname()[1]
+        log.write_text(old + f"bound={port}\n", encoding="utf-8")
+        server = ManagedServer("unused", tmp_path / "db", host="127.0.0.1",
+                               port_pattern=r"^bound=(\d+)$")
+        server._port = 0
+        server._log_path = str(log)
+        server._process_log_offset = len(old)
+        server._wait_for_port(timeout=1)
+        assert server.port == port
+
+
+@pytest.mark.parametrize("pattern, port", [("no capture", None), ("(a)(b)", None),
+                                          (r"(\d+)", 7777)])
+def test_port_discovery_rejects_ambiguous_configuration(tmp_path, pattern, port):
+    with pytest.raises(ValueError):
+        ManagedServer("unused", tmp_path / "db", port=port, port_pattern=pattern)

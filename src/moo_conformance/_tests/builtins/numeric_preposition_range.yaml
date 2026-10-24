@@ -1,0 +1,52 @@
+name: numeric_preposition_range
+description: >
+  Bound numeric preposition probing to 0..32 on a test-owned verb, preserving
+  native error outcomes and restoring its argument specification.
+requires:
+  builtins: [create, recycle, add_verb, set_verb_code, set_verb_args, verb_args, server_log, toliteral]
+tests:
+  - name: numeric_preposition_range_bounded_owned_driver
+    permission: wizard
+    steps:
+      - run: |
+          target = create($nothing);
+          try
+            add_verb(target, {player, "rxd", "probe_numeric_preps"}, {"this", "none", "this"});
+            errors = set_verb_code(target, "probe_numeric_preps", {
+              "if (this != args[1]) raise(E_INVARG); endif",
+              "orig_args = verb_args(this, verb);",
+              "expected_preps = {\"with/using\", \"at/to\", \"in front of\", \"in/inside/into\", \"on top of/on/onto/upon\", \"out of/from inside/from\", \"over\", \"through\", \"under/underneath/beneath\", \"behind\", \"beside\", \"for/about\", \"is\", \"as\", \"off/off of\"};",
+              "outcomes = {}; first_error = -1; contiguous = native_errors = canonical = unchanged = 1;",
+              "try",
+              "for i in [0..32]",
+              "before_args = verb_args(this, verb);",
+              "outcome = `set_verb_args(this, verb, {\"this\", tostr(i), \"this\"}) ! ANY';",
+              "after_args = verb_args(this, verb);",
+              "if (typeof(outcome) == ERR)",
+              "if (first_error < 0) first_error = i; endif",
+              "if (i < 15 || outcome != E_INVARG) native_errors = 0; endif",
+              "unchanged = unchanged && after_args == before_args;",
+              "outcomes = {@outcomes, {i, outcome, after_args[2], after_args == before_args}};",
+              "else",
+              "if (first_error >= 0) contiguous = 0; endif",
+              "if (i < 15)",
+              "canonical = canonical && outcome == 0 && after_args == {\"this\", expected_preps[i + 1], \"this\"};",
+              "else canonical = 0; endif",
+              "outcomes = {@outcomes, {i, outcome, after_args[2]}};",
+              "endif",
+              "endfor",
+              "finally",
+              "set_verb_args(this, verb, orig_args);",
+              "endtry",
+              "restored = verb_args(this, verb) == orig_args;",
+              "server_log(\"NUMERIC_PREP_PROBE \" + toliteral({first_error, outcomes, restored}));",
+              "return {first_error == 15, contiguous, native_errors, canonical, unchanged, restored};"
+            });
+            if (errors) raise(E_INVARG, "driver compile failed", errors); endif
+            result = target:probe_numeric_preps(target);
+          finally
+            recycle(target);
+          endtry
+          return result;
+        expect:
+          value: [1, 1, 1, 1, 1, 1]

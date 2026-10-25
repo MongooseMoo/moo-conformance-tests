@@ -1,0 +1,43 @@
+name: delete_property_descendants
+description: >-
+  delete_property() on a parent removes the property from every descendant,
+  including a descendant whose own value was set in an earlier task.
+
+requires:
+  builtins:
+    - delete_property
+
+tests:
+  - name: delete_property_removes_committed_child_override
+    description: >-
+      Each step is a separate task, so the child's override is committed before
+      the parent's definition is deleted, and the read after the delete sees the
+      committed result.
+    steps:
+      - run: 'p = create($nothing); add_property(p, "dp_override", 5, {player, "rw"}); return p;'
+        capture: parent
+        as: wizard
+      - run: 'create({parent})'
+        capture: child
+        as: wizard
+      - run: '{child}.dp_override = 99'
+        as: wizard
+        expect:
+          value: 99
+      - run: 'delete_property({parent}, "dp_override")'
+        as: wizard
+        expect:
+          value: 0
+      - run: '{child}.dp_override'
+        as: wizard
+        expect:
+          error: E_PROPNF
+      - run: 'properties({child})'
+        as: wizard
+        expect:
+          value: []
+    cleanup:
+      - run: 'recycle({child})'
+        as: wizard
+      - run: 'recycle({parent})'
+        as: wizard

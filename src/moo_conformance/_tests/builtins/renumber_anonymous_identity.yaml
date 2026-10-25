@@ -1,0 +1,38 @@
+name: renumber_anonymous_identity
+description: >
+  renumber() fills only holes among numbered objects. Anonymous objects take no
+  object number, so a live or recycled anonymous object never becomes the
+  target of renumber(), and the renumbered object stays writable in the same task.
+requires:
+  config: [managed_server]
+  builtins: [create, recycle, renumber, valid]
+
+tests:
+  # The fresh fixture has no holes below the new object, so renumber() has no
+  # lower slot to move it into and returns the object unchanged.
+  - name: renumber_skips_live_anonymous_object
+    steps:
+      - restart_server: {reset_db: true}
+      - run: |
+          a = create($nothing, 1);
+          b = create($nothing);
+          n = renumber(b);
+          n.name = "renumbered";
+          return {n == b, valid(a), valid(n), n.name};
+        as: wizard
+        expect: {value: [1, 1, 1, renumbered]}
+      - restart_server: {reset_db: true}
+
+  - name: renumber_skips_recycled_anonymous_object
+    steps:
+      - restart_server: {reset_db: true}
+      - run: |
+          a = create($nothing, 1);
+          recycle(a);
+          b = create($nothing);
+          n = renumber(b);
+          n.name = "renumbered";
+          return {n == b, valid(a), valid(n), n.name};
+        as: wizard
+        expect: {value: [1, 0, 1, renumbered]}
+      - restart_server: {reset_db: true}

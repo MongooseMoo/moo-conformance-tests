@@ -450,16 +450,22 @@ tests:
 - name: recycling_created_child_leaves_parents_anonymous_value
   description: A child's inherited slot is clear and holds no value, so recycling the child does not recycle an anonymous object held by its parent
   permission: wizard
-  statement: |
-    p = create($nothing);
-    add_property(p, "anon_ref", create($anonymous, 1), {player, "rw"});
-    c = create(p);
-    recycle(c);
-    result = valid(p.anon_ref);
-    recycle(p);
-    return result;
-  expect:
-    value: 1
+  steps:
+  # Creating the anonymous object makes its task coarse; the child is created
+  # in a fresh task so its create is the ordinary one.
+  - run: |
+      p = create($nothing);
+      add_property(p, "anon_ref", create($anonymous, 1), {player, "rw"});
+      return p;
+    capture: parent
+  - run: |
+      c = create({parent});
+      recycle(c);
+      return valid({parent}.anon_ref);
+    expect:
+      value: 1
+  cleanup:
+  - run: recycle({parent})
 - name: recycling_child_leaves_anonymous_value_of_property_added_later
   description: A property added to a parent gives existing children a clear slot holding no value, so recycling a child does not recycle the parent's anonymous object
   permission: wizard

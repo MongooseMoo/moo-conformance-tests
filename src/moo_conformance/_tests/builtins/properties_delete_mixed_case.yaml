@@ -1,0 +1,57 @@
+name: properties_delete_mixed_case
+description: properties() after deleting a mixed-case property and defining another in
+  the same task. delete_property matches the definition case-insensitively and
+  add_property appends the new definition at the end.
+requires:
+  builtins:
+  - add_property
+  - delete_property
+  - properties
+  - create
+  - recycle
+tests:
+- name: properties_delete_readd_mixed_case_same_task
+  description: Deleting a committed mixed-case property and re-adding the same name in
+    one task leaves exactly one entry in properties(), inside the task and after commit
+  permission: programmer
+  steps:
+  - run: create($nothing)
+    capture: obj
+  - run: add_property({obj}, "Foo", 1, {player, ""})
+  - run: delete_property({obj}, "Foo"); add_property({obj}, "Foo", 2, {player, ""}); return properties({obj});
+    expect:
+      value:
+      - Foo
+  - run: properties({obj})
+    expect:
+      value:
+      - Foo
+  - run: '{obj}.Foo'
+    expect:
+      value: 2
+  cleanup:
+  - run: recycle({obj})
+- name: properties_delete_mixed_case_then_add_keeps_order_same_task
+  description: Deleting a committed mixed-case property and adding another in the same
+    task appends the new name after the surviving ones, inside the task and after commit
+  permission: programmer
+  steps:
+  - run: create($nothing)
+    capture: obj
+  - run: add_property({obj}, "Foo", 1, {player, ""}); add_property({obj}, "bar", 2, {player, ""}); return properties({obj});
+    expect:
+      value:
+      - Foo
+      - bar
+  - run: delete_property({obj}, "Foo"); add_property({obj}, "baz", 3, {player, ""}); return properties({obj});
+    expect:
+      value:
+      - bar
+      - baz
+  - run: properties({obj})
+    expect:
+      value:
+      - bar
+      - baz
+  cleanup:
+  - run: recycle({obj})

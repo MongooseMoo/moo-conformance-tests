@@ -241,6 +241,7 @@ Each step must have exactly ONE action field. The common fields (`capture`, `as`
 | `assert_log` | Verify server log contains expected text |
 | `assert_file` | Verify file existence and contents on disk |
 | `write_file` | Create a file on the test host |
+| `chmod` | Set POSIX permissions on a confined existing file or directory |
 | `write_stdin` | Write text to the managed server process stdin |
 | `restart_server` | Restart managed server process in-place (managed mode only) |
 
@@ -435,6 +436,23 @@ The placeholder resolves to `server.log` in the managed directory.
 `rename_file: {path: toast.log, to: toast.rotated.log}` renames a regular file
 inside `server_dir`, rejects paths outside that directory and existing
 destinations, and supports log rotation and adopting panic dumps before restart.
+
+#### `chmod` - Host Permissions
+
+`chmod: {path: ".", mode: "500"}` removes write permission from `server_dir`.
+The path must already exist inside `server_dir`; the directory itself is allowed.
+The mode is a quoted three-digit octal string, with no special permission bits.
+The action also works in `cleanup`, independently of the transport:
+
+```yaml
+cleanup:
+  - chmod: {path: ".", mode: "700"}
+```
+
+Cases that depend on permission denial must require
+`config: [managed_server, server_dir, unprivileged_posix]`. Root can bypass
+permission denial, and native Windows does not enforce POSIX directory modes.
+The managed server's temporary directory starts with mode `700`.
 
 #### Checkpoint Restart
 

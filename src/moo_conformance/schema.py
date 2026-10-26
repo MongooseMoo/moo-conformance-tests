@@ -180,7 +180,7 @@ STEP_ACTION_FIELDS = frozenset({
     "run", "command", "verb_setup", "allocate_port", "new_connection", "send",
     "send_bytes", "read_connection", "close_connection", "wait", "assert_log",
     "assert_file", "write_file", "write_stdin", "restart_server", "wait_for_server_exit",
-    "signal_server", "rename_file",
+    "signal_server", "rename_file", "chmod",
 })
 POSIX_SIGNAL_NAMES = frozenset({
     "SIGHUP", "SIGINT", "SIGQUIT", "SIGILL", "SIGTRAP", "SIGABRT", "SIGBUS",
@@ -203,6 +203,7 @@ ACTION_PAYLOAD_FIELDS = {
     }),
     "write_file": frozenset({"path", "content"}),
     "rename_file": frozenset({"path", "to"}),
+    "chmod": frozenset({"path", "mode"}),
     "write_stdin": frozenset({"text"}),
     "restart_server": frozenset({
         "wait_ms", "down_ms", "checkpoint_timeout_ms", "reset_db", "ignore_sighup"
@@ -419,6 +420,13 @@ class RenameFile:
 
 
 @dataclass
+class Chmod:
+    """Set ordinary POSIX permissions within server_dir, including the directory itself."""
+    path: str
+    mode: int
+
+
+@dataclass
 class WaitForServerExit:
     """Require an exact clean code or narrowly normalized natural termination."""
     timeout_ms: int
@@ -469,6 +477,7 @@ class TestStep:
     wait_for_server_exit: WaitForServerExit | None = None  # Observe natural managed exit
     signal_server: str | None = None            # Named POSIX signal to managed PID
     rename_file: RenameFile | None = None       # Rotate logs or promote panic output
+    chmod: Chmod | None = None                 # Set confined host permissions
     capture: str | None = None                  # Variable name to store result
     as_: str | None = None                      # Permission for this step (wizard, programmer)
     expect: Expectation | None = None           # Optional assertion on this step's result
@@ -960,20 +969,21 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
     has_wait_for_server_exit = 'wait_for_server_exit' in data
     has_signal_server = 'signal_server' in data
     has_rename_file = 'rename_file' in data
+    has_chmod = 'chmod' in data
 
     action_count = sum([has_run, has_command, has_verb_setup, has_allocate_port,
                         has_new_connection, has_send, has_send_bytes,
                         has_read_connection, has_close_connection,
                         has_wait, has_assert_log, has_assert_file,
                         has_write_file, has_write_stdin, has_restart_server,
-                        has_wait_for_server_exit, has_signal_server, has_rename_file])
+                        has_wait_for_server_exit, has_signal_server, has_rename_file, has_chmod])
 
     if action_count == 0:
         raise ValueError(
             "Test step must have an action field (run, command, verb_setup, "
             "allocate_port, new_connection, send, send_bytes, read_connection, "
             "close_connection, wait, assert_log, assert_file, write_file, write_stdin, "
-            "restart_server, wait_for_server_exit, signal_server, or rename_file)"
+            "restart_server, wait_for_server_exit, signal_server, rename_file, or chmod)"
         )
     if action_count > 1:
         raise ValueError("Test step must have exactly one action field")
@@ -1238,6 +1248,18 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
             raise ValueError(f"{context} rename_file requires nonempty path and to")
         rename_file = RenameFile(path=rf_data['path'], to=rf_data['to'])
 
+    chmod = None
+    if has_chmod:
+        mode_data = _require_mapping(data['chmod'], f"{context} chmod")
+        _reject_unknown_fields(mode_data, ACTION_PAYLOAD_FIELDS['chmod'], context)
+        path = mode_data.get('path')
+        mode = mode_data.get('mode')
+        if not isinstance(path, str) or not path:
+            raise ValueError(f"{context} chmod requires a nonempty path")
+        if not isinstance(mode, str) or re.fullmatch(r"[0-7]{3}", mode) is None:
+            raise ValueError(f"{context} chmod mode must be a quoted three-digit octal string")
+        chmod = Chmod(path=path, mode=int(mode, 8))
+
     return TestStep(
         run=data.get('run'),
         command=data.get('command'),
@@ -1257,6 +1279,7 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
         wait_for_server_exit=wait_for_server_exit,
         signal_server=signal_server,
         rename_file=rename_file,
+        chmod=chmod,
         capture=data.get('capture'),
         as_=data.get('as'),
         expect=expect,

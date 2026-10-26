@@ -713,6 +713,10 @@ class YamlTestRunner:
                     self._execute_rename_file(step.rename_file.path, step.rename_file.to)
                     continue
 
+                if step.chmod is not None:
+                    self._execute_chmod(step.chmod.path, step.chmod.mode)
+                    continue
+
                 if step.restart_server:
                     self._execute_restart_server(
                         step.restart_server.wait_ms, test.name, down_ms=step.restart_server.down_ms,
@@ -807,6 +811,9 @@ class YamlTestRunner:
                     raise AssertionError(
                         f"Test '{test.name}' cleanup steps cannot have expectations"
                     )
+                if cleanup_step.chmod is not None:
+                    self._execute_chmod(cleanup_step.chmod.path, cleanup_step.chmod.mode)
+                    continue
                 # Switch permission if cleanup step specifies different one
                 if cleanup_step.as_:
                     self._ensure_transport_connected()
@@ -867,6 +874,7 @@ class YamlTestRunner:
             "restart_server",
             "signal_server",
             "rename_file",
+            "chmod",
             "wait_for_server_exit",
         )
         action = next((name for name in actions if getattr(step, name) is not None), "unknown")
@@ -930,6 +938,22 @@ class YamlTestRunner:
             time.sleep(wait_ms / 1000.0)
 
         self.transport.connect(current_user)
+
+    def _execute_chmod(self, path: str, mode: int) -> None:
+        """Change permissions only on an existing path confined to server_dir."""
+        if self.server_dir is None:
+            raise AssertionError("chmod requires server_dir")
+        if os.name != "posix":
+            raise AssertionError("chmod requires a POSIX host")
+        target = require_confined_path(
+            self.server_dir, Path(self.server_dir) / path, label="chmod path"
+        )
+        if not target.is_file() and not target.is_dir():
+            raise AssertionError("chmod requires a regular file or directory")
+        try:
+            target.chmod(mode)
+        except OSError as exc:
+            raise AssertionError(f"chmod failed for {path!r}: {exc}") from exc
 
     def _execute_rename_file(self, source: str, destination: str) -> None:
         """Rotate a regular file under server_dir without replacing user data."""

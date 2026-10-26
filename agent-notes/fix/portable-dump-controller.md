@@ -12,7 +12,10 @@ output after an actual failed dump attempt. Do not skip a Banteng failure.
 Isolated worktree C:/Users/Q/code/moo-conformance-banteng-latest, branch
 fix/portable-dump-controller from suite main3d51b08. Original checkout preserved.
 Banteng PR82 implementation a8f2390 passes Java CI and all conformance except
-this fixture (CI40289133756). No merge authorized separately yet.
+this fixture (CI40289133756). Q explicitly authorized normal merges of this
+controller PR157 and its dependent fixture after required CI passes. Controller
+38d9686 passed all checks; main advanced to db38a71, now merged into this branch
+for strict current-base CI before merging. Banteng code head is now0ae2c84.
 
 ## Decisions and why
 
@@ -44,3 +47,5 @@ denial, so the fixture must require an unprivileged POSIX process explicitly.
 Controller implementation is72 changed lines plus this note. It reuses
 require_confined_path rather than a new path resolver. Publish controller PR
 and read CI. No local tests, typecheck, lint, or builds have been run.
+Next: push the current-base merge, read required checks, normal-merge PR157,
+then publish the dependent fixture. No renewed merge permission is needed.

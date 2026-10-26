@@ -7,10 +7,11 @@ the upstream correction after Banteng PR82 reached one remaining fixture failure
 
 ## State
 
-Local commit506e4a4 on branch fix/portable-dump-fixture, worktree
-C:/Users/Q/code/moo-conformance-portable-dump-fixture. Based on controller
-commit38d9686 (PR157), not yet trusted main. Do not publish the data PR against
-main until the controller lands; CI rejects mixed controller/data candidates.
+Fixture code506e4a4 on branch fix/portable-dump-fixture, worktree
+C:/Users/Q/code/moo-conformance-portable-dump-fixture. Controller PR157 merged
+as b35330fc8ce31c40c692b80a9aeddf4beb77c6e9 after all current-base checks passed.
+Verified two parents; trusted main is merged into this branch. The candidate
+diff now contains only fixture data and this note, preserving the CI boundary.
 
 ## Decisions and why
 
@@ -42,7 +43,8 @@ PR157 head38d9686 passed all authoritative/candidate Toast profiles and both
 required exact-head checks in CI40377666217. Reporter attempt2 passed after a
 GitHub HTTP502. Q corrected the unnecessary retry-permission request; the shared
 rule in C:/Users/Q/.codex/AGENTS.md:93 was clarified before retrying.
-The separate question requesting normal merges for controller157 and then this
-fixture after green CI is still pending. Once Q gives that go-ahead and the
-controller is trusted on main, publish this data slice, inspect its full Toast
-profiles, then validate Banteng against the resulting latest main.
+Q answered Absolutely to normal merges for controller157 and then this
+fixture after green CI. Publish this data slice, inspect its full Toast
+profiles, normal-merge after required checks pass, then validate Banteng against
+the resulting latest main. Banteng10c5777 also fixes pending-startup cancellation
+on shutdown; its Java/static checks passed in CI40402905082, conformance running.

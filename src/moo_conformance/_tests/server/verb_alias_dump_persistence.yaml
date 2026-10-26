@@ -1,0 +1,86 @@
+name: verb_alias_dump_persistence
+description: >
+  Verifies that every alias of a multi-name verb created by add_verb or renamed
+  by set_verb_info survives dump_database() and a managed server restart.
+requires:
+  builtins:
+    - dump_database
+    - add_verb
+    - set_verb_info
+    - set_verb_code
+    - delete_verb
+    - verb_info
+    - verbs
+  config: [managed_server]
+tests:
+  - name: add_verb_aliases_survive_dump_and_restart
+    permission: wizard
+    steps:
+      - run: |
+          while (`verb_info(#1, "persist_alias_foo") ! ANY => 0')
+            delete_verb(#1, "persist_alias_foo");
+          endwhile
+          add_verb(#1, {player, "rxd", "persist_alias_foo persist_alias_bar"}, {"this", "none", "this"});
+          set_verb_code(#1, "persist_alias_foo", {"return 42;"});
+          return 0;
+        expect:
+          value: 0
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+          wait_ms: 300
+      - run: |
+          return {
+            verb_info(#1, "persist_alias_foo")[3],
+            #1:persist_alias_bar(),
+            "persist_alias_foo persist_alias_bar" in verbs(#1) > 0
+          };
+        expect:
+          value: ["persist_alias_foo persist_alias_bar", 42, 1]
+    cleanup:
+      - run: |
+          while (`verb_info(#1, "persist_alias_foo") ! ANY => 0')
+            delete_verb(#1, "persist_alias_foo");
+          endwhile
+          return 0;
+
+  - name: set_verb_info_aliases_survive_dump_and_restart
+    permission: wizard
+    steps:
+      - run: |
+          for n in ({"persist_rename_old", "persist_rename_new"})
+            while (`verb_info(#1, n) ! ANY => 0')
+              delete_verb(#1, n);
+            endwhile
+          endfor
+          add_verb(#1, {player, "rxd", "persist_rename_old"}, {"this", "none", "this"});
+          set_verb_code(#1, "persist_rename_old", {"return 7;"});
+          return 0;
+        expect:
+          value: 0
+      - run: |
+          return set_verb_info(#1, "persist_rename_old", {player, "rxd", "persist_rename_new persist_rename_alt"});
+        expect:
+          value: 0
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+          wait_ms: 300
+      - run: |
+          return {
+            verb_info(#1, "persist_rename_new")[3],
+            #1:persist_rename_alt(),
+            "persist_rename_new persist_rename_alt" in verbs(#1) > 0
+          };
+        expect:
+          value: ["persist_rename_new persist_rename_alt", 7, 1]
+    cleanup:
+      - run: |
+          while (`verb_info(#1, "persist_rename_new") ! ANY => 0')
+            delete_verb(#1, "persist_rename_new");
+          endwhile
+          return 0;

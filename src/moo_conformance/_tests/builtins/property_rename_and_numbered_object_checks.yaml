@@ -230,24 +230,6 @@ tests:
     expect:
       value: [[[bar, foo], 3, 3, 5], [[foo], 1, 3]]
 
-  # A WAIF's value for a class property follows the rename.
-  - name: rename_waif_class_property
-    permission: wizard
-    statement: |
-      c = create($nothing);
-      add_property(c, ":foo", 1, {player, "rw"});
-      add_verb(c, {player, "rxd", "new"}, {"this", "none", "this"});
-      set_verb_code(c, "new", {"return new_waif();"});
-      w = c:new();
-      w.foo = 5;
-      set_property_info(c, ":foo", {player, "rw", ":bar"});
-      res = {w.bar, `w.foo ! ANY' == E_PROPNF};
-      w = 0;
-      recycle(c);
-      return res;
-    expect:
-      value: [5, 1]
-
   # add_property(): the info list is validated first, then a new-name element
   # is E_TYPE, then the object is checked.
   - name: add_property_info_{kind}

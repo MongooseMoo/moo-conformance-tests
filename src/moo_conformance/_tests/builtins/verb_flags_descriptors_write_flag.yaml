@@ -4,7 +4,7 @@ description: >-
   verb descriptor that is a string or a positive 1-based integer index (an
   integer of 0 or less raises E_INVARG, an index past the last verb raises
   E_VERBNF); let a non-owner programmer change a verb whose flags include w
-  (but not its owner); and require the owner in verb info to be a numbered
+  (but not its owner; set_verb_code also requires a programmer); and require the owner in verb info to be a numbered
   object, not an anonymous one (E_TYPE).
 
 requires:
@@ -20,6 +20,8 @@ requires:
     - disassemble
     - verbs
     - caller_perms
+    - task_perms
+    - set_task_perms
     - create
     - recycle
 
@@ -182,6 +184,24 @@ tests:
     cleanup:
       - run: recycle({obj})
         as: wizard
+
+  - name: write_flag_set_verb_code_requires_programmer
+    description: >-
+      set_verb_code() also requires the task's permissions to be a programmer:
+      with permissions set to an object that is neither a programmer nor a
+      wizard nor the verb's owner, a verb with the w flag raises E_PERM and
+      keeps its code.
+    permission: wizard
+    steps:
+      - run: 'obj = create($nothing); add_verb(obj, {player, "rw", "foobar"}, {"this", "none", "this"}); set_verb_code(obj, "foobar", {"return 1;"}); return obj;'
+        capture: obj
+      - run: create($nothing)
+        capture: np
+      - run: 'set_task_perms({np}); p = task_perms(); r = `set_verb_code({obj}, "foobar", {"return 2;"}) ! ANY''; return {p == {np}, p.programmer, p.wizard, p != verb_info({obj}, "foobar")[1], r, verb_code({obj}, "foobar")};'
+        expect:
+          value: [1, 0, 0, 1, E_PERM, ['return 1;']]
+    cleanup:
+      - run: recycle({obj}); recycle({np});
 
   - name: delete_verb_non_owner_uses_object_write_{obj_kind}
     description: >-

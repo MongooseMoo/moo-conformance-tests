@@ -1266,3 +1266,126 @@ tests:
     value:
     - 1
     - 1
+- name: chparent_keeps_written_value_of_common_ancestor_property
+  description: chparent to a sibling parent keeps a value the object wrote for a
+    property both parents inherit from the same ancestor
+  permission: wizard
+  steps:
+  - run: create($nothing)
+    capture: a
+  - run: add_property({a}, "q", 1, {player, "rc"})
+  - run: create({a})
+    capture: b
+  - run: create({a})
+    capture: d
+  - run: create({b})
+    capture: c
+  - run: '{c}.q = 42'
+  - run: chparent({c}, {d})
+  - run: '{c}.q'
+    expect:
+      value: 42
+  - run: is_clear_property({c}, "q")
+    expect:
+      value: 0
+  cleanup:
+  - run: recycle({c})
+  - run: recycle({d})
+  - run: recycle({b})
+  - run: recycle({a})
+- name: chparent_keeps_common_ancestor_slot_written_in_same_task
+  description: chparent keeps the value, and the slot owner, of a property from a
+    common ancestor when the value was written earlier in the same task
+  permission: wizard
+  statement: |
+    a = create($nothing);
+    add_property(a, "q", 1, {player, "rc"});
+    b = create(a);
+    d = create(a);
+    c = create(b, player);
+    c.q = 42;
+    c.owner = $system;
+    chparent(c, d);
+    r = {c.q, is_clear_property(c, "q"), property_info(c, "q")[1] == player};
+    recycle(c);
+    recycle(d);
+    recycle(b);
+    recycle(a);
+    return r;
+  expect:
+    value:
+    - 42
+    - 0
+    - 1
+- name: chparent_same_name_from_other_definer_is_clear
+  description: chparent to a parent that defines its own property of the same name
+    gives the object a clear slot of the new property
+  permission: wizard
+  statement: |
+    a = create($nothing);
+    add_property(a, "q", 1, {player, "rc"});
+    e = create($nothing);
+    add_property(e, "q", 2, {player, "rc"});
+    c = create(a);
+    c.q = 42;
+    chparent(c, e);
+    r = {c.q, is_clear_property(c, "q")};
+    recycle(c);
+    recycle(e);
+    recycle(a);
+    return r;
+  expect:
+    value:
+    - 2
+    - 1
+- name: chparent_descendant_keeps_written_value_of_common_ancestor_property
+  description: chparent of an object keeps the values its descendants wrote for
+    properties from an ancestor common to the old and new parents
+  permission: wizard
+  steps:
+  - run: create($nothing)
+    capture: a
+  - run: add_property({a}, "q", 1, {player, "rc"})
+  - run: create({a})
+    capture: b
+  - run: create({a})
+    capture: d
+  - run: create({b})
+    capture: x
+  - run: create({x})
+    capture: y
+  - run: '{y}.q = 7'
+  - run: chparent({x}, {d})
+  - run: '{y}.q'
+    expect:
+      value: 7
+  - run: is_clear_property({y}, "q")
+    expect:
+      value: 0
+  cleanup:
+  - run: recycle({y})
+  - run: recycle({x})
+  - run: recycle({d})
+  - run: recycle({b})
+  - run: recycle({a})
+- name: chown_flag_chparent_descendant_slot_owned_by_descendant_owner
+  description: chparent under a property with the c flag gives each descendant of
+    the moved object a slot owned by the descendant's own owner
+  permission: wizard
+  statement: |
+    p = create($nothing);
+    add_property(p, "cx", 0, {player, "rc"});
+    add_property(p, "nx", 0, {player, "r"});
+    x = create($nothing, $system);
+    y = create(x, $nothing);
+    y.owner = y;
+    chparent(x, p);
+    r = {property_info(y, "cx")[1] == y, property_info(y, "nx")[1] == player};
+    recycle(y);
+    recycle(x);
+    recycle(p);
+    return r;
+  expect:
+    value:
+    - 1
+    - 1

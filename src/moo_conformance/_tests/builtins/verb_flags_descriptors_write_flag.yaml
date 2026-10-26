@@ -1,0 +1,225 @@
+name: verb_flags_descriptors_write_flag
+description: >-
+  Verb builtins accept the flag letters r, w, x and d in either case; take a
+  verb descriptor that is a string or a positive 1-based integer index (an
+  integer of 0 or less raises E_INVARG, an index past the last verb raises
+  E_VERBNF); let a non-owner programmer change a verb whose flags include w
+  (but not its owner); and require the owner in verb info to be a numbered
+  object, not an anonymous one (E_TYPE).
+
+requires:
+  builtins:
+    - add_verb
+    - delete_verb
+    - set_verb_info
+    - set_verb_args
+    - set_verb_code
+    - verb_info
+    - verb_args
+    - verb_code
+    - disassemble
+    - verbs
+    - caller_perms
+    - create
+    - recycle
+
+tests:
+  - name: add_verb_uppercase_flags
+    permission: wizard
+    steps:
+      - run: create($nothing)
+        capture: obj
+      - run: 'add_verb({obj}, {player, "RWXD", "foobar"}, {"this", "none", "this"})'
+        expect:
+          value: 1
+      - run: 'verb_info({obj}, 1)[2]'
+        expect:
+          value: rwxd
+    cleanup:
+      - run: recycle({obj})
+
+  - name: set_verb_info_uppercase_flags
+    permission: wizard
+    steps:
+      - run: create($nothing)
+        capture: obj
+      - run: 'add_verb({obj}, {player, "r", "foobar"}, {"this", "none", "this"})'
+        expect:
+          value: 1
+      - run: 'set_verb_info({obj}, "foobar", {player, "RwXd", "foobar"})'
+        expect:
+          value: 0
+      - run: 'verb_info({obj}, 1)[2]'
+        expect:
+          value: rwxd
+    cleanup:
+      - run: recycle({obj})
+
+  - name: set_verb_info_integer_descriptor
+    permission: wizard
+    steps:
+      - run: create($nothing)
+        capture: obj
+      - run: 'add_verb({obj}, {player, "rx", "first"}, {"this", "none", "this"}); return add_verb({obj}, {player, "rx", "second"}, {"this", "none", "this"});'
+        expect:
+          value: 2
+      - run: 'set_verb_info({obj}, 2, {player, "rxd", "renamed"})'
+        expect:
+          value: 0
+      - run: '{verbs({obj}), verb_info({obj}, 1)[2], verb_info({obj}, 2)[2]}'
+        expect:
+          value: [[first, renamed], rx, rxd]
+    cleanup:
+      - run: recycle({obj})
+
+  - name: set_verb_args_integer_descriptor
+    permission: wizard
+    steps:
+      - run: create($nothing)
+        capture: obj
+      - run: 'add_verb({obj}, {player, "rx", "first"}, {"this", "none", "this"}); return add_verb({obj}, {player, "rx", "second"}, {"this", "none", "this"});'
+        expect:
+          value: 2
+      - run: 'set_verb_args({obj}, 2, {"any", "none", "any"})'
+        expect:
+          value: 0
+      - run: '{verb_args({obj}, 1), verb_args({obj}, 2)}'
+        expect:
+          value: [[this, none, this], [any, none, any]]
+    cleanup:
+      - run: recycle({obj})
+
+  - name: integer_descriptor_errors_{call_kind}_{desc_kind}
+    permission: wizard
+    table:
+      product:
+        - columns: [call_kind, call_expr]
+          rows:
+            - [verb_info, 'verb_info({obj}, DESC)']
+            - [verb_args, 'verb_args({obj}, DESC)']
+            - [verb_code, 'verb_code({obj}, DESC)']
+            - [disassemble, 'disassemble({obj}, DESC)']
+            - [delete_verb, 'delete_verb({obj}, DESC)']
+            - [set_verb_info, 'set_verb_info({obj}, DESC, {player, "rx", "renamed"})']
+            - [set_verb_args, 'set_verb_args({obj}, DESC, {"any", "none", "any"})']
+            - [set_verb_code, 'set_verb_code({obj}, DESC, {"return 1;"})']
+        - columns: [desc_kind, desc, error]
+          rows:
+            - [zero, '0', E_INVARG]
+            - [negative, '-1', E_INVARG]
+            - [past_end, '2', E_VERBNF]
+    steps:
+      - run: 'obj = create($nothing); add_verb(obj, {player, "rx", "foobar"}, {"this", "none", "this"}); return obj;'
+        capture: obj
+      - run: 'DESC = {desc}; return {call_expr};'
+        expect:
+          error: '{error}'
+      - run: 'info = verb_info({obj}, 1); return {verbs({obj}), info[1] == player, info[2], verb_args({obj}, 1)};'
+        expect:
+          value: [[foobar], 1, rx, [this, none, this]]
+    cleanup:
+      - run: recycle({obj})
+
+  - name: write_flag_non_owner_{call_kind}_{flag_kind}
+    description: >-
+      The wizard owns a verb on an object the programmer may not write. The
+      programmer (proved in the same step to be a programmer, not a wizard and
+      not the verb's owner) may change the verb only when its flags include w.
+    permission: programmer
+    table:
+      product:
+        - columns: [call_kind, call_expr]
+          rows:
+            - [set_verb_info, 'set_verb_info({obj}, "foobar", {info[1], flags, "foobar"})']
+            - [set_verb_args, 'set_verb_args({obj}, "foobar", {"any", "none", "any"})']
+            - [set_verb_code, 'set_verb_code({obj}, "foobar", {"return 1;"})']
+        - columns: [flag_kind, flags, result]
+          rows:
+            - [writable, rw, ok]
+            - [not_writable, r, E_PERM]
+    steps:
+      - run: 'obj = create($nothing); add_verb(obj, {player, "{flags}", "foobar"}, {"this", "none", "this"}); return obj;'
+        capture: obj
+        as: wizard
+      - run: 'flags = "{flags}"; info = verb_info({obj}, "foobar"); p = caller_perms(); r = `{call_expr} ! ANY''; return {p == player, p.programmer, p.wizard, p != info[1], p != {obj}.owner, {obj}.w, typeof(r) == ERR ? r | "ok"};'
+        as: programmer
+        expect:
+          value: [1, 1, 0, 1, 1, 0, '{result}']
+    cleanup:
+      - run: recycle({obj})
+        as: wizard
+
+  - name: write_flag_non_owner_changes_land
+    description: >-
+      Changes a non-owner programmer makes to a verb with the w flag are
+      stored; the owner stays the same.
+    permission: programmer
+    steps:
+      - run: 'obj = create($nothing); add_verb(obj, {player, "rw", "foobar"}, {"this", "none", "this"}); return obj;'
+        capture: obj
+        as: wizard
+      - run: 'info = verb_info({obj}, "foobar"); p = caller_perms(); r = {set_verb_args({obj}, "foobar", {"any", "none", "any"}), set_verb_code({obj}, "foobar", {"return 7;"}), set_verb_info({obj}, "foobar", {info[1], "rwx", "barfoo"})}; after = verb_info({obj}, 1); return {p.wizard, p != info[1], r, after[1] == info[1], after[2], after[3], verb_args({obj}, 1), verb_code({obj}, 1)};'
+        as: programmer
+        expect:
+          value: [0, 1, [0, [], 0], 1, rwx, barfoo, [any, none, any], ['return 7;']]
+    cleanup:
+      - run: recycle({obj})
+        as: wizard
+
+  - name: write_flag_non_owner_cannot_change_owner
+    description: >-
+      The w flag does not let a non-wizard name a different owner: E_PERM, and
+      the verb keeps its owner, flags and names.
+    permission: programmer
+    steps:
+      - run: 'obj = create($nothing); add_verb(obj, {player, "rw", "foobar"}, {"this", "none", "this"}); return obj;'
+        capture: obj
+        as: wizard
+      - run: 'info = verb_info({obj}, "foobar"); p = caller_perms(); r = `set_verb_info({obj}, "foobar", {p, "rw", "foobar"}) ! ANY''; return {p.wizard, p != info[1], r, verb_info({obj}, 1) == info};'
+        as: programmer
+        expect:
+          value: [0, 1, E_PERM, 1]
+    cleanup:
+      - run: recycle({obj})
+        as: wizard
+
+  - name: delete_verb_non_owner_uses_object_write_{obj_kind}
+    description: >-
+      delete_verb() checks write permission on the object, not the verb's
+      flags or owner.
+    permission: programmer
+    table:
+      columns: [obj_kind, obj_w, flags, result, remaining]
+      rows:
+        - [writable_object, '1', r, ok, []]
+        - [unwritable_object, '0', rw, E_PERM, [foobar]]
+    steps:
+      - run: 'obj = create($nothing); obj.r = 1; obj.w = {obj_w}; add_verb(obj, {player, "{flags}", "foobar"}, {"this", "none", "this"}); return obj;'
+        capture: obj
+        as: wizard
+      - run: 'info = verb_info({obj}, "foobar"); p = caller_perms(); r = `delete_verb({obj}, "foobar") ! ANY''; return {p.wizard, p != info[1], p != {obj}.owner, typeof(r) == ERR ? r | "ok", verbs({obj})};'
+        as: programmer
+        expect:
+          value: [0, 1, 1, '{result}', '{remaining}']
+    cleanup:
+      - run: recycle({obj})
+        as: wizard
+
+  - name: anonymous_owner_{call_kind}
+    permission: wizard
+    table:
+      columns: [call_kind, call_expr]
+      rows:
+        - [add_verb, 'add_verb({obj}, {anon, "rx", "barfoo"}, {"this", "none", "this"})']
+        - [set_verb_info, 'set_verb_info({obj}, "foobar", {anon, "rx", "foobar"})']
+    steps:
+      - run: 'obj = create($nothing); add_verb(obj, {player, "rx", "foobar"}, {"this", "none", "this"}); return obj;'
+        capture: obj
+      - run: 'anon = create($nothing, 1); return {call_expr};'
+        expect:
+          error: E_TYPE
+      - run: '{verbs({obj}), verb_info({obj}, 1)[1] == player}'
+        expect:
+          value: [[foobar], 1]
+    cleanup:
+      - run: recycle({obj})

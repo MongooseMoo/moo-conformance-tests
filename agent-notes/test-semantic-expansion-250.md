@@ -67,3 +67,9 @@ CI run 40271562476 stopped before Toast: paired_inventory.py reported "candidate
 ## Next step
 
 Follow PR #153's existing CI and repair any in-scope failure. Preserve all pre-existing files in the primary checkout. Do not merge. Keep this branch and worktree for Q's open PR.
+
+## Barn merge preparation, 2026-10-26
+
+Q now requests Barn verification, Barn fix PRs for any discovered issues, and the MCT merge after passing results and confirmation. The merge remains held pending that confirmation. On MCT head 37653373 and Barn master b91e36f5, the documented managed full suite returned `12996 passed, 443 skipped, 1 warning`; all 216 new cases executed with zero failures/errors/skips. No Barn defect was revealed. Evidence and command are recorded in C:/Users/Q/code/barn-mct-pr153/agent-notes/mct-pr153.md, with JUnit at .tmp/mct153-barn.xml in that Barn worktree.
+
+GitHub subsequently reported BEHIND under strict required status checks. Merged current origin/main bd6e7c7 into this branch without conflicts, retaining the same three authored semantic suites. Next: push this updated head, wait for its required Toast CI, rerun the managed Barn suite against it, and obtain Q's final confirmation before merging. The earlier unconditional no-merge instruction above is superseded only by this conditional merge preparation request; no merge has occurred.

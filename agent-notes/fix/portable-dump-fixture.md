@@ -7,7 +7,7 @@ the upstream correction after Banteng PR82 reached one remaining fixture failure
 
 ## State
 
-Local branch fix/portable-dump-fixture, worktree
+Local commit506e4a4 on branch fix/portable-dump-fixture, worktree
 C:/Users/Q/code/moo-conformance-portable-dump-fixture. Based on controller
 commit38d9686 (PR157), not yet trusted main. Do not publish the data PR against
 main until the controller lands; CI rejects mixed controller/data candidates.
@@ -28,11 +28,21 @@ size of a successfully rewritten database.
 
 ## Surprises
 
-Current Banteng handles a checkpoint IOException by throwing after committing
-the task. This new actual failure may expose another runtime mismatch; inspect
-its source against Toast's asynchronous dump behavior before claiming acceptance.
+Banteng previously rethrew a checkpoint IOException after committing the task.
+Source comparison with Toast server.cc:2618-2627 confirmed that ordinary dump
+failure must not raise into that task. Banteng0ae2c84 now logs ordinary failures
+and keeps checkpoint_finished(false), preserving shutdown's throwing path.
+Its CI40378241127 completed against unchanged suite main: Java and other checks
+passed; only the old failed-dump fixture fails. This corrected fixture has not
+yet executed against Banteng.
 
 ## Next step
 
-Read PR157 CI. Once its controller is trusted on main, publish this data slice
-and inspect full Toast profiles, then Banteng's latest-main conformance CI.
+PR157 head38d9686 passed all authoritative/candidate Toast profiles and both
+required exact-head checks in CI40377666217. Reporter attempt2 passed after a
+GitHub HTTP502. Q corrected the unnecessary retry-permission request; the shared
+rule in C:/Users/Q/.codex/AGENTS.md:93 was clarified before retrying.
+The separate question requesting normal merges for controller157 and then this
+fixture after green CI is still pending. Once Q gives that go-ahead and the
+controller is trusted on main, publish this data slice, inspect its full Toast
+profiles, then validate Banteng against the resulting latest main.

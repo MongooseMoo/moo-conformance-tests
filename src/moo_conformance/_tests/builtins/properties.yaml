@@ -1199,3 +1199,70 @@ tests:
     value:
     - 1
     - 1
+- name: chown_flag_created_child_slot_owned_by_child_owner
+  description: A child created under a property with the c flag owns its slot through
+    its own owner; without c the slot keeps the parent slot's owner
+  permission: wizard
+  statement: |
+    p = create($nothing);
+    add_property(p, "cx", 0, {player, "rc"});
+    add_property(p, "nx", 0, {player, "r"});
+    c = create(p, $system);
+    r = {property_info(c, "cx")[1] == $system, property_info(c, "nx")[1] == player};
+    recycle(c);
+    recycle(p);
+    return r;
+  expect:
+    value:
+    - 1
+    - 1
+- name: chown_flag_definer_slot_owned_by_definer_owner
+  description: add_property with the c flag gives the defining object's own slot that
+    object's owner, not the owner named in the call
+  permission: wizard
+  statement: |
+    p = create($nothing, $system);
+    add_property(p, "cx", 0, {player, "rc"});
+    add_property(p, "nx", 0, {player, "r"});
+    r = {property_info(p, "cx")[1] == $system, property_info(p, "nx")[1] == player};
+    recycle(p);
+    return r;
+  expect:
+    value:
+    - 1
+    - 1
+- name: chown_flag_existing_child_slot_owned_by_child_owner
+  description: add_property with the c flag on a parent gives each existing descendant's
+    slot that descendant's owner
+  permission: wizard
+  statement: |
+    p = create($nothing);
+    c = create(p, $system);
+    add_property(p, "cx", 0, {player, "rc"});
+    add_property(p, "nx", 0, {player, "r"});
+    r = {property_info(c, "cx")[1] == $system, property_info(c, "nx")[1] == player};
+    recycle(c);
+    recycle(p);
+    return r;
+  expect:
+    value:
+    - 1
+    - 1
+- name: chown_flag_chparent_slot_owned_by_moved_object_owner
+  description: chparent under a property with the c flag gives the moved object a
+    slot owned by its own owner
+  permission: wizard
+  statement: |
+    p = create($nothing);
+    add_property(p, "cx", 0, {player, "rc"});
+    add_property(p, "nx", 0, {player, "r"});
+    x = create($nothing, $system);
+    chparent(x, p);
+    r = {property_info(x, "cx")[1] == $system, property_info(x, "nx")[1] == player};
+    recycle(x);
+    recycle(p);
+    return r;
+  expect:
+    value:
+    - 1
+    - 1

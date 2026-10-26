@@ -6,7 +6,9 @@ Open one PR from an isolated worktree with 200–300 genuinely new semantic conf
 
 ## State
 
-Branch test/semantic-expansion-250 in C:/Users/Q/code/mct-semantic-expansion-250, based on origin/main 80eb0b6. Added three YAML files, 72 cases each. Each file passed its focused managed WSL Toast run. No skips or failures remain. Commit/publication and PR CI are next.
+Branch test/semantic-expansion-250 in C:/Users/Q/code/mct-semantic-expansion-250, rebased onto origin/main 8dbe801 after concurrent PR #145 merged. Added three YAML files, 72 cases each. Each file passed its focused managed WSL Toast run. No authored-case skips or failures remain. Published PR https://github.com/MongooseMoo/moo-conformance-tests/pull/153. The commit hook's existing duplicate and profile checks passed. PR CI must run on the updated head; consult the PR for its live result.
+
+Q explicitly instructed: "don't merge any of the new stuff even if it's green :)". Keep PR #153 open regardless of CI outcome.
 
 ## Decisions and why
 
@@ -60,6 +62,8 @@ Each final invocation passed the 72 authored cases and the existing admission te
 
 Initial collection run failed because I used catch fallback => "ok": that replaced errors with "ok", while successful assignments returned their assigned values. Example: expected [0, "ok", 1, 1, 1, 1, 0], got [0, 9, 1, 1, 1, 1, 0]. Fixed the shared expression in the cases to retain caught errors and normalize successful values by type. The subsequent file run passed. No new check or workflow step added.
 
+CI run 40271562476 stopped before Toast: paired_inventory.py reported "candidate conformance data deletes trusted-main identities" for four chown_flag cases added by concurrent merge #145. Rebased this task branch onto 8dbe801 to include those trusted-main cases. No existing checks or assertions were weakened.
+
 ## Next step
 
-Commit, push and open the PR. Follow the PR's existing CI and repair any in-scope failure. Preserve all pre-existing files in the primary checkout. Do not merge.
+Follow PR #153's existing CI and repair any in-scope failure. Preserve all pre-existing files in the primary checkout. Do not merge. Keep this branch and worktree for Q's open PR.

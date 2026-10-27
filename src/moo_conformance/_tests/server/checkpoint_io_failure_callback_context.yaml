@@ -6,10 +6,10 @@ requires:
 tests:
   - name: checkpoint_failed_{fault}_calls_finished_zero_then_recovers
     table:
-      columns: [fault, diagnostic]
+      columns: [fault, diagnostic, barn_diagnostic]
       rows:
-        - [write, "Trying to dump database"]
-        - [publish, "Renaming temporary dump file"]
+        - [write, "Trying to dump database", "write database:"]
+        - [publish, "Renaming temporary dump file", "prepare checkpoint recovery (staged pair"]
     steps:
       - restart_server: {reset_db: true}
       - run: |
@@ -47,7 +47,7 @@ tests:
           }, #0.cb_events[2][5]};
         as: wizard
         expect: {value: [1, [0]]}
-      - assert_log: {contains: "{diagnostic}"}
+      - assert_log: {contains_any: ["{diagnostic}", "{barn_diagnostic}"]}
       - run: 'return exec({"checkpoint_fault", "clear-{fault}"});'
         as: wizard
         expect: {value: [0, "", ""]}

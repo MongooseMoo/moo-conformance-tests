@@ -1114,6 +1114,15 @@ class YamlTestRunner:
                 f"Log content since test start:\n{_excerpt()}"
             )
 
+        if assertion.contains_any is not None and not any(
+            text in new_content for text in assertion.contains_any
+        ):
+            raise AssertionError(
+                f"Test '{test_name}' assert_log: expected one of "
+                f"{assertion.contains_any!r}, but none was found in new log entries.\n"
+                f"Log content since test start:\n{_excerpt()}"
+            )
+
         if assertion.not_contains is not None and assertion.not_contains in new_content:
             raise AssertionError(
                 f"Test '{test_name}' assert_log: expected log to NOT contain "

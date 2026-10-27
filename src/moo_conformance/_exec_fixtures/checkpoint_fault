@@ -12,20 +12,24 @@ def main():
         raise ValueError("expected one operation")
     output = base / "Test.db.new"
     backup = base / "Test.db.new.callback-backup"
-    temporary = base / "Test.db.new.#1#"
+    temporaries = [base / "Test.db.new.#1#", base / "Test.db.tmp"]
     marker = output / "callback-obstruction"
     operation = sys.argv[1]
     if operation == "write":
-        if temporary.exists() or temporary.is_symlink():
+        if any(path.exists() or path.is_symlink() for path in temporaries):
             raise ValueError("checkpoint temporary path already exists")
-        temporary.symlink_to("/dev/full")
+        for temporary in temporaries:
+            temporary.symlink_to("/dev/full")
     elif operation == "clear-write":
-        if temporary.is_symlink():
-            if temporary.readlink() != Path("/dev/full"):
-                raise ValueError("unexpected symlink")
-            temporary.unlink()
-        elif temporary.exists():
-            raise ValueError("unexpected checkpoint temporary file")
+        for temporary in temporaries:
+            if temporary.is_symlink():
+                if temporary.readlink() != Path("/dev/full"):
+                    raise ValueError("unexpected symlink")
+            elif temporary.exists():
+                raise ValueError("unexpected checkpoint temporary file")
+        for temporary in temporaries:
+            if temporary.is_symlink():
+                temporary.unlink()
     elif operation == "publish":
         if backup.exists() or backup.is_symlink() or output.is_symlink():
             raise ValueError("checkpoint backup or symlink already exists")

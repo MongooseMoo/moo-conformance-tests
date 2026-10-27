@@ -1,0 +1,40 @@
+name: server_started_callback_context
+description: Restart invokes server_started once with a fresh server frame regardless of its outcome.
+requires:
+  builtins: [dump_database]
+  config: [managed_server]
+tests:
+  - name: server_started_{outcome}_frame_and_continuation
+    table:
+      columns: [outcome, body]
+      rows:
+        - [false_return, "return 0;"]
+        - [true_return, "return 1;"]
+        - [error, "raise(E_INVARG);"]
+        - [suspend, "suspend(0); return 0;"]
+    steps:
+      - restart_server: {reset_db: true}
+      - run: |
+          add_property(#0, "cb_events", {}, {player, "rw"});
+          owner = create($nothing);
+          owner.programmer = 1;
+          add_property(#0, "cb_owner", owner, {player, "r"});
+          try delete_verb(#0, "server_started"); except (E_VERBNF) endtry
+          add_verb(#0, {owner, "rxd", "server_started"}, {"this", "none", "this"});
+          set_verb_code(#0, "server_started", {
+            "#0.cb_events = {@#0.cb_events, {verb, this, caller, player, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()}};",
+            "{body}"
+          });
+          return dump_database();
+        as: wizard
+        expect: {value: 0}
+      - restart_server: {checkpoint_timeout_ms: 10000}
+      - run: |
+          return #0.cb_events == {
+            {"server_started", #0, #-1, #-1, {}, "", #-1, "", "", #-1, "", #0.cb_owner, #-1, {}}
+          };
+        as: wizard
+        expect: {value: 1}
+      - run: return 421;
+        expect: {value: 421}
+      - restart_server: {reset_db: true}

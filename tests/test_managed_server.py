@@ -1153,6 +1153,49 @@ def test_managed_server_installs_exec_fixtures(monkeypatch, tmp_path: Path):
         server.stop()
 
 
+def test_restart_arguments_are_literal_and_apply_to_one_launch(monkeypatch, tmp_path):
+    baseline = tmp_path / "baseline.db"
+    baseline.write_text("baseline", encoding="utf-8")
+    launches = []
+
+    def launch(argv, **kwargs):
+        launches.append((argv, kwargs))
+        return _FakeProcess()
+
+    monkeypatch.setattr("moo_conformance.server.subprocess.Popen", launch)
+    monkeypatch.setattr(ManagedServer, "_find_free_port", lambda self: 17777)
+    monkeypatch.setattr(ManagedServer, "_wait_for_port", lambda self, timeout=30: None)
+    server = ManagedServer("fake-server {db} {port}", baseline)
+    arguments = ["--start-line", 'return "{db}; $(literal)";']
+    try:
+        server.start()
+        original = launches[0][0]
+        server.restart(arguments=arguments)
+        assert launches[1][0] == [original[0], *arguments, *original[1:]]
+        assert launches[1][1].get("shell", False) is False
+        server.restart()
+        assert launches[2][0] == original
+        assert arguments == ["--start-line", 'return "{db}; $(literal)";']
+    finally:
+        server.stop()
+
+
+def test_runner_forwards_restart_arguments():
+    transport = Mock()
+    transport.current_user = "wizard"
+    server = Mock()
+    server.process_log_offset = 0
+    server.process_file_snapshot = {}
+    runner = YamlTestRunner(transport, managed_server=server)
+    arguments = ["--start-line", "return 1;"]
+    runner._execute_restart_server(0, "startup", arguments=arguments)
+    server.restart.assert_called_once_with(
+        db_path=None, down_ms=0, ignore_sighup=False, arguments=arguments,
+        checkpoint_timeout_ms=None, checkpoint_boundary=None,
+    )
+    transport.connect.assert_called_once_with("wizard")
+
+
 def test_managed_server_opens_process_stdin_pipe(monkeypatch, tmp_path: Path):
     baseline = tmp_path / "baseline.db"
     baseline.write_text("baseline", encoding="utf-8")

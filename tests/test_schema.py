@@ -436,6 +436,11 @@ def _suite_with_assert_log(assert_log: dict) -> dict:
     [
         {},
         {"contain": "misspelled predicate"},
+        {"contains_any": []},
+        {"contains_any": "diagnostic"},
+        {"contains_any": [""]},
+        {"contains_any": [1]},
+        {"contains_any": None},
     ],
 )
 def test_assert_log_requires_recognized_predicate(assert_log):
@@ -448,6 +453,7 @@ def test_assert_log_requires_recognized_predicate(assert_log):
     [
         {"contains": "checkpoint complete"},
         {"not_contains": "context deadline exceeded"},
+        {"contains_any": ["Trying to dump database", "write database:"]},
     ],
 )
 def test_assert_log_accepts_known_predicates(assert_log):
@@ -457,6 +463,7 @@ def test_assert_log_accepts_known_predicates(assert_log):
     assert parsed_assertion is not None
     assert parsed_assertion.contains == assert_log.get("contains")
     assert parsed_assertion.not_contains == assert_log.get("not_contains")
+    assert parsed_assertion.contains_any == assert_log.get("contains_any")
 
 
 def test_table_expands_dict_rows_into_concrete_tests() -> None:

@@ -315,8 +315,13 @@ steps:
 | Field | Type | Description |
 |-------|------|-------------|
 | `assert_log.contains` | `str` | Text to search for in recent log entries |
+| `assert_log.contains_any` | `list[str]` | Require at least one listed diagnostic in recent entries; list and strings must be nonempty |
+| `assert_log.not_contains` | `str` | Text that must be absent from recent log entries |
 
 If the text is not found, the assertion fails with an excerpt of the log content written since the test started.
+When multiple predicates are supplied, all must hold. Use `contains_any` for
+implementation-specific diagnostics of the same tested failure, while retaining
+the behavioral assertions that establish that failure.
 
 #### `assert_file` - Verify File on Disk
 

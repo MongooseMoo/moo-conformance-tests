@@ -197,7 +197,7 @@ ACTION_PAYLOAD_FIELDS = {
     "send": frozenset({"text", "connection"}),
     "send_bytes": frozenset({"hex", "connection"}),
     "read_connection": frozenset({"connection"}),
-    "assert_log": frozenset({"contains", "not_contains"}),
+    "assert_log": frozenset({"contains", "not_contains", "contains_any"}),
     "assert_file": frozenset({
         "path", "exists", "contains", "equals_file", "suspended_task", "timeout_ms"
     }),
@@ -358,6 +358,7 @@ class LogAssertion:
     """
     contains: str | None = None     # Text that must be present in recent log entries
     not_contains: str | None = None  # Text that must be absent from recent log entries
+    contains_any: list[str] | None = None  # At least one diagnostic must be present
 
 
 @dataclass
@@ -1083,11 +1084,18 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
         )
         contains = al_data.get('contains')
         not_contains = al_data.get('not_contains')
-        if contains is None and not_contains is None:
-            raise ValueError("assert_log must specify contains or not_contains")
+        contains_any = al_data.get('contains_any')
+        if 'contains_any' in al_data and (
+            not isinstance(contains_any, list) or not contains_any
+            or any(not isinstance(text, str) or not text for text in contains_any)
+        ):
+            raise ValueError("assert_log contains_any must be a nonempty list of nonempty strings")
+        if contains is None and not_contains is None and contains_any is None:
+            raise ValueError("assert_log must specify contains, not_contains or contains_any")
         assert_log = LogAssertion(
             contains=contains,
             not_contains=not_contains,
+            contains_any=contains_any,
         )
 
     # Parse assert_file if present

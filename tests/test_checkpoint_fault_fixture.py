@@ -36,9 +36,10 @@ def test_publish_fault_restores_existing_output(fault):
 
 
 @pytest.mark.skipif(os.name != "posix", reason="POSIX symlink and /dev/full fixture")
-def test_write_fault_only_removes_its_own_symlink(fault):
+@pytest.mark.parametrize("filename", ["Test.db.new.#1#", "Test.db.tmp"])
+def test_write_fault_only_removes_its_own_symlink(fault, filename):
     base, run = fault
-    target = base / "Test.db.new.#1#"
+    target = base / filename
     assert run("write").returncode == 0
     assert target.readlink() == Path("/dev/full")
     assert run("clear-write").returncode == 0

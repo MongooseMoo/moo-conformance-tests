@@ -723,6 +723,7 @@ class YamlTestRunner:
                         checkpoint_timeout_ms=step.restart_server.checkpoint_timeout_ms,
                         reset_db=step.restart_server.reset_db,
                         ignore_sighup=step.restart_server.ignore_sighup,
+                        arguments=step.restart_server.arguments,
                     )
                     continue
 
@@ -899,6 +900,7 @@ class YamlTestRunner:
         self, wait_ms: int, test_name: str, down_ms: int = 0,
         checkpoint_timeout_ms: int | None = None,
         reset_db: bool = False, ignore_sighup: bool = False,
+        arguments: list[str] | None = None,
     ) -> None:
         """Restart managed server and reconnect transport to the same user."""
         if self.managed_server is None:
@@ -909,11 +911,12 @@ class YamlTestRunner:
         current_user = getattr(self.transport, "current_user", "programmer")
 
         self.transport.disconnect()
-        if reset_db or ignore_sighup:
+        if reset_db or ignore_sighup or arguments is not None:
             self.managed_server.restart(
                 db_path=(self._active_server_db_path or self.managed_server.db_path)
                 if reset_db else None,
                 down_ms=down_ms, ignore_sighup=ignore_sighup,
+                arguments=arguments,
                 checkpoint_timeout_ms=checkpoint_timeout_ms,
                 checkpoint_boundary=(
                     self._file_boundary if checkpoint_timeout_ms is not None else None
@@ -1108,6 +1111,15 @@ class YamlTestRunner:
             raise AssertionError(
                 f"Test '{test_name}' assert_log: expected log to contain "
                 f"{assertion.contains!r}, but it was not found in new log entries.\n"
+                f"Log content since test start:\n{_excerpt()}"
+            )
+
+        if assertion.contains_any is not None and not any(
+            text in new_content for text in assertion.contains_any
+        ):
+            raise AssertionError(
+                f"Test '{test_name}' assert_log: expected one of "
+                f"{assertion.contains_any!r}, but none was found in new log entries.\n"
                 f"Log content since test start:\n{_excerpt()}"
             )
 

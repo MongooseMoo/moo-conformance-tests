@@ -197,7 +197,7 @@ ACTION_PAYLOAD_FIELDS = {
     "send": frozenset({"text", "connection"}),
     "send_bytes": frozenset({"hex", "connection"}),
     "read_connection": frozenset({"connection"}),
-    "assert_log": frozenset({"contains", "not_contains"}),
+    "assert_log": frozenset({"contains", "not_contains", "contains_any"}),
     "assert_file": frozenset({
         "path", "exists", "contains", "equals_file", "suspended_task", "timeout_ms"
     }),
@@ -206,7 +206,7 @@ ACTION_PAYLOAD_FIELDS = {
     "chmod": frozenset({"path", "mode"}),
     "write_stdin": frozenset({"text"}),
     "restart_server": frozenset({
-        "wait_ms", "down_ms", "checkpoint_timeout_ms", "reset_db", "ignore_sighup"
+        "wait_ms", "down_ms", "checkpoint_timeout_ms", "reset_db", "ignore_sighup", "arguments"
     }),
     "wait_for_server_exit": frozenset({"timeout_ms", "exit_code", "termination"}),
 }
@@ -358,6 +358,7 @@ class LogAssertion:
     """
     contains: str | None = None     # Text that must be present in recent log entries
     not_contains: str | None = None  # Text that must be absent from recent log entries
+    contains_any: list[str] | None = None  # At least one diagnostic must be present
 
 
 @dataclass
@@ -410,6 +411,7 @@ class RestartServer:
     checkpoint_timeout_ms: int | None = None  # Require fresh published checkpoint before stop
     reset_db: bool = False  # Reload the original fixture instead of adopting a checkpoint
     ignore_sighup: bool = False  # Start with inherited POSIX SIGHUP ignore
+    arguments: list[str] | None = None  # Literal argv tokens for this launch only
 
 
 @dataclass
@@ -1082,11 +1084,18 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
         )
         contains = al_data.get('contains')
         not_contains = al_data.get('not_contains')
-        if contains is None and not_contains is None:
-            raise ValueError("assert_log must specify contains or not_contains")
+        contains_any = al_data.get('contains_any')
+        if 'contains_any' in al_data and (
+            not isinstance(contains_any, list) or not contains_any
+            or any(not isinstance(text, str) or not text for text in contains_any)
+        ):
+            raise ValueError("assert_log contains_any must be a nonempty list of nonempty strings")
+        if contains is None and not_contains is None and contains_any is None:
+            raise ValueError("assert_log must specify contains, not_contains or contains_any")
         assert_log = LogAssertion(
             contains=contains,
             not_contains=not_contains,
+            contains_any=contains_any,
         )
 
     # Parse assert_file if present
@@ -1178,7 +1187,16 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
                 checkpoint_timeout_ms=rs_data.get('checkpoint_timeout_ms'),
                 reset_db=rs_data.get('reset_db', False),
                 ignore_sighup=rs_data.get('ignore_sighup', False),
+                arguments=rs_data.get('arguments'),
             )
+            if 'arguments' in rs_data:
+                arguments = rs_data['arguments']
+                if not isinstance(arguments, list) or any(
+                    not isinstance(arg, str) or '\x00' in arg for arg in arguments
+                ):
+                    raise ValueError(
+                        f"{context} restart_server arguments must be a list of NUL-free strings"
+                    )
             for key in ('reset_db', 'ignore_sighup'):
                 if key in rs_data and type(rs_data[key]) is not bool:
                     raise ValueError(f"{context} restart_server {key} must be boolean")

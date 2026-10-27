@@ -315,8 +315,13 @@ steps:
 | Field | Type | Description |
 |-------|------|-------------|
 | `assert_log.contains` | `str` | Text to search for in recent log entries |
+| `assert_log.contains_any` | `list[str]` | Require at least one listed diagnostic in recent entries; list and strings must be nonempty |
+| `assert_log.not_contains` | `str` | Text that must be absent from recent log entries |
 
 If the text is not found, the assertion fails with an excerpt of the log content written since the test started.
+When multiple predicates are supplied, all must hold. Use `contains_any` for
+implementation-specific diagnostics of the same tested failure, while retaining
+the behavioral assertions that establish that failure.
 
 #### `assert_file` - Verify File on Disk
 
@@ -409,6 +414,12 @@ that restart. `reset_db` cannot be combined with `checkpoint_timeout_ms`.
 `ignore_sighup: true` launches the process with inherited POSIX SIGHUP ignore,
 using exec so signals still target the server PID. The next ordinary restart
 restores the normal launch behavior.
+
+`arguments: ["--start-line", "return 1;"]` inserts literal argv tokens immediately
+after the executable for this launch only. Tokens are not shell commands and are
+not expanded as command-template placeholders. Relative paths are relative to
+the managed server directory. The next restart without `arguments` uses the
+original command. The value must be a list of strings without NUL characters.
 
 #### `signal_server` and `rename_file` - Host Operations
 

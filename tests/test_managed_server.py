@@ -684,8 +684,9 @@ def test_wait_for_server_exit_rejects_ordinary_code_as_abort(status: int):
     server.stop.assert_not_called()
 
 
+@pytest.mark.parametrize("predicate", ["contains", "contains_any"])
 def test_post_exit_empty_output_rejects_stale_marker_from_previous_process(
-    tmp_path: Path,
+    tmp_path: Path, predicate: str,
 ):
     old_output = "REUSED PROCESS MARKER\n"
     log_path = tmp_path / "server.log"
@@ -703,13 +704,20 @@ def test_post_exit_empty_output_rejects_stale_marker_from_previous_process(
         WaitForServerExit(timeout_ms=2500, exit_code=0), "empty-new-process"
     )
 
-    with pytest.raises(RunnerAssertionError, match="but it was not found"):
+    assertion = (
+        LogAssertion(contains="REUSED PROCESS MARKER") if predicate == "contains"
+        else LogAssertion(contains_any=["OTHER DIAGNOSTIC", "REUSED PROCESS MARKER"])
+    )
+    with pytest.raises(RunnerAssertionError, match="not found|none was found"):
         runner._execute_assert_log(
-            LogAssertion(contains="REUSED PROCESS MARKER"), "stale-marker"
+            assertion, "stale-marker"
         )
 
 
-def test_post_exit_log_assertion_accepts_reused_marker_from_new_process(tmp_path: Path):
+@pytest.mark.parametrize("predicate", ["contains", "contains_any"])
+def test_post_exit_log_assertion_accepts_reused_marker_from_new_process(
+    tmp_path: Path, predicate: str,
+):
     marker = "REUSED PROCESS MARKER\n"
     log_path = tmp_path / "server.log"
     log_path.write_text(marker + marker, encoding="utf-8")
@@ -725,9 +733,11 @@ def test_post_exit_log_assertion_accepts_reused_marker_from_new_process(tmp_path
     runner._execute_wait_for_server_exit(
         WaitForServerExit(timeout_ms=2500, exit_code=0), "new-process-marker"
     )
-    runner._execute_assert_log(
-        LogAssertion(contains="REUSED PROCESS MARKER"), "reused-marker"
+    assertion = (
+        LogAssertion(contains="REUSED PROCESS MARKER") if predicate == "contains"
+        else LogAssertion(contains_any=["OTHER DIAGNOSTIC", "REUSED PROCESS MARKER"])
     )
+    runner._execute_assert_log(assertion, "reused-marker")
 
 
 def test_assert_file_byte_compare_rejects_false_positive_text_match(tmp_path: Path):
@@ -1151,6 +1161,49 @@ def test_managed_server_installs_exec_fixtures(monkeypatch, tmp_path: Path):
             assert fixture.stat().st_mode & stat.S_IXUSR
     finally:
         server.stop()
+
+
+def test_restart_arguments_are_literal_and_apply_to_one_launch(monkeypatch, tmp_path):
+    baseline = tmp_path / "baseline.db"
+    baseline.write_text("baseline", encoding="utf-8")
+    launches = []
+
+    def launch(argv, **kwargs):
+        launches.append((argv, kwargs))
+        return _FakeProcess()
+
+    monkeypatch.setattr("moo_conformance.server.subprocess.Popen", launch)
+    monkeypatch.setattr(ManagedServer, "_find_free_port", lambda self: 17777)
+    monkeypatch.setattr(ManagedServer, "_wait_for_port", lambda self, timeout=30: None)
+    server = ManagedServer("fake-server {db} {port}", baseline)
+    arguments = ["--start-line", 'return "{db}; $(literal)";']
+    try:
+        server.start()
+        original = launches[0][0]
+        server.restart(arguments=arguments)
+        assert launches[1][0] == [original[0], *arguments, *original[1:]]
+        assert launches[1][1].get("shell", False) is False
+        server.restart()
+        assert launches[2][0] == original
+        assert arguments == ["--start-line", 'return "{db}; $(literal)";']
+    finally:
+        server.stop()
+
+
+def test_runner_forwards_restart_arguments():
+    transport = Mock()
+    transport.current_user = "wizard"
+    server = Mock()
+    server.process_log_offset = 0
+    server.process_file_snapshot = {}
+    runner = YamlTestRunner(transport, managed_server=server)
+    arguments = ["--start-line", "return 1;"]
+    runner._execute_restart_server(0, "startup", arguments=arguments)
+    server.restart.assert_called_once_with(
+        db_path=None, down_ms=0, ignore_sighup=False, arguments=arguments,
+        checkpoint_timeout_ms=None, checkpoint_boundary=None,
+    )
+    transport.connect.assert_called_once_with("wizard")
 
 
 def test_managed_server_opens_process_stdin_pipe(monkeypatch, tmp_path: Path):

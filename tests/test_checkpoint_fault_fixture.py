@@ -14,7 +14,7 @@ def fault(tmp_path):
     executable.parent.mkdir(parents=True)
     source = Path(__file__).parents[1] / "src/moo_conformance/_exec_fixtures/checkpoint_fault"
     shutil.copyfile(source, executable)
-    (base / "profile.json").write_text("{}", encoding="utf-8")
+    (base / "Test.db").write_text("test database", encoding="utf-8")
 
     def run(operation):
         return subprocess.run(
@@ -50,6 +50,6 @@ def test_write_fault_only_removes_its_own_symlink(fault):
 
 def test_fault_requires_managed_directory(fault):
     base, run = fault
-    (base / "profile.json").unlink()
+    (base / "Test.db").unlink()
     assert run("publish").returncode != 0
     assert not (base / "Test.db.new").exists()

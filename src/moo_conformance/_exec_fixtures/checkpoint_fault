@@ -6,7 +6,7 @@ from pathlib import Path
 
 def main():
     base = Path(__file__).resolve().parent.parent
-    if not base.name.startswith("moo_conformance_") or not (base / "profile.json").is_file():
+    if not base.name.startswith("moo_conformance_") or not (base / "Test.db").is_file():
         raise ValueError("not a managed conformance directory")
     if len(sys.argv) != 2:
         raise ValueError("expected one operation")

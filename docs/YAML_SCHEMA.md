@@ -410,6 +410,12 @@ that restart. `reset_db` cannot be combined with `checkpoint_timeout_ms`.
 using exec so signals still target the server PID. The next ordinary restart
 restores the normal launch behavior.
 
+`arguments: ["--start-line", "return 1;"]` inserts literal argv tokens immediately
+after the executable for this launch only. Tokens are not shell commands and are
+not expanded as command-template placeholders. Relative paths are relative to
+the managed server directory. The next restart without `arguments` uses the
+original command. The value must be a list of strings without NUL characters.
+
 #### `signal_server` and `rename_file` - Host Operations
 
 ```yaml

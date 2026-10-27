@@ -184,6 +184,7 @@ class ManagedServer:
     def start(
         self, db_path: Path | None = None, wait_for_port: bool = True,
         ignore_sighup: bool = False,
+        arguments: list[str] | None = None,
     ) -> None:
         """Start the server subprocess.
 
@@ -280,6 +281,7 @@ class ManagedServer:
             self._process_file_snapshot = snapshot_regular_files(self._temp_dir)
 
             argv = shlex.split(command)
+            argv[1:1] = arguments or []
             if ignore_sighup:
                 if os.name != "posix":
                     raise ValueError("ignore_sighup requires POSIX")
@@ -430,6 +432,7 @@ class ManagedServer:
         checkpoint_timeout_ms: int | None = None,
         checkpoint_boundary: dict[str, FileSnapshotSignature] | None = None,
         ignore_sighup: bool = False,
+        arguments: list[str] | None = None,
     ) -> None:
         """Restart the server process in-place, preserving the working database.
 
@@ -453,7 +456,10 @@ class ManagedServer:
         self.stop(preserve_temp=True)
         if down_ms > 0:
             time.sleep(down_ms / 1000.0)
-        if db_path is None:
+        if arguments is not None:
+            self.start(db_path=db_path, wait_for_port=wait_for_port,
+                       ignore_sighup=ignore_sighup, arguments=arguments)
+        elif db_path is None:
             if ignore_sighup:
                 self.start(wait_for_port=wait_for_port, ignore_sighup=True)
             else:

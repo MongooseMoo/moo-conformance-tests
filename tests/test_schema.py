@@ -18,6 +18,26 @@ def _minimal_suite() -> dict:
     }
 
 
+@pytest.mark.parametrize("arguments", [[], ["--start-line", 'return "{db}; $x";']])
+def test_restart_arguments_preserve_literal_tokens(arguments):
+    data = _minimal_suite()
+    data["tests"][0] = {"name": "startup", "steps": [
+        {"restart_server": {"arguments": arguments}}
+    ]}
+    suite = validate_test_suite(data)
+    assert suite.tests[0].steps[0].restart_server.arguments == arguments
+
+
+@pytest.mark.parametrize("arguments", [None, "--start-line", {}, [1], [False], [[]], ["a\x00b"]])
+def test_restart_arguments_reject_non_argv_values(arguments):
+    data = _minimal_suite()
+    data["tests"][0] = {"name": "startup", "steps": [
+        {"restart_server": {"arguments": arguments}}
+    ]}
+    with pytest.raises(ValueError, match="list of NUL-free strings"):
+        validate_test_suite(data)
+
+
 def _mapping_at(data: dict, path: tuple[str | int, ...]) -> dict:
     current = data
     for part in path:

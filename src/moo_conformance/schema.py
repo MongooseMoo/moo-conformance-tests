@@ -206,7 +206,7 @@ ACTION_PAYLOAD_FIELDS = {
     "chmod": frozenset({"path", "mode"}),
     "write_stdin": frozenset({"text"}),
     "restart_server": frozenset({
-        "wait_ms", "down_ms", "checkpoint_timeout_ms", "reset_db", "ignore_sighup"
+        "wait_ms", "down_ms", "checkpoint_timeout_ms", "reset_db", "ignore_sighup", "arguments"
     }),
     "wait_for_server_exit": frozenset({"timeout_ms", "exit_code", "termination"}),
 }
@@ -410,6 +410,7 @@ class RestartServer:
     checkpoint_timeout_ms: int | None = None  # Require fresh published checkpoint before stop
     reset_db: bool = False  # Reload the original fixture instead of adopting a checkpoint
     ignore_sighup: bool = False  # Start with inherited POSIX SIGHUP ignore
+    arguments: list[str] | None = None  # Literal argv tokens for this launch only
 
 
 @dataclass
@@ -1178,7 +1179,16 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
                 checkpoint_timeout_ms=rs_data.get('checkpoint_timeout_ms'),
                 reset_db=rs_data.get('reset_db', False),
                 ignore_sighup=rs_data.get('ignore_sighup', False),
+                arguments=rs_data.get('arguments'),
             )
+            if 'arguments' in rs_data:
+                arguments = rs_data['arguments']
+                if not isinstance(arguments, list) or any(
+                    not isinstance(arg, str) or '\x00' in arg for arg in arguments
+                ):
+                    raise ValueError(
+                        f"{context} restart_server arguments must be a list of NUL-free strings"
+                    )
             for key in ('reset_db', 'ignore_sighup'):
                 if key in rs_data and type(rs_data[key]) is not bool:
                     raise ValueError(f"{context} restart_server {key} must be boolean")

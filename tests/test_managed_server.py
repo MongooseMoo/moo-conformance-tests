@@ -684,8 +684,9 @@ def test_wait_for_server_exit_rejects_ordinary_code_as_abort(status: int):
     server.stop.assert_not_called()
 
 
+@pytest.mark.parametrize("predicate", ["contains", "contains_any"])
 def test_post_exit_empty_output_rejects_stale_marker_from_previous_process(
-    tmp_path: Path,
+    tmp_path: Path, predicate: str,
 ):
     old_output = "REUSED PROCESS MARKER\n"
     log_path = tmp_path / "server.log"
@@ -703,13 +704,20 @@ def test_post_exit_empty_output_rejects_stale_marker_from_previous_process(
         WaitForServerExit(timeout_ms=2500, exit_code=0), "empty-new-process"
     )
 
-    with pytest.raises(RunnerAssertionError, match="but it was not found"):
+    assertion = (
+        LogAssertion(contains="REUSED PROCESS MARKER") if predicate == "contains"
+        else LogAssertion(contains_any=["OTHER DIAGNOSTIC", "REUSED PROCESS MARKER"])
+    )
+    with pytest.raises(RunnerAssertionError, match="not found|none was found"):
         runner._execute_assert_log(
-            LogAssertion(contains="REUSED PROCESS MARKER"), "stale-marker"
+            assertion, "stale-marker"
         )
 
 
-def test_post_exit_log_assertion_accepts_reused_marker_from_new_process(tmp_path: Path):
+@pytest.mark.parametrize("predicate", ["contains", "contains_any"])
+def test_post_exit_log_assertion_accepts_reused_marker_from_new_process(
+    tmp_path: Path, predicate: str,
+):
     marker = "REUSED PROCESS MARKER\n"
     log_path = tmp_path / "server.log"
     log_path.write_text(marker + marker, encoding="utf-8")
@@ -725,9 +733,11 @@ def test_post_exit_log_assertion_accepts_reused_marker_from_new_process(tmp_path
     runner._execute_wait_for_server_exit(
         WaitForServerExit(timeout_ms=2500, exit_code=0), "new-process-marker"
     )
-    runner._execute_assert_log(
-        LogAssertion(contains="REUSED PROCESS MARKER"), "reused-marker"
+    assertion = (
+        LogAssertion(contains="REUSED PROCESS MARKER") if predicate == "contains"
+        else LogAssertion(contains_any=["OTHER DIAGNOSTIC", "REUSED PROCESS MARKER"])
     )
+    runner._execute_assert_log(assertion, "reused-marker")
 
 
 def test_assert_file_byte_compare_rejects_false_positive_text_match(tmp_path: Path):

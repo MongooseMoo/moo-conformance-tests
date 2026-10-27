@@ -1,0 +1,1806 @@
+# Source: ToastStunt src/property.cc set_prop_info; src/db_properties.cc
+# db_rename_propdef, db_find_property and chparent property-slot reconstruction.
+name: semantic_renamed_property_slots
+description: Rename a definition with live inherited slots before a second mutation and observe values and metadata.
+requires:
+  builtins: [create, recycle, add_property, set_property_info, property_info, properties, delete_property, clear_property, is_clear_property, chparent]
+tests:
+  - name: clear_child_rename_twice
+    description: "rename twice after renaming a definition; observe a clear child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        set_property_info(p,"renamed",{player,"rw","final"});
+        return {saved, before, {t.final, `t.renamed ! ANY', is_clear_property(t,"final")}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [10,[10,1,"E_PROPNF"],[10,"E_PROPNF",1]]
+
+  - name: clear_child_change_case_after_rename
+    description: "change case after rename after renaming a definition; observe a clear child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        set_property_info(p,"renamed",{player,"rw","RENAMED"});
+        return {saved, before, {t.renamed, t.RENAMED, properties(p)}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [10,[10,1,"E_PROPNF"],[10,10,["y","RENAMED"]]]
+
+  - name: clear_child_restore_original_name
+    description: "restore original name after renaming a definition; observe a clear child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        set_property_info(p,"renamed",{player,"rw","x"});
+        return {saved, before, {t.x, `t.renamed ! ANY', is_clear_property(t,"x")}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [10,[10,1,"E_PROPNF"],[10,"E_PROPNF",1]]
+
+  - name: clear_child_reuse_original_name
+    description: "reuse original name after renaming a definition; observe a clear child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        add_property(p,"x",9,{player,"rw"});
+        return {saved, before, {t.x, t.renamed, is_clear_property(t,"x"), is_clear_property(t,"renamed")}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [10,[10,1,"E_PROPNF"],[9,10,1,1]]
+
+  - name: clear_child_delete_and_recreate_renamed_slot
+    description: "delete and recreate renamed slot after renaming a definition; observe a clear child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        delete_property(p,"renamed"); add_property(p,"renamed",9,{player,"rw"});
+        return {saved, before, {t.renamed, is_clear_property(t,"renamed"), properties(p)}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [10,[10,1,"E_PROPNF"],[9,1,["y","renamed"]]]
+
+  - name: clear_child_remove_preceding_definition
+    description: "remove preceding definition after renaming a definition; observe a clear child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        delete_property(p,"y");
+        return {saved, before, {t.renamed, is_clear_property(t,"renamed"), properties(p)}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [10,[10,1,"E_PROPNF"],[10,1,["renamed"]]]
+
+  - name: clear_child_rename_preceding_definition
+    description: "rename preceding definition after renaming a definition; observe a clear child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        set_property_info(p,"y",{player,"rw","z"});
+        return {saved, before, {t.renamed, t.z, properties(p)}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [10,[10,1,"E_PROPNF"],[10,20,["z","renamed"]]]
+
+  - name: clear_child_change_definer_owner
+    description: "change definer owner after renaming a definition; observe a clear child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        set_property_info(p,"renamed",{c,"rw"});
+        return {saved, before, {property_info(p,"renamed")[1] == c, property_info(t,"renamed")[1] == player, t.renamed, is_clear_property(t,"renamed")}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [10,[10,1,"E_PROPNF"],[1,1,10,1]]
+
+  - name: clear_child_change_inherited_slot_owner
+    description: "change inherited slot owner after renaming a definition; observe a clear child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        set_property_info(t,"renamed",{t,"rw"});
+        return {saved, before, {property_info(t,"renamed")[1] == t, property_info(p,"renamed")[1] == player, t.renamed, is_clear_property(t,"renamed")}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [10,[10,1,"E_PROPNF"],[1,1,10,1]]
+
+  - name: clear_child_change_definer_flags
+    description: "change definer flags after renaming a definition; observe a clear child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        set_property_info(p,"renamed",{player,""});
+        return {saved, before, {property_info(p,"renamed")[2], property_info(t,"renamed")[2], t.renamed, is_clear_property(t,"renamed")}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [10,[10,1,"E_PROPNF"],["","rw",10,1]]
+
+  - name: clear_child_change_inherited_slot_flags
+    description: "change inherited slot flags after renaming a definition; observe a clear child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        set_property_info(t,"renamed",{player,"r"});
+        return {saved, before, {property_info(t,"renamed")[2], property_info(p,"renamed")[2], t.renamed, is_clear_property(t,"renamed")}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [10,[10,1,"E_PROPNF"],["r","rw",10,1]]
+
+  - name: clear_child_reject_collision_with_sibling_definition
+    description: "reject collision with sibling definition after renaming a definition; observe a clear child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        err = `set_property_info(p,"renamed",{c,"r","y"}) ! ANY';
+        return {saved, before, {err, t.renamed, t.y, property_info(p,"renamed")[1] == player, property_info(p,"renamed")[2]}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [10,[10,1,"E_PROPNF"],["E_INVARG",10,20,1,"rw"]]
+
+  - name: clear_child_reject_collision_with_descendant_definition
+    description: "reject collision with descendant definition after renaming a definition; observe a clear child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        add_property(g,"blocked",60,{player,"rw"}); err = `set_property_info(p,"renamed",{c,"r","blocked"}) ! ANY';
+        return {saved, before, {err, t.renamed, g.blocked, property_info(p,"renamed")[2]}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [10,[10,1,"E_PROPNF"],["E_INVARG",10,60,"rw"]]
+
+  - name: clear_child_reject_collision_with_builtin
+    description: "reject collision with builtin after renaming a definition; observe a clear child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        err = `set_property_info(p,"renamed",{c,"r","name"}) ! ANY';
+        return {saved, before, {err, t.renamed, property_info(p,"renamed")[1] == player, property_info(p,"renamed")[2]}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [10,[10,1,"E_PROPNF"],["E_INVARG",10,1,"rw"]]
+
+  - name: clear_child_reject_rename_from_inheritor
+    description: "reject rename from inheritor after renaming a definition; observe a clear child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        err = `set_property_info(t,"renamed",{t,"r","final"}) ! ANY';
+        return {saved, before, {err, t.renamed, property_info(t,"renamed")[1] == player, property_info(t,"renamed")[2]}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [10,[10,1,"E_PROPNF"],["E_INVARG",10,1,"rw"]]
+
+  - name: clear_child_clear_by_new_name
+    description: "clear by new name after renaming a definition; observe a clear child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        clear_property(t,"renamed");
+        return {saved, before, {t.renamed, is_clear_property(t,"renamed"), p.renamed}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [10,[10,1,"E_PROPNF"],[10,1,10]]
+
+  - name: clear_child_write_by_new_name
+    description: "write by new name after renaming a definition; observe a clear child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        t.renamed = 50;
+        return {saved, before, {t.renamed, is_clear_property(t,"renamed"), p.renamed}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [10,[10,1,"E_PROPNF"],[50,0,10]]
+
+  - name: clear_child_update_definer_after_rename
+    description: "update definer after rename after renaming a definition; observe a clear child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        p.renamed = 11;
+        return {saved, before, {t.renamed, is_clear_property(t,"renamed"), p.renamed}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [10,[10,1,"E_PROPNF"],[11,1,11]]
+
+  - name: clear_child_clear_intermediate_after_rename
+    description: "clear intermediate after rename after renaming a definition; observe a clear child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        clear_property(c,"renamed");
+        return {saved, before, {t.renamed, is_clear_property(t,"renamed"), p.renamed}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [10,[10,1,"E_PROPNF"],[10,1,10]]
+
+  - name: clear_child_write_intermediate_after_rename
+    description: "write intermediate after rename after renaming a definition; observe a clear child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        c.renamed = 41;
+        return {saved, before, {t.renamed, is_clear_property(t,"renamed"), p.renamed}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [10,[10,1,"E_PROPNF"],[41,0,10]]
+
+  - name: clear_child_reparent_with_shared_definition
+    description: "reparent with shared definition after renaming a definition; observe a clear child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        q = create(p); q.renamed = 70; chparent(c,q);
+        return {saved, before, {t.renamed, is_clear_property(t,"renamed"), p.renamed}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [10,[10,1,"E_PROPNF"],[70,1,10]]
+
+  - name: clear_child_detach_after_rename
+    description: "detach after rename after renaming a definition; observe a clear child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        chparent(c,$nothing);
+        return {saved, before, {`t.renamed ! ANY', p.renamed, properties(c)}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [10,[10,1,"E_PROPNF"],["E_PROPNF",10,[]]]
+
+  - name: clear_child_replace_defining_ancestor
+    description: "replace defining ancestor after renaming a definition; observe a clear child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        q = create($nothing); add_property(q,"renamed",80,{player,"rw"}); chparent(c,q);
+        return {saved, before, {t.renamed, is_clear_property(t,"renamed"), p.renamed}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [10,[10,1,"E_PROPNF"],[80,1,10]]
+
+  - name: clear_child_delete_new_name_then_reuse_old
+    description: "delete new name then reuse old after renaming a definition; observe a clear child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        delete_property(p,"renamed"); add_property(p,"x",9,{player,"rw"});
+        return {saved, before, {`t.renamed ! ANY', t.x, is_clear_property(t,"x")}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [10,[10,1,"E_PROPNF"],["E_PROPNF",9,1]]
+
+  - name: overridden_child_rename_twice
+    description: "rename twice after renaming a definition; observe a overridden child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        set_property_info(p,"renamed",{player,"rw","final"});
+        return {saved, before, {t.final, `t.renamed ! ANY', is_clear_property(t,"final")}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,0,"E_PROPNF"],[40,"E_PROPNF",0]]
+
+  - name: overridden_child_change_case_after_rename
+    description: "change case after rename after renaming a definition; observe a overridden child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        set_property_info(p,"renamed",{player,"rw","RENAMED"});
+        return {saved, before, {t.renamed, t.RENAMED, properties(p)}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,0,"E_PROPNF"],[40,40,["y","RENAMED"]]]
+
+  - name: overridden_child_restore_original_name
+    description: "restore original name after renaming a definition; observe a overridden child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        set_property_info(p,"renamed",{player,"rw","x"});
+        return {saved, before, {t.x, `t.renamed ! ANY', is_clear_property(t,"x")}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,0,"E_PROPNF"],[40,"E_PROPNF",0]]
+
+  - name: overridden_child_reuse_original_name
+    description: "reuse original name after renaming a definition; observe a overridden child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        add_property(p,"x",9,{player,"rw"});
+        return {saved, before, {t.x, t.renamed, is_clear_property(t,"x"), is_clear_property(t,"renamed")}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,0,"E_PROPNF"],[9,40,1,0]]
+
+  - name: overridden_child_delete_and_recreate_renamed_slot
+    description: "delete and recreate renamed slot after renaming a definition; observe a overridden child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        delete_property(p,"renamed"); add_property(p,"renamed",9,{player,"rw"});
+        return {saved, before, {t.renamed, is_clear_property(t,"renamed"), properties(p)}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,0,"E_PROPNF"],[9,1,["y","renamed"]]]
+
+  - name: overridden_child_remove_preceding_definition
+    description: "remove preceding definition after renaming a definition; observe a overridden child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        delete_property(p,"y");
+        return {saved, before, {t.renamed, is_clear_property(t,"renamed"), properties(p)}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,0,"E_PROPNF"],[40,0,["renamed"]]]
+
+  - name: overridden_child_rename_preceding_definition
+    description: "rename preceding definition after renaming a definition; observe a overridden child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        set_property_info(p,"y",{player,"rw","z"});
+        return {saved, before, {t.renamed, t.z, properties(p)}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,0,"E_PROPNF"],[40,20,["z","renamed"]]]
+
+  - name: overridden_child_change_definer_owner
+    description: "change definer owner after renaming a definition; observe a overridden child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        set_property_info(p,"renamed",{c,"rw"});
+        return {saved, before, {property_info(p,"renamed")[1] == c, property_info(t,"renamed")[1] == player, t.renamed, is_clear_property(t,"renamed")}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,0,"E_PROPNF"],[1,1,40,0]]
+
+  - name: overridden_child_change_inherited_slot_owner
+    description: "change inherited slot owner after renaming a definition; observe a overridden child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        set_property_info(t,"renamed",{t,"rw"});
+        return {saved, before, {property_info(t,"renamed")[1] == t, property_info(p,"renamed")[1] == player, t.renamed, is_clear_property(t,"renamed")}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,0,"E_PROPNF"],[1,1,40,0]]
+
+  - name: overridden_child_change_definer_flags
+    description: "change definer flags after renaming a definition; observe a overridden child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        set_property_info(p,"renamed",{player,""});
+        return {saved, before, {property_info(p,"renamed")[2], property_info(t,"renamed")[2], t.renamed, is_clear_property(t,"renamed")}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,0,"E_PROPNF"],["","rw",40,0]]
+
+  - name: overridden_child_change_inherited_slot_flags
+    description: "change inherited slot flags after renaming a definition; observe a overridden child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        set_property_info(t,"renamed",{player,"r"});
+        return {saved, before, {property_info(t,"renamed")[2], property_info(p,"renamed")[2], t.renamed, is_clear_property(t,"renamed")}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,0,"E_PROPNF"],["r","rw",40,0]]
+
+  - name: overridden_child_reject_collision_with_sibling_definition
+    description: "reject collision with sibling definition after renaming a definition; observe a overridden child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        err = `set_property_info(p,"renamed",{c,"r","y"}) ! ANY';
+        return {saved, before, {err, t.renamed, t.y, property_info(p,"renamed")[1] == player, property_info(p,"renamed")[2]}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,0,"E_PROPNF"],["E_INVARG",40,20,1,"rw"]]
+
+  - name: overridden_child_reject_collision_with_descendant_definition
+    description: "reject collision with descendant definition after renaming a definition; observe a overridden child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        add_property(g,"blocked",60,{player,"rw"}); err = `set_property_info(p,"renamed",{c,"r","blocked"}) ! ANY';
+        return {saved, before, {err, t.renamed, g.blocked, property_info(p,"renamed")[2]}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,0,"E_PROPNF"],["E_INVARG",40,60,"rw"]]
+
+  - name: overridden_child_reject_collision_with_builtin
+    description: "reject collision with builtin after renaming a definition; observe a overridden child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        err = `set_property_info(p,"renamed",{c,"r","name"}) ! ANY';
+        return {saved, before, {err, t.renamed, property_info(p,"renamed")[1] == player, property_info(p,"renamed")[2]}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,0,"E_PROPNF"],["E_INVARG",40,1,"rw"]]
+
+  - name: overridden_child_reject_rename_from_inheritor
+    description: "reject rename from inheritor after renaming a definition; observe a overridden child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        err = `set_property_info(t,"renamed",{t,"r","final"}) ! ANY';
+        return {saved, before, {err, t.renamed, property_info(t,"renamed")[1] == player, property_info(t,"renamed")[2]}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,0,"E_PROPNF"],["E_INVARG",40,1,"rw"]]
+
+  - name: overridden_child_clear_by_new_name
+    description: "clear by new name after renaming a definition; observe a overridden child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        clear_property(t,"renamed");
+        return {saved, before, {t.renamed, is_clear_property(t,"renamed"), p.renamed}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,0,"E_PROPNF"],[10,1,10]]
+
+  - name: overridden_child_write_by_new_name
+    description: "write by new name after renaming a definition; observe a overridden child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        t.renamed = 50;
+        return {saved, before, {t.renamed, is_clear_property(t,"renamed"), p.renamed}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,0,"E_PROPNF"],[50,0,10]]
+
+  - name: overridden_child_update_definer_after_rename
+    description: "update definer after rename after renaming a definition; observe a overridden child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        p.renamed = 11;
+        return {saved, before, {t.renamed, is_clear_property(t,"renamed"), p.renamed}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,0,"E_PROPNF"],[40,0,11]]
+
+  - name: overridden_child_clear_intermediate_after_rename
+    description: "clear intermediate after rename after renaming a definition; observe a overridden child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        clear_property(c,"renamed");
+        return {saved, before, {t.renamed, is_clear_property(t,"renamed"), p.renamed}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,0,"E_PROPNF"],[10,1,10]]
+
+  - name: overridden_child_write_intermediate_after_rename
+    description: "write intermediate after rename after renaming a definition; observe a overridden child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        c.renamed = 41;
+        return {saved, before, {t.renamed, is_clear_property(t,"renamed"), p.renamed}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,0,"E_PROPNF"],[41,0,10]]
+
+  - name: overridden_child_reparent_with_shared_definition
+    description: "reparent with shared definition after renaming a definition; observe a overridden child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        q = create(p); q.renamed = 70; chparent(c,q);
+        return {saved, before, {t.renamed, is_clear_property(t,"renamed"), p.renamed}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,0,"E_PROPNF"],[40,0,10]]
+
+  - name: overridden_child_detach_after_rename
+    description: "detach after rename after renaming a definition; observe a overridden child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        chparent(c,$nothing);
+        return {saved, before, {`t.renamed ! ANY', p.renamed, properties(c)}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,0,"E_PROPNF"],["E_PROPNF",10,[]]]
+
+  - name: overridden_child_replace_defining_ancestor
+    description: "replace defining ancestor after renaming a definition; observe a overridden child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        q = create($nothing); add_property(q,"renamed",80,{player,"rw"}); chparent(c,q);
+        return {saved, before, {t.renamed, is_clear_property(t,"renamed"), p.renamed}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,0,"E_PROPNF"],[80,1,10]]
+
+  - name: overridden_child_delete_new_name_then_reuse_old
+    description: "delete new name then reuse old after renaming a definition; observe a overridden child."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = c;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        delete_property(p,"renamed"); add_property(p,"x",9,{player,"rw"});
+        return {saved, before, {`t.renamed ! ANY', t.x, is_clear_property(t,"x")}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,0,"E_PROPNF"],["E_PROPNF",9,1]]
+
+  - name: clear_grandchild_of_override_rename_twice
+    description: "rename twice after renaming a definition; observe a clear grandchild of override."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = g;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        set_property_info(p,"renamed",{player,"rw","final"});
+        return {saved, before, {t.final, `t.renamed ! ANY', is_clear_property(t,"final")}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,1,"E_PROPNF"],[40,"E_PROPNF",1]]
+
+  - name: clear_grandchild_of_override_change_case_after_rename
+    description: "change case after rename after renaming a definition; observe a clear grandchild of override."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = g;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        set_property_info(p,"renamed",{player,"rw","RENAMED"});
+        return {saved, before, {t.renamed, t.RENAMED, properties(p)}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,1,"E_PROPNF"],[40,40,["y","RENAMED"]]]
+
+  - name: clear_grandchild_of_override_restore_original_name
+    description: "restore original name after renaming a definition; observe a clear grandchild of override."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = g;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        set_property_info(p,"renamed",{player,"rw","x"});
+        return {saved, before, {t.x, `t.renamed ! ANY', is_clear_property(t,"x")}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,1,"E_PROPNF"],[40,"E_PROPNF",1]]
+
+  - name: clear_grandchild_of_override_reuse_original_name
+    description: "reuse original name after renaming a definition; observe a clear grandchild of override."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = g;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        add_property(p,"x",9,{player,"rw"});
+        return {saved, before, {t.x, t.renamed, is_clear_property(t,"x"), is_clear_property(t,"renamed")}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,1,"E_PROPNF"],[9,40,1,1]]
+
+  - name: clear_grandchild_of_override_delete_and_recreate_renamed_slot
+    description: "delete and recreate renamed slot after renaming a definition; observe a clear grandchild of override."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = g;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        delete_property(p,"renamed"); add_property(p,"renamed",9,{player,"rw"});
+        return {saved, before, {t.renamed, is_clear_property(t,"renamed"), properties(p)}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,1,"E_PROPNF"],[9,1,["y","renamed"]]]
+
+  - name: clear_grandchild_of_override_remove_preceding_definition
+    description: "remove preceding definition after renaming a definition; observe a clear grandchild of override."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = g;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        delete_property(p,"y");
+        return {saved, before, {t.renamed, is_clear_property(t,"renamed"), properties(p)}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,1,"E_PROPNF"],[40,1,["renamed"]]]
+
+  - name: clear_grandchild_of_override_rename_preceding_definition
+    description: "rename preceding definition after renaming a definition; observe a clear grandchild of override."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = g;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        set_property_info(p,"y",{player,"rw","z"});
+        return {saved, before, {t.renamed, t.z, properties(p)}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,1,"E_PROPNF"],[40,20,["z","renamed"]]]
+
+  - name: clear_grandchild_of_override_change_definer_owner
+    description: "change definer owner after renaming a definition; observe a clear grandchild of override."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = g;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        set_property_info(p,"renamed",{c,"rw"});
+        return {saved, before, {property_info(p,"renamed")[1] == c, property_info(t,"renamed")[1] == player, t.renamed, is_clear_property(t,"renamed")}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,1,"E_PROPNF"],[1,1,40,1]]
+
+  - name: clear_grandchild_of_override_change_inherited_slot_owner
+    description: "change inherited slot owner after renaming a definition; observe a clear grandchild of override."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = g;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        set_property_info(t,"renamed",{t,"rw"});
+        return {saved, before, {property_info(t,"renamed")[1] == t, property_info(p,"renamed")[1] == player, t.renamed, is_clear_property(t,"renamed")}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,1,"E_PROPNF"],[1,1,40,1]]
+
+  - name: clear_grandchild_of_override_change_definer_flags
+    description: "change definer flags after renaming a definition; observe a clear grandchild of override."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = g;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        set_property_info(p,"renamed",{player,""});
+        return {saved, before, {property_info(p,"renamed")[2], property_info(t,"renamed")[2], t.renamed, is_clear_property(t,"renamed")}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,1,"E_PROPNF"],["","rw",40,1]]
+
+  - name: clear_grandchild_of_override_change_inherited_slot_flags
+    description: "change inherited slot flags after renaming a definition; observe a clear grandchild of override."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = g;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        set_property_info(t,"renamed",{player,"r"});
+        return {saved, before, {property_info(t,"renamed")[2], property_info(p,"renamed")[2], t.renamed, is_clear_property(t,"renamed")}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,1,"E_PROPNF"],["r","rw",40,1]]
+
+  - name: clear_grandchild_of_override_reject_collision_with_sibling_definition
+    description: "reject collision with sibling definition after renaming a definition; observe a clear grandchild of override."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = g;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        err = `set_property_info(p,"renamed",{c,"r","y"}) ! ANY';
+        return {saved, before, {err, t.renamed, t.y, property_info(p,"renamed")[1] == player, property_info(p,"renamed")[2]}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,1,"E_PROPNF"],["E_INVARG",40,20,1,"rw"]]
+
+  - name: clear_grandchild_of_override_reject_collision_with_descendant_definition
+    description: "reject collision with descendant definition after renaming a definition; observe a clear grandchild of override."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = g;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        add_property(g,"blocked",60,{player,"rw"}); err = `set_property_info(p,"renamed",{c,"r","blocked"}) ! ANY';
+        return {saved, before, {err, t.renamed, g.blocked, property_info(p,"renamed")[2]}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,1,"E_PROPNF"],["E_INVARG",40,60,"rw"]]
+
+  - name: clear_grandchild_of_override_reject_collision_with_builtin
+    description: "reject collision with builtin after renaming a definition; observe a clear grandchild of override."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = g;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        err = `set_property_info(p,"renamed",{c,"r","name"}) ! ANY';
+        return {saved, before, {err, t.renamed, property_info(p,"renamed")[1] == player, property_info(p,"renamed")[2]}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,1,"E_PROPNF"],["E_INVARG",40,1,"rw"]]
+
+  - name: clear_grandchild_of_override_reject_rename_from_inheritor
+    description: "reject rename from inheritor after renaming a definition; observe a clear grandchild of override."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = g;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        err = `set_property_info(t,"renamed",{t,"r","final"}) ! ANY';
+        return {saved, before, {err, t.renamed, property_info(t,"renamed")[1] == player, property_info(t,"renamed")[2]}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,1,"E_PROPNF"],["E_INVARG",40,1,"rw"]]
+
+  - name: clear_grandchild_of_override_clear_by_new_name
+    description: "clear by new name after renaming a definition; observe a clear grandchild of override."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = g;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        clear_property(t,"renamed");
+        return {saved, before, {t.renamed, is_clear_property(t,"renamed"), p.renamed}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,1,"E_PROPNF"],[40,1,10]]
+
+  - name: clear_grandchild_of_override_write_by_new_name
+    description: "write by new name after renaming a definition; observe a clear grandchild of override."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = g;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        t.renamed = 50;
+        return {saved, before, {t.renamed, is_clear_property(t,"renamed"), p.renamed}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,1,"E_PROPNF"],[50,0,10]]
+
+  - name: clear_grandchild_of_override_update_definer_after_rename
+    description: "update definer after rename after renaming a definition; observe a clear grandchild of override."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = g;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        p.renamed = 11;
+        return {saved, before, {t.renamed, is_clear_property(t,"renamed"), p.renamed}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,1,"E_PROPNF"],[40,1,11]]
+
+  - name: clear_grandchild_of_override_clear_intermediate_after_rename
+    description: "clear intermediate after rename after renaming a definition; observe a clear grandchild of override."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = g;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        clear_property(c,"renamed");
+        return {saved, before, {t.renamed, is_clear_property(t,"renamed"), p.renamed}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,1,"E_PROPNF"],[10,1,10]]
+
+  - name: clear_grandchild_of_override_write_intermediate_after_rename
+    description: "write intermediate after rename after renaming a definition; observe a clear grandchild of override."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = g;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        c.renamed = 41;
+        return {saved, before, {t.renamed, is_clear_property(t,"renamed"), p.renamed}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,1,"E_PROPNF"],[41,1,10]]
+
+  - name: clear_grandchild_of_override_reparent_with_shared_definition
+    description: "reparent with shared definition after renaming a definition; observe a clear grandchild of override."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = g;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        q = create(p); q.renamed = 70; chparent(c,q);
+        return {saved, before, {t.renamed, is_clear_property(t,"renamed"), p.renamed}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,1,"E_PROPNF"],[40,1,10]]
+
+  - name: clear_grandchild_of_override_detach_after_rename
+    description: "detach after rename after renaming a definition; observe a clear grandchild of override."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = g;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        chparent(c,$nothing);
+        return {saved, before, {`t.renamed ! ANY', p.renamed, properties(c)}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,1,"E_PROPNF"],["E_PROPNF",10,[]]]
+
+  - name: clear_grandchild_of_override_replace_defining_ancestor
+    description: "replace defining ancestor after renaming a definition; observe a clear grandchild of override."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = g;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        q = create($nothing); add_property(q,"renamed",80,{player,"rw"}); chparent(c,q);
+        return {saved, before, {t.renamed, is_clear_property(t,"renamed"), p.renamed}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,1,"E_PROPNF"],[80,1,10]]
+
+  - name: clear_grandchild_of_override_delete_new_name_then_reuse_old
+    description: "delete new name then reuse old after renaming a definition; observe a clear grandchild of override."
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p,"y",20,{player,"rw"});
+      add_property(p,"x",10,{player,"rw"});
+      c = create(p);
+      g = create(c);
+      q = $nothing;
+      try
+        c.x = 40; t = g;
+        saved = t.x;
+        set_property_info(p,"x",{player,"rw","renamed"});
+        before = {t.renamed, is_clear_property(t,"renamed"), `t.x ! ANY'};
+        delete_property(p,"renamed"); add_property(p,"x",9,{player,"rw"});
+        return {saved, before, {`t.renamed ! ANY', t.x, is_clear_property(t,"x")}};
+      finally
+        recycle(g); recycle(c);
+        if (valid(q)) recycle(q); endif
+        recycle(p);
+      endtry
+    expect:
+      value: [40,[40,1,"E_PROPNF"],["E_PROPNF",9,1]]

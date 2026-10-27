@@ -1101,7 +1101,7 @@ tests:
     skip_if: "missing builtin.dump_database"
     steps:
       - run: |
-          for prop in ({"audit_restart_connection_events", "audit_restart_connection_id", "audit_restart_hooks_saved"})
+          for prop in ({"audit_restart_connection_events", "audit_restart_connection_id", "audit_restart_hooks_saved", "audit_restart_hook_owner"})
             try
               add_property(#0, prop, {}, {#0, "rw"});
             except (E_INVARG)
@@ -1133,6 +1133,7 @@ tests:
             {user_exists, user_info, user_args, user_code},
             {started_exists, started_info, started_args, started_code}
           };
+          #0.audit_restart_hook_owner = player;
           #0.audit_restart_connection_events = {};
           #0.audit_restart_connection_id = #-1;
           try
@@ -1142,7 +1143,7 @@ tests:
           set_verb_info(#0, "user_disconnected", {player, "rxd", "user_disconnected"});
           set_verb_args(#0, "user_disconnected", {"this", "none", "this"});
           set_verb_code(#0, "user_disconnected", {
-            "#0.audit_restart_connection_events = {@#0.audit_restart_connection_events, {\"disconnected\", player, args[1], this}};",
+            "#0.audit_restart_connection_events = {@#0.audit_restart_connection_events, {\"disconnected\", player, args[1], this, {caller, verb, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()}}};",
             "return 1;"
           });
           try
@@ -1152,7 +1153,7 @@ tests:
           set_verb_info(#0, "server_started", {player, "rxd", "server_started"});
           set_verb_args(#0, "server_started", {"this", "none", "this"});
           set_verb_code(#0, "server_started", {
-            "#0.audit_restart_connection_events = {@#0.audit_restart_connection_events, {\"started\", player, this}};",
+            "#0.audit_restart_connection_events = {@#0.audit_restart_connection_events, {\"started\", player, this, {caller, verb, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()}}};",
             "return 1;"
           });
           return 1;
@@ -1188,8 +1189,14 @@ tests:
           disconnected_arg = #-1;
           disconnected_listener = #-1;
           started_this = #-1;
+          context_ok = 1;
           for index in [1..length(events)]
             event = events[index];
+            if (event[1] == "disconnected")
+              context_ok = context_ok && event[5] == {#-1, "user_disconnected", {event[2]}, "", #-1, "", "", #-1, "", #0.audit_restart_hook_owner, #-1, {}};
+            elseif (event[1] == "started")
+              context_ok = context_ok && event[2] == #-1 && event[4] == {#-1, "server_started", {}, "", #-1, "", "", #-1, "", #0.audit_restart_hook_owner, #-1, {}};
+            endif
             if (event[1] == "disconnected" && event[3] == {former_connection_id})
               disconnected_index = index;
               disconnected_player = event[2];
@@ -1206,7 +1213,7 @@ tests:
             disconnected_player == {former_connection_id},
             disconnected_arg == {former_connection_id},
             disconnected_listener == #0,
-            started_this == #0
+            started_this == #0 && context_ok
           };
         as: wizard
         expect:
@@ -1233,7 +1240,7 @@ tests:
             endif
           except (ANY)
           endtry
-          for prop in ({"audit_restart_connection_events", "audit_restart_connection_id", "audit_restart_hooks_saved"})
+          for prop in ({"audit_restart_connection_events", "audit_restart_connection_id", "audit_restart_hooks_saved", "audit_restart_hook_owner"})
             try
               delete_property(#0, prop);
             except (ANY)
@@ -1283,7 +1290,7 @@ tests:
           set_verb_info(#0, "user_disconnected", {player, "rxd", "user_disconnected"});
           set_verb_args(#0, "user_disconnected", {"this", "none", "this"});
           set_verb_code(#0, "user_disconnected", {
-            "#0.audit_timeout_seen = {@#0.audit_timeout_seen, {this, player, caller, args, argstr}};",
+            "#0.audit_timeout_seen = {@#0.audit_timeout_seen, {this, player, caller, args, argstr, verb, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()}};",
             "return 1;"
           });
           return 1;
@@ -1311,7 +1318,7 @@ tests:
           endif
           frame = seen[1];
           hook_player = frame[2];
-          return {frame[1] == #0, typeof(hook_player) == 1, hook_player != #-1, frame[3] == #-1, frame[4] == {hook_player}, frame[5] == ""};
+          return {frame[1] == #0, typeof(hook_player) == 1, hook_player < #-1, frame[3] == #-1, frame[4] == {hook_player}, frame[5..14] == {"", "user_disconnected", #-1, "", "", #-1, "", player, #-1, {}}};
         as: wizard
         expect:
           value:

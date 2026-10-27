@@ -1,0 +1,64 @@
+name: waif_index_callback_context
+description: Both WAIF read opcodes and the setter preserve nested frames, argument values, and suspension continuations.
+requires:
+  builtins: [new_waif]
+tests:
+  - name: waif_{operation}_{continuation}_callback_context
+    permission: wizard
+    table:
+      product:
+        - columns: [operation, code, expected_names, expected_args, setter_result, container, expression]
+          rows:
+            - [read, 'result = w[\"key\"];', '{"_index"}', '{{"key"}}', this, w, "{1, 2}"]
+            - [write, 'result = (w[\"key\"] = 42);', '{"_set_index"}', '{{"key", 42}}', this, w, "42"]
+            - [nested_write, 'result = (w[\"key\"][1] = 9);', '{"_index", "_set_index"}', '{{"key"}, {"key", {9, 2}}}', this, w, "9"]
+            - [scalar_setter, 'result = (w[\"key\"] = 42);', '{"_set_index"}', '{{"key", 42}}', "17", "17", "42"]
+        - columns: [continuation, pause]
+          rows: [[immediate, ""], [resumed, "suspend(0);"]]
+    setup:
+      code: |
+        rec = create($nothing);
+        owner = create($nothing); owner.programmer = 1;
+        proto = create($waif); child = create(proto);
+        driver = create($nothing); alternate = create($nothing);
+        add_property(#0, "cb_rec", rec, {player, "r"});
+        add_property(rec, "events", {}, {player, "rw"});
+        add_property(rec, "frames", {}, {player, "rw"});
+        add_property(rec, "owned", {driver, child, proto, alternate, owner}, {player, "r"});
+        add_verb(rec, {player, "rxd", "observe"}, {"this", "none", "this"});
+        set_verb_code(rec, "observe", {"return callers()[1];"});
+        for name in ({":_index", ":_set_index"})
+          add_verb(proto, {owner, "rxd", name}, {"this", "none", "this"});
+          set_verb_code(proto, name, {
+            "{pause}",
+            "#0.cb_rec.events = {@#0.cb_rec.events, {this, caller, player, verb, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()[1]}};",
+            "#0.cb_rec.frames = {@#0.cb_rec.frames, #0.cb_rec:observe()};",
+            "return verb == \"_index\" ? {1, 2} | {setter_result};"
+          });
+        endfor
+        add_verb(driver, {player, "rxd", "drive"}, {"this", "none", "this"});
+        body = {
+          "{w, alternate} = args;",
+          "player = alternate; argstr = \"kept input\"; dobj = this; dobjstr = \"direct\"; prepstr = \"with\"; iobj = alternate; iobjstr = \"indirect\";"
+        };
+        body = {@body, "{code}", "return {w, result};"};
+        set_verb_code(driver, "drive", body);
+    statement: |
+      w = child:new();
+      same = driver:drive(w, alternate) == {{container}, {expression}};
+      names = {expected_names}; arguments = {expected_args};
+      expected = {}; frames = {};
+      for index in [1..length(names)]
+        name = names[index];
+        expected = {@expected, {w, driver, alternate, name, arguments[index], "kept input", driver, "direct", "with", alternate, "indirect", owner, player, {driver, "drive", player, driver, player}}};
+        frames = {@frames, {w, ":" + name, owner, proto, alternate}};
+      endfor
+      return {same, rec.events == expected, rec.frames == frames};
+    expect: {value: [1, 1, 1]}
+    teardown:
+      code: |
+        rec = #0.cb_rec;
+        rec.events = {}; rec.frames = {};
+        delete_property(#0, "cb_rec");
+        for obj in (rec.owned) recycle(obj); endfor
+        recycle(rec);

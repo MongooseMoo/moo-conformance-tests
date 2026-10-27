@@ -1,0 +1,200 @@
+name: input_callback_context
+description: Listener input hooks receive server frames and their outcomes control only the documented dispatch path.
+requires:
+  builtins: [listen, set_player_flag]
+  config: [managed_server]
+tests:
+  - name: input_{kind}_{outcome}_context_and_fallback
+    table:
+      columns: [kind, hook, login, text, words, outcome, tail, native]
+      rows:
+        - [login, do_login_command, 0, "cb_probe one two", '{"cb_probe", "one", "two"}', false_return, "return 0;", 0]
+        - [login, do_login_command, 0, "cb_probe one two", '{"cb_probe", "one", "two"}', string_return, 'return \"not a user\";', 0]
+        - [login, do_login_command, 0, "cb_probe one two", '{"cb_probe", "one", "two"}', nonuser_return, "return #0;", 0]
+        - [login, do_login_command, 0, "cb_probe one two", '{"cb_probe", "one", "two"}', error, "raise(E_INVARG);", 0]
+        - [login, do_login_command, 0, "cb_probe one two", '{"cb_probe", "one", "two"}', resumed_user, "suspend(0); return this.login_user;", 0]
+        - [command, do_command, 1, "cb_probe one two", '{"cb_probe", "one", "two"}', false_return, "return 0;", 1]
+        - [command, do_command, 1, "cb_probe one two", '{"cb_probe", "one", "two"}', true_return, "return 1;", 0]
+        - [command, do_command, 1, "cb_probe one two", '{"cb_probe", "one", "two"}', error, "raise(E_INVARG);", 0]
+        - [command, do_command, 1, "cb_probe one two", '{"cb_probe", "one", "two"}', resumed_false, "suspend(0); return 0;", 0]
+        - [oob_prelogin, do_out_of_band_command, 0, "#$#cb_probe one two", '{"#$#cb_probe", "one", "two"}', false_return, "return 0;", 0]
+        - [oob_logged_in, do_out_of_band_command, 1, "#$#cb_probe one two", '{"#$#cb_probe", "one", "two"}', error, "raise(E_INVARG);", 0]
+        - [oob_logged_in, do_out_of_band_command, 1, "#$#cb_probe one two", '{"#$#cb_probe", "one", "two"}', resumed_false, "suspend(0); return 0;", 0]
+    steps:
+      - restart_server: {reset_db: true}
+      - allocate_port: {capture: port}
+      - run: |
+          p = create($nothing);
+          owner = create($nothing); owner.programmer = 1;
+          h = create(p);
+          u = create($nothing); set_player_flag(u, 1);
+          for name in ({"events", "native"})
+            add_property(p, name, {}, {player, "rw"});
+          endfor
+          h.native = 0;
+          add_property(p, "hook_owner", owner, {player, "r"});
+          add_property(p, "login_user", u, {player, "r"});
+          add_property(p, "frame", {}, {player, "rw"});
+          add_verb(p, {player, "rxd", "observe"}, {"this", "none", "this"});
+          set_verb_code(p, "observe", {"return callers()[1];"});
+          add_verb(p, {owner, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(p, "do_login_command", {"return {login} ? this.login_user | 0;"});
+          if ("{hook}" != "do_login_command")
+            add_verb(p, {owner, "rxd", "{hook}"}, {"this", "none", "this"});
+          endif
+          set_verb_code(p, "{hook}", {
+            "this.events = {@this.events, {verb, this, caller, player, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()}};",
+            "this.frame = this:observe();",
+            "{tail}"
+          });
+          add_property(u, "handler", h, {player, "r"});
+          add_verb(u, {player, "rxd", "cb_probe"}, {"any", "none", "none"});
+          set_verb_code(u, "cb_probe", {"this.handler.native = this.handler.native + 1;"});
+          listen(h, {port}, ["print-messages" -> 0]);
+          return h;
+        capture: handler
+        as: wizard
+      - run: return connected_players(1);
+        as: wizard
+        capture: before
+      - new_connection: {capture: client, port: "{port}"}
+      - wait: 100
+      - run: |
+          added = {};
+          for p in (connected_players(1))
+            if (!(p in {before})) added = {@added, p}; endif
+          endfor
+          if (length(added) != 1) raise(E_INVARG); endif
+          {handler}.events = {};
+          return added[1];
+        as: wizard
+        capture: connection
+      - send: {connection: client, text: "{text}"}
+      - run: |
+          h = {handler};
+          for attempt in [1..100]
+            if (length(h.events)) break; endif
+            suspend(0.01);
+          endfor
+          suspend(0.05);
+          expected_player = {login} ? h.login_user | {connection};
+          return {
+            h.events == {{"{hook}", h, #-1, expected_player, {words}, "{text}", #-1, "", "", #-1, "", h.hook_owner, #-1, {}}},
+            h.frame == {h, "{hook}", h.hook_owner, parent(h), expected_player},
+            h.native,
+            (h.login_user in connected_players()) != 0 == ({login} != 0)
+          };
+        as: wizard
+        expect: {value: [1, 1, "{native}", 1]}
+      - restart_server: {reset_db: true}
+
+  - name: trusted_blank_{allow}_frame_and_login_fallthrough
+    table:
+      columns: [allow]
+      rows: [[0], [1]]
+    steps:
+      - restart_server: {reset_db: true}
+      - allocate_port: {capture: port}
+      - run: |
+          try add_property(#6, "trusted_proxies", {}, {player, "rw"}); except (E_INVARG) endtry
+          #6.trusted_proxies = {connection_info(player)["destination_ip"]};
+          p = create($nothing); h = create(p);
+          owner = create($nothing); owner.programmer = 1;
+          add_property(p, "events", {}, {player, "rw"});
+          add_property(p, "hook_owner", owner, {player, "r"});
+          for name in ({"do_blank_command", "do_login_command"})
+            add_verb(p, {owner, "rxd", name}, {"this", "none", "this"});
+            set_verb_code(p, name, {
+              "this.events = {@this.events, {verb, this, caller, player, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()}};",
+              "return {allow};"
+            });
+          endfor
+          listen(h, {port}, ["print-messages" -> 0]);
+          return h;
+        as: wizard
+        capture: handler
+      - run: return connected_players(1);
+        as: wizard
+        capture: before
+      - new_connection: {capture: client, port: "{port}"}
+      - wait: 100
+      - run: |
+          added = {};
+          for p in (connected_players(1))
+            if (!(p in {before})) added = {@added, p}; endif
+          endfor
+          if (length(added) != 1) raise(E_INVARG); endif
+          {handler}.events = {};
+          return added[1];
+        as: wizard
+        capture: connection
+      - send: {connection: client, text: ""}
+      - wait: 100
+      - run: |
+          h = {handler}; p = {connection};
+          expected = {{"do_blank_command", h, #-1, p, {}, "", #-1, "", "", #-1, "", h.hook_owner, #-1, {}}};
+          if ({allow})
+            expected = {@expected, {"do_login_command", h, #-1, p, {}, "", #-1, "", "", #-1, "", h.hook_owner, #-1, {}}};
+          endif
+          return h.events == expected;
+        as: wizard
+        expect: {value: 1}
+      - restart_server: {reset_db: true}
+
+  - name: huh_{on_player}_selected_present_{present}_native_dispatch
+    table:
+      columns: [on_player, present]
+      rows: [[0, 1], [1, 1], [0, 0], [1, 0]]
+    steps:
+      - restart_server: {reset_db: true}
+      - allocate_port: {capture: port}
+      - run: |
+          h = create($nothing);
+          owner = create($nothing); owner.programmer = 1;
+          proto = create($nothing);
+          room = create(proto); u = create(proto);
+          set_player_flag(u, 1); move(u, room);
+          d = create($nothing); d.name = "cb_direct"; move(d, room);
+          i = create($nothing); i.name = "cb_indirect"; move(i, room);
+          add_property(#0, "cb_rec", h, {player, "r"});
+          add_property(h, "objects", {u, room, d, i, owner, proto}, {player, "r"});
+          add_property(h, "events", {}, {player, "rw"});
+          add_property(h, "frame", {}, {player, "rw"});
+          add_verb(h, {player, "rxd", "observe"}, {"this", "none", "this"});
+          set_verb_code(h, "observe", {"return callers()[1];"});
+          add_verb(proto, {owner, "rxd", "huh"}, {"this", "none", "this"});
+          set_verb_code(proto, "huh", {
+            "#0.cb_rec.events = {verb, this, caller, player, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()};",
+            "#0.cb_rec.frame = #0.cb_rec:observe();"
+          });
+          if (!{present}) chparent({on_player} ? u | room, $nothing); endif
+          add_verb(h, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(h, "do_login_command", {"return this.objects[1];"});
+          try add_property($server_options, "player_huh", {on_player}, {player, "rw"}); except (E_INVARG) endtry
+          $server_options.player_huh = {on_player};
+          listen(h, {port}, ["print-messages" -> 0]);
+          return h;
+        as: wizard
+        capture: handler
+      - new_connection: {capture: client, port: "{port}"}
+      - wait: 100
+      - send: {connection: client, text: "cb_missing cb_direct with cb_indirect"}
+      - run: |
+          h = {handler};
+          for attempt in [1..100]
+            if (length(h.events) || !{present}) break; endif
+            suspend(0.01);
+          endfor
+          {u, room, d, i, owner, proto} = h.objects;
+          if (!{present})
+            suspend(0.05);
+            return {h.events == {}, h.frame == {}};
+          endif
+          receiver = {on_player} ? u | room;
+          return {
+            h.events == {"cb_missing", receiver, u, u, {"cb_direct", "with", "cb_indirect"}, "cb_direct with cb_indirect", d, "cb_direct", "with", i, "cb_indirect", owner, #-1, {}},
+            h.frame == {receiver, "cb_missing", owner, proto, u}
+          };
+        as: wizard
+        expect: {value: [1, 1]}
+      - restart_server: {reset_db: true}

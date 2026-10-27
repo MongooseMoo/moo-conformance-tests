@@ -1,0 +1,666 @@
+name: connection_callback_context
+description: Real listener events select the correct callback and preserve every server-frame field.
+requires:
+  builtins: [listen, unlisten, switch_player]
+  config: [managed_server]
+tests:
+  - name: recreated_user_below_old_max_is_connected_not_created
+    steps:
+      - restart_server: {reset_db: true}
+      - allocate_port: {capture: port}
+      - run: |
+          parent = create($nothing);
+          owner = create($nothing); owner.programmer = 1;
+          h = create(parent);
+          u = create($nothing); set_player_flag(u, 1);
+          other = create($nothing); set_player_flag(other, 1);
+          recycle(u);
+          add_property(parent, "events", {}, {player, "rw"});
+          add_property(parent, "hook_owner", owner, {player, "r"});
+          add_property(parent, "login_user", u, {player, "rw"});
+          add_property(parent, "other_user", other, {player, "r"});
+          add_property(parent, "connection_id", #-1, {player, "rw"});
+          for name in ({"user_connected", "user_created", "user_reconnected", "user_disconnected", "user_client_disconnected"})
+            add_verb(parent, {owner, "rxd", name}, {"this", "none", "this"});
+            set_verb_code(parent, name, {
+              "this.events = {@this.events, {verb, this, caller, player, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()}};"
+            });
+          endfor
+          add_verb(parent, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(parent, "do_login_command", {
+            "this.connection_id = player;",
+            "recreate(this.login_user, $nothing); set_player_flag(this.login_user, 1);",
+            "return this.login_user;"
+          });
+          listen(h, {port}, ["print-messages" -> 0]);
+          return h;
+        capture: handler
+        as: wizard
+      - new_connection: {capture: first, port: "{port}"}
+      - wait: 100
+      - run: |
+          h = {handler};
+          for attempt in [1..100]
+            if (length(h.events) >= 1) break; endif
+            suspend(0.01);
+          endfor
+          u = h.login_user;
+          return h.events == {{"user_connected", h, #-1, u, {u}, "", #-1, "", "", #-1, "", h.hook_owner, #-1, {}}};
+        as: wizard
+        expect: {value: 1}
+      - restart_server: {reset_db: true}
+
+  - name: cross_listener_redirect_context_and_order
+    steps:
+      - restart_server: {reset_db: true}
+      - allocate_port: {capture: port}
+      - allocate_port: {capture: other_port}
+      - run: |
+          parent = create($nothing);
+          owner = create($nothing); owner.programmer = 1;
+          h = create(parent);
+          u = create($nothing); set_player_flag(u, 1);
+          other = create($nothing); set_player_flag(other, 1);
+          add_property(#0, "cb_connection_events", {}, {player, "rw"});
+          add_property(parent, "events", {}, {player, "rw"});
+          add_property(parent, "hook_owner", owner, {player, "r"});
+          add_property(parent, "login_user", u, {player, "rw"});
+          add_property(parent, "other_user", other, {player, "r"});
+          add_property(parent, "connection_id", #-1, {player, "rw"});
+          for name in ({"user_connected", "user_created", "user_reconnected", "user_disconnected", "user_client_disconnected"})
+            add_verb(parent, {owner, "rxd", name}, {"this", "none", "this"});
+            set_verb_code(parent, name, {
+              "#0.cb_connection_events = {@#0.cb_connection_events, {verb, this, caller, player, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()}};"
+            });
+          endfor
+          add_verb(parent, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(parent, "do_login_command", {
+            "this.connection_id = player;",
+            "return this.login_user;"
+          });
+          listen(h, {port}, ["print-messages" -> 0]);
+          h2 = create(parent);
+          add_property(h, "second", h2, {player, "r"});
+          listen(h2, {other_port}, ["print-messages" -> 0]);
+          return h;
+        capture: handler
+        as: wizard
+      - new_connection: {capture: first, port: "{port}"}
+      - wait: 100
+      - run: "#0.cb_connection_events = {}; return 1;"
+        as: wizard
+        expect: {value: 1}
+      - new_connection: {capture: second, port: "{other_port}"}
+      - wait: 100
+      - run: |
+          h = {handler};
+          for attempt in [1..100]
+            if (length(#0.cb_connection_events) >= 2) break; endif
+            suspend(0.01);
+          endfor
+          u = h.login_user;
+          return #0.cb_connection_events == {
+            {"user_client_disconnected", h, #-1, u, {u}, "", #-1, "", "", #-1, "", h.hook_owner, #-1, {}},
+            {"user_connected", h.second, #-1, u, {u}, "", #-1, "", "", #-1, "", h.hook_owner, #-1, {}}
+          };
+        as: wizard
+        expect: {value: 1}
+      - restart_server: {reset_db: true}
+
+  - name: switch_to_connected_{silent}_callback_frame
+    table:
+      columns: [silent]
+      rows: [[0], [1]]
+    steps:
+      - restart_server: {reset_db: true}
+      - allocate_port: {capture: port}
+      - run: |
+          parent = create($nothing);
+          owner = create($nothing); owner.programmer = 1;
+          h = create(parent);
+          u = create($nothing); set_player_flag(u, 1);
+          other = create($nothing); set_player_flag(other, 1);
+          add_property(parent, "events", {}, {player, "rw"});
+          add_property(parent, "hook_owner", owner, {player, "r"});
+          add_property(parent, "login_user", u, {player, "rw"});
+          add_property(parent, "other_user", other, {player, "r"});
+          add_property(parent, "original_user", u, {player, "r"});
+          add_property(parent, "connection_id", #-1, {player, "rw"});
+          for name in ({"user_connected", "user_created", "user_reconnected", "user_disconnected", "user_client_disconnected"})
+            add_verb(parent, {owner, "rxd", name}, {"this", "none", "this"});
+            set_verb_code(parent, name, {
+              "this.events = {@this.events, {verb, this, caller, player, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()}};"
+            });
+          endfor
+          add_verb(parent, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(parent, "do_login_command", {
+            "this.connection_id = player;",
+            "return this.login_user;"
+          });
+          listen(h, {port}, ["print-messages" -> 0]);
+          return h;
+        capture: handler
+        as: wizard
+      - new_connection: {capture: first, port: "{port}"}
+      - wait: 100
+      - run: "{handler}.login_user = {handler}.other_user; return 1;"
+        as: wizard
+        expect: {value: 1}
+      - new_connection: {capture: second, port: "{port}"}
+      - wait: 100
+      - run: |
+          h = {handler}; h.events = {};
+          switch_player(h.original_user, h.other_user, {silent});
+          return 1;
+        as: wizard
+        expect: {value: 1}
+      - run: |
+          h = {handler};
+          for attempt in [1..100]
+            if (length(h.events) >= 1) break; endif
+            suspend(0.01);
+          endfor
+          u = h.login_user;
+          return h.events == {{"user_reconnected", h, #-1, u, {u}, "", #-1, "", "", #-1, "", h.hook_owner, #-1, {}}};
+        as: wizard
+        expect: {value: 1}
+      - restart_server: {reset_db: true}
+
+  - name: existing_login_callback_frame
+    steps:
+      - restart_server: {reset_db: true}
+      - allocate_port: {capture: port}
+      - run: |
+          parent = create($nothing);
+          owner = create($nothing); owner.programmer = 1;
+          h = create(parent);
+          u = create($nothing); set_player_flag(u, 1);
+          other = create($nothing); set_player_flag(other, 1);
+          add_property(parent, "events", {}, {player, "rw"});
+          add_property(parent, "hook_owner", owner, {player, "r"});
+          add_property(parent, "login_user", u, {player, "rw"});
+          add_property(parent, "other_user", other, {player, "r"});
+          add_property(parent, "connection_id", #-1, {player, "rw"});
+          for name in ({"user_connected", "user_created", "user_reconnected", "user_disconnected", "user_client_disconnected"})
+            add_verb(parent, {owner, "rxd", name}, {"this", "none", "this"});
+            set_verb_code(parent, name, {
+              "this.events = {@this.events, {verb, this, caller, player, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()}};"
+            });
+          endfor
+          add_verb(parent, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(parent, "do_login_command", {
+            "this.connection_id = player;",
+            "return this.login_user;"
+          });
+          listen(h, {port}, ["print-messages" -> 0]);
+          return h;
+        capture: handler
+        as: wizard
+      - new_connection: {capture: first, port: "{port}"}
+      - wait: 100
+      - run: |
+          h = {handler};
+          for attempt in [1..100]
+            if (length(h.events) >= 1) break; endif
+            suspend(0.01);
+          endfor
+          u = h.login_user;
+          return h.events == {{"user_connected", h, #-1, u, {u}, "", #-1, "", "", #-1, "", h.hook_owner, #-1, {}}};
+        as: wizard
+        expect: {value: 1}
+      - restart_server: {reset_db: true}
+
+  - name: created_login_callback_frame
+    steps:
+      - restart_server: {reset_db: true}
+      - allocate_port: {capture: port}
+      - run: |
+          parent = create($nothing);
+          owner = create($nothing); owner.programmer = 1;
+          h = create(parent);
+          u = create($nothing); set_player_flag(u, 1);
+          other = create($nothing); set_player_flag(other, 1);
+          add_property(parent, "events", {}, {player, "rw"});
+          add_property(parent, "hook_owner", owner, {player, "r"});
+          add_property(parent, "login_user", u, {player, "rw"});
+          add_property(parent, "other_user", other, {player, "r"});
+          add_property(parent, "connection_id", #-1, {player, "rw"});
+          for name in ({"user_connected", "user_created", "user_reconnected", "user_disconnected", "user_client_disconnected"})
+            add_verb(parent, {owner, "rxd", name}, {"this", "none", "this"});
+            set_verb_code(parent, name, {
+              "this.events = {@this.events, {verb, this, caller, player, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()}};"
+            });
+          endfor
+          add_verb(parent, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(parent, "do_login_command", {
+            "this.connection_id = player;",
+            "this.login_user = create($nothing); set_player_flag(this.login_user, 1);",
+            "return this.login_user;"
+          });
+          listen(h, {port}, ["print-messages" -> 0]);
+          return h;
+        capture: handler
+        as: wizard
+      - new_connection: {capture: first, port: "{port}"}
+      - wait: 100
+      - run: |
+          h = {handler};
+          for attempt in [1..100]
+            if (length(h.events) >= 1) break; endif
+            suspend(0.01);
+          endfor
+          u = h.login_user;
+          return h.events == {{"user_created", h, #-1, u, {u}, "", #-1, "", "", #-1, "", h.hook_owner, #-1, {}}};
+        as: wizard
+        expect: {value: 1}
+      - restart_server: {reset_db: true}
+
+  - name: same_listener_reconnect_callback_frame
+    steps:
+      - restart_server: {reset_db: true}
+      - allocate_port: {capture: port}
+      - run: |
+          parent = create($nothing);
+          owner = create($nothing); owner.programmer = 1;
+          h = create(parent);
+          u = create($nothing); set_player_flag(u, 1);
+          other = create($nothing); set_player_flag(other, 1);
+          add_property(parent, "events", {}, {player, "rw"});
+          add_property(parent, "hook_owner", owner, {player, "r"});
+          add_property(parent, "login_user", u, {player, "rw"});
+          add_property(parent, "other_user", other, {player, "r"});
+          add_property(parent, "connection_id", #-1, {player, "rw"});
+          for name in ({"user_connected", "user_created", "user_reconnected", "user_disconnected", "user_client_disconnected"})
+            add_verb(parent, {owner, "rxd", name}, {"this", "none", "this"});
+            set_verb_code(parent, name, {
+              "this.events = {@this.events, {verb, this, caller, player, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()}};"
+            });
+          endfor
+          add_verb(parent, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(parent, "do_login_command", {
+            "this.connection_id = player;",
+            "return this.login_user;"
+          });
+          listen(h, {port}, ["print-messages" -> 0]);
+          return h;
+        capture: handler
+        as: wizard
+      - new_connection: {capture: first, port: "{port}"}
+      - wait: 100
+      - run: "{handler}.events = {}; return 1;"
+        as: wizard
+        expect: {value: 1}
+      - new_connection: {capture: second, port: "{port}"}
+      - wait: 100
+      - run: |
+          h = {handler};
+          for attempt in [1..100]
+            if (length(h.events) >= 1) break; endif
+            suspend(0.01);
+          endfor
+          u = h.login_user;
+          return h.events == {{"user_reconnected", h, #-1, u, {u}, "", #-1, "", "", #-1, "", h.hook_owner, #-1, {}}};
+        as: wizard
+        expect: {value: 1}
+      - restart_server: {reset_db: true}
+
+  - name: boot_logged_in_callback_frame
+    steps:
+      - restart_server: {reset_db: true}
+      - allocate_port: {capture: port}
+      - run: |
+          parent = create($nothing);
+          owner = create($nothing); owner.programmer = 1;
+          h = create(parent);
+          u = create($nothing); set_player_flag(u, 1);
+          other = create($nothing); set_player_flag(other, 1);
+          add_property(parent, "events", {}, {player, "rw"});
+          add_property(parent, "hook_owner", owner, {player, "r"});
+          add_property(parent, "login_user", u, {player, "rw"});
+          add_property(parent, "other_user", other, {player, "r"});
+          add_property(parent, "connection_id", #-1, {player, "rw"});
+          for name in ({"user_connected", "user_created", "user_reconnected", "user_disconnected", "user_client_disconnected"})
+            add_verb(parent, {owner, "rxd", name}, {"this", "none", "this"});
+            set_verb_code(parent, name, {
+              "this.events = {@this.events, {verb, this, caller, player, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()}};"
+            });
+          endfor
+          add_verb(parent, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(parent, "do_login_command", {
+            "this.connection_id = player;",
+            "return this.login_user;"
+          });
+          listen(h, {port}, ["print-messages" -> 0]);
+          return h;
+        capture: handler
+        as: wizard
+      - new_connection: {capture: first, port: "{port}"}
+      - wait: 100
+      - run: "{handler}.events = {}; return 1;"
+        as: wizard
+        expect: {value: 1}
+      - run: |
+          h = {handler};
+          boot_player(h.login_user);
+          return 1;
+        as: wizard
+        expect: {value: 1}
+      - run: |
+          h = {handler};
+          for attempt in [1..100]
+            if (length(h.events) >= 1) break; endif
+            suspend(0.01);
+          endfor
+          u = h.login_user;
+          return h.events == {{"user_disconnected", h, #-1, u, {u}, "", #-1, "", "", #-1, "", h.hook_owner, #-1, {}}};
+        as: wizard
+        expect: {value: 1}
+      - restart_server: {reset_db: true}
+
+  - name: switch_to_unused_callback_frame
+    steps:
+      - restart_server: {reset_db: true}
+      - allocate_port: {capture: port}
+      - run: |
+          parent = create($nothing);
+          owner = create($nothing); owner.programmer = 1;
+          h = create(parent);
+          u = create($nothing); set_player_flag(u, 1);
+          other = create($nothing); set_player_flag(other, 1);
+          add_property(parent, "events", {}, {player, "rw"});
+          add_property(parent, "hook_owner", owner, {player, "r"});
+          add_property(parent, "login_user", u, {player, "rw"});
+          add_property(parent, "other_user", other, {player, "r"});
+          add_property(parent, "connection_id", #-1, {player, "rw"});
+          for name in ({"user_connected", "user_created", "user_reconnected", "user_disconnected", "user_client_disconnected"})
+            add_verb(parent, {owner, "rxd", name}, {"this", "none", "this"});
+            set_verb_code(parent, name, {
+              "this.events = {@this.events, {verb, this, caller, player, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()}};"
+            });
+          endfor
+          add_verb(parent, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(parent, "do_login_command", {
+            "this.connection_id = player;",
+            "return this.login_user;"
+          });
+          listen(h, {port}, ["print-messages" -> 0]);
+          return h;
+        capture: handler
+        as: wizard
+      - new_connection: {capture: first, port: "{port}"}
+      - wait: 100
+      - run: "{handler}.events = {}; return 1;"
+        as: wizard
+        expect: {value: 1}
+      - run: |
+          h = {handler};
+          switch_player(h.login_user, h.other_user);
+          return 1;
+        as: wizard
+        expect: {value: 1}
+      - run: |
+          h = {handler};
+          for attempt in [1..100]
+            if (length(h.events) >= 2) break; endif
+            suspend(0.01);
+          endfor
+          u = h.login_user;
+          return h.events == {{"user_disconnected", h, #-1, u, {u}, "", #-1, "", "", #-1, "", h.hook_owner, #-1, {}}, {"user_connected", h, #-1, h.other_user, {h.other_user}, "", #-1, "", "", #-1, "", h.hook_owner, #-1, {}}};
+        as: wizard
+        expect: {value: 1}
+      - restart_server: {reset_db: true}
+
+  - name: switch_to_unused_silent_callback_frame
+    steps:
+      - restart_server: {reset_db: true}
+      - allocate_port: {capture: port}
+      - run: |
+          parent = create($nothing);
+          owner = create($nothing); owner.programmer = 1;
+          h = create(parent);
+          u = create($nothing); set_player_flag(u, 1);
+          other = create($nothing); set_player_flag(other, 1);
+          add_property(parent, "events", {}, {player, "rw"});
+          add_property(parent, "hook_owner", owner, {player, "r"});
+          add_property(parent, "login_user", u, {player, "rw"});
+          add_property(parent, "other_user", other, {player, "r"});
+          add_property(parent, "connection_id", #-1, {player, "rw"});
+          for name in ({"user_connected", "user_created", "user_reconnected", "user_disconnected", "user_client_disconnected"})
+            add_verb(parent, {owner, "rxd", name}, {"this", "none", "this"});
+            set_verb_code(parent, name, {
+              "this.events = {@this.events, {verb, this, caller, player, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()}};"
+            });
+          endfor
+          add_verb(parent, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(parent, "do_login_command", {
+            "this.connection_id = player;",
+            "return this.login_user;"
+          });
+          listen(h, {port}, ["print-messages" -> 0]);
+          return h;
+        capture: handler
+        as: wizard
+      - new_connection: {capture: first, port: "{port}"}
+      - wait: 100
+      - run: "{handler}.events = {}; return 1;"
+        as: wizard
+        expect: {value: 1}
+      - run: |
+          h = {handler};
+          switch_player(h.login_user, h.other_user, 1);
+          return 1;
+        as: wizard
+        expect: {value: 1}
+      - run: |
+          h = {handler};
+          for attempt in [1..100]
+            if (length(h.events) >= 2) break; endif
+            suspend(0.01);
+          endfor
+          u = h.login_user;
+          return h.events == {{"user_disconnected", h, #-1, u, {u}, "", #-1, "", "", #-1, "", h.hook_owner, #-1, {}}, {"user_connected", h, #-1, h.other_user, {h.other_user}, "", #-1, "", "", #-1, "", h.hook_owner, #-1, {}}};
+        as: wizard
+        expect: {value: 1}
+      - restart_server: {reset_db: true}
+
+  - name: client_close_callback_frame
+    steps:
+      - restart_server: {reset_db: true}
+      - allocate_port: {capture: port}
+      - run: |
+          parent = create($nothing);
+          owner = create($nothing); owner.programmer = 1;
+          h = create(parent);
+          u = create($nothing); set_player_flag(u, 1);
+          other = create($nothing); set_player_flag(other, 1);
+          add_property(parent, "events", {}, {player, "rw"});
+          add_property(parent, "hook_owner", owner, {player, "r"});
+          add_property(parent, "login_user", u, {player, "rw"});
+          add_property(parent, "other_user", other, {player, "r"});
+          add_property(parent, "connection_id", #-1, {player, "rw"});
+          for name in ({"user_connected", "user_created", "user_reconnected", "user_disconnected", "user_client_disconnected"})
+            add_verb(parent, {owner, "rxd", name}, {"this", "none", "this"});
+            set_verb_code(parent, name, {
+              "this.events = {@this.events, {verb, this, caller, player, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()}};"
+            });
+          endfor
+          add_verb(parent, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(parent, "do_login_command", {
+            "this.connection_id = player;",
+            "return this.login_user;"
+          });
+          listen(h, {port}, ["print-messages" -> 0]);
+          return h;
+        capture: handler
+        as: wizard
+      - new_connection: {capture: first, port: "{port}"}
+      - wait: 100
+      - run: "{handler}.events = {}; return 1;"
+        as: wizard
+        expect: {value: 1}
+      - close_connection: first
+      - run: |
+          h = {handler};
+          for attempt in [1..100]
+            if (length(h.events) >= 1) break; endif
+            suspend(0.01);
+          endfor
+          u = h.login_user;
+          return h.events == {{"user_client_disconnected", h, #-1, u, {u}, "", #-1, "", "", #-1, "", h.hook_owner, #-1, {}}};
+        as: wizard
+        expect: {value: 1}
+      - restart_server: {reset_db: true}
+
+  - name: prelogin_boot_callback_frame
+    steps:
+      - restart_server: {reset_db: true}
+      - allocate_port: {capture: port}
+      - run: |
+          parent = create($nothing);
+          owner = create($nothing); owner.programmer = 1;
+          h = create(parent);
+          u = create($nothing); set_player_flag(u, 1);
+          other = create($nothing); set_player_flag(other, 1);
+          add_property(parent, "events", {}, {player, "rw"});
+          add_property(parent, "hook_owner", owner, {player, "r"});
+          add_property(parent, "login_user", u, {player, "rw"});
+          add_property(parent, "other_user", other, {player, "r"});
+          add_property(parent, "connection_id", #-1, {player, "rw"});
+          for name in ({"user_connected", "user_created", "user_reconnected", "user_disconnected", "user_client_disconnected"})
+            add_verb(parent, {owner, "rxd", name}, {"this", "none", "this"});
+            set_verb_code(parent, name, {
+              "this.events = {@this.events, {verb, this, caller, player, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()}};"
+            });
+          endfor
+          add_verb(parent, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(parent, "do_login_command", {
+            "this.connection_id = player;",
+            "return 0;"
+          });
+          listen(h, {port}, ["print-messages" -> 0]);
+          return h;
+        capture: handler
+        as: wizard
+      - new_connection: {capture: first, port: "{port}"}
+      - wait: 100
+      - run: "{handler}.events = {}; return 1;"
+        as: wizard
+        expect: {value: 1}
+      - run: |
+          h = {handler};
+          boot_player(h.connection_id);
+          return 1;
+        as: wizard
+        expect: {value: 1}
+      - run: |
+          h = {handler};
+          for attempt in [1..100]
+            if (length(h.events) >= 1) break; endif
+            suspend(0.01);
+          endfor
+          u = h.login_user;
+          return h.events == {{"user_disconnected", h, #-1, h.connection_id, {h.connection_id}, "", #-1, "", "", #-1, "", h.hook_owner, #-1, {}}};
+        as: wizard
+        expect: {value: 1}
+      - restart_server: {reset_db: true}
+
+  - name: prelogin_client_close_callback_frame
+    steps:
+      - restart_server: {reset_db: true}
+      - allocate_port: {capture: port}
+      - run: |
+          parent = create($nothing);
+          owner = create($nothing); owner.programmer = 1;
+          h = create(parent);
+          u = create($nothing); set_player_flag(u, 1);
+          other = create($nothing); set_player_flag(other, 1);
+          add_property(parent, "events", {}, {player, "rw"});
+          add_property(parent, "hook_owner", owner, {player, "r"});
+          add_property(parent, "login_user", u, {player, "rw"});
+          add_property(parent, "other_user", other, {player, "r"});
+          add_property(parent, "connection_id", #-1, {player, "rw"});
+          for name in ({"user_connected", "user_created", "user_reconnected", "user_disconnected", "user_client_disconnected"})
+            add_verb(parent, {owner, "rxd", name}, {"this", "none", "this"});
+            set_verb_code(parent, name, {
+              "this.events = {@this.events, {verb, this, caller, player, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()}};"
+            });
+          endfor
+          add_verb(parent, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(parent, "do_login_command", {
+            "this.connection_id = player;",
+            "return 0;"
+          });
+          listen(h, {port}, ["print-messages" -> 0]);
+          return h;
+        capture: handler
+        as: wizard
+      - new_connection: {capture: first, port: "{port}"}
+      - wait: 100
+      - run: "{handler}.events = {}; return 1;"
+        as: wizard
+        expect: {value: 1}
+      - close_connection: first
+      - run: |
+          h = {handler};
+          for attempt in [1..100]
+            if (length(h.events) >= 1) break; endif
+            suspend(0.01);
+          endfor
+          u = h.login_user;
+          return h.events == {{"user_client_disconnected", h, #-1, h.connection_id, {h.connection_id}, "", #-1, "", "", #-1, "", h.hook_owner, #-1, {}}};
+        as: wizard
+        expect: {value: 1}
+      - restart_server: {reset_db: true}
+
+  - name: prelogin_switch_callback_frame
+    steps:
+      - restart_server: {reset_db: true}
+      - allocate_port: {capture: port}
+      - run: |
+          parent = create($nothing);
+          owner = create($nothing); owner.programmer = 1;
+          h = create(parent);
+          u = create($nothing); set_player_flag(u, 1);
+          other = create($nothing); set_player_flag(other, 1);
+          add_property(parent, "events", {}, {player, "rw"});
+          add_property(parent, "hook_owner", owner, {player, "r"});
+          add_property(parent, "login_user", u, {player, "rw"});
+          add_property(parent, "other_user", other, {player, "r"});
+          add_property(parent, "connection_id", #-1, {player, "rw"});
+          for name in ({"user_connected", "user_created", "user_reconnected", "user_disconnected", "user_client_disconnected"})
+            add_verb(parent, {owner, "rxd", name}, {"this", "none", "this"});
+            set_verb_code(parent, name, {
+              "this.events = {@this.events, {verb, this, caller, player, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()}};"
+            });
+          endfor
+          add_verb(parent, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(parent, "do_login_command", {
+            "this.connection_id = player;",
+            "return 0;"
+          });
+          listen(h, {port}, ["print-messages" -> 0]);
+          return h;
+        capture: handler
+        as: wizard
+      - new_connection: {capture: first, port: "{port}"}
+      - wait: 100
+      - run: "{handler}.events = {}; return 1;"
+        as: wizard
+        expect: {value: 1}
+      - run: |
+          h = {handler};
+          switch_player(h.connection_id, h.other_user);
+          return 1;
+        as: wizard
+        expect: {value: 1}
+      - run: |
+          h = {handler};
+          for attempt in [1..100]
+            if (length(h.events) >= 1) break; endif
+            suspend(0.01);
+          endfor
+          u = h.login_user;
+          return h.events == {{"user_connected", h, #-1, h.other_user, {h.other_user}, "", #-1, "", "", #-1, "", h.hook_owner, #-1, {}}};
+        as: wizard
+        expect: {value: 1}
+      - restart_server: {reset_db: true}

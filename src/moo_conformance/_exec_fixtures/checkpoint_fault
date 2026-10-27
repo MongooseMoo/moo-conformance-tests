@@ -1,0 +1,50 @@
+#!/usr/bin/python3
+"""Obstruct only the disposable Test.db checkpoint destinations used by tests."""
+import sys
+from pathlib import Path
+
+
+def main():
+    base = Path(__file__).resolve().parent.parent
+    if not base.name.startswith("moo_conformance_") or not (base / "profile.json").is_file():
+        raise ValueError("not a managed conformance directory")
+    if len(sys.argv) != 2:
+        raise ValueError("expected one operation")
+    output = base / "Test.db.new"
+    backup = base / "Test.db.new.callback-backup"
+    temporary = base / "Test.db.new.#1#"
+    marker = output / "callback-obstruction"
+    operation = sys.argv[1]
+    if operation == "write":
+        if temporary.exists() or temporary.is_symlink():
+            raise ValueError("checkpoint temporary path already exists")
+        temporary.symlink_to("/dev/full")
+    elif operation == "clear-write":
+        if temporary.is_symlink():
+            if temporary.readlink() != Path("/dev/full"):
+                raise ValueError("unexpected symlink")
+            temporary.unlink()
+        elif temporary.exists():
+            raise ValueError("unexpected checkpoint temporary file")
+    elif operation == "publish":
+        if backup.exists() or backup.is_symlink() or output.is_symlink():
+            raise ValueError("checkpoint backup or symlink already exists")
+        if output.exists():
+            if not output.is_file():
+                raise ValueError("output is not a regular file")
+            output.rename(backup)
+        output.mkdir()
+        marker.write_text("conformance checkpoint obstruction", encoding="utf-8")
+    elif operation == "clear-publish":
+        if output.is_symlink() or not marker.is_file() or marker.is_symlink():
+            raise ValueError("missing owned checkpoint obstruction")
+        marker.unlink()
+        output.rmdir()
+        if backup.exists():
+            backup.rename(output)
+    else:
+        raise ValueError("unknown checkpoint fault operation")
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,41 @@
+name: nondebug_keyed_property_error
+description: >
+  In a verb without the debug flag, an error is pushed as the expression's
+  value and execution continues. A failing property read inside obj.prop[key]
+  must leave the surrounding expression intact, both in the verb that fails
+  and in its caller.
+tests:
+- name: nondebug_missing_property_index_in_list
+  steps:
+  - run: |
+      obj = create($nothing);
+      add_verb(obj, {player, "rx", "keyed"}, {"this", "none", "this"});
+      set_verb_code(obj, "keyed", {"return {99, this.no_such_prop_zz[\"k\"], 77};"});
+      return obj;
+    capture: obj
+    as: wizard
+  - run: return {obj}:keyed();
+    as: wizard
+    expect:
+      value: [99, E_TYPE, 77]
+  cleanup:
+  - run: recycle({obj});
+    as: wizard
+- name: nondebug_missing_property_index_preserves_caller
+  steps:
+  - run: |
+      obj = create($nothing);
+      add_verb(obj, {player, "rx", "keyed"}, {"this", "none", "this"});
+      set_verb_code(obj, "keyed", {"return {99, this.no_such_prop_zz[\"k\"], 77};"});
+      add_verb(obj, {player, "rxd", "outer"}, {"this", "none", "this"});
+      set_verb_code(obj, "outer", {"return {\"a\", \"b\", this:keyed(), \"c\"};"});
+      return obj;
+    capture: obj
+    as: wizard
+  - run: return {obj}:outer();
+    as: wizard
+    expect:
+      value: [a, b, [99, E_TYPE, 77], c]
+  cleanup:
+  - run: recycle({obj});
+    as: wizard

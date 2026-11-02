@@ -23,5 +23,12 @@ admission) and fails on Barn master (both cases: log text absent).
 - Assertions use the stable substring of Toast's log line, not the connection
   name or counts.
 
+## Surprises
+- CI's change-boundary classifier rejects a PR mixing controller files
+  (runner/schema/transport/tests) with conformance data (YAML). This PR is now
+  controller-only; `server/max_line_bytes.yaml` lands in a second PR from main
+  after this one merges. Its content is in this branch's history.
+
 ## Next step
-Merge this PR; then the Barn fix (branch fix/tcp-max-line-bytes) runs it.
+Merge this controller PR. Then: Barn PR 568 (the fix), then the data PR adding
+server/max_line_bytes.yaml, in that order, since Barn CI runs this repo's main.

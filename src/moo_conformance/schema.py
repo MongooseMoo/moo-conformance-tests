@@ -195,7 +195,7 @@ ACTION_PAYLOAD_FIELDS = {
     "allocate_port": frozenset({"capture"}),
     "new_connection": frozenset({"capture", "port"}),
     "send": frozenset({"text", "connection"}),
-    "send_bytes": frozenset({"hex", "connection"}),
+    "send_bytes": frozenset({"hex", "connection", "repeat"}),
     "read_connection": frozenset({"connection"}),
     "assert_log": frozenset({"contains", "not_contains", "contains_any"}),
     "assert_file": frozenset({
@@ -341,6 +341,7 @@ class SendBytesOnConnection:
     """Send raw bytes, represented as hex, on a specific connection."""
     hex: str              # Hex-encoded bytes to send
     connection: str       # Connection variable name
+    repeat: int = 1       # Send the decoded bytes this many times, as one write
 
 
 @dataclass
@@ -1056,9 +1057,13 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
         _reject_unknown_fields(
             sb_data, ACTION_PAYLOAD_FIELDS['send_bytes'], f"{context} send_bytes"
         )
+        repeat = sb_data.get('repeat', 1)
+        if type(repeat) is not int or repeat <= 0:
+            raise ValueError(f"{context} send_bytes repeat must be a positive integer")
         send_bytes = SendBytesOnConnection(
             hex=sb_data['hex'],
             connection=sb_data['connection'],
+            repeat=repeat,
         )
 
     # Parse read_connection if present

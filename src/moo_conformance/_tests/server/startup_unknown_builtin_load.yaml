@@ -1,0 +1,30 @@
+name: startup_unknown_builtin_load
+description: >
+  A database verb that calls an unknown builtin loads with a warning: the call is
+  compiled as call_function("name", @args), so the verb keeps running and the call
+  raises E_INVARG when reached. set_verb_code still rejects the same call (see
+  language/parser_independent_diagnostics.yaml).
+server_db: unknown_builtin_load.db
+requires:
+  config: [managed_server, server_dir, server_db_dir, log_file]
+tests:
+  - name: load_warns_with_verb_and_line
+    steps:
+      - assert_log:
+          contains: "PARSER: Warning in #6:probe:"
+      - assert_log:
+          contains: "Line 2:  Unknown built-in function: diagnostic_load_missing"
+
+  - name: verb_code_shows_the_call_function_form
+    permission: wizard
+    statement: return verb_code(#6, "probe");
+    expect:
+      value: ["try", "  return {\"called\", call_function(\"diagnostic_load_missing\", 1, length(args))};", "except e (ANY)", "  return {e[1], e[2], e[3]};", "endtry"]
+
+  - name: reaching_the_call_raises_invarg
+    permission: wizard
+    # Wrapped in a list: the runner reports a bare {E_*, message, value} result
+    # as 0.
+    statement: return {#6:probe()};
+    expect:
+      value: [[E_INVARG, "Unknown built-in function", "diagnostic_load_missing"]]

@@ -634,7 +634,7 @@ class YamlTestRunner:
                             f"Unknown connection '{conn_name}'. Available: "
                             f"{list(connections.keys())}"
                         )
-                    data = bytes.fromhex(step.send_bytes.hex)
+                    data = bytes.fromhex(step.send_bytes.hex) * step.send_bytes.repeat
                     output_lines = connections[conn_name].send_bytes(data)
 
                     if step.capture:

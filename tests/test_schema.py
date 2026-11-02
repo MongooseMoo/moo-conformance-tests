@@ -161,6 +161,24 @@ def test_unknown_fields_are_rejected_in_structured_actions(
         validate_test_suite(data)
 
 
+@pytest.mark.parametrize("repeat", [0, -1, True, "2", 1.5])
+def test_send_bytes_repeat_must_be_a_positive_integer(repeat: object) -> None:
+    data = {
+        "name": "send_bytes_repeat",
+        "tests": [
+            {
+                "name": "one",
+                "steps": [
+                    {"send_bytes": {"hex": "61", "connection": "c", "repeat": repeat}}
+                ],
+            }
+        ],
+    }
+
+    with pytest.raises(ValueError, match="repeat must be a positive integer"):
+        validate_test_suite(data)
+
+
 def _suite_with_wait_for_server_exit(payload: dict) -> dict:
     return {
         "name": "wait_for_server_exit_schema",

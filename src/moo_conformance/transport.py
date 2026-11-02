@@ -176,7 +176,8 @@ class TestConnection:
                     clean = SocketTransport._strip_telnet_commands(data)
                     buffer += clean
                     self.sock.settimeout(0.1)  # Shorter after first data
-                except socket.timeout:
+                except (socket.timeout, ConnectionResetError):
+                    # A reset is the server closing with input unread.
                     break
         finally:
             self.sock.settimeout(2.0)

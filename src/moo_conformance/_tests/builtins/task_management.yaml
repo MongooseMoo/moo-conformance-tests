@@ -761,6 +761,54 @@ tests:
     expect:
       error: E_INVARG
 
+  - name: task_stack_of_unstarted_fork_is_invarg
+    description: |
+      task_stack() finds suspended and reading tasks only (tasks.cc
+      find_suspended_task). A fork that has not yet started is not one, so
+      task_stack() returns E_INVARG for it.
+    permission: wizard
+    statement: |
+      fork t (60)
+        return;
+      endfork
+      r = `task_stack(t) ! ANY';
+      kill_task(t);
+      return r;
+    expect:
+      value: E_INVARG
+
+  - name: task_stack_perm_follows_suspended_verb_programmer
+    description: |
+      task_stack() checks the caller against the programmer of the verb the
+      task is suspended in (execute.cc bf_task_stack, progr_of_cur_verb). A
+      wizard forks the task, but it suspends inside a verb owned by non-wizard
+      p, so a verb running as p may read its stack.
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      p.programmer = 1;
+      o = create($nothing);
+      add_verb(o, {p, "xd", "park"}, {"this", "none", "this"});
+      set_verb_code(o, "park", {"suspend();"});
+      add_verb(o, {p, "xd", "look"}, {"this", "none", "this"});
+      set_verb_code(o, "look", {"s = `task_stack(args[1]) ! ANY';", "return typeof(s) == LIST ? s[1][2] | s;"});
+      fork t (0)
+        o:park();
+      endfork
+      for i in [1..50]
+        if (typeof(`task_stack(t) ! ANY') == LIST)
+          break;
+        endif
+        suspend(0);
+      endfor
+      r = o:look(t);
+      `kill_task(t) ! ANY';
+      recycle(o);
+      recycle(p);
+      return r;
+    expect:
+      value: "park"
+
   - name: task_stack_suspended_returns_list
     description: "task_stack() on a suspended task returns a list of frames"
     permission: wizard

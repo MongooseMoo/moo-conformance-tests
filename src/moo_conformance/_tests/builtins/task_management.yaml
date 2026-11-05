@@ -538,6 +538,73 @@ tests:
     expect:
       error: E_INVARG
 
+  - name: kill_task_perm_follows_suspended_verb_programmer
+    description: |
+      For a suspended task, kill_task() checks the caller against the
+      programmer of the verb the task is suspended in (tasks.cc kill_task,
+      progr_of_cur_verb), not the task that started it. A wizard forks the
+      task, but it suspends inside a verb owned by non-wizard p, so a verb
+      running as p may kill it.
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      p.programmer = 1;
+      o = create($nothing);
+      add_verb(o, {p, "xd", "park"}, {"this", "none", "this"});
+      set_verb_code(o, "park", {"suspend();"});
+      add_verb(o, {p, "xd", "stop"}, {"this", "none", "this"});
+      set_verb_code(o, "stop", {"return `kill_task(args[1]) ! ANY';"});
+      fork t (0)
+        o:park();
+      endfork
+      for i in [1..50]
+        if (typeof(`task_stack(t) ! ANY') == LIST)
+          break;
+        endif
+        suspend(0);
+      endfor
+      r = o:stop(t);
+      `kill_task(t) ! ANY';
+      recycle(o);
+      recycle(p);
+      return r;
+    expect:
+      value: 0
+
+  - name: kill_task_perm_refuses_starter_when_suspended_verb_programmer_differs
+    description: |
+      The converse: a task forked inside a verb owned by non-wizard p that
+      suspends inside a wizard-owned verb cannot be killed by a verb running
+      as p, because its current verb's programmer is the wizard. The task
+      sits in p's queue until it runs, and until then kill_task() checks the
+      programmer that forked it (p), so the test waits until task_stack()
+      shows it suspended.
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      p.programmer = 1;
+      o = create($nothing);
+      add_verb(o, {player, "xd", "wpark"}, {"this", "none", "this"});
+      set_verb_code(o, "wpark", {"suspend();"});
+      add_verb(o, {p, "xd", "spawn"}, {"this", "none", "this"});
+      set_verb_code(o, "spawn", {"fork t (0)", "  this:wpark();", "endfork", "return t;"});
+      add_verb(o, {p, "xd", "stop"}, {"this", "none", "this"});
+      set_verb_code(o, "stop", {"return `kill_task(args[1]) ! ANY';"});
+      t = o:spawn();
+      for i in [1..50]
+        if (typeof(`task_stack(t) ! ANY') == LIST)
+          break;
+        endif
+        suspend(0);
+      endfor
+      r = o:stop(t);
+      `kill_task(t) ! ANY';
+      recycle(o);
+      recycle(p);
+      return r;
+    expect:
+      value: E_PERM
+
   # ===================================================================
   # suspend() -- error cases and suspend(0) only
   # ===================================================================
@@ -608,6 +675,55 @@ tests:
     code: "resume(-1)"
     expect:
       error: E_INVARG
+
+  - name: resume_of_reading_task_is_invarg
+    description: |
+      resume() reaches only tasks waiting in suspend() or already resumed
+      (tasks.cc do_resume searches waiting_tasks and the background queues).
+      A task waiting in read() is in neither, so resume() returns E_INVARG and
+      the task keeps waiting for input.
+    permission: wizard
+    statement: |
+      me = task_id();
+      fork (0)
+        r = `resume(me, 5) ! ANY';
+        force_input(player, toliteral(r));
+      endfork
+      return read();
+    expect:
+      value: "E_INVARG"
+
+  - name: resume_perm_follows_suspended_verb_programmer
+    description: |
+      resume() checks the caller against the programmer of the verb the task
+      is suspended in (tasks.cc do_resume, progr_of_cur_verb). A wizard forks
+      the task, but it suspends inside a verb owned by non-wizard p, so a verb
+      running as p may resume it.
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      p.programmer = 1;
+      o = create($nothing);
+      add_verb(o, {p, "xd", "park"}, {"this", "none", "this"});
+      set_verb_code(o, "park", {"return suspend();"});
+      add_verb(o, {p, "xd", "wake"}, {"this", "none", "this"});
+      set_verb_code(o, "wake", {"return `resume(args[1], 7) ! ANY';"});
+      fork t (0)
+        o:park();
+      endfork
+      for i in [1..50]
+        if (typeof(`task_stack(t) ! ANY') == LIST)
+          break;
+        endif
+        suspend(0);
+      endfor
+      r = o:wake(t);
+      `kill_task(t) ! ANY';
+      recycle(o);
+      recycle(p);
+      return r;
+    expect:
+      value: 0
 
   # ===================================================================
   # task_stack() -- error/arg cases only

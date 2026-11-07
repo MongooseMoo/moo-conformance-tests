@@ -1,0 +1,18 @@
+name: startup_object_label_v4
+description: >
+  A v4 (before DBV_NextGen) numbered object record whose "#N" label is not the
+  next ID is rejected by v4_read_object, and the server exits 1 without
+  loading. Record 2 of V4MismatchedLabel.db is labelled #9.
+server_db: V4MismatchedLabel.db
+requires:
+  config:
+    - managed_server
+    - server_dir
+    - log_file
+    - server_db_dir
+tests:
+  - name: mismatched_label_refuses_database
+    steps:
+      - wait_for_server_exit: {timeout_ms: 5000, exit_code: 1}
+      - assert_log:
+          contains: "READ_DB_FILE: Bad object #2."

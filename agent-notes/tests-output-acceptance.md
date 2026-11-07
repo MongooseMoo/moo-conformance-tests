@@ -58,6 +58,31 @@ The initial requires guard turned that wrong input name into four skips.
 
 ## Next step
 
+PR #178 is published and ready for review; Barn dependency #639 is merged.
+Final verification is NO-MERGE because all three complete Toast profiles fail
+the same six pre-existing empty-root file-list assertions. Their actual values
+contain the new __file_scan_cursor.txt fixture. Each profile's six new cases
+passes with no skips; that does not clear contamination of later suites.
+Raw XML, logs, profiles, provenance and admission evidence remain in
+.tmp/pr178-failure/{profile}/. The verifier report is
+reports/system-layering-file-capacity-verifier.md.
+
+Production test dispatch never calls run_suite_teardown, so declaring that
+cleanup does not end the new file's lifetime. The first three cases now use
+existing per-test setup and teardown shared through YAML anchors, preserving
+all cursor/count assertions and existing file-list expectations. Cleanup runs
+in the existing runner finally path even after a failed assertion. The managed
+stock WSL comparison of all six new cases and the six formerly contaminated
+file-list cases reports thirteen passes including admission, zero failures and
+zero skips. Raw toast-file-lifetime-repair XML and admission evidence remain
+in the Barn campaign .tmp/system-layering directory. This local oracle revision
+differs from CI; complete profile CI must also pass on the repaired head.
+The same managed selection on the corrected Barn binary also reports thirteen
+passes, zero failures and zero skips; barn-file-lifetime-repair XML and admission
+evidence are preserved beside the Toast capture. Collect repaired exact-head
+complete profile CI before final approval. No source changes, local
+runs, publication or merge were performed by the verifier.
+
 Byte suite PR #177 merged after multi-profile Toast CI and final review, then
 the local checkout fast-forwarded to main. Publish the verified capacity and
 file-scan suites as a separate dependent PR; hold its merge until Barn PR #639

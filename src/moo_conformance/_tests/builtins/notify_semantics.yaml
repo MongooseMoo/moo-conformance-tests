@@ -1,0 +1,44 @@
+name: notify_semantics
+description: Successful notification return values and programmer permissions.
+
+requires:
+  builtins: [notify, set_task_perms, task_perms]
+
+tests:
+  - name: connected_wizard_send_returns_one
+    permission: wizard
+    code: 'notify(player, "notify wizard success")'
+    expect:
+      value: 1
+
+  - name: connected_programmer_self_send_returns_one
+    permission: programmer
+    statement: |
+      return {task_perms() == player, player.wizard, notify(player, "notify self success")};
+    expect:
+      value: [1, 0, 1]
+
+  - name: programmer_cannot_notify_other_connected_player
+    steps:
+      - run: player
+        as: programmer
+        capture: programmer
+      - run: |
+          target = player;
+          set_task_perms({programmer});
+          return notify(target, "notify forbidden");
+        as: wizard
+        expect:
+          error: E_PERM
+
+  - name: programmer_cannot_notify_disconnected_other_target
+    permission: programmer
+    code: 'notify(#-1, "notify forbidden disconnected")'
+    expect:
+      error: E_PERM
+
+  - name: wizard_disconnected_target_returns_one
+    permission: wizard
+    code: 'notify(#-1, "notify disconnected success")'
+    expect:
+      value: 1

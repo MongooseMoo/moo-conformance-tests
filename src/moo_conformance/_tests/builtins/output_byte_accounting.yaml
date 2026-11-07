@@ -1,0 +1,51 @@
+name: output_byte_accounting
+description: Connection output length counts queued MOO output bytes within a task.
+
+tests:
+  - name: no_flush_output_counts_crlf_bytes
+    permission: wizard
+    statement: |
+      before = buffered_output_length(player);
+      accepted = notify(player, "abc", 1);
+      return {accepted, buffered_output_length(player) - before};
+    expect:
+      value: [1, 5]
+
+  - name: no_newline_output_counts_payload_bytes
+    permission: wizard
+    statement: |
+      before = buffered_output_length(player);
+      accepted = notify(player, "abc", 1, 1);
+      observed = {accepted, buffered_output_length(player) - before};
+      notify(player, "");
+      return observed;
+    expect:
+      value: [1, 3]
+
+  - name: successive_no_flush_outputs_accumulate_wire_bytes
+    permission: wizard
+    statement: |
+      before = buffered_output_length(player);
+      first = notify(player, "a", 1);
+      first_bytes = buffered_output_length(player) - before;
+      second = notify(player, "bc", 1);
+      return {first, second, first_bytes, buffered_output_length(player) - before};
+    expect:
+      value: [1, 1, 3, 7]
+
+  - name: binary_output_counts_decoded_bytes_without_newline
+    permission: wizard
+    statement: |
+      old_binary = connection_options(player, "binary");
+      try
+        set_connection_option(player, "binary", 1);
+        before = buffered_output_length(player);
+        accepted = notify(player, "~41~42", 1);
+        observed = {accepted, buffered_output_length(player) - before};
+      finally
+        set_connection_option(player, "binary", old_binary);
+      endtry
+      notify(player, "");
+      return observed;
+    expect:
+      value: [1, 2]

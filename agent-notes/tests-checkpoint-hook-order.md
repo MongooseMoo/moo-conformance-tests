@@ -9,7 +9,10 @@ Created isolated branch tests/checkpoint-hook-order from origin/main. Required
 Barn and conformance instructions read; existing checkpoint failure callback
 setup inspected. No Barn source changes belong to this task. The final string
 loop passed five Toast repetitions and 20/20 fixed Barn runs; unfixed master
-failed 20/20. Publication and PR CI are next.
+failed 20/20. Independent PR #175 is open:
+https://github.com/MongooseMoo/moo-conformance-tests/pull/175.
+GitHub carries the exact-head CI results; local duplicate lint and the profile
+contract commit guard passed.
 
 # Decisions and why
 
@@ -113,4 +116,5 @@ they do not claim that this case reproduces the original uncatchable E_INVARG.
 
 # Next step
 
-Publish the independent conformance PR and watch its checks. Leave it unmerged.
+Watch PR #175 checks to completion and repair any red check in scope. Leave it
+unmerged. The subsequent merge order remains Barn #623 first, then #175.

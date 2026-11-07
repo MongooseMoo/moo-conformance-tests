@@ -1,8 +1,8 @@
-# Output acceptance and byte accounting
+# MOO output capacity, byte accounting and file scans
 
 ## Goal
 
-Resolve output contracts for Q's approved Barn system-layering plan using the
+Resolve I/O contracts for Q's approved Barn system-layering plan using the
 canonical managed WSL Toast oracle before changing Barn behavior.
 
 ## State
@@ -32,8 +32,9 @@ preservation of zero/negative limits, invalid-type default 65536, and real
 no_flush rejection after existing queued output. The first two failed on the
 frozen Barn candidate: capacity remains 65536 and notify returns 1 instead of
 0. Raw evidence is in the Barn worktree's toast-acceptance-v2.xml and
-barn-acceptance-before.xml with matching admission evidence. These cases must
-remain unpublished until their Barn implementation dependency is repaired.
+barn-acceptance-before.xml with matching admission evidence. The no_flush refusal case remains local because its Barn implementation is not
+repaired. Capacity and file scans have verified corrections in Barn PR #639;
+the companion PR may run CI but must not merge before that dependency.
 
 ## Decisions and why
 
@@ -57,11 +58,36 @@ The initial requires guard turned that wrong input name into four skips.
 
 ## Next step
 
-Finish Barn's byte-accounting delivery, then publish only the verified byte
-suite as its own substantive change. Keep the capacity/refusal suite local
-until those defects are repaired. Valid-file count/grep cursor cases are the
-next managed oracle investigation for the parent campaign; existing packaged
-coverage does not settle those cursor effects.
+PR #178 is published and ready for review; Barn dependency #639 is merged.
+Final verification is NO-MERGE because all three complete Toast profiles fail
+the same six pre-existing empty-root file-list assertions. Their actual values
+contain the new __file_scan_cursor.txt fixture. Each profile's six new cases
+passes with no skips; that does not clear contamination of later suites.
+Raw XML, logs, profiles, provenance and admission evidence remain in
+.tmp/pr178-failure/{profile}/. The verifier report is
+reports/system-layering-file-capacity-verifier.md.
+
+Production test dispatch never calls run_suite_teardown, so declaring that
+cleanup does not end the new file's lifetime. The first three cases now use
+existing per-test setup and teardown shared through YAML anchors, preserving
+all cursor/count assertions and existing file-list expectations. Cleanup runs
+in the existing runner finally path even after a failed assertion. The managed
+stock WSL comparison of all six new cases and the six formerly contaminated
+file-list cases reports thirteen passes including admission, zero failures and
+zero skips. Raw toast-file-lifetime-repair XML and admission evidence remain
+in the Barn campaign .tmp/system-layering directory. This local oracle revision
+differs from CI; complete profile CI must also pass on the repaired head.
+The same managed selection on the corrected Barn binary also reports thirteen
+passes, zero failures and zero skips; barn-file-lifetime-repair XML and admission
+evidence are preserved beside the Toast capture. Collect repaired exact-head
+complete profile CI before final approval. No source changes, local
+runs, publication or merge were performed by the verifier.
+
+Byte suite PR #177 merged after multi-profile Toast CI and final review, then
+the local checkout fast-forwarded to main. Publish the verified capacity and
+file-scan suites as a separate dependent PR; hold its merge until Barn PR #639
+is merged. Keep no_flush refusal and the stock-64-only width probe local;
+neither belongs in this generic change.
 The first candidate file_scan_cursor run passed admission but all three scan
 cases observed an empty file. This is a failed fixture observation, not a cursor
 behavior verdict. Preserve toast-file-scan.xml and inspect the actual setup
@@ -71,3 +97,7 @@ The corrected one-program setup passed all scan cases plus admission on stock
 Toast. Barn's same managed cases pass count/all-match but first-match grep raises
 E_FILE when the next file_readline should return omega. Preserve
 barn-file-scan-before.xml: this is a confirmed cursor correctness defect.
+An additional managed stock case confirmed 65536-byte lines are accepted by
+count and grep, including the exact first-match cursor and following line.
+toast-file-scan-v3.xml reports five passes including admission. Do not preserve
+Barn's accidental Scanner token-size limit as a language contract.

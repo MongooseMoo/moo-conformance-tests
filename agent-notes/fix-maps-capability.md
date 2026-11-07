@@ -20,7 +20,13 @@ returned an advertised-feature list for a maps semantic probe, producing
 `expected 0 or 1, got []`. Raw quality summary was
 `1 failed, 617 passed, 1 skipped in 12.02s`. That fixture now names
 optional_feature, keeping its declared generic skip contract and leaving the maps
-error classification intact. Full required CI must rerun on the corrected head.
+error classification intact. Workflow 42347467888 then passed required quality
+and full-suite gates plus all three candidate-controller Toast profiles. Decoded
+candidate job logs are retained in the Barn campaign's external evidence folder.
+
+The default branch subsequently advanced with parser string-line tests. This
+branch integrates that actual default without modifying the maps classifier or
+expectations. The combined head requires new exact-head CI before normal merge.
 
 The bounded classifier and regressions are implemented. The documented managed
 pinned Toast run executed all 127 map cases plus canonical capability admission.

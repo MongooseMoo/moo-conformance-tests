@@ -1,0 +1,15 @@
+name: parser_string_lines
+description: A quoted string cannot cross a source line boundary
+tests:
+  - name: string_crossing_lines_rejected
+    code: 'eval("return \"a", "b\";")'
+    expect:
+      value: [0, ["Line 1:  Missing quote", "Line 1:  syntax error"]]
+  - name: escaped_line_boundary_rejected
+    code: 'eval("return \"a\\", "b\";")'
+    expect:
+      value: [0, ["Line 1:  Missing quote", "Line 1:  syntax error"]]
+  - name: separately_quoted_lines_remain_valid
+    code: 'eval("return \"a\" +", "\"b\";")'
+    expect:
+      value: [1, "ab"]

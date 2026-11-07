@@ -442,7 +442,7 @@ def test_requirement_skip_is_allowed_by_strict_packaged_runner(pytester) -> None
     suite_path.write_text(
         """name: requires_feature
 requires:
-  features: [maps]
+  features: [optional_feature]
 tests:
   - name: guarded
     code: "1"

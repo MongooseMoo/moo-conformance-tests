@@ -6,6 +6,22 @@ the existing map suite while unsupported syntax and probe failures stay distinct
 Root owns publication and CI; this worker commits only.
 
 ## State
+Peer source review of the open PR found no blocking classifier defect. It read
+the actual diff, override ordering, dynamic cache/error paths, focused tests and
+unchanged YAML scope. The reviewer independently parsed the retained oracle XML:
+127 map cases, zero skipped, failed or error nodes. At that read, candidate quality
+and aggregate quality CI were red while trusted controller validation was green;
+the failure's raw job log was not yet available through gh. No reviewer tests,
+code edits, or posted review occurred. Review details are in `.tmp/review-pr176.md`.
+
+The completed quality log identified one stale generic-feature fixture:
+`tests/test_cli_file_selection.py::test_requirement_skip_is_allowed_by_strict_packaged_runner`
+returned an advertised-feature list for a maps semantic probe, producing
+`expected 0 or 1, got []`. Raw quality summary was
+`1 failed, 617 passed, 1 skipped in 12.02s`. That fixture now names
+optional_feature, keeping its declared generic skip contract and leaving the maps
+error classification intact. Full required CI must rerun on the corrected head.
+
 The bounded classifier and regressions are implemented. The documented managed
 pinned Toast run executed all 127 map cases plus canonical capability admission.
 No local Barn tests. Existing map expectations and suite marker remain unchanged.

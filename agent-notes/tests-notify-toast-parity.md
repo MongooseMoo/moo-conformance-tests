@@ -49,6 +49,10 @@ Warnings concern pytest record_property/xunit2 compatibility.
 
 ## Decisions and why
 
+Publication: [conformance PR #171](https://github.com/MongooseMoo/moo-conformance-tests/pull/171)
+and [Barn PR #619](https://github.com/MongooseMoo/barn/pull/619). Both are left
+open; exact-head CI verdicts are recorded by the checks on these PRs.
+
 Q explicitly authorized continuation of the existing plan. No merge, comments,
 issues, or attribution. Stage only this note and builtins/notify_semantics.yaml.
 Use managed stock WSL Toast and include capability_admission in every session.
@@ -63,5 +67,5 @@ subsequent runs. Three completed oracle runs are unaffected.
 
 ## Next step
 
-Open the conformance PR and watch its checks. Leave unmerged, with Barn first
+Leave the conformance PR unmerged after watching its checks, with Barn first
 when merging is later authorized. Full-queue no_flush remains unverified.

@@ -52,6 +52,53 @@ def test_cli_forwards_exact_file_and_directory_selectors(monkeypatch: pytest.Mon
     ]
 
 
+@pytest.mark.parametrize(
+    "suite_root_option",
+    [
+        "--moo-suite-root=/mnt/c/Users/Q/code/moo-conformance-tests/src/moo_conformance/_tests",
+        r"--moo-suite-root=C:\Users\Q\code\moo-conformance-tests\src\moo_conformance\_tests",
+    ],
+)
+def test_cli_forwards_option_paths_without_adding_suite_selectors(
+    monkeypatch: pytest.MonkeyPatch, suite_root_option: str
+) -> None:
+    captured: list[str] = []
+
+    def capture(args: list[str]) -> int:
+        captured.extend(args)
+        return 0
+
+    monkeypatch.setattr(cli.pytest, "main", capture)
+    args = [suite_root_option, "--moo-suite-path=builtins/http.yaml", "-q"]
+
+    assert cli.main(args) == 0
+    assert captured == ["--pyargs", "moo_conformance", *args]
+
+
+@pytest.mark.parametrize(
+    "suite_path",
+    [
+        "/mnt/c/Users/Q/code/moo-conformance-tests/src/moo_conformance/_tests/builtins/http.yaml",
+        r"C:\Users\Q\code\moo-conformance-tests\src\moo_conformance\_tests\builtins\http.yaml",
+    ],
+)
+def test_cli_keeps_absolute_bare_suite_selectors(
+    monkeypatch: pytest.MonkeyPatch, suite_path: str
+) -> None:
+    captured: list[str] = []
+
+    def capture(args: list[str]) -> int:
+        captured.extend(args)
+        return 0
+
+    monkeypatch.setattr(cli.pytest, "main", capture)
+
+    assert cli.main([suite_path, "-q"]) == 0
+    assert captured == [
+        "--pyargs", "moo_conformance", "--moo-suite-path=builtins/http.yaml", "-q"
+    ]
+
+
 def test_exact_yaml_file_does_not_collect_another(tmp_path: Path) -> None:
     tests_dir = tmp_path / "_tests"
     _write_suite(tests_dir / "basic" / "one.yaml", "one", "only_one")

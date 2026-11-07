@@ -87,11 +87,11 @@ def test_builtin_probe_error_fails_instead_of_becoming_absence() -> None:
 def test_missing_required_feature_is_a_declared_skip() -> None:
     suite = MooTestSuite(
         name="requirements",
-        requires=Requirements(features=["maps"]),
+        requires=Requirements(features=["optional_feature"]),
     )
     runner = runner_with(ExecutionResult(True, value=["tasks"]))
 
-    with pytest.raises(pytest.skip.Exception, match="Requires feature: maps"):
+    with pytest.raises(pytest.skip.Exception, match="Requires feature: optional_feature"):
         _enforce_suite_requirements(suite, runner, {})
 
 
@@ -105,6 +105,69 @@ def test_profile_feature_enables_case_without_runtime_advertisement() -> None:
     _enforce_suite_requirements(suite, runner, {}, {"feature.maps": True})
 
     assert runner.transport.executed == []
+
+
+def test_maps_requirement_uses_semantics_without_server_advertisement() -> None:
+    suite = MooTestSuite(name="map", requires=Requirements(features=["maps"]))
+    runner = runner_with(ExecutionResult(True, value=1))
+
+    _enforce_suite_requirements(suite, runner, {})
+
+    assert runner.transport.executed == ['; return eval("return [1 -> 2];")[1];']
+    assert runner.transport.executed_as == ["wizard"]
+
+
+def test_maps_syntax_rejection_is_a_declared_skip() -> None:
+    suite = MooTestSuite(name="map", requires=Requirements(features=["maps"]))
+    # eval() returns a successful {0, diagnostics} result for unsupported syntax;
+    # the probe selects that status without treating transport errors as absence.
+    runner = runner_with(ExecutionResult(True, value=0))
+
+    with pytest.raises(pytest.skip.Exception, match="Requires feature: maps"):
+        _enforce_suite_requirements(suite, runner, {})
+
+
+@pytest.mark.parametrize("supported", [0, 1])
+def test_maps_semantic_result_is_cached(supported: int) -> None:
+    runner = runner_with(ExecutionResult(True, value=supported))
+
+    assert _has_feature(runner, "maps") is bool(supported)
+    assert _has_feature(runner, "maps") is bool(supported)
+    assert len(runner.transport.executed) == 1
+
+
+@pytest.mark.parametrize(
+    "result",
+    [
+        ExecutionResult(False, error=MooError.E_PERM),
+        ExecutionResult(False, error=MooError.E_QUOTA),
+        ExecutionResult(False, error_message="connection timed out"),
+        ExecutionResult(True, value=True),
+        ExecutionResult(True, value=[]),
+        ExecutionResult(True, value="1"),
+        ExecutionResult(True, value=2),
+    ],
+)
+def test_maps_probe_failures_are_not_cached_as_unsupported(result: ExecutionResult) -> None:
+    runner = runner_with(result, ExecutionResult(True, value=1))
+
+    with pytest.raises(CapabilityProbeError, match="feature maps"):
+        _has_feature(runner, "maps")
+
+    assert _has_feature(runner, "maps") is True
+    assert len(runner.transport.executed) == 2
+
+
+def test_maps_transport_exception_is_a_probe_failure(monkeypatch) -> None:
+    runner = runner_with()
+
+    def disconnected(_code: str) -> ExecutionResult:
+        raise ConnectionError("peer closed connection")
+
+    monkeypatch.setattr(runner.transport, "execute", disconnected)
+
+    with pytest.raises(CapabilityProbeError, match="peer closed connection"):
+        _has_feature(runner, "maps")
 
 
 def test_profile_feature_disables_case_without_runtime_probe() -> None:
@@ -137,7 +200,7 @@ def test_profile_feature_rejects_non_boolean_values(value) -> None:
 def test_feature_probe_error_fails_instead_of_becoming_empty_feature_set() -> None:
     suite = MooTestSuite(
         name="requirements",
-        requires=Requirements(features=["maps"]),
+        requires=Requirements(features=["optional_feature"]),
     )
     runner = runner_with(
         ExecutionResult(False, error=MooError.E_PERM, error_message="permission denied")
@@ -337,8 +400,8 @@ def test_canonical_execution_enforces_implicit_managed_restart_requirement() -> 
 @pytest.mark.parametrize(
     ("condition", "probe", "reason"),
     [
-        ("feature.maps", ExecutionResult(True, value=["maps"]), "Incompatible with feature: maps"),
-        ("not feature.maps", ExecutionResult(True, value=[]), "Requires feature: maps"),
+        ("feature.maps", ExecutionResult(True, value=1), "Incompatible with feature: maps"),
+        ("not feature.maps", ExecutionResult(True, value=0), "Requires feature: maps"),
         (
             "missing builtin.optional_builtin",
             ExecutionResult(False, error=MooError.E_INVARG),
@@ -471,7 +534,7 @@ def test_canonical_execution_prepares_suite_before_capability_probes() -> None:
             assert events == ["prepare"]
             return super().execute(code)
 
-    transport = PreparedTransport(ExecutionResult(True, value=["maps"]))
+    transport = PreparedTransport(ExecutionResult(True, value=1))
     runner = SimpleNamespace(
         transport=transport,
         prepare_suite_environment=lambda _suite: events.append("prepare"),

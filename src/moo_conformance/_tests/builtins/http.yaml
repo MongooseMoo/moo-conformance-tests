@@ -530,6 +530,121 @@ tests:
           return 1;
         as: wizard
 
+  - name: kill_task_of_read_http_task_follows_connection_player
+    description: |
+      A task waiting in read_http() is its connection's reading task, so
+      kill_task() checks the caller against the connection's player
+      (tasks.cc kill_task, owner != tq->player), not the programmer of the
+      verb that called read_http(). A wizard verb reads from the Programmer
+      connection; a verb running as Programmer may kill it.
+    permission: wizard
+    steps:
+      - run: |
+          try
+            add_property(#0, "__http_kill_conn", #-1, {#0, "rw"});
+          except (ANY)
+          endtry
+          return 1;
+      - new_connection:
+          capture: conn1
+      - send:
+          connection: conn1
+          text: "connect Programmer"
+      - send:
+          connection: conn1
+          text: ";#0.__http_kill_conn = player;"
+      - run: |
+          conn = #0.__http_kill_conn;
+          o = create($nothing);
+          add_verb(o, {player, "xd", "listen"}, {"this", "none", "this"});
+          set_verb_code(o, "listen", {"return read_http(\"request\", args[1]);"});
+          add_verb(o, {conn, "xd", "zap"}, {"this", "none", "this"});
+          set_verb_code(o, "zap", {"return `kill_task(args[1]) ! ANY';"});
+          fork t (0)
+            o:listen(conn);
+          endfork
+          for i in [1..50]
+            if (typeof(`task_stack(t) ! ANY') == LIST)
+              break;
+            endif
+            suspend(0);
+          endfor
+          r = o:zap(t);
+          `kill_task(t) ! ANY';
+          recycle(o);
+          return r;
+        expect:
+          value: 0
+      - close_connection: conn1
+    cleanup:
+      - run: |
+          try
+            delete_property(#0, "__http_kill_conn");
+          except (ANY)
+          endtry
+          return 1;
+        as: wizard
+
+  - name: kill_task_of_read_http_task_refuses_reading_verb_programmer
+    description: |
+      The converse: the verb that called read_http() runs as non-wizard p,
+      which may read the Programmer connection because p owns that player.
+      kill_task() still checks the connection's player, so a verb running as
+      p gets E_PERM (tasks.cc kill_task, owner != tq->player).
+    permission: wizard
+    steps:
+      - run: |
+          try
+            add_property(#0, "__http_kill_conn", #-1, {#0, "rw"});
+          except (ANY)
+          endtry
+          return 1;
+      - new_connection:
+          capture: conn1
+      - send:
+          connection: conn1
+          text: "connect Programmer"
+      - send:
+          connection: conn1
+          text: ";#0.__http_kill_conn = player;"
+      - run: |
+          conn = #0.__http_kill_conn;
+          p = create($nothing);
+          p.programmer = 1;
+          o = create($nothing);
+          add_verb(o, {p, "xd", "listen"}, {"this", "none", "this"});
+          set_verb_code(o, "listen", {"return read_http(\"request\", args[1]);"});
+          add_verb(o, {p, "xd", "zap"}, {"this", "none", "this"});
+          set_verb_code(o, "zap", {"return `kill_task(args[1]) ! ANY';"});
+          was = conn.owner;
+          conn.owner = p;
+          fork t (0)
+            o:listen(conn);
+          endfork
+          for i in [1..50]
+            if (typeof(`task_stack(t) ! ANY') == LIST)
+              break;
+            endif
+            suspend(0);
+          endfor
+          r = o:zap(t);
+          `kill_task(t) ! ANY';
+          conn.owner = was;
+          recycle(o);
+          recycle(p);
+          return r;
+        expect:
+          value: E_PERM
+      - close_connection: conn1
+    cleanup:
+      - run: |
+          try
+            delete_property(#0, "__http_kill_conn");
+          except (ANY)
+          endtry
+          return 1;
+        as: wizard
+
   - name: read_http_abrupt_close_while_pending
     description: Closing a connection while read_http() is pending does not hang
     permission: wizard

@@ -2031,3 +2031,27 @@ tests:
     '
   expect:
     error: E_INVARG
+- name: chparent_to_anonymous_object
+  description: The new parent must be an OBJ (Toast is_obj_or_list_of_objs), so an
+    anonymous object is a type error.
+  permission: wizard
+  statement: 'a = create($nothing);
+
+    b = create($anonymous, 1);
+
+    return chparent(a, b);
+
+    '
+  expect:
+    error: E_TYPE
+- name: chparents_with_anonymous_object_in_list
+  permission: wizard
+  statement: 'a = create($nothing);
+
+    b = create($anonymous, 1);
+
+    return chparents(a, {b});
+
+    '
+  expect:
+    error: E_TYPE

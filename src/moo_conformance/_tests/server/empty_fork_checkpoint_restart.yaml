@@ -1,0 +1,70 @@
+name: empty_fork_checkpoint_restart
+description: >
+  Verifies that a queued forked task with an empty body survives
+  dump_database() and a managed server restart, and that the restored task
+  does not prevent the next checkpoint from being written: state changed
+  after the first restart survives a second dump_database() and restart.
+requires:
+  builtins:
+    - dump_database
+    - queued_tasks
+    - kill_task
+    - add_property
+    - delete_property
+  config: [managed_server]
+tests:
+  - name: empty_fork_survives_two_checkpoint_restarts
+    permission: wizard
+    steps:
+      - run: |
+          for p in ({"empty_fork_marker", "empty_fork_task"})
+            if (p in properties(#0))
+              delete_property(#0, p);
+            endif
+          endfor
+          add_property(#0, "empty_fork_marker", "first", {player, "rw"});
+          fork t (3600)
+          endfork
+          add_property(#0, "empty_fork_task", t, {player, "rw"});
+          return 0;
+        expect:
+          value: 0
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+          wait_ms: 300
+      - run: |
+          ids = {};
+          for q in (queued_tasks())
+            ids = {@ids, q[1]};
+          endfor
+          #0.empty_fork_marker = "second";
+          return {#0.empty_fork_task in ids > 0};
+        expect:
+          value: [1]
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+          wait_ms: 300
+      - run: |
+          ids = {};
+          for q in (queued_tasks())
+            ids = {@ids, q[1]};
+          endfor
+          return {#0.empty_fork_marker, #0.empty_fork_task in ids > 0};
+        expect:
+          value: ["second", 1]
+    cleanup:
+      - run: |
+          if ("empty_fork_task" in properties(#0))
+            `kill_task(#0.empty_fork_task) ! ANY';
+            delete_property(#0, "empty_fork_task");
+          endif
+          if ("empty_fork_marker" in properties(#0))
+            delete_property(#0, "empty_fork_marker");
+          endif
+          return 0;

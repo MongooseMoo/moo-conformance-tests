@@ -184,6 +184,25 @@ tests:
     expect:
       value: 1
 
+  - name: suspend_ten_billion_seconds_in_verb_resumes_in_far_future
+    description: |
+      A task suspended for 10000000000 seconds inside a verb is scheduled to
+      resume that many seconds after now: queued_tasks() reports its start
+      time at least time() + 9999999990. The fork is made inside a verb, as
+      in ordinary MOO code.
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "park"}, {"this", "none", "this"});
+      set_verb_code(o, "park", {"suspend(10000000000);"});
+      add_verb(o, {player, "xd", "run"}, {"this", "none", "this"});
+      set_verb_code(o, "run", {"fork child (0)", "  this:park();", "endfork", "suspend(0);", "now = time();", "start = 0;", "for entry in (queued_tasks())", "  if (entry[1] == child)", "    start = entry[2];", "  endif", "endfor", "kill_task(child);", "return start - now >= 9999999990;"});
+      result = o:run();
+      recycle(o);
+      return result;
+    expect:
+      value: 1
+
   - name: fork_zero_delay_child_observes_rest_of_forking_slice
     description: |
       A zero-delay child starts only after the slice that forked it has ended,

@@ -94,3 +94,33 @@ tests:
       return errors;
     expect:
       value: []
+
+  - name: fully_parenthesized_operand_chains
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+      results = {};
+      for kind in ({"power", "additive", "unary"})
+        if (kind == "power")
+          source = "1 ^ 1";
+        elseif (kind == "additive")
+          source = "1 + 1";
+        else
+          source = "!1";
+        endif
+        for i in [1..255]
+          if (kind == "power")
+            source = "1 ^ (" + source + ")";
+          elseif (kind == "additive")
+            source = "1 + (" + source + ")";
+          else
+            source = "!(" + source + ")";
+          endif
+        endfor
+        results = {@results, set_verb_code(o, "probe", {"return " + source + ";"})};
+      endfor
+      recycle(o);
+      return results;
+    expect:
+      value: [[], [], []]

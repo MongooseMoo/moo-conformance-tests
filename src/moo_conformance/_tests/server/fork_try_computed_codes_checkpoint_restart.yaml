@@ -1,0 +1,109 @@
+name: fork_try_computed_codes_checkpoint_restart
+description: >
+  Verifies that queued forked tasks whose whole body is a try/except with
+  computed (non-constant) except codes, such as `except (E_PERM, @codes)`,
+  survive dump_database() and a managed server restart, and then run their
+  full body once due. Computed codes are evaluated before the try body, so a
+  server that saves the fork body's source starting from the line of its
+  first instruction saves only the except line and the restored task cannot
+  be compiled.
+requires:
+  builtins:
+    - dump_database
+    - queued_tasks
+    - kill_task
+    - add_property
+    - delete_property
+    - add_verb
+    - set_verb_code
+    - recycle
+  config: [managed_server]
+tests:
+  - name: try_computed_codes_forks_run_after_checkpoint_restart
+    permission: wizard
+    steps:
+      - run: |
+          for p in ({"computed_codes_fork_log", "computed_codes_fork_tasks", "computed_codes_fork_obj"})
+            if (p in properties(#0))
+              delete_property(#0, p);
+            endif
+          endfor
+          o = create($nothing);
+          add_property(#0, "computed_codes_fork_obj", o, {player, "rw"});
+          add_property(#0, "computed_codes_fork_log", {}, {player, "rw"});
+          return o;
+        capture: obj
+      - verb_setup:
+          object: "{obj}"
+          name: "start"
+          args: ["this", "none", "this"]
+          code: |
+            tasks = {};
+            codes = {E_DIV};
+            fork t (6)
+              try
+                #0.computed_codes_fork_log = {@#0.computed_codes_fork_log, "body"};
+              except (E_PERM, @codes)
+                #0.computed_codes_fork_log = {@#0.computed_codes_fork_log, "unexpected"};
+              endtry
+            endfork
+            tasks = {@tasks, t};
+            fork t (6)
+              try
+                x = 1 / 0;
+              except e (E_PERM, @codes)
+                #0.computed_codes_fork_log = {@#0.computed_codes_fork_log, e[1]};
+              endtry
+            endfork
+            tasks = {@tasks, t};
+            return tasks;
+        expect:
+          value: []
+      - run: |
+          tasks = {obj}:start();
+          add_property(#0, "computed_codes_fork_tasks", tasks, {player, "rw"});
+          return length(tasks);
+        expect:
+          value: 2
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+          wait_ms: 300
+      - run: |
+          ids = {};
+          for q in (queued_tasks())
+            ids = {@ids, q[1]};
+          endfor
+          found = 0;
+          for t in (#0.computed_codes_fork_tasks)
+            found = found + (t in ids > 0);
+          endfor
+          return {found, #0.computed_codes_fork_log};
+        expect:
+          value: [2, []]
+      - wait: 7000
+      - run: |
+          log = #0.computed_codes_fork_log;
+          return {length(log), "body" in log > 0, E_DIV in log > 0, "unexpected" in log};
+        expect:
+          value: [2, 1, 1, 0]
+    cleanup:
+      - run: |
+          if ("computed_codes_fork_tasks" in properties(#0))
+            for t in (#0.computed_codes_fork_tasks)
+              `kill_task(t) ! ANY';
+            endfor
+            delete_property(#0, "computed_codes_fork_tasks");
+          endif
+          if ("computed_codes_fork_log" in properties(#0))
+            delete_property(#0, "computed_codes_fork_log");
+          endif
+          if ("computed_codes_fork_obj" in properties(#0))
+            if (valid(#0.computed_codes_fork_obj))
+              recycle(#0.computed_codes_fork_obj);
+            endif
+            delete_property(#0, "computed_codes_fork_obj");
+          endif
+          return 0;

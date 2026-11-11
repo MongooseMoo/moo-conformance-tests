@@ -15,9 +15,8 @@ requires:
 tests:
   - name: indefinitely_suspended_task_across_checkpoint_restart
     description: >
-      A task suspended with no timeout does not stay suspended across a checkpoint restart:
-      after load it is no longer queued and has resumed with value 0.
-    skip_if: "not feature.64bit"
+      A task suspended with no timeout stays suspended across a checkpoint restart: after
+      load it is still queued and has not resumed.
     steps:
       - restart_server: {reset_db: true}
       - run: |
@@ -56,7 +55,7 @@ tests:
           return {{indefinite_obj}.resumed, still_queued};
         as: wizard
         expect:
-          value: [[0], 0]
+          value: [[], 1]
       - restart_server: {reset_db: true}
 
   - name: restored_overdue_fork_runs_after_server_started_returns

@@ -1,0 +1,69 @@
+name: fork_variable_checkpoint_restart
+description: >
+  Verifies that the named variable of a queued `fork name (delay)` task still
+  holds the forked task's own id after dump_database() and a managed server
+  restart, rather than the value the parent had bound to that variable before
+  the fork statement ran.
+requires:
+  builtins:
+    - dump_database
+    - queued_tasks
+    - kill_task
+    - create
+    - recycle
+    - add_property
+    - add_verb
+    - set_verb_code
+  config: [managed_server]
+tests:
+  - name: fork_variable_holds_own_task_id_after_checkpoint_restart
+    permission: wizard
+    steps:
+      - run: |
+          obj = create($nothing);
+          add_property(obj, "fork_var_result", {}, {player, "rw"});
+          add_verb(obj, {player, "xd", "start"}, {"this", "none", "this"});
+          set_verb_code(obj, "start", {
+            "n = \"parent value\";",
+            "fork n (6)",
+            "  this.fork_var_result = {n, task_id()};",
+            "endfork",
+            "return n;"
+          });
+          return obj;
+        capture: fork_var_obj
+      - run: "return {fork_var_obj}:start();"
+        capture: fork_var_task
+      - run: |
+          ids = {};
+          for q in (queued_tasks())
+            ids = {@ids, q[1]};
+          endfor
+          return {typeof({fork_var_task}) == INT, {fork_var_task} in ids > 0};
+        expect:
+          value: [1, 1]
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+          wait_ms: 300
+      - run: |
+          ids = {};
+          for q in (queued_tasks())
+            ids = {@ids, q[1]};
+          endfor
+          return {{fork_var_obj}.fork_var_result, {fork_var_task} in ids > 0};
+        expect:
+          value: [[], 1]
+      - wait: 6000
+      - run: |
+          result = {fork_var_obj}.fork_var_result;
+          return {result == {{fork_var_task}, {fork_var_task}}, result[1] != "parent value"};
+        expect:
+          value: [1, 1]
+    cleanup:
+      - run: |
+          `kill_task({fork_var_task}) ! ANY';
+          `recycle({fork_var_obj}) ! ANY';
+          return 0;

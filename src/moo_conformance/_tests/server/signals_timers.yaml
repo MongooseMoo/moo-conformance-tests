@@ -133,7 +133,7 @@ tests:
               open_network_connection("192.0.2.1", 9);
               outcome = "connected";
             except e (ANY)
-              outcome = toliteral({e[1], e[2]});
+              outcome = toliteral(e[1]) + " " + e[2];
             endtry
             server_log("ALARM-CONNECT-DONE " + outcome + " fast=" + tostr(time() - started < 20));
           endfork
@@ -143,7 +143,7 @@ tests:
       - assert_file: {path: server.log, contains: "ALARM-CONNECT-START", timeout_ms: 10000}
       - wait: 1000
       - signal_server: SIGALRM
-      - assert_file: {path: server.log, contains: "ALARM-CONNECT-DONE {E_INVARG, \"Connection failure\"} fast=1", timeout_ms: 10000}
+      - assert_file: {path: server.log, contains: "ALARM-CONNECT-DONE E_INVARG Connection failure fast=1", timeout_ms: 10000}
       - wait: 1000
       - assert_log: {not_contains: "ALARM-CONNECT-CHECKPOINT-"}
       - restart_server: {reset_db: true}

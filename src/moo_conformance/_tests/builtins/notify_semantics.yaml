@@ -2,7 +2,7 @@ name: notify_semantics
 description: Successful notification return values and programmer permissions.
 
 requires:
-  builtins: [notify, set_task_perms, task_perms]
+  builtins: [notify, set_task_perms, task_perms, connected_players, add_property, delete_property, load_server_options]
 
 tests:
   - name: connected_wizard_send_returns_one
@@ -42,3 +42,41 @@ tests:
     code: 'notify(#-1, "notify disconnected success")'
     expect:
       value: 1
+
+  - name: no_flush_notify_returns_zero_when_unread_output_queue_is_full
+    description: >
+      With no_flush true, a line that would overflow max_queued_output after the server
+      has written what the peer accepts is not queued and notify returns 0.
+    steps:
+      - new_connection:
+          capture: quiet
+      - wait: 500
+      - run: |
+          target = #-1;
+          for c in (connected_players(1))
+            if (c < #0)
+              target = c;
+            endif
+          endfor
+          try add_property($server_options, "max_queued_output", 2048, {player, "rw"}); except (E_INVARG) endtry
+          $server_options.max_queued_output = 2048;
+          load_server_options();
+          line = "x";
+          for i in [1..16]
+            line = line + line;
+          endfor
+          first = notify(target, line, 1);
+          zero_at = 0;
+          for i in [2..2000]
+            if (!notify(target, line, 1))
+              zero_at = i;
+              break;
+            endif
+          endfor
+          delete_property($server_options, "max_queued_output");
+          load_server_options();
+          return {target < #0, first, zero_at > 1};
+        as: wizard
+        expect:
+          value: [1, 1, 1]
+      - close_connection: quiet

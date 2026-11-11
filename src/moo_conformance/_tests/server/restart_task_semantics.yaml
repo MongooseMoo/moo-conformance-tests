@@ -17,6 +17,7 @@ tests:
     description: >
       A task suspended with no timeout does not stay suspended across a checkpoint restart:
       after load it is no longer queued and has resumed with value 0.
+    skip_if: "not feature.64bit"
     steps:
       - restart_server: {reset_db: true}
       - run: |

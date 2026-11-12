@@ -100,6 +100,8 @@ tests:
     expect:
       value: "zb"
 
+  # A negative string start depends on Toast's integer width: the 64-bit
+  # profiles keep no prefix, the 32-bit profile raises E_RANGE.
   - name: string_range_assign_start_negative
     statement: |
       s = "ab";
@@ -107,6 +109,15 @@ tests:
       return s;
     expect:
       value: "zb"
+    skip_if: "not feature.64bit"
+
+  - name: string_range_assign_start_negative_32bit
+    statement: |
+      s = "ab";
+      s[-1..1] = "z";
+    expect:
+      error: E_RANGE
+    skip_if: "feature.64bit"
 
   - name: string_range_assign_start_zero_end_zero
     statement: |
@@ -123,6 +134,15 @@ tests:
       return s;
     expect:
       value: "zab"
+    skip_if: "not feature.64bit"
+
+  - name: string_range_assign_start_negative_end_zero_32bit
+    statement: |
+      s = "ab";
+      s[-1..0] = "z";
+    expect:
+      error: E_RANGE
+    skip_if: "feature.64bit"
 
   - name: string_range_assign_start_zero_end_past_length
     statement: |

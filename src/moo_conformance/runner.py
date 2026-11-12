@@ -36,6 +36,9 @@ from .server import (
 )
 from .transport import ExecutionResult, MooTransport, TestConnection
 
+# Pause between checks while a step waits for an event (poll_ms, assert_log timeout_ms).
+POLL_INTERVAL = 0.05
+
 
 class AssertionError(Exception):
     """Test assertion failed."""
@@ -797,20 +800,33 @@ class YamlTestRunner:
                     else:
                         code = force_statement_mode(code)
 
-                    result = self.transport.execute(code)
+                    # poll_ms reruns the code until the expectation holds.
+                    poll_deadline = (
+                        time.monotonic() + step.poll_ms / 1000.0 if step.poll_ms else None
+                    )
+                    while True:
+                        result = self.transport.execute(code)
 
-                    # Capture result if requested
-                    if step.capture:
-                        if result.success:
-                            variables[step.capture] = result.value
-                        else:
-                            # Capture error for later use
-                            variables[step.capture] = result.error
+                        # Capture result if requested
+                        if step.capture:
+                            if result.success:
+                                variables[step.capture] = result.value
+                            else:
+                                # Capture error for later use
+                                variables[step.capture] = result.error
 
-                    # Verify expectation if present
-                    if step.expect:
+                        # Verify expectation if present
+                        if not step.expect:
+                            break
                         step_desc = f"step '{run_code[:30]}...'"
-                        self._verify_expectation(step.expect, result, step_desc)
+                        try:
+                            self._verify_expectation(step.expect, result, step_desc)
+                        except AssertionError:
+                            if poll_deadline is None or time.monotonic() >= poll_deadline:
+                                raise
+                            time.sleep(POLL_INTERVAL)
+                            continue
+                        break
 
         finally:
             # Run cleanup steps (always, even on failure)
@@ -1122,6 +1138,18 @@ class YamlTestRunner:
             )
 
         new_content = self._read_log_since_offset()
+        if assertion.timeout_ms:
+            # Wait for text that must appear (schema forbids it with not_contains).
+            deadline = time.monotonic() + assertion.timeout_ms / 1000.0
+            while time.monotonic() < deadline and not (
+                (assertion.contains is None or assertion.contains in new_content)
+                and (
+                    assertion.contains_any is None
+                    or any(text in new_content for text in assertion.contains_any)
+                )
+            ):
+                time.sleep(POLL_INTERVAL)
+                new_content = self._read_log_since_offset()
 
         def _excerpt() -> str:
             excerpt = new_content[:500]

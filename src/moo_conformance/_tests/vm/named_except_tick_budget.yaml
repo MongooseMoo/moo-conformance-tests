@@ -1,0 +1,65 @@
+name: named_except_tick_budget
+description: >
+  Storing a caught error into a named except variable is an ordinary OP_PUT,
+  which tests the tick budget before it runs like every other ticking opcode.
+  In a loop built only from extended opcodes (named while, try/except,
+  try/finally, for-list), which decrement ticks without testing them, that
+  store is the only tested tick, so it alone must end the task when the
+  budget runs out.
+
+requires:
+  builtins:
+    - add_property
+    - delete_property
+    - load_server_options
+    - verb_code
+    - set_verb_code
+    - suspend
+
+tests:
+  - name: named_except_store_ends_extended_opcode_loop_on_ticks
+    description: >
+      The forked task's loop raises E_TYPE from `for n in (2)` on every
+      iteration and catches it into `f`. No other opcode in the loop tests the
+      budget. With bg_ticks = 1000, the task must be aborted for running out
+      of ticks, so #0:handle_task_timeout runs and records the resource.
+    steps:
+      - run: |
+          add_property($server_options, "bg_ticks", 1000, {player, "r"});
+          add_property(#0, "tick_probe", 0, {#0, "rw"});
+          add_property(#0, "tick_saved_hook", verb_code(#0, "handle_task_timeout"), {#0, ""});
+          set_verb_code(#0, "handle_task_timeout", {"#0.tick_probe = args[1];", "return 1;"});
+          load_server_options();
+          return 1;
+        as: wizard
+      - run: |
+          fork (0)
+            while o (1)
+              try
+                try
+                  for n in (2)
+                  endfor
+                except f (ANY)
+                endtry
+              finally
+              endtry
+            endwhile
+          endfork
+          for i in [1..50]
+            if (#0.tick_probe != 0)
+              break;
+            endif
+            suspend(0.1);
+          endfor
+          return #0.tick_probe;
+        as: wizard
+        expect:
+          value: "ticks"
+    cleanup:
+      - run: |
+          set_verb_code(#0, "handle_task_timeout", #0.tick_saved_hook);
+          delete_property(#0, "tick_saved_hook");
+          delete_property($server_options, "bg_ticks");
+          delete_property(#0, "tick_probe");
+          load_server_options();
+        as: wizard

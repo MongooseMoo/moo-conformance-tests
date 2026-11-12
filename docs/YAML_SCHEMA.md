@@ -528,7 +528,7 @@ servers that publish completed checkpoints by replacing these output files.
 
 | File | Description |
 |------|-------------|
-| `fork_timing.yaml` | Fork timing behavior: zero-delay fork execution, delayed task visibility in `queued_tasks()`, and `kill_task()` preventing execution. Uses `wait` steps to allow forked tasks time to run. |
+| `fork_timing.yaml` | Fork timing behavior: zero-delay fork execution, delayed task visibility in `queued_tasks()`, and `kill_task()` preventing execution. Uses `poll_ms` to wait for forked tasks to run, and a fixed `wait` where a killed task must not run. |
 
 ### Server Tests (`_tests/server/`)
 

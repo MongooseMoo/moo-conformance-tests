@@ -10,8 +10,9 @@ requires:
 tests:
   - name: bottom_up_inconsistencies_are_reported
     steps:
-      - wait: 500
       - assert_log:
+          timeout_ms: 10000
           contains: "#1 not in it's child's (#0) parents"
       - assert_log:
+          timeout_ms: 10000
           contains: "#2 not in it's content's (#3) location"

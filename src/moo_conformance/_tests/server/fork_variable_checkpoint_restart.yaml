@@ -45,9 +45,8 @@ tests:
       - run: "return dump_database();"
         expect:
           value: 0
-      - wait: 1500
       - restart_server:
-          wait_ms: 300
+          checkpoint_timeout_ms: 10000
       - run: |
           ids = {};
           for q in (queued_tasks())
@@ -56,12 +55,12 @@ tests:
           return {{fork_var_obj}.fork_var_result, {fork_var_task} in ids > 0};
         expect:
           value: [[], 1]
-      - wait: 6000
       - run: |
           result = {fork_var_obj}.fork_var_result;
           return {result == {{fork_var_task}, {fork_var_task}}, result[1] != "parent value"};
         expect:
           value: [1, 1]
+        poll_ms: 15000
     cleanup:
       - run: |
           `kill_task({fork_var_task}) ! ANY';

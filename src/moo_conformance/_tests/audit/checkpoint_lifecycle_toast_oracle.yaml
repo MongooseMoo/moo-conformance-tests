@@ -73,13 +73,12 @@ tests:
         as: wizard
         expect:
           value: 0
-      - wait: 1500
       - run: "return #0.audit_checkpoint_events;"
         as: wizard
         expect:
           value: [["started"], ["finished", 1]]
+        poll_ms: 10000
       - restart_server:
-      - wait: 500
       - run: "return #0.audit_checkpoint_events;"
         as: wizard
         expect:

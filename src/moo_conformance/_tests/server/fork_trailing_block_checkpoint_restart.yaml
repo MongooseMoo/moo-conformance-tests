@@ -78,9 +78,8 @@ tests:
       - run: "return dump_database();"
         expect:
           value: 0
-      - wait: 1500
       - restart_server:
-          wait_ms: 300
+          checkpoint_timeout_ms: 10000
       - run: |
           ids = {};
           for q in (queued_tasks())
@@ -93,12 +92,12 @@ tests:
           return {found, #0.trailing_fork_log};
         expect:
           value: [4, []]
-      - wait: 7000
       - run: |
           log = #0.trailing_fork_log;
           return {length(log), "if" in log > 0, "while" in log > 0, "try" in log > 0, "finally" in log > 0, "fork" in log > 0};
         expect:
           value: [5, 1, 1, 1, 1, 1]
+        poll_ms: 15000
     cleanup:
       - run: |
           if ("trailing_fork_tasks" in properties(#0))

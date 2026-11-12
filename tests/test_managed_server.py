@@ -48,6 +48,41 @@ class _FakeProcess:
         return 0
 
 
+def test_port_wait_polls_a_starting_server_at_a_short_interval(monkeypatch):
+    attempts = []
+    sleeps = []
+
+    class RefusingTwiceSocket:
+        def __init__(self, *args):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+        def settimeout(self, timeout):
+            pass
+
+        def connect(self, address):
+            attempts.append(address)
+            if len(attempts) <= 2:
+                raise ConnectionRefusedError
+
+    monkeypatch.setattr("moo_conformance.server.socket.socket", RefusingTwiceSocket)
+    monkeypatch.setattr("moo_conformance.server.time.sleep", sleeps.append)
+    server = ManagedServer("fake-server {db} {port}", Path("unused.db"), port=17777)
+    server._port = 17777
+    server._process = _FakeProcess()
+
+    server._wait_for_port(timeout=30.0)
+
+    assert len(attempts) == 3
+    assert len(sleeps) == 2
+    assert all(0 < interval <= 0.05 for interval in sleeps)
+
+
 def test_restart_preserves_db_and_records_fresh_process_log_boundary(
     monkeypatch, tmp_path: Path
 ):

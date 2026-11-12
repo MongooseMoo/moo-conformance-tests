@@ -1389,3 +1389,33 @@ tests:
     value:
     - 1
     - 1
+- name: delete_property_missing_on_unwritable_object_checks_permission_first
+  description: delete_property checks object write permission before looking up the
+    property, so a missing property on an unwritable object is E_PERM
+  permission: programmer
+  steps:
+  - run: obj = create($nothing); obj.w = 0; return obj;
+    capture: obj
+    as: wizard
+  - run: delete_property({obj}, "no_such_property")
+    as: programmer
+    expect:
+      error: E_PERM
+  cleanup:
+  - run: recycle({obj})
+    as: wizard
+- name: clear_property_missing_for_nonowner_is_propnf
+  description: clear_property looks up the property before any permission check, so
+    a missing property is E_PROPNF for a programmer who does not own the object
+  permission: programmer
+  steps:
+  - run: obj = create($nothing); obj.w = 0; return obj;
+    capture: obj
+    as: wizard
+  - run: clear_property({obj}, "no_such_property")
+    as: programmer
+    expect:
+      error: E_PROPNF
+  cleanup:
+  - run: recycle({obj})
+    as: wizard

@@ -10,20 +10,27 @@ requires:
 tests:
   - name: invalid_object_types_are_repaired
     steps:
-      - wait: 500
       - assert_log:
+          timeout_ms: 10000
           contains: "#0.parents is not an object or list of objects"
       - assert_log:
+          timeout_ms: 10000
           contains: "#0.children is not a list of objects"
       - assert_log:
+          timeout_ms: 10000
           contains: "#0.location is not an object"
       - assert_log:
+          timeout_ms: 10000
           contains: "#0.contents is not a list of objects"
       - assert_log:
+          timeout_ms: 10000
           contains: "#1.parents is not an object or list of objects"
       - assert_log:
+          timeout_ms: 10000
           contains: "#1.children is not a list of objects"
       - assert_log:
+          timeout_ms: 10000
           contains: "#1.location is not an object"
       - assert_log:
+          timeout_ms: 10000
           contains: "#1.contents is not a list of objects"

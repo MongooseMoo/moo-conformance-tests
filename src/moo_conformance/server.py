@@ -21,6 +21,9 @@ from typing import TextIO
 
 FileSnapshotSignature = tuple[int, int, int, int, int]
 
+# Pause between connection attempts while a started server opens its port.
+PORT_POLL_INTERVAL = 0.05
+
 
 def file_snapshot_signature(info: os.stat_result) -> FileSnapshotSignature:
     """Return identity and mutation fields used by launch/test freshness gates."""
@@ -576,7 +579,7 @@ class ManagedServer:
                     s.connect((self.host, self._port))
                     return  # Connection succeeded
             except (ConnectionRefusedError, OSError):
-                time.sleep(0.5)
+                time.sleep(PORT_POLL_INTERVAL)
 
         raise self._record_lifecycle_failure(
             f"Managed server did not accept connections on port {self._port} "

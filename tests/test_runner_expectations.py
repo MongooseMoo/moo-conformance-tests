@@ -3,7 +3,16 @@ import pytest
 from moo_conformance.moo_types import MooError
 from moo_conformance.runner import AssertionError as RunnerAssertionError
 from moo_conformance.runner import YamlTestRunner
-from moo_conformance.schema import Expectation, MooTestCase, OutputExpect, validate_test_suite
+from moo_conformance.schema import (
+    Expectation,
+    MooTestCase,
+    NewConnection,
+    OutputExpect,
+    ReadConnection,
+    SendBytesOnConnection,
+    SendOnConnection,
+    validate_test_suite,
+)
 from moo_conformance.schema import TestStep as MooTestStep
 from moo_conformance.transport import ExecutionResult
 
@@ -268,6 +277,66 @@ def test_exact_empty_output_is_line_precise() -> None:
     runner._verify_output(expectation, [], "empty output")
     with pytest.raises(RunnerAssertionError, match="expected output lines"):
         runner._verify_output(expectation, [""], "empty output")
+
+
+class RecordingConnection:
+    """Raw connection fake that records the read predicate each step passes."""
+
+    def __init__(self) -> None:
+        self.predicates: list[object] = []
+
+    def send(self, text: str, until: object = None) -> list[str]:
+        self.predicates.append(until)
+        return ["expected line"]
+
+    def send_bytes(self, data: bytes, until: object = None) -> list[str]:
+        self.predicates.append(until)
+        return ["expected line"]
+
+    def read(self, until: object = None) -> list[str]:
+        self.predicates.append(until)
+        return ["expected line"]
+
+    def close(self) -> None:
+        pass
+
+
+class ConnectionTransport(FakeTransport):
+    def __init__(self) -> None:
+        super().__init__([])
+        self.connection = RecordingConnection()
+
+    def open_connection(self, port: int | None = None) -> RecordingConnection:
+        return self.connection
+
+
+def test_raw_reads_wait_for_their_output_expectation() -> None:
+    transport = ConnectionTransport()
+    runner = YamlTestRunner(transport)  # type: ignore[arg-type]
+    expect = Expectation(output=OutputExpect(exact=["expected line"]))
+
+    runner.run_test(
+        MooTestCase(
+            name="raw reads",
+            steps=[
+                MooTestStep(new_connection=NewConnection(capture="conn")),
+                MooTestStep(send=SendOnConnection(text="hi", connection="conn"), expect=expect),
+                MooTestStep(send_bytes=SendBytesOnConnection(hex="61", connection="conn"),
+                            expect=expect),
+                MooTestStep(read_connection=ReadConnection(connection="conn"), expect=expect),
+                MooTestStep(send=SendOnConnection(text="no expectation", connection="conn")),
+            ],
+        )
+    )
+
+    *expected_reads, unexpected_read = transport.connection.predicates
+    assert unexpected_read is None
+    assert len(expected_reads) == 3
+    for predicate in expected_reads:
+        assert callable(predicate)
+        assert predicate(["expected line"]) is True
+        assert predicate(["expected line", "extra"]) is False
+        assert predicate([]) is False
 
 
 @pytest.mark.parametrize(

@@ -8,6 +8,7 @@ import re
 import socket
 import stat
 import time
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -614,7 +615,9 @@ class YamlTestRunner:
                             f"{list(connections.keys())}"
                         )
                     text = self._substitute_variables(step.send.text, variables)
-                    output_lines = connections[conn_name].send(text)
+                    output_lines = connections[conn_name].send(
+                        text, until=self._expected_output(step)
+                    )
 
                     if step.capture:
                         variables[step.capture] = output_lines
@@ -635,7 +638,9 @@ class YamlTestRunner:
                             f"{list(connections.keys())}"
                         )
                     data = bytes.fromhex(step.send_bytes.hex) * step.send_bytes.repeat
-                    output_lines = connections[conn_name].send_bytes(data)
+                    output_lines = connections[conn_name].send_bytes(
+                        data, until=self._expected_output(step)
+                    )
 
                     if step.capture:
                         variables[step.capture] = output_lines
@@ -655,7 +660,9 @@ class YamlTestRunner:
                             f"Unknown connection '{conn_name}'. Available: "
                             f"{list(connections.keys())}"
                         )
-                    output_lines = connections[conn_name].read()
+                    output_lines = connections[conn_name].read(
+                        until=self._expected_output(step)
+                    )
 
                     if step.capture:
                         variables[step.capture] = output_lines
@@ -833,6 +840,21 @@ class YamlTestRunner:
                     conn.close()
                 except Exception:
                     pass
+
+    def _expected_output(self, step: TestStep) -> Callable[[list[str]], bool] | None:
+        """Return a predicate telling a raw read its expected output has arrived."""
+        if step.expect is None or step.expect.output is None:
+            return None
+        expected = step.expect.output
+
+        def satisfied(lines: list[str]) -> bool:
+            try:
+                self._verify_output(expected, lines, "raw read")
+            except AssertionError:
+                return False
+            return True
+
+        return satisfied
 
     def _declared_expectation_fields(self, expect: Expectation) -> set[str]:
         """Return the fields a programmatically constructed expectation declares."""

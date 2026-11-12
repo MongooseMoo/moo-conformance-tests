@@ -76,7 +76,6 @@ tests:
       - send_bytes:
           connection: conn1
           hex: "6c6f67696e0d0a"
-      - wait: 500
       - run: "return #0.audit_iac_seen;"
         as: wizard
         expect:
@@ -84,6 +83,7 @@ tests:
             -
               - iac-login
             - iac-login
+        poll_ms: 10000
       - close_connection: conn1
     cleanup:
       - run: |
@@ -234,7 +234,6 @@ tests:
       - send_bytes:
           connection: conn1
           hex: "2d6c6f67696e0d0a"
-      - wait: 500
       - run: "return #0.audit_iac_literal_seen;"
         as: wizard
         expect:
@@ -242,6 +241,7 @@ tests:
             -
               - "iac--login"
             - "iac--login"
+        poll_ms: 10000
       - close_connection: conn1
     cleanup:
       - run: |
@@ -306,7 +306,6 @@ tests:
       - send_bytes:
           connection: conn1
           hex: "f1"
-      - wait: 500
       - run: "return #0.audit_nop_oob_seen;"
         as: wizard
         expect:
@@ -314,6 +313,7 @@ tests:
             -
               - "~FF~F1"
             - "~FF~F1"
+        poll_ms: 10000
       - close_connection: conn1
     cleanup:
       - run: |
@@ -379,7 +379,6 @@ tests:
       - send_bytes:
           connection: conn1
           hex: "fb01"
-      - wait: 500
       - run: "return #0.audit_iac_oob_seen;"
         as: wizard
         expect:
@@ -387,6 +386,7 @@ tests:
             -
               - "~FF~FB~01"
             - "~FF~FB~01"
+        poll_ms: 10000
       - close_connection: conn1
     cleanup:
       - run: |
@@ -457,7 +457,6 @@ tests:
       - send_bytes:
           connection: conn1
           hex: "f0"
-      - wait: 500
       - run: "return #0.audit_sb_oob_seen;"
         as: wizard
         expect:
@@ -465,6 +464,7 @@ tests:
             -
               - "~FF~FA~1F~00P~00~18~FF~F0"
             - "~FF~FA~1F~00P~00~18~FF~F0"
+        poll_ms: 10000
       - close_connection: conn1
     cleanup:
       - run: |
@@ -538,7 +538,6 @@ tests:
       - send_bytes:
           connection: conn1
           hex: "f0"
-      - wait: 500
       - run: "return #0.audit_gmcp_seen;"
         as: wizard
         expect:
@@ -547,6 +546,7 @@ tests:
               - "~FF~FA~C9Core.Hello"
               - "{client:audit}~FF~F0"
             - '~FF~FA~C9Core.Hello {"client":"audit"}~FF~F0'
+        poll_ms: 10000
       - close_connection: conn1
     cleanup:
       - run: |

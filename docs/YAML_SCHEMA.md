@@ -252,6 +252,7 @@ Each step must have exactly ONE action field. The common fields (`capture`, `as`
 | `capture` | Variable name to store result |
 | `as` | Permission level for this step |
 | `expect` | Assertion on this step's result |
+| `poll_ms` | `run` steps with `expect` only: rerun the code until the expectation holds, failing with the last result after N milliseconds (see below) |
 
 ### Variable Substitution
 
@@ -276,7 +277,19 @@ Variable types are converted appropriately:
 
 #### `wait` - Pause Between Steps
 
-Pauses execution for a specified number of milliseconds. No socket communication occurs during the wait. Useful for allowing forked tasks time to execute or for giving the server time to flush log output before checking it.
+Pauses execution for a specified number of milliseconds. No socket communication occurs during the wait. Use it only when the elapsed time is what the test checks (a delay or timeout that must pass, or a window in which something must *not* happen). To wait for something to happen, use `poll_ms`, `assert_log.timeout_ms`, `assert_file.timeout_ms`, `restart_server.checkpoint_timeout_ms`, or a raw read with an output expectation instead.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `wait` | `int` | Duration in milliseconds |
+
+The runner calls `time.sleep(wait / 1000)` and then continues to the next step.
+
+#### `poll_ms` - Wait for an Expected Result
+
+On a `run` step with `expect`, `poll_ms` reruns the code every 50 ms until the
+expectation holds. If it still fails after `poll_ms` milliseconds, the step fails
+with the last result. Without `poll_ms`, the code runs once.
 
 ```yaml
 steps:
@@ -285,17 +298,25 @@ steps:
         #0.__prop = 42;
       endfork
       return "forked";
-  - wait: 500
   - run: "return #0.__prop;"
     expect:
       value: 42
+    poll_ms: 10000
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `wait` | `int` | Duration in milliseconds |
+Use it only for read-only code. The value it waits for must not hold before the
+event, and once reached it must not change later in the scenario. A check built to
+catch an extra or late event ("exactly once", an expected absence) needs a fixed
+`wait` instead, because a poll can pass before the extra event arrives.
 
-The runner calls `time.sleep(wait / 1000)` and then continues to the next step.
+#### Raw reads wait for their output expectation
+
+A `send`, `send_bytes` or `read_connection` step with an `expect.output` waits up to
+10 s for output that satisfies it. It then keeps reading until 0.1 s pass with no
+data, so extra lines still reach an `exact` assertion. When no output already
+satisfies the expectation (for example `exact: []`), the read instead ends after
+0.5 s of silence, so nothing arriving is a real observation. A raw read with no
+expectation ends at silence: 0.5 s before any data, 0.1 s after data.
 
 #### `assert_log` - Verify Server Log Content
 
@@ -307,9 +328,9 @@ Requires: `--moo-log-file` (or auto-detected via `--server-command`). Suites sho
 steps:
   - run: |
       return server_log("MY_TEST_MARKER");
-  - wait: 200
   - assert_log:
       contains: "MY_TEST_MARKER"
+      timeout_ms: 10000
 ```
 
 | Field | Type | Description |
@@ -317,6 +338,7 @@ steps:
 | `assert_log.contains` | `str` | Text to search for in recent log entries |
 | `assert_log.contains_any` | `list[str]` | Require at least one listed diagnostic in recent entries; list and strings must be nonempty |
 | `assert_log.not_contains` | `str` | Text that must be absent from recent log entries |
+| `assert_log.timeout_ms` | `int` | Reread the log every 50 ms for up to this long until `contains`/`contains_any` text appears (default `0`: check once). Not allowed with `not_contains` |
 
 If the text is not found, the assertion fails with an excerpt of the log content written since the test started.
 When multiple predicates are supplied, all must hold. Use `contains_any` for
@@ -506,7 +528,7 @@ servers that publish completed checkpoints by replacing these output files.
 
 | File | Description |
 |------|-------------|
-| `fork_timing.yaml` | Fork timing behavior: zero-delay fork execution, delayed task visibility in `queued_tasks()`, and `kill_task()` preventing execution. Uses `wait` steps to allow forked tasks time to run. |
+| `fork_timing.yaml` | Fork timing behavior: zero-delay fork execution, delayed task visibility in `queued_tasks()`, and `kill_task()` preventing execution. Uses `poll_ms` to wait for forked tasks to run, and a fixed `wait` where a killed task must not run. |
 
 ### Server Tests (`_tests/server/`)
 

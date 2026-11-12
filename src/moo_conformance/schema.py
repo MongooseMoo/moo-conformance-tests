@@ -189,7 +189,7 @@ POSIX_SIGNAL_NAMES = frozenset({
     "SIGURG", "SIGXCPU", "SIGXFSZ", "SIGVTALRM", "SIGPROF", "SIGWINCH", "SIGIO",
     "SIGPWR", "SIGSYS",
 })
-STEP_FIELDS = STEP_ACTION_FIELDS | {"capture", "as", "expect"}
+STEP_FIELDS = STEP_ACTION_FIELDS | {"capture", "as", "expect", "poll_ms"}
 ACTION_PAYLOAD_FIELDS = {
     "verb_setup": frozenset({"object", "name", "args", "code"}),
     "allocate_port": frozenset({"capture"}),
@@ -197,7 +197,7 @@ ACTION_PAYLOAD_FIELDS = {
     "send": frozenset({"text", "connection"}),
     "send_bytes": frozenset({"hex", "connection", "repeat"}),
     "read_connection": frozenset({"connection"}),
-    "assert_log": frozenset({"contains", "not_contains", "contains_any"}),
+    "assert_log": frozenset({"contains", "not_contains", "contains_any", "timeout_ms"}),
     "assert_file": frozenset({
         "path", "exists", "contains", "equals_file", "suspended_task", "timeout_ms"
     }),
@@ -360,6 +360,7 @@ class LogAssertion:
     contains: str | None = None     # Text that must be present in recent log entries
     not_contains: str | None = None  # Text that must be absent from recent log entries
     contains_any: list[str] | None = None  # At least one diagnostic must be present
+    timeout_ms: int = 0  # Wait up to this long for present text to be written
 
 
 @dataclass
@@ -484,6 +485,7 @@ class TestStep:
     capture: str | None = None                  # Variable name to store result
     as_: str | None = None                      # Permission for this step (wizard, programmer)
     expect: Expectation | None = None           # Optional assertion on this step's result
+    poll_ms: int | None = None                  # Rerun `run` until `expect` holds, up to N ms
 
 
 @dataclass
@@ -997,6 +999,12 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
         expect = _parse_expectation(
             data['expect'], f"{context} expectation", route=action
         )
+    poll_ms = data.get('poll_ms')
+    if 'poll_ms' in data:
+        if action != 'run' or expect is None:
+            raise ValueError(f"{context} poll_ms requires a run step with an expectation")
+        if type(poll_ms) is not int or poll_ms <= 0:
+            raise ValueError(f"{context} poll_ms must be a positive integer")
 
     # Parse verb_setup if present
     verb_setup = None
@@ -1097,10 +1105,17 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
             raise ValueError("assert_log contains_any must be a nonempty list of nonempty strings")
         if contains is None and not_contains is None and contains_any is None:
             raise ValueError("assert_log must specify contains, not_contains or contains_any")
+        log_timeout_ms = al_data.get('timeout_ms', 0)
+        if type(log_timeout_ms) is not int or log_timeout_ms < 0:
+            raise ValueError(f"{context} assert_log timeout_ms must be a non-negative integer")
+        if log_timeout_ms and not_contains is not None:
+            # A deadline waits for text to appear; absence has nothing to wait for.
+            raise ValueError(f"{context} assert_log timeout_ms cannot be used with not_contains")
         assert_log = LogAssertion(
             contains=contains,
             not_contains=not_contains,
             contains_any=contains_any,
+            timeout_ms=log_timeout_ms,
         )
 
     # Parse assert_file if present
@@ -1306,6 +1321,7 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
         capture=data.get('capture'),
         as_=data.get('as'),
         expect=expect,
+        poll_ms=poll_ms,
     )
 
 

@@ -25,10 +25,10 @@ tests:
           return "forked";
         expect:
           value: "forked"
-      - wait: 500
       - run: "return #0.__ft_zero;"
         expect:
           value: 42
+        poll_ms: 10000
     cleanup:
       - run: "delete_property(#0, \"__ft_zero\");"
         as: wizard
@@ -224,10 +224,10 @@ tests:
           return "spawned";
         expect:
           value: "spawned"
-      - wait: 500
       - run: "return {obj}.saw;"
         expect:
           value: 1
+        poll_ms: 10000
     cleanup:
       - run: "recycle({obj});"
         as: wizard

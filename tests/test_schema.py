@@ -484,6 +484,58 @@ def test_assert_log_accepts_known_predicates(assert_log):
     assert parsed_assertion.contains_any == assert_log.get("contains_any")
 
 
+def test_assert_log_timeout_waits_only_for_present_text():
+    suite = validate_test_suite(
+        _suite_with_assert_log({"contains": "CHECKPOINTING", "timeout_ms": 10000})
+    )
+
+    parsed_assertion = suite.tests[0].steps[0].assert_log
+    assert parsed_assertion is not None
+    assert parsed_assertion.timeout_ms == 10000
+
+
+@pytest.mark.parametrize(
+    "assert_log",
+    [
+        {"contains": "x", "timeout_ms": -1},
+        {"contains": "x", "timeout_ms": True},
+        {"contains": "x", "timeout_ms": "100"},
+        {"not_contains": "x", "timeout_ms": 100},
+    ],
+)
+def test_assert_log_rejects_invalid_timeout(assert_log):
+    with pytest.raises(ValueError, match="assert_log"):
+        validate_test_suite(_suite_with_assert_log(assert_log))
+
+
+def _suite_with_step(step: dict) -> dict:
+    return {"name": "step_suite", "tests": [{"name": "one", "steps": [step]}]}
+
+
+def test_run_step_accepts_poll_ms_with_an_expectation():
+    suite = validate_test_suite(
+        _suite_with_step({"run": "return 1;", "expect": {"value": 1}, "poll_ms": 5000})
+    )
+
+    assert suite.tests[0].steps[0].poll_ms == 5000
+
+
+@pytest.mark.parametrize(
+    "step",
+    [
+        {"run": "return 1;", "poll_ms": 5000},
+        {"command": "look", "expect": {"output": {"contains": "x"}}, "poll_ms": 5000},
+        {"wait": 100, "poll_ms": 5000},
+        {"run": "return 1;", "expect": {"value": 1}, "poll_ms": 0},
+        {"run": "return 1;", "expect": {"value": 1}, "poll_ms": True},
+        {"run": "return 1;", "expect": {"value": 1}, "poll_ms": "5000"},
+    ],
+)
+def test_poll_ms_requires_a_run_step_with_an_expectation(step: dict):
+    with pytest.raises(ValueError, match="poll_ms"):
+        validate_test_suite(_suite_with_step(step))
+
+
 def test_table_expands_dict_rows_into_concrete_tests() -> None:
     suite = validate_test_suite(
         {

@@ -279,6 +279,62 @@ def test_exact_empty_output_is_line_precise() -> None:
         runner._verify_output(expectation, [""], "empty output")
 
 
+def test_polled_run_step_reruns_until_its_expectation_holds() -> None:
+    transport = FakeTransport(
+        [ExecutionResult(success=True, value=0)] * 3
+        + [ExecutionResult(success=True, value=1)] * 2
+    )
+    runner = YamlTestRunner(transport)  # type: ignore[arg-type]
+
+    runner.run_test(
+        MooTestCase(
+            name="polled",
+            steps=[
+                MooTestStep(
+                    run="return #0.flag;", expect=Expectation(value=1), poll_ms=5000,
+                    capture="flag",
+                ),
+                MooTestStep(run="return {flag};", expect=Expectation(value=1)),
+            ],
+        )
+    )
+
+    assert transport.executed[:4] == ["; return #0.flag;"] * 4
+    assert transport.executed[4] == "; return 1;"
+
+
+def test_polled_run_step_reports_the_last_failure_at_its_deadline() -> None:
+    transport = FakeTransport([ExecutionResult(success=True, value=0)] * 1000)
+    runner = YamlTestRunner(transport)  # type: ignore[arg-type]
+
+    with pytest.raises(RunnerAssertionError, match="expected value 1, but got 0"):
+        runner.run_test(
+            MooTestCase(
+                name="polled",
+                steps=[
+                    MooTestStep(
+                        run="return #0.flag;", expect=Expectation(value=1), poll_ms=200
+                    )
+                ],
+            )
+        )
+    assert len(transport.executed) > 1
+
+
+def test_unpolled_run_step_executes_once() -> None:
+    transport = FakeTransport([ExecutionResult(success=True, value=0)] * 5)
+    runner = YamlTestRunner(transport)  # type: ignore[arg-type]
+
+    with pytest.raises(RunnerAssertionError):
+        runner.run_test(
+            MooTestCase(
+                name="unpolled",
+                steps=[MooTestStep(run="return #0.flag;", expect=Expectation(value=1))],
+            )
+        )
+    assert transport.executed == ["; return #0.flag;"]
+
+
 class RecordingConnection:
     """Raw connection fake that records the read predicate each step passes."""
 

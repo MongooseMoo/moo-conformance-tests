@@ -32,9 +32,8 @@ tests:
       - run: "return dump_database();"
         expect:
           value: 0
-      - wait: 1500
       - restart_server:
-          wait_ms: 300
+          checkpoint_timeout_ms: 10000
       - run: |
           ids = {};
           for q in (queued_tasks())
@@ -47,9 +46,8 @@ tests:
       - run: "return dump_database();"
         expect:
           value: 0
-      - wait: 1500
       - restart_server:
-          wait_ms: 300
+          checkpoint_timeout_ms: 10000
       - run: |
           ids = {};
           for q in (queued_tasks())

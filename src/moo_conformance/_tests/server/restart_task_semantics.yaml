@@ -41,8 +41,8 @@ tests:
         as: wizard
         expect:
           value: 0
-      - wait: 1500
       - restart_server:
+          checkpoint_timeout_ms: 10000
           wait_ms: 300
       - wait: 1000
       - run: |
@@ -84,13 +84,12 @@ tests:
         as: wizard
         expect:
           value: 0
-      - wait: 1500
       - restart_server:
-          wait_ms: 300
+          checkpoint_timeout_ms: 10000
           down_ms: 6000
-      - wait: 1000
       - run: "return #0.restore_order;"
         as: wizard
         expect:
           value: ["started", "task"]
+        poll_ms: 10000
       - restart_server: {reset_db: true}

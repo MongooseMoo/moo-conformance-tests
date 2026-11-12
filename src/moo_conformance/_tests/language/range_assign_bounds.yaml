@@ -1,0 +1,177 @@
+name: range_assign_bounds
+description: >
+  List and string range assignment bounds. E_RANGE is raised only when
+  from > length + 1 or to < 0; a start below 1 keeps no prefix and an end past
+  the length keeps no suffix (EOP_RANGESET in execute.cc, listrangeset and
+  strrangeset in list.cc).
+
+tests:
+  # Lists
+  - name: list_range_assign_start_zero
+    statement: |
+      l = {1, 2};
+      l[0..1] = {9};
+      return l;
+    expect:
+      value: [9, 2]
+
+  - name: list_range_assign_start_negative
+    statement: |
+      l = {1, 2};
+      l[-1..1] = {9};
+      return l;
+    expect:
+      value: [9, 2]
+
+  - name: list_range_assign_start_zero_end_zero
+    statement: |
+      l = {1, 2};
+      l[0..0] = {9};
+      return l;
+    expect:
+      value: [9, 1, 2]
+
+  - name: list_range_assign_start_negative_end_zero
+    statement: |
+      l = {1, 2};
+      l[-1..0] = {9};
+      return l;
+    expect:
+      value: [9, 1, 2]
+
+  - name: list_range_assign_start_zero_end_past_length
+    statement: |
+      l = {1, 2};
+      l[0..5] = {9};
+      return l;
+    expect:
+      value: [9]
+
+  - name: list_range_assign_start_negative_end_negative
+    statement: |
+      l = {1, 2};
+      l[-1..-1] = {9};
+    expect:
+      error: E_RANGE
+
+  - name: list_range_assign_end_negative
+    statement: |
+      l = {1, 2};
+      l[1..-1] = {9};
+    expect:
+      error: E_RANGE
+
+  - name: list_range_assign_start_length_plus_one
+    statement: |
+      l = {1, 2};
+      l[3..2] = {9};
+      return l;
+    expect:
+      value: [1, 2, 9]
+
+  - name: list_range_assign_start_length_plus_two
+    statement: |
+      l = {1, 2};
+      l[4..3] = {9};
+    expect:
+      error: E_RANGE
+
+  - name: list_range_assign_nested_start_zero
+    statement: |
+      l = {{1, 2}, "ab"};
+      l[1][0..1] = {9};
+      return l;
+    expect:
+      value: [[9, 2], "ab"]
+
+  - name: list_range_assign_nested_end_negative
+    statement: |
+      l = {{1, 2}, "ab"};
+      l[1][-1..-1] = {9};
+    expect:
+      error: E_RANGE
+
+  # Strings
+  - name: string_range_assign_start_zero
+    statement: |
+      s = "ab";
+      s[0..1] = "z";
+      return s;
+    expect:
+      value: "zb"
+
+  - name: string_range_assign_start_negative
+    statement: |
+      s = "ab";
+      s[-1..1] = "z";
+      return s;
+    expect:
+      value: "zb"
+
+  - name: string_range_assign_start_zero_end_zero
+    statement: |
+      s = "ab";
+      s[0..0] = "z";
+      return s;
+    expect:
+      value: "zab"
+
+  - name: string_range_assign_start_negative_end_zero
+    statement: |
+      s = "ab";
+      s[-1..0] = "z";
+      return s;
+    expect:
+      value: "zab"
+
+  - name: string_range_assign_start_zero_end_past_length
+    statement: |
+      s = "ab";
+      s[0..5] = "z";
+      return s;
+    expect:
+      value: "z"
+
+  - name: string_range_assign_start_negative_end_negative
+    statement: |
+      s = "ab";
+      s[-1..-1] = "z";
+    expect:
+      error: E_RANGE
+
+  - name: string_range_assign_end_negative
+    statement: |
+      s = "ab";
+      s[1..-1] = "z";
+    expect:
+      error: E_RANGE
+
+  - name: string_range_assign_start_length_plus_one
+    statement: |
+      s = "ab";
+      s[3..2] = "z";
+      return s;
+    expect:
+      value: "abz"
+
+  - name: string_range_assign_start_length_plus_two
+    statement: |
+      s = "ab";
+      s[4..3] = "z";
+    expect:
+      error: E_RANGE
+
+  - name: string_range_assign_nested_start_zero
+    statement: |
+      l = {{1, 2}, "ab"};
+      l[2][0..1] = "z";
+      return l;
+    expect:
+      value: [[1, 2], "zb"]
+
+  - name: string_range_assign_nested_end_negative
+    statement: |
+      l = {{1, 2}, "ab"};
+      l[2][-1..-1] = "z";
+    expect:
+      error: E_RANGE

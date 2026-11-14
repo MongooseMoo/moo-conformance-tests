@@ -10,7 +10,7 @@ for submodule", narrowest version).
 
 This controller PR, which must land before #85:
 
-- `.gitmodules` names the one submodule,
+- (Follow-up controller PR) `.gitmodules` names the one submodule,
   `src/moo_conformance/_db/startup/toastcore` ->
   `https://github.com/lisdude/toastcore.git`. It is a controller path, so a
   data PR cannot change the URL.

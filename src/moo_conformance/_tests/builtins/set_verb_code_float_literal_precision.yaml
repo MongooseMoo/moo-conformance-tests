@@ -1,0 +1,37 @@
+name: set_verb_code_float_literal_precision
+description: >
+  A float literal in code installed with set_verb_code() keeps its full
+  double value when the verb runs, even though verb_code() displays the
+  literal with only 15 significant digits. (From MongooseMoo/barn#840.)
+
+requires:
+  builtins:
+    - set_verb_code
+    - verb_code
+
+tests:
+  - name: set_verb_code_float_literal_keeps_full_value_when_called
+    steps:
+      - run: |
+          o = create($nothing);
+          add_verb(o, {player, "xd", "fv"}, {"this", "none", "this"});
+          set_verb_code(o, "fv", {"return {18.46744073709553614, 1.0000000000000002};"});
+          r = o:fv();
+          recycle(o);
+          return {r[1] == 18.46744073709553614, r[1] == 18.4674407370955, r[2] == 1.0000000000000002, r[2] == 1.0};
+        as: wizard
+        expect:
+          value: [1, 0, 1, 0]
+
+  - name: set_verb_code_float_literal_verb_code_shows_15_digits
+    steps:
+      - run: |
+          o = create($nothing);
+          add_verb(o, {player, "xd", "fv"}, {"this", "none", "this"});
+          set_verb_code(o, "fv", {"return {18.46744073709553614, 1.0000000000000002};"});
+          r = verb_code(o, "fv");
+          recycle(o);
+          return r;
+        as: wizard
+        expect:
+          value: ["return {18.4674407370955, 1.0};"]

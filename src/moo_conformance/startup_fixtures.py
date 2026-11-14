@@ -17,8 +17,15 @@ from .path_confinement import (
 
 _MANIFEST_NAME = "startup-fixtures.sha256"
 _FIXTURE_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]*\.db$")
+# The one fixture that is not a flat file: the ToastCore database, from the
+# git submodule at _db/startup/toastcore (lisdude/toastcore). Only its
+# database is a fixture; the rest of the submodule checkout is ignored.
+_SUBMODULE_DIR = "toastcore"
+_SUBMODULE_DATABASE = "toastcore.db"
+_SUBMODULE_FIXTURE = f"{_SUBMODULE_DIR}/{_SUBMODULE_DATABASE}"
 _MANIFEST_LINE = re.compile(
-    r"^(?P<sha256>[0-9a-f]{64})  (?P<name>[A-Za-z0-9][A-Za-z0-9_.-]*\.db)$"
+    r"^(?P<sha256>[0-9a-f]{64})  "
+    r"(?P<name>[A-Za-z0-9][A-Za-z0-9_.-]*\.db|toastcore/toastcore\.db)$"
 )
 
 
@@ -61,7 +68,10 @@ def validate_startup_fixtures(
     fixtures_dir: str | Path,
     manifest_path: str | Path,
 ) -> StartupFixtureEvidence:
-    """Validate one canonical manifest against the exact flat fixture directory."""
+    """Validate one canonical manifest against the flat fixture directory.
+
+    The ToastCore submodule database is the single non-flat fixture.
+    """
     candidate_input = Path(candidate_root)
     fixtures_input = Path(fixtures_dir)
     manifest_input = Path(manifest_path)
@@ -117,6 +127,13 @@ def validate_startup_fixtures(
                 raise StartupFixtureError(
                     f"unexpected startup fixture entry: {entry.name}"
                 )
+            continue
+        if entry.name == _SUBMODULE_DIR and entry.is_dir():
+            database = entry / _SUBMODULE_DATABASE
+            if _is_link_or_junction(database):
+                raise StartupFixtureError(f"linked startup fixture entry: {_SUBMODULE_FIXTURE}")
+            if database.is_file():
+                actual_files[_SUBMODULE_FIXTURE] = database
             continue
         if not entry.is_file() or _FIXTURE_NAME.fullmatch(entry.name) is None:
             raise StartupFixtureError(f"unexpected startup fixture entry: {entry.name}")

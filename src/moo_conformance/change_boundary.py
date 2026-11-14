@@ -11,6 +11,9 @@ from typing import Iterable
 
 _DATA_TESTS_PREFIX = "src/moo_conformance/_tests/"
 _DATA_DB_PREFIX = "src/moo_conformance/_db/"
+# The only admitted gitlink: the ToastCore database submodule. Its pinned
+# commit is data; .gitmodules (which names its URL) is controller.
+_TOASTCORE_GITLINK = "src/moo_conformance/_db/startup/toastcore"
 _CONTROLLER_EXEC_PREFIX = "src/moo_conformance/_exec_fixtures/"
 _CONTROLLER_PREFIXES = (
     ".github/",
@@ -18,6 +21,7 @@ _CONTROLLER_PREFIXES = (
 )
 _CONTROLLER_FILES = {
     ".gitattributes",
+    ".gitmodules",
     ".gitignore",
     ".python-version",
     "pyproject.toml",
@@ -58,6 +62,8 @@ def _require_canonical_path(path: str) -> str:
 
 
 def _path_kind(path: str) -> str:
+    if path == _TOASTCORE_GITLINK:
+        return "data"
     if path.startswith(_DATA_TESTS_PREFIX):
         if path.endswith(".yaml"):
             return "data"
@@ -182,7 +188,7 @@ def _tracked_tree(root: str | Path) -> dict[str, tuple[str, str]]:
             raise ChangeBoundaryError(f"non-UTF-8 git index entry in {checkout}") from exc
         if path in entries:
             raise ChangeBoundaryError(f"duplicate git index path in {checkout}: {path}")
-        if mode != "100644":
+        if mode != "100644" and not (mode == "160000" and path == _TOASTCORE_GITLINK):
             raise ChangeBoundaryError(
                 f"unsupported git index mode in {checkout}: {path}: {mode}"
             )

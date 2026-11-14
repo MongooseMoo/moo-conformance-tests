@@ -164,6 +164,35 @@ tests:
       - run: "recycle({objs}[1]); recycle({objs}[2]);"
         as: wizard
 
+  - name: audit_clear_aliases_match_current_inherited_value
+    description: An object whose aliases slot is clear matches by the value it inherits now, not a value from when it was created.
+    steps:
+      - run: |
+          parent = create($nothing);
+          add_property(parent, "aliases", {"auditoldalias"}, {player, "rw"});
+          child = create(parent);
+          child.name = "auditclearchild";
+          move(child, player);
+          parent.aliases = {"auditnewalias"};
+          add_verb(player, {player, "xd", "auditlook"}, {"any", "none", "none"});
+          set_verb_code(player, "auditlook", {
+            "notify(player, \"DOBJ:\" + (valid(dobj) ? dobj.name | toliteral(dobj)));"
+          });
+          return {child, parent};
+        capture: objs
+        as: wizard
+      - command: "auditlook auditnewalias"
+        expect:
+          output: "DOBJ:auditclearchild"
+      - command: "auditlook auditoldalias"
+        expect:
+          output: "DOBJ:#-3"
+    cleanup:
+      - run: 'delete_verb(player, "auditlook");'
+        as: wizard
+      - run: "recycle({objs}[1]); recycle({objs}[2]);"
+        as: wizard
+
   - name: audit_player_name_matches_room_contents
     description: The current player is still considered when matching room contents by name.
     steps:

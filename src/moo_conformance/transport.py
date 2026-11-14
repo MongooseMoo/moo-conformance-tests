@@ -12,7 +12,9 @@ Usage:
 
 import re
 import socket
+import time
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -112,10 +114,21 @@ class MooTransport(ABC):
         self.disconnect()
 
 
+OutputPredicate = Callable[[list[str]], bool]
+
+# Raw reads with no expectation end after this much silence before any data,
+# and after this much silence once data has arrived.
+QUIET_BEFORE_DATA = 0.5
+QUIET_AFTER_DATA = 0.1
+# How long a read with an expectation waits for the expected output.
+EXPECTED_OUTPUT_DEADLINE = 10.0
+
+
 class TestConnection:
     """Secondary socket connection for lifecycle testing.
 
-    Raw connection without PREFIX/SUFFIX markers - uses timeout-based read.
+    Raw connection without PREFIX/SUFFIX markers. A read given an expectation
+    (``until``) waits for that output; any other read ends at silence.
     Starts unauthenticated, sends raw text without eval wrapping.
     """
 
@@ -131,23 +144,32 @@ class TestConnection:
         self.sock.connect((self.host, self.port))
         return self._receive_until_quiet()
 
-    def send(self, text: str) -> list[str]:
+    def send(
+        self, text: str, until: OutputPredicate | None = None,
+        deadline: float = EXPECTED_OUTPUT_DEADLINE,
+    ) -> list[str]:
         """Send raw text and return output lines."""
         if self.sock is None:
             raise RuntimeError("TestConnection not connected")
         self.sock.sendall((text + "\r\n").encode("utf-8"))
-        return self._receive_until_quiet()
+        return self._receive_until_quiet(until=until, deadline=deadline)
 
-    def send_bytes(self, data: bytes) -> list[str]:
+    def send_bytes(
+        self, data: bytes, until: OutputPredicate | None = None,
+        deadline: float = EXPECTED_OUTPUT_DEADLINE,
+    ) -> list[str]:
         """Send raw bytes and return output lines."""
         if self.sock is None:
             raise RuntimeError("TestConnection not connected")
         self.sock.sendall(data)
-        return self._receive_until_quiet()
+        return self._receive_until_quiet(until=until, deadline=deadline)
 
-    def read(self) -> list[str]:
+    def read(
+        self, until: OutputPredicate | None = None,
+        deadline: float = EXPECTED_OUTPUT_DEADLINE,
+    ) -> list[str]:
         """Return pending output lines without sending input."""
-        return self._receive_until_quiet()
+        return self._receive_until_quiet(until=until, deadline=deadline)
 
     def close(self) -> None:
         """Close the socket."""
@@ -158,16 +180,42 @@ class TestConnection:
                 pass
             self.sock = None
 
-    def _receive_until_quiet(self, timeout: float = 0.5) -> list[str]:
-        """Receive until no data arrives within timeout."""
+    def _receive_until_quiet(
+        self, until: OutputPredicate | None = None,
+        deadline: float = EXPECTED_OUTPUT_DEADLINE,
+    ) -> list[str]:
+        """Receive output lines.
+
+        With ``until``, wait (at most ``deadline`` seconds) for output that
+        satisfies it, then drain whatever follows until a short silence, so
+        an exact expectation still sees extra lines. An expectation already
+        met by no output asserts that nothing arrives, so it keeps the plain
+        silence window. Without ``until``, stop at silence.
+        """
         if self.sock is None:
             return []
+        if until is not None and until([]):
+            until = None
 
-        lines: list[str] = []
         buffer = b""
-        self.sock.settimeout(timeout)
-
         try:
+            if until is not None:
+                end = time.monotonic() + deadline
+                while not until(self._lines(buffer)):
+                    remaining = end - time.monotonic()
+                    if remaining <= 0:
+                        return self._lines(buffer)
+                    self.sock.settimeout(remaining)
+                    try:
+                        data = self.sock.recv(4096)
+                    except (socket.timeout, ConnectionResetError):
+                        # A reset is the server closing with input unread.
+                        return self._lines(buffer)
+                    if not data:
+                        return self._lines(buffer)
+                    buffer += SocketTransport._strip_telnet_commands(data)
+
+            self.sock.settimeout(QUIET_AFTER_DATA if buffer else QUIET_BEFORE_DATA)
             while True:
                 try:
                     data = self.sock.recv(4096)
@@ -175,12 +223,20 @@ class TestConnection:
                         break
                     clean = SocketTransport._strip_telnet_commands(data)
                     buffer += clean
-                    self.sock.settimeout(0.1)  # Shorter after first data
-                except socket.timeout:
+                    self.sock.settimeout(QUIET_AFTER_DATA)  # Shorter after first data
+                except (socket.timeout, ConnectionResetError):
+                    # A reset is the server closing with input unread.
                     break
         finally:
-            self.sock.settimeout(2.0)
+            if self.sock is not None:
+                self.sock.settimeout(2.0)
 
+        return self._lines(buffer)
+
+    @staticmethod
+    def _lines(buffer: bytes) -> list[str]:
+        """Split received bytes into non-empty lines without line endings."""
+        lines: list[str] = []
         for line in buffer.decode("utf-8", errors="replace").split("\n"):
             line = line.rstrip("\r")
             if line:
@@ -261,13 +317,13 @@ class SocketTransport(MooTransport):
         if self.sock is None:
             return
 
-        # Wait for login to complete by looking for "*** Connected ***" marker
-        # Use a longer timeout since login can take time
+        # Wait for login to complete by looking for "*** Connected ***" marker.
+        # Once it arrives, stop: the marker-framed readers discard any later
+        # unframed login output that precedes the first PREFIX marker.
         old_timeout = self.sock.gettimeout()
         self.sock.settimeout(2.0)  # 2 second timeout for login
 
         buffer = b""
-        connected = False
         try:
             while True:
                 try:
@@ -280,14 +336,10 @@ class SocketTransport(MooTransport):
 
                     # Check for connection success marker
                     if b"*** Connected ***" in buffer or b"Connected" in buffer:
-                        connected = True
-
-                    # Once connected, drain remaining output with shorter timeout
-                    if connected:
-                        self.sock.settimeout(0.1)
+                        break
 
                 except socket.timeout:
-                    # Timeout - either login failed or we've drained all output
+                    # Timeout - login printed no marker
                     break
         finally:
             self.sock.settimeout(old_timeout)

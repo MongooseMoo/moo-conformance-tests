@@ -1,0 +1,194 @@
+name: verb_setter_error_precedence
+description: >-
+  set_verb_info() and set_verb_args() check the object (E_TYPE, then E_INVARG
+  when it is not valid) and the whole info or args list before they look the
+  verb up (E_VERBNF) or check permission (E_PERM). A names string is split
+  only on spaces.
+
+requires:
+  builtins:
+    - add_verb
+    - set_verb_info
+    - set_verb_args
+    - set_verb_code
+    - verb_info
+    - verb_args
+    - verbs
+    - create
+    - recycle
+    - decode_binary
+    - max_object
+    - toobj
+    - toint
+
+tests:
+  - name: set_verb_info_missing_verb_bad_info_{kind}
+    permission: wizard
+    table:
+      columns: [kind, info_expr, error]
+      rows:
+        - [bad_flags, '{player, "q", "foobar"}', E_INVARG]
+        - [owner_type, '{1, "rx", "foobar"}', E_TYPE]
+        - [invalid_owner, '{$nothing, "rx", "foobar"}', E_INVARG]
+        - [short_list, '{player, "rx"}', E_TYPE]
+    steps:
+      - run: create($nothing)
+        capture: obj
+      - run: 'set_verb_info({obj}, "nosuch", {info_expr})'
+        expect:
+          error: '{error}'
+    cleanup:
+      - run: recycle({obj})
+
+  - name: set_verb_info_existing_verb_bad_info_{kind}
+    permission: wizard
+    table:
+      columns: [kind, info_expr, error]
+      rows:
+        - [invalid_owner, '{$nothing, "rx", "barfoo"}', E_INVARG]
+        - [short_list, '{player, "rx"}', E_TYPE]
+        - [long_list, '{player, "rx", "barfoo", 1}', E_TYPE]
+    steps:
+      - run: create($nothing)
+        capture: obj
+      - run: add_verb({obj}, {player, "rx", "foobar"}, {"this", "none", "this"})
+        expect:
+          value: 1
+      - run: 'set_verb_info({obj}, "foobar", {info_expr})'
+        expect:
+          error: '{error}'
+      - run: 'info = verb_info({obj}, 1); return {info[1] == player, info[2], info[3]};'
+        expect:
+          value: [1, rx, foobar]
+    cleanup:
+      - run: recycle({obj})
+
+  - name: set_verb_info_non_owner_bad_info_{kind}
+    permission: programmer
+    table:
+      columns: [kind, info_expr, error]
+      rows:
+        - [bad_flags, '{player, "q", "barfoo"}', E_INVARG]
+        - [owner_type, '{1, "rx", "barfoo"}', E_TYPE]
+    steps:
+      - run: obj = create($nothing); add_verb(obj, {player, "rx", "foobar"}, {"this", "none", "this"}); return obj;
+        capture: obj
+        as: wizard
+      - run: 'set_verb_info({obj}, "foobar", {info_expr})'
+        as: programmer
+        expect:
+          error: '{error}'
+    cleanup:
+      - run: recycle({obj})
+        as: wizard
+
+  - name: set_verb_info_invalid_object_{kind}
+    permission: wizard
+    table:
+      columns: [kind, obj_expr, info_expr]
+      rows:
+        - [nothing, '$nothing', '{player, "rx", "foobar"}']
+        - [past_max_object, 'toobj(toint(max_object()) + 1)', '{player, "rx", "foobar"}']
+        - [nothing_bad_info, '$nothing', '{1, "q"}']
+    steps:
+      - run: 'set_verb_info({obj_expr}, "foobar", {info_expr})'
+        expect:
+          error: E_INVARG
+
+  - name: set_verb_args_missing_verb_bad_args_{kind}
+    permission: wizard
+    table:
+      columns: [kind, args_expr, error]
+      rows:
+        - [bad_prep, '{"this", "bogus", "this"}', E_INVARG]
+        - [bad_dobj, '{"bogus", "none", "this"}', E_INVARG]
+        - [dobj_type, '{1, "none", "this"}', E_TYPE]
+        - [short_list, '{"this", "none"}', E_TYPE]
+    steps:
+      - run: create($nothing)
+        capture: obj
+      - run: 'set_verb_args({obj}, "nosuch", {args_expr})'
+        expect:
+          error: '{error}'
+    cleanup:
+      - run: recycle({obj})
+
+  - name: set_verb_args_existing_verb_bad_args_{kind}
+    permission: wizard
+    table:
+      columns: [kind, args_expr, error]
+      rows:
+        - [bad_dobj, '{"bogus", "none", "this"}', E_INVARG]
+        - [bad_iobj, '{"this", "none", "bogus"}', E_INVARG]
+        - [dobj_object, '{#1, "none", "this"}', E_TYPE]
+        - [iobj_object, '{"this", "none", #1}', E_TYPE]
+        - [short_list, '{"this", "none"}', E_TYPE]
+    steps:
+      - run: create($nothing)
+        capture: obj
+      - run: add_verb({obj}, {player, "rx", "foobar"}, {"this", "none", "this"})
+        expect:
+          value: 1
+      - run: 'set_verb_args({obj}, "foobar", {args_expr})'
+        expect:
+          error: '{error}'
+      - run: 'return verb_args({obj}, 1);'
+        expect:
+          value: [this, none, this]
+    cleanup:
+      - run: recycle({obj})
+
+  - name: set_verb_args_non_owner_bad_args_{kind}
+    permission: programmer
+    table:
+      columns: [kind, args_expr, error]
+      rows:
+        - [bad_prep, '{"this", "bogus", "this"}', E_INVARG]
+        - [dobj_type, '{1, "none", "this"}', E_TYPE]
+    steps:
+      - run: obj = create($nothing); add_verb(obj, {player, "rx", "foobar"}, {"this", "none", "this"}); return obj;
+        capture: obj
+        as: wizard
+      - run: 'set_verb_args({obj}, "foobar", {args_expr})'
+        as: programmer
+        expect:
+          error: '{error}'
+    cleanup:
+      - run: recycle({obj})
+        as: wizard
+
+  - name: set_verb_args_invalid_object_{kind}
+    permission: wizard
+    table:
+      columns: [kind, obj_expr, args_expr]
+      rows:
+        - [nothing, '$nothing', '{"this", "none", "this"}']
+        - [past_max_object, 'toobj(toint(max_object()) + 1)', '{"this", "none", "this"}']
+        - [nothing_bad_args, '$nothing', '{1, "bogus"}']
+    steps:
+      - run: 'set_verb_args({obj_expr}, "foobar", {args_expr})'
+        expect:
+          error: E_INVARG
+
+  - name: set_verb_info_tab_only_names
+    description: >-
+      Only spaces separate verb names, so a names string of one tab is one
+      name: verb_info() and verbs() return it and the verb can be called by it.
+    permission: wizard
+    steps:
+      - run: create($nothing)
+        capture: obj
+      - run: add_verb({obj}, {player, "rx", "foobar"}, {"this", "none", "this"})
+        expect:
+          value: 1
+      - run: 'return set_verb_code({obj}, "foobar", {"return 7;"});'
+        expect:
+          value: []
+      - run: 'tab = decode_binary("~09")[1]; return set_verb_info({obj}, "foobar", {player, "rx", tab});'
+        expect:
+          value: 0
+      - run: 'tab = decode_binary("~09")[1]; return {verb_info({obj}, 1)[3] == tab, verbs({obj}) == {tab}, {obj}:(tab)()};'
+        expect:
+          value: [1, 1, 7]
+    cleanup:
+      - run: recycle({obj})

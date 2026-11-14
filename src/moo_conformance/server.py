@@ -21,6 +21,9 @@ from typing import TextIO
 
 FileSnapshotSignature = tuple[int, int, int, int, int]
 
+# Pause between connection attempts while a started server opens its port.
+PORT_POLL_INTERVAL = 0.05
+
 
 def file_snapshot_signature(info: os.stat_result) -> FileSnapshotSignature:
     """Return identity and mutation fields used by launch/test freshness gates."""
@@ -184,6 +187,7 @@ class ManagedServer:
     def start(
         self, db_path: Path | None = None, wait_for_port: bool = True,
         ignore_sighup: bool = False,
+        arguments: list[str] | None = None,
     ) -> None:
         """Start the server subprocess.
 
@@ -280,6 +284,7 @@ class ManagedServer:
             self._process_file_snapshot = snapshot_regular_files(self._temp_dir)
 
             argv = shlex.split(command)
+            argv[1:1] = arguments or []
             if ignore_sighup:
                 if os.name != "posix":
                     raise ValueError("ignore_sighup requires POSIX")
@@ -430,6 +435,7 @@ class ManagedServer:
         checkpoint_timeout_ms: int | None = None,
         checkpoint_boundary: dict[str, FileSnapshotSignature] | None = None,
         ignore_sighup: bool = False,
+        arguments: list[str] | None = None,
     ) -> None:
         """Restart the server process in-place, preserving the working database.
 
@@ -453,7 +459,10 @@ class ManagedServer:
         self.stop(preserve_temp=True)
         if down_ms > 0:
             time.sleep(down_ms / 1000.0)
-        if db_path is None:
+        if arguments is not None:
+            self.start(db_path=db_path, wait_for_port=wait_for_port,
+                       ignore_sighup=ignore_sighup, arguments=arguments)
+        elif db_path is None:
             if ignore_sighup:
                 self.start(wait_for_port=wait_for_port, ignore_sighup=True)
             else:
@@ -570,7 +579,7 @@ class ManagedServer:
                     s.connect((self.host, self._port))
                     return  # Connection succeeded
             except (ConnectionRefusedError, OSError):
-                time.sleep(0.5)
+                time.sleep(PORT_POLL_INTERVAL)
 
         raise self._record_lifecycle_failure(
             f"Managed server did not accept connections on port {self._port} "

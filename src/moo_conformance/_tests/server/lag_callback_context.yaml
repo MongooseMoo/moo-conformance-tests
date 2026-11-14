@@ -1,0 +1,96 @@
+name: lag_callback_context
+description: Lag callbacks use elapsed interpreter-slice time and preserve the originating player and payload shape.
+requires:
+  builtins: [ftime, load_server_options]
+  config: [managed_server]
+tests:
+  - name: lag_{outcome}_payload_and_root_frame
+    table:
+      columns: [outcome, tail]
+      rows:
+        - [completed, "return 37;"]
+        - [aborted, 'raise(E_INVARG, \"lag payload\", 37);']
+        - [blocked, "suspend(0); return 37;"]
+    steps:
+      - restart_server: {reset_db: true}
+      - run: |
+          add_property(#0, "cb_events", {}, {player, "rw"});
+          owner = create($nothing);
+          owner.programmer = 1;
+          add_property(#0, "cb_owner", owner, {player, "r"});
+          add_property(#0, "cb_player", player, {player, "r"});
+          for option in ({"fg_ticks", "bg_ticks"})
+            try add_property($server_options, option, 2147483647, {player, "rw"}); except (E_INVARG) endtry
+            $server_options.(option) = 2147483647;
+          endfor
+          try add_property($server_options, "task_lag_threshold", 0.1, {player, "rw"}); except (E_INVARG) endtry
+          $server_options.task_lag_threshold = 0.1;
+          load_server_options();
+          try delete_verb(#0, "handle_lagging_task"); except (E_VERBNF) endtry
+          add_verb(#0, {owner, "rxd", "handle_lagging_task"}, {"this", "none", "this"});
+          set_verb_code(#0, "handle_lagging_task", {
+            "#0.cb_events = {@#0.cb_events, {verb, this, caller, player, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()}};",
+            "$server_options.task_lag_threshold = 0.0;"
+          });
+          add_verb(player, {player, "rxd", "cb_lag cb_lag_alias"}, {"none", "none", "none"});
+          set_verb_code(player, "cb_lag", {
+            "deadline = ftime(1) + 0.2;",
+            "while (ftime(1) < deadline) endwhile",
+            "{tail}"
+          });
+          return 1;
+        as: wizard
+        expect: {value: 1}
+      - command: cb_lag
+      - run: |
+          for attempt in [1..100]
+            if (length(#0.cb_events)) break; endif
+            suspend(0.01);
+          endfor
+          e = #0.cb_events[1];
+          context = {e[1..4], e[6..14]} == {
+            {"handle_lagging_task", #0, #-1, #0.cb_player},
+            {"", #-1, "", "", #-1, "", #0.cb_owner, #-1, {}}
+          };
+          payload = e[5];
+          if ("{outcome}" == "completed")
+            stack_ok = payload[1] == {#-1, "cb_lag cb_lag_alias", #-1, #0.cb_player, #-1, #-1};
+          else
+            frame = payload[1][1];
+            stack_ok = frame[1..5] == {#0.cb_player, "cb_lag", #0.cb_player, #0.cb_player, #0.cb_player}
+              && typeof(frame[6]) == INT && frame[6] > 0;
+          endif
+          return {length(#0.cb_events), context, stack_ok, length(payload) == 2 && typeof(payload[2]) == FLOAT && payload[2] >= 0.1};
+        as: wizard
+        expect: {value: [1, 1, 1, 1]}
+      - restart_server: {reset_db: true}
+
+  - name: lag_threshold_below_minimum_disables_callback
+    steps:
+      - restart_server: {reset_db: true}
+      - run: |
+          add_property(#0, "cb_events", {}, {player, "rw"});
+          owner = create($nothing);
+          owner.programmer = 1;
+          add_property(#0, "cb_owner", owner, {player, "r"});
+          try add_property($server_options, "task_lag_threshold", 0.05, {player, "rw"}); except (E_INVARG) endtry
+          $server_options.task_lag_threshold = 0.05;
+          try add_property($server_options, "fg_ticks", 2147483647, {player, "rw"}); except (E_INVARG) endtry
+          $server_options.fg_ticks = 2147483647;
+          load_server_options();
+          try delete_verb(#0, "handle_lagging_task"); except (E_VERBNF) endtry
+          add_verb(#0, {owner, "rxd", "handle_lagging_task"}, {"this", "none", "this"});
+          set_verb_code(#0, "handle_lagging_task", {"#0.cb_events = {@#0.cb_events, {verb, this, caller, player, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()}};"});
+          return 1;
+        as: wizard
+        expect: {value: 1}
+      - run: |
+          deadline = ftime(1) + 0.2;
+          while (ftime(1) < deadline) endwhile
+          return 1;
+        as: wizard
+        expect: {value: 1}
+      - run: 'return #0.cb_events;'
+        as: wizard
+        expect: {value: []}
+      - restart_server: {reset_db: true}

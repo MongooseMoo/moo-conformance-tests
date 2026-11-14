@@ -147,7 +147,6 @@ skip_if: str
 """
 
 import re
-import signal
 from copy import deepcopy
 from dataclasses import dataclass, field
 from itertools import product
@@ -181,25 +180,33 @@ STEP_ACTION_FIELDS = frozenset({
     "run", "command", "verb_setup", "allocate_port", "new_connection", "send",
     "send_bytes", "read_connection", "close_connection", "wait", "assert_log",
     "assert_file", "write_file", "write_stdin", "restart_server", "wait_for_server_exit",
-    "signal_server", "rename_file",
+    "signal_server", "rename_file", "chmod",
 })
-STEP_FIELDS = STEP_ACTION_FIELDS | {"capture", "as", "expect"}
+POSIX_SIGNAL_NAMES = frozenset({
+    "SIGHUP", "SIGINT", "SIGQUIT", "SIGILL", "SIGTRAP", "SIGABRT", "SIGBUS",
+    "SIGFPE", "SIGKILL", "SIGUSR1", "SIGSEGV", "SIGUSR2", "SIGPIPE", "SIGALRM",
+    "SIGTERM", "SIGCHLD", "SIGCONT", "SIGSTOP", "SIGTSTP", "SIGTTIN", "SIGTTOU",
+    "SIGURG", "SIGXCPU", "SIGXFSZ", "SIGVTALRM", "SIGPROF", "SIGWINCH", "SIGIO",
+    "SIGPWR", "SIGSYS",
+})
+STEP_FIELDS = STEP_ACTION_FIELDS | {"capture", "as", "expect", "poll_ms"}
 ACTION_PAYLOAD_FIELDS = {
     "verb_setup": frozenset({"object", "name", "args", "code"}),
     "allocate_port": frozenset({"capture"}),
     "new_connection": frozenset({"capture", "port"}),
     "send": frozenset({"text", "connection"}),
-    "send_bytes": frozenset({"hex", "connection"}),
+    "send_bytes": frozenset({"hex", "connection", "repeat"}),
     "read_connection": frozenset({"connection"}),
-    "assert_log": frozenset({"contains", "not_contains"}),
+    "assert_log": frozenset({"contains", "not_contains", "contains_any", "timeout_ms"}),
     "assert_file": frozenset({
         "path", "exists", "contains", "equals_file", "suspended_task", "timeout_ms"
     }),
     "write_file": frozenset({"path", "content"}),
     "rename_file": frozenset({"path", "to"}),
+    "chmod": frozenset({"path", "mode"}),
     "write_stdin": frozenset({"text"}),
     "restart_server": frozenset({
-        "wait_ms", "down_ms", "checkpoint_timeout_ms", "reset_db", "ignore_sighup"
+        "wait_ms", "down_ms", "checkpoint_timeout_ms", "reset_db", "ignore_sighup", "arguments"
     }),
     "wait_for_server_exit": frozenset({"timeout_ms", "exit_code", "termination"}),
 }
@@ -334,6 +341,7 @@ class SendBytesOnConnection:
     """Send raw bytes, represented as hex, on a specific connection."""
     hex: str              # Hex-encoded bytes to send
     connection: str       # Connection variable name
+    repeat: int = 1       # Send the decoded bytes this many times, as one write
 
 
 @dataclass
@@ -351,6 +359,8 @@ class LogAssertion:
     """
     contains: str | None = None     # Text that must be present in recent log entries
     not_contains: str | None = None  # Text that must be absent from recent log entries
+    contains_any: list[str] | None = None  # At least one diagnostic must be present
+    timeout_ms: int = 0  # Wait up to this long for present text to be written
 
 
 @dataclass
@@ -403,6 +413,7 @@ class RestartServer:
     checkpoint_timeout_ms: int | None = None  # Require fresh published checkpoint before stop
     reset_db: bool = False  # Reload the original fixture instead of adopting a checkpoint
     ignore_sighup: bool = False  # Start with inherited POSIX SIGHUP ignore
+    arguments: list[str] | None = None  # Literal argv tokens for this launch only
 
 
 @dataclass
@@ -410,6 +421,13 @@ class RenameFile:
     """Rename an existing regular file within server_dir without overwriting."""
     path: str
     to: str
+
+
+@dataclass
+class Chmod:
+    """Set ordinary POSIX permissions within server_dir, including the directory itself."""
+    path: str
+    mode: int
 
 
 @dataclass
@@ -463,9 +481,11 @@ class TestStep:
     wait_for_server_exit: WaitForServerExit | None = None  # Observe natural managed exit
     signal_server: str | None = None            # Named POSIX signal to managed PID
     rename_file: RenameFile | None = None       # Rotate logs or promote panic output
+    chmod: Chmod | None = None                 # Set confined host permissions
     capture: str | None = None                  # Variable name to store result
     as_: str | None = None                      # Permission for this step (wizard, programmer)
     expect: Expectation | None = None           # Optional assertion on this step's result
+    poll_ms: int | None = None                  # Rerun `run` until `expect` holds, up to N ms
 
 
 @dataclass
@@ -954,20 +974,21 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
     has_wait_for_server_exit = 'wait_for_server_exit' in data
     has_signal_server = 'signal_server' in data
     has_rename_file = 'rename_file' in data
+    has_chmod = 'chmod' in data
 
     action_count = sum([has_run, has_command, has_verb_setup, has_allocate_port,
                         has_new_connection, has_send, has_send_bytes,
                         has_read_connection, has_close_connection,
                         has_wait, has_assert_log, has_assert_file,
                         has_write_file, has_write_stdin, has_restart_server,
-                        has_wait_for_server_exit, has_signal_server, has_rename_file])
+                        has_wait_for_server_exit, has_signal_server, has_rename_file, has_chmod])
 
     if action_count == 0:
         raise ValueError(
             "Test step must have an action field (run, command, verb_setup, "
             "allocate_port, new_connection, send, send_bytes, read_connection, "
             "close_connection, wait, assert_log, assert_file, write_file, write_stdin, "
-            "restart_server, wait_for_server_exit, signal_server, or rename_file)"
+            "restart_server, wait_for_server_exit, signal_server, rename_file, or chmod)"
         )
     if action_count > 1:
         raise ValueError("Test step must have exactly one action field")
@@ -978,6 +999,12 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
         expect = _parse_expectation(
             data['expect'], f"{context} expectation", route=action
         )
+    poll_ms = data.get('poll_ms')
+    if 'poll_ms' in data:
+        if action != 'run' or expect is None:
+            raise ValueError(f"{context} poll_ms requires a run step with an expectation")
+        if type(poll_ms) is not int or poll_ms <= 0:
+            raise ValueError(f"{context} poll_ms must be a positive integer")
 
     # Parse verb_setup if present
     verb_setup = None
@@ -1038,9 +1065,13 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
         _reject_unknown_fields(
             sb_data, ACTION_PAYLOAD_FIELDS['send_bytes'], f"{context} send_bytes"
         )
+        repeat = sb_data.get('repeat', 1)
+        if type(repeat) is not int or repeat <= 0:
+            raise ValueError(f"{context} send_bytes repeat must be a positive integer")
         send_bytes = SendBytesOnConnection(
             hex=sb_data['hex'],
             connection=sb_data['connection'],
+            repeat=repeat,
         )
 
     # Parse read_connection if present
@@ -1066,11 +1097,25 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
         )
         contains = al_data.get('contains')
         not_contains = al_data.get('not_contains')
-        if contains is None and not_contains is None:
-            raise ValueError("assert_log must specify contains or not_contains")
+        contains_any = al_data.get('contains_any')
+        if 'contains_any' in al_data and (
+            not isinstance(contains_any, list) or not contains_any
+            or any(not isinstance(text, str) or not text for text in contains_any)
+        ):
+            raise ValueError("assert_log contains_any must be a nonempty list of nonempty strings")
+        if contains is None and not_contains is None and contains_any is None:
+            raise ValueError("assert_log must specify contains, not_contains or contains_any")
+        log_timeout_ms = al_data.get('timeout_ms', 0)
+        if type(log_timeout_ms) is not int or log_timeout_ms < 0:
+            raise ValueError(f"{context} assert_log timeout_ms must be a non-negative integer")
+        if log_timeout_ms and not_contains is not None:
+            # A deadline waits for text to appear; absence has nothing to wait for.
+            raise ValueError(f"{context} assert_log timeout_ms cannot be used with not_contains")
         assert_log = LogAssertion(
             contains=contains,
             not_contains=not_contains,
+            contains_any=contains_any,
+            timeout_ms=log_timeout_ms,
         )
 
     # Parse assert_file if present
@@ -1162,7 +1207,16 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
                 checkpoint_timeout_ms=rs_data.get('checkpoint_timeout_ms'),
                 reset_db=rs_data.get('reset_db', False),
                 ignore_sighup=rs_data.get('ignore_sighup', False),
+                arguments=rs_data.get('arguments'),
             )
+            if 'arguments' in rs_data:
+                arguments = rs_data['arguments']
+                if not isinstance(arguments, list) or any(
+                    not isinstance(arg, str) or '\x00' in arg for arg in arguments
+                ):
+                    raise ValueError(
+                        f"{context} restart_server arguments must be a list of NUL-free strings"
+                    )
             for key in ('reset_db', 'ignore_sighup'):
                 if key in rs_data and type(rs_data[key]) is not bool:
                     raise ValueError(f"{context} restart_server {key} must be boolean")
@@ -1221,10 +1275,7 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
     signal_server = data.get('signal_server')
     if has_signal_server and (
         not isinstance(signal_server, str)
-        or signal_server not in {item.name for item in signal.Signals} | {
-            'SIGHUP', 'SIGUSR1', 'SIGUSR2', 'SIGBUS', 'SIGCHLD', 'SIGPIPE', 'SIGALRM',
-            'SIGVTALRM', 'SIGSTOP', 'SIGCONT',
-        }
+        or signal_server not in POSIX_SIGNAL_NAMES
     ):
         raise ValueError(f"{context} signal_server must be a named POSIX signal")
     rename_file = None
@@ -1234,6 +1285,18 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
         if any(not isinstance(rf_data.get(key), str) or not rf_data[key] for key in ('path', 'to')):
             raise ValueError(f"{context} rename_file requires nonempty path and to")
         rename_file = RenameFile(path=rf_data['path'], to=rf_data['to'])
+
+    chmod = None
+    if has_chmod:
+        mode_data = _require_mapping(data['chmod'], f"{context} chmod")
+        _reject_unknown_fields(mode_data, ACTION_PAYLOAD_FIELDS['chmod'], context)
+        path = mode_data.get('path')
+        mode = mode_data.get('mode')
+        if not isinstance(path, str) or not path:
+            raise ValueError(f"{context} chmod requires a nonempty path")
+        if not isinstance(mode, str) or re.fullmatch(r"[0-7]{3}", mode) is None:
+            raise ValueError(f"{context} chmod mode must be a quoted three-digit octal string")
+        chmod = Chmod(path=path, mode=int(mode, 8))
 
     return TestStep(
         run=data.get('run'),
@@ -1254,9 +1317,11 @@ def _parse_test_step(data: dict, context: str) -> TestStep:
         wait_for_server_exit=wait_for_server_exit,
         signal_server=signal_server,
         rename_file=rename_file,
+        chmod=chmod,
         capture=data.get('capture'),
         as_=data.get('as'),
         expect=expect,
+        poll_ms=poll_ms,
     )
 
 

@@ -1,0 +1,57 @@
+name: pass_parent_verb_matching
+description: pass() finds the parent verb by the same name matching as verb calls, so wildcard and case-differing parent verb names match.
+
+requires:
+  builtins:
+    - add_verb
+    - create
+    - pass
+    - recycle
+    - set_verb_code
+
+tests:
+  - name: pass_to_wildcard_parent_verb
+    description: A parent verb named "gr*eet" answers pass() from a child verb named "greet".
+    permission: wizard
+    steps:
+      - run: "create($nothing)"
+        capture: parent
+      - run: "create({parent})"
+        capture: child
+      - run: |
+          add_verb({parent}, {player, "rxd", "gr*eet"}, {"this", "none", "this"});
+          set_verb_code({parent}, 1, {"return {\"parent\", verb};"});
+          add_verb({child}, {player, "rxd", "greet"}, {"this", "none", "this"});
+          set_verb_code({child}, 1, {"return pass();"});
+          return 1;
+        expect:
+          value: 1
+      - run: "{child}:greet()"
+        expect:
+          value: ["parent", "greet"]
+      - run: "recycle({child}); recycle({parent}); return 1;"
+        expect:
+          value: 1
+
+  - name: pass_to_case_differing_parent_verb
+    description: A parent verb named "GREET" answers pass() from a child verb named "greet".
+    permission: wizard
+    steps:
+      - run: "create($nothing)"
+        capture: parent
+      - run: "create({parent})"
+        capture: child
+      - run: |
+          add_verb({parent}, {player, "rxd", "GREET"}, {"this", "none", "this"});
+          set_verb_code({parent}, 1, {"return {\"parent\", verb};"});
+          add_verb({child}, {player, "rxd", "greet"}, {"this", "none", "this"});
+          set_verb_code({child}, 1, {"return pass();"});
+          return 1;
+        expect:
+          value: 1
+      - run: "{child}:greet()"
+        expect:
+          value: ["parent", "greet"]
+      - run: "recycle({child}); recycle({parent}); return 1;"
+        expect:
+          value: 1

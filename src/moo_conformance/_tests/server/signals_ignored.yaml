@@ -1,0 +1,30 @@
+name: signals_ignored
+description: FPE and PIPE are ignored; an unsolicited CHLD with no children is harmless.
+requires:
+  config: [managed_server, posix_signals, server_dir, log_file]
+tests:
+  - name: ignored_{signal}_does_not_dispatch_user_hook
+    table:
+      rows: [[SIGFPE], [SIGPIPE], [SIGCHLD]]
+      columns: [signal]
+    steps:
+      - restart_server: {reset_db: true}
+      - run: |
+          add_property(#0, "signal_hook_called", 0, {player, "rw"});
+          try delete_verb(#0, "handle_signal"); except (E_VERBNF) endtry
+          add_verb(#0, {player, "rxd", "handle_signal"}, {"this", "none", "this"});
+          set_verb_code(#0, "handle_signal", {"#0.signal_hook_called = 1;", "return 1;"});
+          return 1;
+        as: wizard
+        expect: {value: 1}
+      - signal_server: "{signal}"
+      - run: 'return {42, #0.signal_hook_called};'
+        as: wizard
+        expect: {value: [42, 0]}
+      - signal_server: "{signal}"
+      - run: 'return {73, #0.signal_hook_called};'
+        as: wizard
+        expect: {value: [73, 0]}
+      - assert_log: {not_contains: "PANIC:"}
+      - assert_file: {path: Test.db.new, exists: false}
+      - restart_server: {reset_db: true}

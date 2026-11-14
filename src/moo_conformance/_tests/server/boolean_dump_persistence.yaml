@@ -20,9 +20,8 @@ tests:
       - run: "return dump_database();"
         expect:
           value: 0
-      - wait: 1500
       - restart_server:
-          wait_ms: 300
+          checkpoint_timeout_ms: 10000
       - run: |
           values = #1.boolean_persist_values;
           return {

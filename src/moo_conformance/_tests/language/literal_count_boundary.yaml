@@ -1,0 +1,94 @@
+name: literal_count_boundary
+description: A program with more than 256 distinct string and float literals compiles and each literal keeps its own value
+
+tests:
+  - name: program_with_256_distinct_literals
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+      source = {"r = {};"};
+      expected = {};
+      for i in [1..256]
+        if (i % 2)
+          source = {@source, "r = {@r, \"k" + tostr(i) + "\"};"};
+          expected = {@expected, "k" + tostr(i)};
+        else
+          source = {@source, "r = {@r, " + tostr(i) + ".5};"};
+          expected = {@expected, tofloat(i) + 0.5};
+        endif
+      endfor
+      source = {@source, "return r;"};
+      errors = set_verb_code(o, "probe", source);
+      result = o:probe();
+      recycle(o);
+      return {errors, length(expected), result == expected};
+    expect:
+      value: [[], 256, 1]
+
+  - name: program_with_257_distinct_literals
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+      source = {"r = {};"};
+      expected = {};
+      for i in [1..257]
+        if (i % 2)
+          source = {@source, "r = {@r, \"k" + tostr(i) + "\"};"};
+          expected = {@expected, "k" + tostr(i)};
+        else
+          source = {@source, "r = {@r, " + tostr(i) + ".5};"};
+          expected = {@expected, tofloat(i) + 0.5};
+        endif
+      endfor
+      source = {@source, "return r;"};
+      errors = set_verb_code(o, "probe", source);
+      result = o:probe();
+      recycle(o);
+      return {errors, length(expected), result == expected};
+    expect:
+      value: [[], 257, 1]
+
+  - name: program_with_600_distinct_literals
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+      source = {"r = {};"};
+      expected = {};
+      for i in [1..600]
+        if (i % 2)
+          source = {@source, "r = {@r, \"k" + tostr(i) + "\"};"};
+          expected = {@expected, "k" + tostr(i)};
+        else
+          source = {@source, "r = {@r, " + tostr(i) + ".5};"};
+          expected = {@expected, tofloat(i) + 0.5};
+        endif
+      endfor
+      source = {@source, "return r;"};
+      errors = set_verb_code(o, "probe", source);
+      result = o:probe();
+      recycle(o);
+      return {errors, length(expected), result == expected};
+    expect:
+      value: [[], 600, 1]
+
+  - name: eval_program_with_600_distinct_literals
+    permission: wizard
+    statement: |
+      source = "r = {};";
+      expected = {};
+      for i in [1..600]
+        if (i % 2)
+          source = source + " r = {@r, \"k" + tostr(i) + "\"};";
+          expected = {@expected, "k" + tostr(i)};
+        else
+          source = source + " r = {@r, " + tostr(i) + ".5};";
+          expected = {@expected, tofloat(i) + 0.5};
+        endif
+      endfor
+      result = eval(source + " return r;");
+      return {result[1], length(expected), result[2] == expected};
+    expect:
+      value: [1, 600, 1]

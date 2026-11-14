@@ -1,0 +1,74 @@
+name: deferred_callback_context
+description: Deferred anonymous and WAIF recycling uses server-origin frames without observer records retaining the receiver.
+requires:
+  builtins: [create, new_waif]
+  config: [managed_server]
+tests:
+  - name: deferred_{kind}_{continuation}_recycle_frame_and_once_only
+    table:
+      product:
+        - columns: [kind, hook, base, prop, make, type, verb]
+          rows:
+            - [anonymous, recycle, "$nothing", marker, "create(child, 1)", ANON, recycle]
+            - [waif, ":recycle", "$waif", ":marker", "child:new()", WAIF, ":recycle"]
+        - columns: [continuation, pause]
+          rows: [[immediate, ""], [resumed, "suspend(0);"]]
+    steps:
+      - restart_server: {reset_db: true}
+      - run: |
+          add_property(#0, "cb_events", {}, {player, "rw"});
+          add_property(#0, "cb_held", 0, {player, "rw"});
+          owner = create($nothing);
+          owner.programmer = 1;
+          add_property(#0, "cb_owner", owner, {player, "r"});
+          proto = create({base});
+          proto.a = 1;
+          add_property(proto, "{prop}", 314, {player, "r"});
+          child = create(proto); child.a = 1;
+          add_property(#0, "cb_child", child, {player, "r"});
+          add_property(#0, "cb_proto", proto, {player, "r"});
+          add_property(#0, "cb_frame", {}, {player, "rw"});
+          add_verb(#0, {player, "rxd", "cb_observe"}, {"this", "none", "this"});
+          set_verb_code(#0, "cb_observe", {
+            "f = callers()[1];",
+            "return {typeof(f[1]) == {type}, f[2], f[3], f[4], f[5]};"
+          });
+          add_verb(proto, {owner, "rxd", "{hook}"}, {"this", "none", "this"});
+          set_verb_code(proto, "{hook}", {
+            "marker = this.marker;",
+            "{pause}",
+            "#0.cb_events = {@#0.cb_events, {typeof(this) == {type}, marker, caller, player, verb, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()}};",
+            "#0.cb_frame = #0:cb_observe();"
+          });
+          return 1;
+        as: wizard
+        expect: {value: 1}
+      - run: |
+          child = #0.cb_child;
+          value = {make};
+          #0.cb_held = value;
+          value = 0;
+          return 1;
+        as: wizard
+        expect: {value: 1}
+      - run: 'suspend(0.05); return #0.cb_events;'
+        as: wizard
+        expect: {value: []}
+      - run: '#0.cb_held = 0; return 1;'
+        as: wizard
+        expect: {value: 1}
+      - run: |
+          for attempt in [1..100]
+            if (length(#0.cb_events)) break; endif
+            suspend(0.01);
+          endfor
+          return {
+            #0.cb_events == {{1, 314, #-1, #-1, "{verb}", {}, "", #-1, "", "", #-1, "", #0.cb_owner, #-1, {}}},
+            #0.cb_frame == {1, "{verb}", #0.cb_owner, #0.cb_proto, #-1}
+          };
+        as: wizard
+        expect: {value: [1, 1]}
+      - run: suspend(0); return length(#0.cb_events);
+        as: wizard
+        expect: {value: 1}
+      - restart_server: {reset_db: true}

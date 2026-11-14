@@ -8,6 +8,7 @@ import re
 import socket
 import stat
 import time
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -34,6 +35,9 @@ from .server import (
     snapshot_regular_files,
 )
 from .transport import ExecutionResult, MooTransport, TestConnection
+
+# Pause between checks while a step waits for an event (poll_ms, assert_log timeout_ms).
+POLL_INTERVAL = 0.05
 
 
 class AssertionError(Exception):
@@ -614,7 +618,9 @@ class YamlTestRunner:
                             f"{list(connections.keys())}"
                         )
                     text = self._substitute_variables(step.send.text, variables)
-                    output_lines = connections[conn_name].send(text)
+                    output_lines = connections[conn_name].send(
+                        text, until=self._expected_output(step)
+                    )
 
                     if step.capture:
                         variables[step.capture] = output_lines
@@ -634,8 +640,10 @@ class YamlTestRunner:
                             f"Unknown connection '{conn_name}'. Available: "
                             f"{list(connections.keys())}"
                         )
-                    data = bytes.fromhex(step.send_bytes.hex)
-                    output_lines = connections[conn_name].send_bytes(data)
+                    data = bytes.fromhex(step.send_bytes.hex) * step.send_bytes.repeat
+                    output_lines = connections[conn_name].send_bytes(
+                        data, until=self._expected_output(step)
+                    )
 
                     if step.capture:
                         variables[step.capture] = output_lines
@@ -655,7 +663,9 @@ class YamlTestRunner:
                             f"Unknown connection '{conn_name}'. Available: "
                             f"{list(connections.keys())}"
                         )
-                    output_lines = connections[conn_name].read()
+                    output_lines = connections[conn_name].read(
+                        until=self._expected_output(step)
+                    )
 
                     if step.capture:
                         variables[step.capture] = output_lines
@@ -713,12 +723,17 @@ class YamlTestRunner:
                     self._execute_rename_file(step.rename_file.path, step.rename_file.to)
                     continue
 
+                if step.chmod is not None:
+                    self._execute_chmod(step.chmod.path, step.chmod.mode)
+                    continue
+
                 if step.restart_server:
                     self._execute_restart_server(
                         step.restart_server.wait_ms, test.name, down_ms=step.restart_server.down_ms,
                         checkpoint_timeout_ms=step.restart_server.checkpoint_timeout_ms,
                         reset_db=step.restart_server.reset_db,
                         ignore_sighup=step.restart_server.ignore_sighup,
+                        arguments=step.restart_server.arguments,
                     )
                     continue
 
@@ -785,20 +800,33 @@ class YamlTestRunner:
                     else:
                         code = force_statement_mode(code)
 
-                    result = self.transport.execute(code)
+                    # poll_ms reruns the code until the expectation holds.
+                    poll_deadline = (
+                        time.monotonic() + step.poll_ms / 1000.0 if step.poll_ms else None
+                    )
+                    while True:
+                        result = self.transport.execute(code)
 
-                    # Capture result if requested
-                    if step.capture:
-                        if result.success:
-                            variables[step.capture] = result.value
-                        else:
-                            # Capture error for later use
-                            variables[step.capture] = result.error
+                        # Capture result if requested
+                        if step.capture:
+                            if result.success:
+                                variables[step.capture] = result.value
+                            else:
+                                # Capture error for later use
+                                variables[step.capture] = result.error
 
-                    # Verify expectation if present
-                    if step.expect:
+                        # Verify expectation if present
+                        if not step.expect:
+                            break
                         step_desc = f"step '{run_code[:30]}...'"
-                        self._verify_expectation(step.expect, result, step_desc)
+                        try:
+                            self._verify_expectation(step.expect, result, step_desc)
+                        except AssertionError:
+                            if poll_deadline is None or time.monotonic() >= poll_deadline:
+                                raise
+                            time.sleep(POLL_INTERVAL)
+                            continue
+                        break
 
         finally:
             # Run cleanup steps (always, even on failure)
@@ -807,6 +835,9 @@ class YamlTestRunner:
                     raise AssertionError(
                         f"Test '{test.name}' cleanup steps cannot have expectations"
                     )
+                if cleanup_step.chmod is not None:
+                    self._execute_chmod(cleanup_step.chmod.path, cleanup_step.chmod.mode)
+                    continue
                 # Switch permission if cleanup step specifies different one
                 if cleanup_step.as_:
                     self._ensure_transport_connected()
@@ -825,6 +856,21 @@ class YamlTestRunner:
                     conn.close()
                 except Exception:
                     pass
+
+    def _expected_output(self, step: TestStep) -> Callable[[list[str]], bool] | None:
+        """Return a predicate telling a raw read its expected output has arrived."""
+        if step.expect is None or step.expect.output is None:
+            return None
+        expected = step.expect.output
+
+        def satisfied(lines: list[str]) -> bool:
+            try:
+                self._verify_output(expected, lines, "raw read")
+            except AssertionError:
+                return False
+            return True
+
+        return satisfied
 
     def _declared_expectation_fields(self, expect: Expectation) -> set[str]:
         """Return the fields a programmatically constructed expectation declares."""
@@ -867,6 +913,7 @@ class YamlTestRunner:
             "restart_server",
             "signal_server",
             "rename_file",
+            "chmod",
             "wait_for_server_exit",
         )
         action = next((name for name in actions if getattr(step, name) is not None), "unknown")
@@ -891,6 +938,7 @@ class YamlTestRunner:
         self, wait_ms: int, test_name: str, down_ms: int = 0,
         checkpoint_timeout_ms: int | None = None,
         reset_db: bool = False, ignore_sighup: bool = False,
+        arguments: list[str] | None = None,
     ) -> None:
         """Restart managed server and reconnect transport to the same user."""
         if self.managed_server is None:
@@ -901,11 +949,12 @@ class YamlTestRunner:
         current_user = getattr(self.transport, "current_user", "programmer")
 
         self.transport.disconnect()
-        if reset_db or ignore_sighup:
+        if reset_db or ignore_sighup or arguments is not None:
             self.managed_server.restart(
                 db_path=(self._active_server_db_path or self.managed_server.db_path)
                 if reset_db else None,
                 down_ms=down_ms, ignore_sighup=ignore_sighup,
+                arguments=arguments,
                 checkpoint_timeout_ms=checkpoint_timeout_ms,
                 checkpoint_boundary=(
                     self._file_boundary if checkpoint_timeout_ms is not None else None
@@ -930,6 +979,22 @@ class YamlTestRunner:
             time.sleep(wait_ms / 1000.0)
 
         self.transport.connect(current_user)
+
+    def _execute_chmod(self, path: str, mode: int) -> None:
+        """Change permissions only on an existing path confined to server_dir."""
+        if self.server_dir is None:
+            raise AssertionError("chmod requires server_dir")
+        if os.name != "posix":
+            raise AssertionError("chmod requires a POSIX host")
+        target = require_confined_path(
+            self.server_dir, Path(self.server_dir) / path, label="chmod path"
+        )
+        if not target.is_file() and not target.is_dir():
+            raise AssertionError("chmod requires a regular file or directory")
+        try:
+            target.chmod(mode)
+        except OSError as exc:
+            raise AssertionError(f"chmod failed for {path!r}: {exc}") from exc
 
     def _execute_rename_file(self, source: str, destination: str) -> None:
         """Rotate a regular file under server_dir without replacing user data."""
@@ -1073,6 +1138,18 @@ class YamlTestRunner:
             )
 
         new_content = self._read_log_since_offset()
+        if assertion.timeout_ms:
+            # Wait for text that must appear (schema forbids it with not_contains).
+            deadline = time.monotonic() + assertion.timeout_ms / 1000.0
+            while time.monotonic() < deadline and not (
+                (assertion.contains is None or assertion.contains in new_content)
+                and (
+                    assertion.contains_any is None
+                    or any(text in new_content for text in assertion.contains_any)
+                )
+            ):
+                time.sleep(POLL_INTERVAL)
+                new_content = self._read_log_since_offset()
 
         def _excerpt() -> str:
             excerpt = new_content[:500]
@@ -1084,6 +1161,15 @@ class YamlTestRunner:
             raise AssertionError(
                 f"Test '{test_name}' assert_log: expected log to contain "
                 f"{assertion.contains!r}, but it was not found in new log entries.\n"
+                f"Log content since test start:\n{_excerpt()}"
+            )
+
+        if assertion.contains_any is not None and not any(
+            text in new_content for text in assertion.contains_any
+        ):
+            raise AssertionError(
+                f"Test '{test_name}' assert_log: expected one of "
+                f"{assertion.contains_any!r}, but none was found in new log entries.\n"
                 f"Log content since test start:\n{_excerpt()}"
             )
 

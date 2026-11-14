@@ -10,7 +10,7 @@ requires:
 tests:
   - name: invalid_pending_values_are_removed
     steps:
-      - wait: 750
+      - wait_for_server_exit: {timeout_ms: 5000, exit_code: 0}
       - assert_log:
           contains: "shazam"
       - assert_file:

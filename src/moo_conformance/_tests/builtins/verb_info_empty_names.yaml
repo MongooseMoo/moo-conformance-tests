@@ -1,0 +1,57 @@
+name: verb_info_empty_names
+description: >-
+  add_verb() and set_verb_info() reject a names string that is empty or holds
+  only spaces with E_INVARG, and leave the object's verbs unchanged.
+
+requires:
+  builtins:
+    - add_verb
+    - set_verb_info
+    - verb_info
+    - verbs
+    - create
+    - recycle
+
+tests:
+  - name: set_verb_info_rejects_blank_names_{names_kind}
+    permission: wizard
+    table:
+      columns: [names_kind, names_expr]
+      rows:
+        - [empty, '""']
+        - [spaces, '"   "']
+    steps:
+      - run: create($nothing)
+        capture: obj
+      - run: add_verb({obj}, {player, "rx", "foobar"}, {"this", "none", "this"})
+        expect:
+          value: 1
+      - run: 'set_verb_info({obj}, "foobar", {player, "rx", {names_expr}})'
+        expect:
+          error: E_INVARG
+      - run: 'return {verbs({obj}), verb_info({obj}, 1)[3]};'
+        expect:
+          value:
+            - [foobar]
+            - foobar
+    cleanup:
+      - run: recycle({obj})
+
+  - name: add_verb_rejects_blank_names_{names_kind}
+    permission: wizard
+    table:
+      columns: [names_kind, names_expr]
+      rows:
+        - [empty, '""']
+        - [spaces, '"   "']
+    steps:
+      - run: create($nothing)
+        capture: obj
+      - run: 'add_verb({obj}, {player, "rx", {names_expr}}, {"this", "none", "this"})'
+        expect:
+          error: E_INVARG
+      - run: 'return verbs({obj});'
+        expect:
+          value: []
+    cleanup:
+      - run: recycle({obj})

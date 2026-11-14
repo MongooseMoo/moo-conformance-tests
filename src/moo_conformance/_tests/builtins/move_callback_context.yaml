@@ -1,0 +1,67 @@
+name: move_callback_context
+description: Movement callbacks retain parsed fields across suspension and distinguish driver permissions from callback ownership.
+requires:
+  builtins: [move, callers, caller_perms]
+tests:
+  - name: move_{privilege}_{continuation}_frame_chain
+    permission: wizard
+    table:
+      product:
+        - columns: [privilege, privileged]
+          rows: [[wizard, 1], [programmer, 0]]
+        - columns: [continuation, pause]
+          rows: [[immediate, ""], [resumed, "suspend(0);"]]
+    setup:
+      code: |
+        rec = create($nothing);
+        callback_owner = create($nothing); callback_owner.programmer = 1;
+        driver_owner = create($nothing); driver_owner.programmer = 1;
+        if ({privileged}) driver_owner.wizard = 1; endif
+        proto = create($nothing);
+        old = create(proto); dest = create(proto);
+        what = create($nothing); what.owner = driver_owner;
+        driver = create($nothing);
+        alternate = create($nothing);
+        move(what, old);
+        add_property(#0, "cb_rec", rec, {player, "r"});
+        add_property(rec, "events", {}, {player, "rw"});
+        add_property(rec, "frames", {}, {player, "rw"});
+        add_property(rec, "owned", {what, old, dest, driver, alternate, proto, callback_owner, driver_owner}, {player, "r"});
+        add_verb(rec, {player, "rxd", "observe"}, {"this", "none", "this"});
+        set_verb_code(rec, "observe", {"return callers()[1];"});
+        for name in ({"accept", "exitfunc", "enterfunc"})
+          add_verb(proto, {callback_owner, "rxd", name}, {"this", "none", "this"});
+          set_verb_code(proto, name, {
+            "{pause}",
+            "#0.cb_rec.events = {@#0.cb_rec.events, {this, caller, player, verb, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()[1..2], args[1].location}};",
+            "#0.cb_rec.frames = {@#0.cb_rec.frames, #0.cb_rec:observe()};",
+            "return 1;"
+          });
+        endfor
+        add_verb(driver, {driver_owner, "rxd", "drive"}, {"this", "none", "this"});
+        set_verb_code(driver, "drive", {
+          "{what, dest, alternate} = args;",
+          "player = alternate; argstr = \"kept input\"; dobj = what; dobjstr = \"direct\"; prepstr = \"into\"; iobj = dest; iobjstr = \"indirect\";",
+          "move(what, dest);"
+        });
+    statement: |
+      driver:drive(what, dest, alternate);
+      expected_player = {privileged} ? alternate | player;
+      expected = {};
+      frames = {};
+      for spec in ({{"accept", dest, old}, {"exitfunc", old, dest}, {"enterfunc", dest, dest}})
+        {name, receiver, location} = spec;
+        expected = {@expected, {receiver, driver, expected_player, name, {what}, "kept input", what, "direct", "into", dest, "indirect", callback_owner, driver_owner,
+          {{#-1, "move", #-1, #-1, expected_player}, {driver, "drive", driver_owner, driver, player}}, location}};
+        frames = {@frames, {receiver, name, callback_owner, proto, expected_player}};
+      endfor
+      return {rec.events == expected, rec.frames == frames, what.location == dest};
+    expect: {value: [1, 1, 1]}
+    teardown:
+      code: |
+        rec = #0.cb_rec;
+        proto = rec.owned[6];
+        for name in ({"accept", "exitfunc", "enterfunc"}) delete_verb(proto, name); endfor
+        delete_property(#0, "cb_rec");
+        for obj in (rec.owned) recycle(obj); endfor
+        recycle(rec);

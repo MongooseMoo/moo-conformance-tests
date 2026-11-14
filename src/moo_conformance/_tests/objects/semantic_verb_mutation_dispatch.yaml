@@ -1,0 +1,1950 @@
+# Source: ToastStunt src/db_verbs.cc callable lookup and name/flag invalidation;
+# src/verbs.cc setters; src/execute.cc activation program reference.
+name: semantic_verb_mutation_dispatch
+description: Warm successful and unsuccessful lookups before mutating definitions, then check every affected name.
+requires:
+  builtins: [create, recycle, add_verb, set_verb_code, set_verb_info, set_verb_args, delete_verb, chparent]
+tests:
+  - name: local_replace_called_program
+    description: "replace called program; local distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = p;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_code(p, 1, {"return 11;"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[11,11,20,"E_VERBNF"]]
+
+  - name: local_rename_to_previously_missing
+    description: "rename to previously missing; local distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = p;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(p, 1, {player,"rxd","fresh"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[99,"E_VERBNF",20,10]]
+
+  - name: local_remove_called_alias
+    description: "remove called alias; local distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = p;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(p, 1, {player,"rxd","route"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[10,"E_VERBNF",20,"E_VERBNF"]]
+
+  - name: local_add_previously_missing_alias
+    description: "add previously missing alias; local distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = p;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(p, 1, {player,"rxd","route alias fresh"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[10,10,20,10]]
+
+  - name: local_replace_names_with_wildcard
+    description: "replace names with wildcard; local distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = p;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(p, 1, {player,"rxd","ro*ute"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[10,"E_VERBNF",20,"E_VERBNF"]]
+
+  - name: local_disable_selected_verb
+    description: "disable selected verb; local distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = p;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(p, 1, {player,"rd","route alias"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[99,"E_VERBNF",20,"E_VERBNF"]]
+
+  - name: local_disable_then_restore_execution
+    description: "disable then restore execution; local distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = p;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(p, 1, {player,"rd","route alias"}); ignored = `r:route() ! ANY'; set_verb_info(p, 1, {player,"rxd","route alias"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[10,10,20,"E_VERBNF"]]
+
+  - name: local_delete_selected_verb
+    description: "delete selected verb; local distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = p;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        delete_verb(p, 1);
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[99,"E_VERBNF",20,"E_VERBNF"]]
+
+  - name: local_delete_then_redefine_selected_name
+    description: "delete then redefine selected name; local distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = p;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        delete_verb(p, 1); add_verb(p,{player,"rxd","route"},{"this","none","this"}); set_verb_code(p,2,{"return 11;"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[11,"E_VERBNF",20,"E_VERBNF"]]
+
+  - name: local_rename_later_verb_to_collision
+    description: "rename later verb to collision; local distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = p;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(p,2,{player,"rxd","route other"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[10,10,20,"E_VERBNF"]]
+
+  - name: local_rename_earlier_verb_over_later
+    description: "rename earlier verb over later; local distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = p;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(p,1,{player,"rxd","other"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[99,"E_VERBNF",10,"E_VERBNF"]]
+
+  - name: local_delete_other_cached_name
+    description: "delete other cached name; local distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = p;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        delete_verb(p,2);
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[10,10,"E_VERBNF","E_VERBNF"]]
+
+  - name: local_replace_other_cached_program
+    description: "replace other cached program; local distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = p;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_code(p,2,{"return 21;"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[10,10,21,"E_VERBNF"]]
+
+  - name: local_disable_other_cached_name
+    description: "disable other cached name; local distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = p;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(p,2,{player,"rd","other"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[10,10,"E_VERBNF","E_VERBNF"]]
+
+  - name: local_define_previously_missing_name
+    description: "define previously missing name; local distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = p;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        add_verb(p,{player,"rxd","fresh"},{"this","none","this"}); set_verb_code(p,3,{"return 31;"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[10,10,20,31]]
+
+  - name: local_delete_first_of_new_collision
+    description: "delete first of new collision; local distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = p;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        add_verb(p,{player,"rxd","route"},{"this","none","this"}); set_verb_code(p,3,{"return 31;"}); delete_verb(p,1);
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[31,"E_VERBNF",20,"E_VERBNF"]]
+
+  - name: local_reparent_then_expose_new_ancestor
+    description: "reparent then expose new ancestor; local distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = p;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        chparent(p,b2); delete_verb(p,1);
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[88,"E_VERBNF",20,"E_VERBNF"]]
+
+  - name: local_detach_then_delete_shadow
+    description: "detach then delete shadow; local distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = p;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        chparent(p,$nothing); delete_verb(p,1);
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],["E_VERBNF","E_VERBNF",20,"E_VERBNF"]]
+
+  - name: local_rename_ancestor_then_delete_shadow
+    description: "rename ancestor then delete shadow; local distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = p;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(b,1,{player,"rxd","fresh"}); delete_verb(p,1);
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],["E_VERBNF","E_VERBNF",20,99]]
+
+  - name: local_recompile_ancestor_then_delete_shadow
+    description: "recompile ancestor then delete shadow; local distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = p;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_code(b,1,{"return 77;"}); delete_verb(p,1);
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[77,"E_VERBNF",20,"E_VERBNF"]]
+
+  - name: local_disable_ancestor_then_delete_shadow
+    description: "disable ancestor then delete shadow; local distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = p;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(b,1,{player,"rd","route"}); delete_verb(p,1);
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],["E_VERBNF","E_VERBNF",20,"E_VERBNF"]]
+
+  - name: local_change_command_args_after_callable_lookup
+    description: "change command args after callable lookup; local distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = p;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_args(p,1,{"none","with","none"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[10,10,20,"E_VERBNF"]]
+
+  - name: local_rename_away_then_restore_after_miss
+    description: "rename away then restore after miss; local distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = p;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(p,1,{player,"rxd","fresh"}); ignored = `r:alias() ! ANY'; set_verb_info(p,1,{player,"rxd","route alias"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[10,10,20,"E_VERBNF"]]
+
+  - name: local_failed_compile_preserves_replacement
+    description: "failed compile preserves replacement; local distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = p;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_code(p,1,{"return 42;"}); errors = set_verb_code(p,1,{"return ( ;"}); if (!length(errors)) raise(E_INVARG); endif;
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[42,42,20,"E_VERBNF"]]
+
+  - name: inherited_empty_receiver_replace_called_program
+    description: "replace called program; inherited empty receiver distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_code(p, 1, {"return 11;"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[11,11,20,"E_VERBNF"]]
+
+  - name: inherited_empty_receiver_rename_to_previously_missing
+    description: "rename to previously missing; inherited empty receiver distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(p, 1, {player,"rxd","fresh"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[99,"E_VERBNF",20,10]]
+
+  - name: inherited_empty_receiver_remove_called_alias
+    description: "remove called alias; inherited empty receiver distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(p, 1, {player,"rxd","route"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[10,"E_VERBNF",20,"E_VERBNF"]]
+
+  - name: inherited_empty_receiver_add_previously_missing_alias
+    description: "add previously missing alias; inherited empty receiver distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(p, 1, {player,"rxd","route alias fresh"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[10,10,20,10]]
+
+  - name: inherited_empty_receiver_replace_names_with_wildcard
+    description: "replace names with wildcard; inherited empty receiver distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(p, 1, {player,"rxd","ro*ute"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[10,"E_VERBNF",20,"E_VERBNF"]]
+
+  - name: inherited_empty_receiver_disable_selected_verb
+    description: "disable selected verb; inherited empty receiver distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(p, 1, {player,"rd","route alias"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[99,"E_VERBNF",20,"E_VERBNF"]]
+
+  - name: inherited_empty_receiver_disable_then_restore_execution
+    description: "disable then restore execution; inherited empty receiver distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(p, 1, {player,"rd","route alias"}); ignored = `r:route() ! ANY'; set_verb_info(p, 1, {player,"rxd","route alias"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[10,10,20,"E_VERBNF"]]
+
+  - name: inherited_empty_receiver_delete_selected_verb
+    description: "delete selected verb; inherited empty receiver distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        delete_verb(p, 1);
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[99,"E_VERBNF",20,"E_VERBNF"]]
+
+  - name: inherited_empty_receiver_delete_then_redefine_selected_name
+    description: "delete then redefine selected name; inherited empty receiver distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        delete_verb(p, 1); add_verb(p,{player,"rxd","route"},{"this","none","this"}); set_verb_code(p,2,{"return 11;"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[11,"E_VERBNF",20,"E_VERBNF"]]
+
+  - name: inherited_empty_receiver_rename_later_verb_to_collision
+    description: "rename later verb to collision; inherited empty receiver distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(p,2,{player,"rxd","route other"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[10,10,20,"E_VERBNF"]]
+
+  - name: inherited_empty_receiver_rename_earlier_verb_over_later
+    description: "rename earlier verb over later; inherited empty receiver distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(p,1,{player,"rxd","other"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[99,"E_VERBNF",10,"E_VERBNF"]]
+
+  - name: inherited_empty_receiver_delete_other_cached_name
+    description: "delete other cached name; inherited empty receiver distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        delete_verb(p,2);
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[10,10,"E_VERBNF","E_VERBNF"]]
+
+  - name: inherited_empty_receiver_replace_other_cached_program
+    description: "replace other cached program; inherited empty receiver distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_code(p,2,{"return 21;"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[10,10,21,"E_VERBNF"]]
+
+  - name: inherited_empty_receiver_disable_other_cached_name
+    description: "disable other cached name; inherited empty receiver distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(p,2,{player,"rd","other"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[10,10,"E_VERBNF","E_VERBNF"]]
+
+  - name: inherited_empty_receiver_define_previously_missing_name
+    description: "define previously missing name; inherited empty receiver distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        add_verb(p,{player,"rxd","fresh"},{"this","none","this"}); set_verb_code(p,3,{"return 31;"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[10,10,20,31]]
+
+  - name: inherited_empty_receiver_delete_first_of_new_collision
+    description: "delete first of new collision; inherited empty receiver distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        add_verb(p,{player,"rxd","route"},{"this","none","this"}); set_verb_code(p,3,{"return 31;"}); delete_verb(p,1);
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[31,"E_VERBNF",20,"E_VERBNF"]]
+
+  - name: inherited_empty_receiver_reparent_then_expose_new_ancestor
+    description: "reparent then expose new ancestor; inherited empty receiver distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        chparent(p,b2); delete_verb(p,1);
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[88,"E_VERBNF",20,"E_VERBNF"]]
+
+  - name: inherited_empty_receiver_detach_then_delete_shadow
+    description: "detach then delete shadow; inherited empty receiver distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        chparent(p,$nothing); delete_verb(p,1);
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],["E_VERBNF","E_VERBNF",20,"E_VERBNF"]]
+
+  - name: inherited_empty_receiver_rename_ancestor_then_delete_shadow
+    description: "rename ancestor then delete shadow; inherited empty receiver distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(b,1,{player,"rxd","fresh"}); delete_verb(p,1);
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],["E_VERBNF","E_VERBNF",20,99]]
+
+  - name: inherited_empty_receiver_recompile_ancestor_then_delete_shadow
+    description: "recompile ancestor then delete shadow; inherited empty receiver distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_code(b,1,{"return 77;"}); delete_verb(p,1);
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[77,"E_VERBNF",20,"E_VERBNF"]]
+
+  - name: inherited_empty_receiver_disable_ancestor_then_delete_shadow
+    description: "disable ancestor then delete shadow; inherited empty receiver distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(b,1,{player,"rd","route"}); delete_verb(p,1);
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],["E_VERBNF","E_VERBNF",20,"E_VERBNF"]]
+
+  - name: inherited_empty_receiver_change_command_args_after_callable_lookup
+    description: "change command args after callable lookup; inherited empty receiver distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_args(p,1,{"none","with","none"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[10,10,20,"E_VERBNF"]]
+
+  - name: inherited_empty_receiver_rename_away_then_restore_after_miss
+    description: "rename away then restore after miss; inherited empty receiver distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(p,1,{player,"rxd","fresh"}); ignored = `r:alias() ! ANY'; set_verb_info(p,1,{player,"rxd","route alias"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[10,10,20,"E_VERBNF"]]
+
+  - name: inherited_empty_receiver_failed_compile_preserves_replacement
+    description: "failed compile preserves replacement; inherited empty receiver distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c;
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_code(p,1,{"return 42;"}); errors = set_verb_code(p,1,{"return ( ;"}); if (!length(errors)) raise(E_INVARG); endif;
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[42,42,20,"E_VERBNF"]]
+
+  - name: inherited_receiver_with_own_verbs_replace_called_program
+    description: "replace called program; inherited receiver with own verbs distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c; add_verb(c,{player,"rxd","unrelated"},{"this","none","this"});
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_code(p, 1, {"return 11;"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[11,11,20,"E_VERBNF"]]
+
+  - name: inherited_receiver_with_own_verbs_rename_to_previously_missing
+    description: "rename to previously missing; inherited receiver with own verbs distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c; add_verb(c,{player,"rxd","unrelated"},{"this","none","this"});
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(p, 1, {player,"rxd","fresh"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[99,"E_VERBNF",20,10]]
+
+  - name: inherited_receiver_with_own_verbs_remove_called_alias
+    description: "remove called alias; inherited receiver with own verbs distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c; add_verb(c,{player,"rxd","unrelated"},{"this","none","this"});
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(p, 1, {player,"rxd","route"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[10,"E_VERBNF",20,"E_VERBNF"]]
+
+  - name: inherited_receiver_with_own_verbs_add_previously_missing_alias
+    description: "add previously missing alias; inherited receiver with own verbs distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c; add_verb(c,{player,"rxd","unrelated"},{"this","none","this"});
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(p, 1, {player,"rxd","route alias fresh"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[10,10,20,10]]
+
+  - name: inherited_receiver_with_own_verbs_replace_names_with_wildcard
+    description: "replace names with wildcard; inherited receiver with own verbs distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c; add_verb(c,{player,"rxd","unrelated"},{"this","none","this"});
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(p, 1, {player,"rxd","ro*ute"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[10,"E_VERBNF",20,"E_VERBNF"]]
+
+  - name: inherited_receiver_with_own_verbs_disable_selected_verb
+    description: "disable selected verb; inherited receiver with own verbs distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c; add_verb(c,{player,"rxd","unrelated"},{"this","none","this"});
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(p, 1, {player,"rd","route alias"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[99,"E_VERBNF",20,"E_VERBNF"]]
+
+  - name: inherited_receiver_with_own_verbs_disable_then_restore_execution
+    description: "disable then restore execution; inherited receiver with own verbs distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c; add_verb(c,{player,"rxd","unrelated"},{"this","none","this"});
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(p, 1, {player,"rd","route alias"}); ignored = `r:route() ! ANY'; set_verb_info(p, 1, {player,"rxd","route alias"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[10,10,20,"E_VERBNF"]]
+
+  - name: inherited_receiver_with_own_verbs_delete_selected_verb
+    description: "delete selected verb; inherited receiver with own verbs distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c; add_verb(c,{player,"rxd","unrelated"},{"this","none","this"});
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        delete_verb(p, 1);
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[99,"E_VERBNF",20,"E_VERBNF"]]
+
+  - name: inherited_receiver_with_own_verbs_delete_then_redefine_selected_name
+    description: "delete then redefine selected name; inherited receiver with own verbs distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c; add_verb(c,{player,"rxd","unrelated"},{"this","none","this"});
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        delete_verb(p, 1); add_verb(p,{player,"rxd","route"},{"this","none","this"}); set_verb_code(p,2,{"return 11;"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[11,"E_VERBNF",20,"E_VERBNF"]]
+
+  - name: inherited_receiver_with_own_verbs_rename_later_verb_to_collision
+    description: "rename later verb to collision; inherited receiver with own verbs distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c; add_verb(c,{player,"rxd","unrelated"},{"this","none","this"});
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(p,2,{player,"rxd","route other"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[10,10,20,"E_VERBNF"]]
+
+  - name: inherited_receiver_with_own_verbs_rename_earlier_verb_over_later
+    description: "rename earlier verb over later; inherited receiver with own verbs distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c; add_verb(c,{player,"rxd","unrelated"},{"this","none","this"});
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(p,1,{player,"rxd","other"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[99,"E_VERBNF",10,"E_VERBNF"]]
+
+  - name: inherited_receiver_with_own_verbs_delete_other_cached_name
+    description: "delete other cached name; inherited receiver with own verbs distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c; add_verb(c,{player,"rxd","unrelated"},{"this","none","this"});
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        delete_verb(p,2);
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[10,10,"E_VERBNF","E_VERBNF"]]
+
+  - name: inherited_receiver_with_own_verbs_replace_other_cached_program
+    description: "replace other cached program; inherited receiver with own verbs distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c; add_verb(c,{player,"rxd","unrelated"},{"this","none","this"});
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_code(p,2,{"return 21;"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[10,10,21,"E_VERBNF"]]
+
+  - name: inherited_receiver_with_own_verbs_disable_other_cached_name
+    description: "disable other cached name; inherited receiver with own verbs distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c; add_verb(c,{player,"rxd","unrelated"},{"this","none","this"});
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(p,2,{player,"rd","other"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[10,10,"E_VERBNF","E_VERBNF"]]
+
+  - name: inherited_receiver_with_own_verbs_define_previously_missing_name
+    description: "define previously missing name; inherited receiver with own verbs distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c; add_verb(c,{player,"rxd","unrelated"},{"this","none","this"});
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        add_verb(p,{player,"rxd","fresh"},{"this","none","this"}); set_verb_code(p,3,{"return 31;"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[10,10,20,31]]
+
+  - name: inherited_receiver_with_own_verbs_delete_first_of_new_collision
+    description: "delete first of new collision; inherited receiver with own verbs distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c; add_verb(c,{player,"rxd","unrelated"},{"this","none","this"});
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        add_verb(p,{player,"rxd","route"},{"this","none","this"}); set_verb_code(p,3,{"return 31;"}); delete_verb(p,1);
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[31,"E_VERBNF",20,"E_VERBNF"]]
+
+  - name: inherited_receiver_with_own_verbs_reparent_then_expose_new_ancestor
+    description: "reparent then expose new ancestor; inherited receiver with own verbs distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c; add_verb(c,{player,"rxd","unrelated"},{"this","none","this"});
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        chparent(p,b2); delete_verb(p,1);
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[88,"E_VERBNF",20,"E_VERBNF"]]
+
+  - name: inherited_receiver_with_own_verbs_detach_then_delete_shadow
+    description: "detach then delete shadow; inherited receiver with own verbs distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c; add_verb(c,{player,"rxd","unrelated"},{"this","none","this"});
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        chparent(p,$nothing); delete_verb(p,1);
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],["E_VERBNF","E_VERBNF",20,"E_VERBNF"]]
+
+  - name: inherited_receiver_with_own_verbs_rename_ancestor_then_delete_shadow
+    description: "rename ancestor then delete shadow; inherited receiver with own verbs distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c; add_verb(c,{player,"rxd","unrelated"},{"this","none","this"});
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(b,1,{player,"rxd","fresh"}); delete_verb(p,1);
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],["E_VERBNF","E_VERBNF",20,99]]
+
+  - name: inherited_receiver_with_own_verbs_recompile_ancestor_then_delete_shadow
+    description: "recompile ancestor then delete shadow; inherited receiver with own verbs distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c; add_verb(c,{player,"rxd","unrelated"},{"this","none","this"});
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_code(b,1,{"return 77;"}); delete_verb(p,1);
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[77,"E_VERBNF",20,"E_VERBNF"]]
+
+  - name: inherited_receiver_with_own_verbs_disable_ancestor_then_delete_shadow
+    description: "disable ancestor then delete shadow; inherited receiver with own verbs distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c; add_verb(c,{player,"rxd","unrelated"},{"this","none","this"});
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(b,1,{player,"rd","route"}); delete_verb(p,1);
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],["E_VERBNF","E_VERBNF",20,"E_VERBNF"]]
+
+  - name: inherited_receiver_with_own_verbs_change_command_args_after_callable_lookup
+    description: "change command args after callable lookup; inherited receiver with own verbs distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c; add_verb(c,{player,"rxd","unrelated"},{"this","none","this"});
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_args(p,1,{"none","with","none"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[10,10,20,"E_VERBNF"]]
+
+  - name: inherited_receiver_with_own_verbs_rename_away_then_restore_after_miss
+    description: "rename away then restore after miss; inherited receiver with own verbs distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c; add_verb(c,{player,"rxd","unrelated"},{"this","none","this"});
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_info(p,1,{player,"rxd","fresh"}); ignored = `r:alias() ! ANY'; set_verb_info(p,1,{player,"rxd","route alias"});
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[10,10,20,"E_VERBNF"]]
+
+  - name: inherited_receiver_with_own_verbs_failed_compile_preserves_replacement
+    description: "failed compile preserves replacement; inherited receiver with own verbs distinguishes the callable lookup starting point."
+    permission: wizard
+    statement: |
+      b = create($nothing);
+      b2 = create($nothing);
+      p = create(b);
+      c = create(p);
+      try
+        add_verb(b,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b,1,{"return 99;"});
+        add_verb(b2,{player,"rxd","route"},{"this","none","this"});
+        set_verb_code(b2,1,{"return 88;"});
+        add_verb(p,{player,"rxd","route alias"},{"this","none","this"});
+        set_verb_code(p,1,{"return 10;"});
+        add_verb(p,{player,"rxd","other"},{"this","none","this"});
+        set_verb_code(p,2,{"return 20;"});
+        r = c; add_verb(c,{player,"rxd","unrelated"},{"this","none","this"});
+        before = {r:route(), r:alias(), r:other(), `r:fresh() ! ANY'};
+        set_verb_code(p,1,{"return 42;"}); errors = set_verb_code(p,1,{"return ( ;"}); if (!length(errors)) raise(E_INVARG); endif;
+        return {before, {`r:route() ! ANY', `r:alias() ! ANY', `r:other() ! ANY', `r:fresh() ! ANY'}};
+      finally
+        recycle(c); recycle(p); recycle(b2); recycle(b);
+      endtry
+    expect:
+      value: [[10,10,20,"E_VERBNF"],[42,42,20,"E_VERBNF"]]

@@ -1,0 +1,61 @@
+name: protected_callback_context
+description: Protected builtin redirects receive raw arguments before native validation and the caller's activation context.
+requires:
+  builtins: [valid, load_server_options]
+  config: [managed_server]
+tests:
+  - name: protected_valid_{shape}_{continuation}_raw_args_and_frame
+    table:
+      product:
+        - columns: [shape, supplied]
+          rows:
+            - [ordinary, "{#0}"]
+            - [empty, "{}"]
+            - [extra, "{#0, 42}"]
+            - [wrong_type, '{"not an object"}']
+        - columns: [continuation, pause, tail, error]
+          rows:
+            - [immediate, "", "return args;", E_NONE]
+            - [resumed, "suspend(0);", "return args;", E_NONE]
+            - [raises, "", "raise(E_INVARG);", E_INVARG]
+    steps:
+      - restart_server: {reset_db: true}
+      - run: |
+          rec = create($nothing);
+          owner = create($nothing); owner.programmer = 1;
+          driver = create($nothing); alternate = create($nothing);
+          add_property(#0, "cb_rec", rec, {player, "r"});
+          add_property(rec, "seen", {}, {player, "rw"});
+          add_property(rec, "frame", {}, {player, "rw"});
+          add_verb(rec, {player, "rxd", "observe"}, {"this", "none", "this"});
+          set_verb_code(rec, "observe", {"return callers()[1];"});
+          try delete_verb(#0, "bf_valid"); except (E_VERBNF) endtry
+          add_verb(#0, {owner, "rxd", "bf_valid"}, {"this", "none", "this"});
+          set_verb_code(#0, "bf_valid", {
+            "{pause}",
+            "#0.cb_rec.seen = {this, caller, player, verb, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()[1]};",
+            "#0.cb_rec.frame = #0.cb_rec:observe();",
+            "{tail}"
+          });
+          add_verb(driver, {player, "rxd", "drive"}, {"this", "none", "this"});
+          set_verb_code(driver, "drive", {
+            "{arguments, alternate} = args;",
+            "player = alternate; argstr = \"kept input\"; dobj = this; dobjstr = \"direct\"; prepstr = \"with\"; iobj = alternate; iobjstr = \"indirect\";",
+            "return valid(@arguments);"
+          });
+          try add_property($server_options, "protect_valid", 1, {player, "rw"}); except (E_INVARG) endtry
+          $server_options.protect_valid = 1;
+          load_server_options();
+          supplied = {supplied};
+          status = E_NONE; result = 0;
+          try result = driver:drive(supplied, alternate);
+          except error (ANY) status = error[1]; endtry
+          return {
+            status == {error} && (status != E_NONE || result == supplied),
+            rec.seen == {#0, driver, alternate, "bf_valid", supplied, "kept input", driver, "direct", "with", alternate, "indirect", owner, player,
+              {driver, "drive", player, driver, player}},
+            rec.frame == {#0, "bf_valid", owner, #0, alternate}
+          };
+        as: wizard
+        expect: {value: [1, 1, 1]}
+      - restart_server: {reset_db: true}

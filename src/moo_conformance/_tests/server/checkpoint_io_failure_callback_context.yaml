@@ -1,0 +1,71 @@
+name: checkpoint_io_failure_callback_context
+description: Write and publication failures report zero with complete server frames, then recover.
+requires:
+  builtins: [dump_database, exec]
+  config: [managed_server, posix_signals, server_dir]
+tests:
+  - name: checkpoint_failed_{fault}_calls_finished_zero_then_recovers
+    table:
+      columns: [fault, diagnostic, barn_diagnostic]
+      rows:
+        - [write, "Trying to dump database", "write database:"]
+        - [publish, "Renaming temporary dump file", "prepare checkpoint recovery (staged pair"]
+    steps:
+      - restart_server: {reset_db: true}
+      - run: |
+          add_property(#0, "cb_events", {}, {player, "rw"});
+          padding = "checkpoint padding";
+          for i in [1..12] padding = padding + padding; endfor
+          add_property(#0, "cb_padding", padding, {player, "r"});
+          owner = create($nothing);
+          owner.programmer = 1;
+          add_property(#0, "cb_owner", owner, {player, "r"});
+          for name in ({"checkpoint_started", "checkpoint_finished"})
+            try delete_verb(#0, name); except (E_VERBNF) endtry
+            add_verb(#0, {owner, "rxd", name}, {"this", "none", "this"});
+            set_verb_code(#0, name, {
+              "#0.cb_events = {@#0.cb_events, {verb, this, caller, player, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()}};"
+            });
+          endfor
+          return 1;
+        as: wizard
+        expect: {value: 1}
+      - run: 'return exec({"checkpoint_fault", "{fault}"});'
+        as: wizard
+        expect: {value: [0, "", ""]}
+      - run: return dump_database();
+        as: wizard
+        expect: {value: 0}
+      - run: |
+          for attempt in [1..100]
+            if (length(#0.cb_events) == 2) break; endif
+            suspend(0.05);
+          endfor
+          return {#0.cb_events == {
+            {"checkpoint_started", #0, #-1, #-1, {}, "", #-1, "", "", #-1, "", #0.cb_owner, #-1, {}},
+            {"checkpoint_finished", #0, #-1, #-1, {0}, "", #-1, "", "", #-1, "", #0.cb_owner, #-1, {}}
+          }, #0.cb_events[2][5]};
+        as: wizard
+        expect: {value: [1, [0]]}
+      - assert_log: {contains_any: ["{diagnostic}", "{barn_diagnostic}"]}
+      - run: 'return exec({"checkpoint_fault", "clear-{fault}"});'
+        as: wizard
+        expect: {value: [0, "", ""]}
+      - run: "#0.cb_events = {}; return dump_database();"
+        as: wizard
+        expect: {value: 0}
+      - run: |
+          for attempt in [1..100]
+            if (length(#0.cb_events) == 2) break; endif
+            suspend(0.05);
+          endfor
+          return #0.cb_events == {
+            {"checkpoint_started", #0, #-1, #-1, {}, "", #-1, "", "", #-1, "", #0.cb_owner, #-1, {}},
+            {"checkpoint_finished", #0, #-1, #-1, {1}, "", #-1, "", "", #-1, "", #0.cb_owner, #-1, {}}
+          };
+        as: wizard
+        expect: {value: 1}
+      - restart_server: {reset_db: true}
+    cleanup:
+      - run: 'exec({"checkpoint_fault", "clear-{fault}"});'
+        as: wizard

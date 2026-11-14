@@ -69,7 +69,6 @@ tests:
       - run: 'return typeof(task_stack(#0.itc_task)) == LIST;'
         expect:
           value: 1
-      - wait: 2500
       - read_connection:
           connection: client
         expect:
@@ -87,7 +86,6 @@ tests:
         expect:
           output:
             exact: []
-      - wait: 1500
       - read_connection:
           connection: client
         expect:

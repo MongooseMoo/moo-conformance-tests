@@ -114,7 +114,6 @@ tests:
       - send:
           connection: qc
           text: "#$\"hello quoted world"
-      - wait: 500
       - run: |
           return #0.dcq_login;
         as: wizard
@@ -125,6 +124,7 @@ tests:
               - "quoted"
               - "world"
             - "hello quoted world"
+        poll_ms: 10000
       - close_connection: qc
     cleanup:
       - run: |
@@ -278,12 +278,12 @@ tests:
           value:
             - []
             - 0
-      - wait: 500
       - run: |
           return #0.dch_log;
         as: wizard
         expect:
           value: ["ping"]
+        poll_ms: 10000
       - close_connection: hic
     cleanup:
       - run: |
@@ -335,12 +335,12 @@ tests:
       - send_bytes:
           connection: mcc
           hex: "636d642d6f6e650d0a636d642d74776f0d0a636d642d74687265650d0a"
-      - wait: 700
       - run: |
           return #0.dcm_log;
         as: wizard
         expect:
           value: ["", "cmd-one", "cmd-two", "cmd-three"]
+        poll_ms: 10000
       - close_connection: mcc
     cleanup:
       - run: |
@@ -402,7 +402,6 @@ tests:
       - send:
           connection: shc
           text: ":waves happily"
-      - wait: 500
       - run: |
           return #0.dcs_log;
         as: wizard
@@ -410,6 +409,7 @@ tests:
           value:
             - ["say", "hello there"]
             - ["emote", "waves happily"]
+        poll_ms: 10000
       - close_connection: shc
     cleanup:
       - run: |
@@ -479,12 +479,12 @@ tests:
       - send:
           connection: pgc
           text: "."
-      - wait: 700
       - run: |
           return verb_code(#0.dcg_target, "progme");
         as: wizard
         expect:
           value: ["return 4242;"]
+        poll_ms: 10000
       - close_connection: pgc
     cleanup:
       - run: |

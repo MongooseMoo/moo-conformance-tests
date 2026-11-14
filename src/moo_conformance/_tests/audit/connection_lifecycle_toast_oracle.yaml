@@ -61,7 +61,6 @@ tests:
       - send:
           connection: conn1
           text: "listener-login alpha beta"
-      - wait: 500
       - run: |
           return {#0.audit_listener_seen[1] == #0.audit_listener_handler, #0.audit_listener_seen[2], #0.audit_listener_seen[3]};
         as: wizard
@@ -73,6 +72,7 @@ tests:
               - alpha
               - beta
             - "listener-login alpha beta"
+        poll_ms: 10000
       - close_connection: conn1
     cleanup:
       - run: |
@@ -131,7 +131,6 @@ tests:
       - send:
           connection: conn1
           text: "postlogin alpha beta"
-      - wait: 500
       - run: |
           return {#0.audit_command_seen[1] == #0.audit_command_handler, #0.audit_command_seen[2] == #0.audit_command_player, #0.audit_command_seen[3], #0.audit_command_seen[4]};
         as: wizard
@@ -144,6 +143,7 @@ tests:
               - alpha
               - beta
             - "postlogin alpha beta"
+        poll_ms: 10000
       - close_connection: conn1
     cleanup:
       - run: |
@@ -214,7 +214,6 @@ tests:
       - send:
           connection: conn1
           text: ""
-      - wait: 500
       - run: |
           return {#0.audit_blank_seen[1] == #0.audit_blank_handler, #0.audit_blank_seen[2], #0.audit_blank_seen[3]};
         as: wizard
@@ -223,6 +222,7 @@ tests:
             - 1
             - []
             - ""
+        poll_ms: 10000
       - close_connection: conn1
     cleanup:
       - run: |
@@ -402,11 +402,11 @@ tests:
       - send:
           connection: conn1
           text: "login-user-connected"
-      - wait: 500
       - run: "return #0.audit_connected_seen == {#0, #0.audit_connected_player, #-1, {#0.audit_connected_player}, \"\"};"
         as: wizard
         expect:
           value: 1
+        poll_ms: 10000
       - close_connection: conn1
     cleanup:
       - run: |
@@ -518,7 +518,6 @@ tests:
       - send:
           connection: conn1
           text: "login-user-connected-fork"
-      - wait: 500
       - run: |
           return {#0.audit_connected_fork_parent == #0.audit_connected_fork_player, #0.audit_connected_fork_child == #0.audit_connected_fork_player, #0.audit_connected_fork_order == {"parent", "child"}, #0.audit_connected_fork_marker == "before"};
         as: wizard
@@ -528,6 +527,7 @@ tests:
             - 1
             - 1
             - 1
+        poll_ms: 10000
       - close_connection: conn1
     cleanup:
       - run: |
@@ -639,7 +639,6 @@ tests:
       - send:
           connection: conn1
           text: "login-user-connected-dynamic"
-      - wait: 500
       - run: |
           return {#0.audit_connected_dynamic_seen == #0.audit_connected_dynamic_player, #0.audit_connected_dynamic_parent == #0.audit_connected_dynamic_player};
         as: wizard
@@ -647,6 +646,7 @@ tests:
           value:
             - 1
             - 1
+        poll_ms: 10000
       - close_connection: conn1
     cleanup:
       - run: |
@@ -782,7 +782,6 @@ tests:
       - send:
           connection: conn1
           text: "login-user-connected-confunc"
-      - wait: 500
       - run: |
           p = #0.audit_connected_confunc_player;
           l = #0.audit_connected_confunc_location;
@@ -803,6 +802,7 @@ tests:
             - 1
             - 1
             - 1
+        poll_ms: 10000
       - close_connection: conn1
     cleanup:
       - run: |
@@ -1101,7 +1101,7 @@ tests:
     skip_if: "missing builtin.dump_database"
     steps:
       - run: |
-          for prop in ({"audit_restart_connection_events", "audit_restart_connection_id", "audit_restart_hooks_saved"})
+          for prop in ({"audit_restart_connection_events", "audit_restart_connection_id", "audit_restart_hooks_saved", "audit_restart_hook_owner"})
             try
               add_property(#0, prop, {}, {#0, "rw"});
             except (E_INVARG)
@@ -1133,6 +1133,7 @@ tests:
             {user_exists, user_info, user_args, user_code},
             {started_exists, started_info, started_args, started_code}
           };
+          #0.audit_restart_hook_owner = player;
           #0.audit_restart_connection_events = {};
           #0.audit_restart_connection_id = #-1;
           try
@@ -1142,7 +1143,7 @@ tests:
           set_verb_info(#0, "user_disconnected", {player, "rxd", "user_disconnected"});
           set_verb_args(#0, "user_disconnected", {"this", "none", "this"});
           set_verb_code(#0, "user_disconnected", {
-            "#0.audit_restart_connection_events = {@#0.audit_restart_connection_events, {\"disconnected\", player, args[1], this}};",
+            "#0.audit_restart_connection_events = {@#0.audit_restart_connection_events, {\"disconnected\", player, args[1], this, {caller, verb, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()}}};",
             "return 1;"
           });
           try
@@ -1152,7 +1153,7 @@ tests:
           set_verb_info(#0, "server_started", {player, "rxd", "server_started"});
           set_verb_args(#0, "server_started", {"this", "none", "this"});
           set_verb_code(#0, "server_started", {
-            "#0.audit_restart_connection_events = {@#0.audit_restart_connection_events, {\"started\", player, this}};",
+            "#0.audit_restart_connection_events = {@#0.audit_restart_connection_events, {\"started\", player, this, {caller, verb, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()}}};",
             "return 1;"
           });
           return 1;
@@ -1177,9 +1178,8 @@ tests:
         as: wizard
         expect:
           value: 0
-      - wait: 1500
       - restart_server:
-      - wait: 500
+          checkpoint_timeout_ms: 10000
       - run: |
           events = #0.audit_restart_connection_events;
           disconnected_index = 0;
@@ -1188,8 +1188,14 @@ tests:
           disconnected_arg = #-1;
           disconnected_listener = #-1;
           started_this = #-1;
+          context_ok = 1;
           for index in [1..length(events)]
             event = events[index];
+            if (event[1] == "disconnected")
+              context_ok = context_ok && event[5] == {#-1, "user_disconnected", {event[2]}, "", #-1, "", "", #-1, "", #0.audit_restart_hook_owner, #-1, {}};
+            elseif (event[1] == "started")
+              context_ok = context_ok && event[2] == #-1 && event[4] == {#-1, "server_started", {}, "", #-1, "", "", #-1, "", #0.audit_restart_hook_owner, #-1, {}};
+            endif
             if (event[1] == "disconnected" && event[3] == {former_connection_id})
               disconnected_index = index;
               disconnected_player = event[2];
@@ -1206,11 +1212,12 @@ tests:
             disconnected_player == {former_connection_id},
             disconnected_arg == {former_connection_id},
             disconnected_listener == #0,
-            started_this == #0
+            started_this == #0 && context_ok
           };
         as: wizard
         expect:
           value: [1, 1, 1, 1, 1, 1]
+        poll_ms: 10000
     cleanup:
       - run: |
           try
@@ -1233,7 +1240,7 @@ tests:
             endif
           except (ANY)
           endtry
-          for prop in ({"audit_restart_connection_events", "audit_restart_connection_id", "audit_restart_hooks_saved"})
+          for prop in ({"audit_restart_connection_events", "audit_restart_connection_id", "audit_restart_hooks_saved", "audit_restart_hook_owner"})
             try
               delete_property(#0, prop);
             except (ANY)
@@ -1283,7 +1290,7 @@ tests:
           set_verb_info(#0, "user_disconnected", {player, "rxd", "user_disconnected"});
           set_verb_args(#0, "user_disconnected", {"this", "none", "this"});
           set_verb_code(#0, "user_disconnected", {
-            "#0.audit_timeout_seen = {@#0.audit_timeout_seen, {this, player, caller, args, argstr}};",
+            "#0.audit_timeout_seen = {@#0.audit_timeout_seen, {this, player, caller, args, argstr, verb, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()}};",
             "return 1;"
           });
           return 1;
@@ -1311,7 +1318,7 @@ tests:
           endif
           frame = seen[1];
           hook_player = frame[2];
-          return {frame[1] == #0, typeof(hook_player) == 1, hook_player != #-1, frame[3] == #-1, frame[4] == {hook_player}, frame[5] == ""};
+          return {frame[1] == #0, typeof(hook_player) == 1, hook_player < #-1, frame[3] == #-1, frame[4] == {hook_player}, frame[5..14] == {"", "user_disconnected", #-1, "", "", #-1, "", player, #-1, {}}};
         as: wizard
         expect:
           value:
@@ -1414,7 +1421,6 @@ tests:
       - send:
           connection: conn1
           text: "auditflush second"
-      - wait: 500
       - send:
           connection: conn1
           text: ".FlUsH"
@@ -1434,12 +1440,12 @@ tests:
       - send:
           connection: conn1
           text: "auditflush"
-      - wait: 500
       - run: "return #0.audit_flush_seen;"
         as: wizard
         expect:
           value:
             - ""
+        poll_ms: 10000
       - close_connection: conn1
     cleanup:
       - run: |
@@ -1621,7 +1627,6 @@ tests:
         as: wizard
         expect:
           value: 1
-      - wait: 500
       - read_connection:
           connection: conn1
         expect:
@@ -1700,7 +1705,6 @@ tests:
       - wait: 500
       - run: "recycle(#0.audit_recycle_player); return 1;"
         as: wizard
-      - wait: 500
       - read_connection:
           connection: conn1
         expect:
@@ -1756,7 +1760,6 @@ tests:
         as: wizard
       - new_connection:
           capture: conn1
-      - wait: 2500
       - read_connection:
           connection: conn1
         expect:
@@ -2234,7 +2237,6 @@ tests:
       - send:
           connection: conn1
           text: "audit-create-login"
-      - wait: 500
       - run: |
           return {typeof(#0.audit_created_seen), typeof(#0.audit_created_user), #0.audit_created_seen == #0.audit_created_user};
         as: wizard
@@ -2243,6 +2245,7 @@ tests:
             - 1
             - 1
             - 1
+        poll_ms: 10000
       - close_connection: conn1
     cleanup:
       - run: |

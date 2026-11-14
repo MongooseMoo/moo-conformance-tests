@@ -1,0 +1,22 @@
+name: signals_default_usr1
+description: Missing USR1 hook leaves the server responsive with or without a named log.
+requires:
+  config: [managed_server, posix_signals, server_dir, log_file]
+tests:
+  - name: default_usr1_remains_responsive_and_does_not_checkpoint
+    steps:
+      - restart_server: {reset_db: true}
+      - run: |
+          try delete_verb(#0, "handle_signal"); except (E_VERBNF) endtry
+          return 1;
+        as: wizard
+        expect: {value: 1}
+      - signal_server: SIGUSR1
+      - run: 'suspend(0.1); return 43;'
+        expect: {value: 43}
+      - signal_server: SIGUSR1
+      - run: 'suspend(0.1); return 97;'
+        expect: {value: 97}
+      - assert_log: {not_contains: "PANIC:"}
+      - assert_file: {path: Test.db.new, exists: false}
+      - restart_server: {reset_db: true}

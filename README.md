@@ -127,6 +127,11 @@ and WAIF values in suspended VMs, interrupted `read()`, `read_http()`, and
 `exec()` waits, former-connection startup ordering, `last_move`, and checkpoint
 hook ordering and persistence boundaries.
 
+Managed signal cases cover graceful shutdown, panic dumps and recovery,
+user signal hooks, log rotation, checkpoint and exec child completion, and
+timer handling. See [Toast signal handling](docs/SIGNALS.md) for the source
+inventory, run command, and native Windows / WSL requirements.
+
 ## Command Line Options
 
 | Option | Default | Description |

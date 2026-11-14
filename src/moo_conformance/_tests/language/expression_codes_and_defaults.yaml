@@ -1,0 +1,37 @@
+name: expression_codes_and_defaults
+description: >
+  Grammar shapes ToastStunt accepts and live Mongoose verbs use. except and
+  catch-expression codes are an expression list (parser.y `codes: tANY |
+  ne_arglist`), so a non-error value is a valid code. A catch expression's
+  default is any expression, including an assignment (parser.y `default:
+  tARROW expr`). An argument-list splice takes an expression, including an
+  assignment.
+tests:
+- name: except_string_code_matches_raised_string
+  statement: "try\n  raise(\"E_CUSTOM\");\nexcept e (\"E_CUSTOM\")\n  return e[1];\nendtry\n"
+  expect:
+    value: E_CUSTOM
+- name: except_without_variable_string_code
+  statement: "try\n  raise(\"E_FUSE\");\nexcept (\"E_FUSE\")\n  return \"caught\";\nendtry\n"
+  expect:
+    value: caught
+- name: catch_default_assignment_assigns
+  statement: "x = 0;\n`1 / 0 ! ANY => x = 5';\nreturn x;\n"
+  expect:
+    value: 5
+- name: catch_default_assignment_is_value
+  statement: "return `1 / 0 ! ANY => x = 5';\n"
+  expect:
+    value: 5
+- name: catch_non_error_code
+  statement: "return `raise(1) ! 1 => \"caught\"';\n"
+  expect:
+    value: caught
+- name: splice_of_assignment_in_list
+  statement: "x = {@ret = {1, 2}};\nreturn {x, ret};\n"
+  expect:
+    value: [[1, 2], [1, 2]]
+- name: chained_assignment_to_true_compiles_as_toast
+  statement: "return eval(\"x = true = {}; return x;\");\n"
+  expect:
+    value: [1, []]

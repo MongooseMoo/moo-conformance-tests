@@ -20,6 +20,14 @@ def test_signal_step_schema():
     assert suite([{"signal_server": "SIGUSR2"}]).tests[0].steps[0].signal_server == "SIGUSR2"
 
 
+@pytest.mark.parametrize("name", [
+    "SIGHUP", "SIGINT", "SIGQUIT", "SIGILL", "SIGSEGV", "SIGBUS", "SIGFPE",
+    "SIGPIPE", "SIGUSR1", "SIGUSR2", "SIGCHLD", "SIGALRM", "SIGVTALRM", "SIGABRT",
+])
+def test_all_toast_signal_names_load_on_every_host(name):
+    assert suite([{"signal_server": name}]).tests[0].steps[0].signal_server == name
+
+
 @pytest.mark.parametrize("value", ["USR2", "SIGTYPO", 12, True, {}, "SIG_DFL"])
 def test_invalid_signal_rejected(value):
     with pytest.raises(ValueError, match="signal_server"):

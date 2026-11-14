@@ -1,0 +1,66 @@
+name: verb_shared_first_alias
+description: Verbs on one object whose first names are equal ("foo" and "foo bar")
+  remain separate verbs; set_verb_code by index or by a later alias edits only
+  the addressed verb.
+requires:
+  builtins:
+  - add_verb
+  - set_verb_code
+  - verb_code
+  - create
+  - recycle
+tests:
+- name: set_verb_code_by_index_on_second_verb_sharing_first_name
+  description: set_verb_code by index edits the second verb even when its first
+    name equals the first verb's name
+  permission: programmer
+  steps:
+  - run: create($nothing)
+    capture: obj
+  - run: add_verb({obj}, {player, "rxd", "foo"}, {"this", "none", "this"})
+    expect:
+      value: 1
+  - run: add_verb({obj}, {player, "rxd", "foo bar"}, {"this", "none", "this"})
+    expect:
+      value: 2
+  - run: return set_verb_code({obj}, 1, {"return 1;"});
+    expect:
+      value: []
+  - run: return set_verb_code({obj}, 2, {"return 2;"});
+    expect:
+      value: []
+  - run: '{verb_code({obj}, 1), verb_code({obj}, 2)}'
+    expect:
+      value: [["return 1;"], ["return 2;"]]
+  - run: '{{obj}:foo(), {obj}:bar()}'
+    expect:
+      value: [1, 2]
+  cleanup:
+  - run: recycle({obj})
+- name: set_verb_code_by_later_alias_on_verb_sharing_first_name
+  description: set_verb_code by the second verb's later alias edits that verb,
+    not the earlier verb with the same first name
+  permission: programmer
+  steps:
+  - run: create($nothing)
+    capture: obj
+  - run: add_verb({obj}, {player, "rxd", "foo"}, {"this", "none", "this"})
+    expect:
+      value: 1
+  - run: add_verb({obj}, {player, "rxd", "foo bar"}, {"this", "none", "this"})
+    expect:
+      value: 2
+  - run: return set_verb_code({obj}, 1, {"return 1;"});
+    expect:
+      value: []
+  - run: return set_verb_code({obj}, "bar", {"return 3;"});
+    expect:
+      value: []
+  - run: '{verb_code({obj}, 1), verb_code({obj}, 2)}'
+    expect:
+      value: [["return 1;"], ["return 3;"]]
+  - run: '{obj}:bar()'
+    expect:
+      value: 3
+  cleanup:
+  - run: recycle({obj})

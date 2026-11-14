@@ -1,0 +1,46 @@
+name: checkpoint_callback_context
+description: Real dump requests preserve server callback frames and ignore hook return values.
+requires:
+  builtins: [dump_database]
+  config: [managed_server]
+tests:
+  - name: checkpoint_{hook}_{outcome}_does_not_prevent_completion
+    table:
+      columns: [hook, outcome, body]
+      rows:
+        - [checkpoint_started, false_return, "return 0;"]
+        - [checkpoint_started, true_return, "return 1;"]
+        - [checkpoint_started, error, "raise(E_INVARG);"]
+        - [checkpoint_started, suspend, "suspend(0); return 0;"]
+        - [checkpoint_finished, error, "raise(E_INVARG);"]
+        - [checkpoint_finished, suspend, "suspend(0); return 0;"]
+    steps:
+      - restart_server: {reset_db: true}
+      - run: |
+          add_property(#0, "cb_events", {}, {player, "rw"});
+          owner = create($nothing);
+          owner.programmer = 1;
+          add_property(#0, "cb_owner", owner, {player, "r"});
+          for name in ({"checkpoint_started", "checkpoint_finished"})
+            try delete_verb(#0, name); except (E_VERBNF) endtry
+            add_verb(#0, {owner, "rxd", name}, {"this", "none", "this"});
+            set_verb_code(#0, name, {
+              "#0.cb_events = {@#0.cb_events, {verb, this, caller, player, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()}};"
+            });
+          endfor
+          set_verb_code(#0, "{hook}", {@verb_code(#0, "{hook}"), "{body}"});
+          return dump_database();
+        as: wizard
+        expect: {value: 0}
+      - run: |
+          for attempt in [1..100]
+            if (length(#0.cb_events) == 2) break; endif
+            suspend(0.05);
+          endfor
+          return #0.cb_events == {
+            {"checkpoint_started", #0, #-1, #-1, {}, "", #-1, "", "", #-1, "", #0.cb_owner, #-1, {}},
+            {"checkpoint_finished", #0, #-1, #-1, {1}, "", #-1, "", "", #-1, "", #0.cb_owner, #-1, {}}
+          };
+        as: wizard
+        expect: {value: 1}
+      - restart_server: {reset_db: true}

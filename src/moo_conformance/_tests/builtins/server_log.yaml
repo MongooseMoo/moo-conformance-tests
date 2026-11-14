@@ -14,9 +14,9 @@ tests:
           return server_log("CONFORMANCE_LOG_TEST_BASIC");
         expect:
           value: 0
-      - wait: 200
       - assert_log:
           contains: "CONFORMANCE_LOG_TEST_BASIC"
+          timeout_ms: 10000
 
   - name: server_log_with_level
     permission: wizard
@@ -25,9 +25,9 @@ tests:
           return server_log("CONFORMANCE_LOG_LEVEL_TEST", 1);
         expect:
           value: 0
-      - wait: 200
       - assert_log:
           contains: "CONFORMANCE_LOG_LEVEL_TEST"
+          timeout_ms: 10000
 
   - name: server_log_requires_wizard
     permission: programmer

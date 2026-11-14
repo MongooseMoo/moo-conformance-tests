@@ -146,10 +146,10 @@ tests:
           return set_thread_mode();
         expect:
           value: 0
-      - wait: 500
       - run: "return #0.__thread_mode_fork;"
         expect:
           value: 1
+        poll_ms: 10000
     cleanup:
       - run: "delete_property(#0, \"__thread_mode_fork\");"
         as: wizard

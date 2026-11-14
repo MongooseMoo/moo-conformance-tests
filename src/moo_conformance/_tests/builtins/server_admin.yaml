@@ -734,11 +734,11 @@ tests:
         return 1;
       expect:
         value: 1
-    - wait: 100
     - run: |
         return ({conn} in connected_players(1)) > 0;
       expect:
         value: 0
+      poll_ms: 10000
   cleanup:
     - run: |
         boot_player({conn});

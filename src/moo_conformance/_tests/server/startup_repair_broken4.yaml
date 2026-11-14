@@ -10,16 +10,21 @@ requires:
 tests:
   - name: top_down_inconsistencies_are_reported
     steps:
-      - wait: 500
       - assert_log:
+          timeout_ms: 10000
           contains: "#0 not in it's location's (#2) contents"
       - assert_log:
+          timeout_ms: 10000
           contains: "#0 not in it's parent's (#1) children"
       - assert_log:
+          timeout_ms: 10000
           contains: "#1 not in it's location's (#2) contents"
       - assert_log:
+          timeout_ms: 10000
           contains: "#2 not in it's parent's (#1) children"
       - assert_log:
+          timeout_ms: 10000
           contains: "#3 not in it's location's (#2) contents"
       - assert_log:
+          timeout_ms: 10000
           contains: "#3 not in it's parent's (#1) children"

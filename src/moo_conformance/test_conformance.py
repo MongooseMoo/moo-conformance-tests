@@ -144,6 +144,8 @@ def _has_feature(
                 f"got {value!r}"
             )
         return value
+    if feature == "maps":
+        return _dynamic_feature(feature, runner, 'return eval("return [1 -> 2];")[1];')
     if feature == "connectable_listener_port":
         if not _has_option(runner, "OUTBOUND_NETWORK", profile_features):
             return False

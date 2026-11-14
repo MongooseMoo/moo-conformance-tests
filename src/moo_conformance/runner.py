@@ -8,6 +8,7 @@ import re
 import socket
 import stat
 import time
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -34,6 +35,9 @@ from .server import (
     snapshot_regular_files,
 )
 from .transport import ExecutionResult, MooTransport, TestConnection
+
+# Pause between checks while a step waits for an event (poll_ms, assert_log timeout_ms).
+POLL_INTERVAL = 0.05
 
 
 class AssertionError(Exception):
@@ -614,7 +618,9 @@ class YamlTestRunner:
                             f"{list(connections.keys())}"
                         )
                     text = self._substitute_variables(step.send.text, variables)
-                    output_lines = connections[conn_name].send(text)
+                    output_lines = connections[conn_name].send(
+                        text, until=self._expected_output(step)
+                    )
 
                     if step.capture:
                         variables[step.capture] = output_lines
@@ -635,7 +641,9 @@ class YamlTestRunner:
                             f"{list(connections.keys())}"
                         )
                     data = bytes.fromhex(step.send_bytes.hex) * step.send_bytes.repeat
-                    output_lines = connections[conn_name].send_bytes(data)
+                    output_lines = connections[conn_name].send_bytes(
+                        data, until=self._expected_output(step)
+                    )
 
                     if step.capture:
                         variables[step.capture] = output_lines
@@ -655,7 +663,9 @@ class YamlTestRunner:
                             f"Unknown connection '{conn_name}'. Available: "
                             f"{list(connections.keys())}"
                         )
-                    output_lines = connections[conn_name].read()
+                    output_lines = connections[conn_name].read(
+                        until=self._expected_output(step)
+                    )
 
                     if step.capture:
                         variables[step.capture] = output_lines
@@ -790,20 +800,33 @@ class YamlTestRunner:
                     else:
                         code = force_statement_mode(code)
 
-                    result = self.transport.execute(code)
+                    # poll_ms reruns the code until the expectation holds.
+                    poll_deadline = (
+                        time.monotonic() + step.poll_ms / 1000.0 if step.poll_ms else None
+                    )
+                    while True:
+                        result = self.transport.execute(code)
 
-                    # Capture result if requested
-                    if step.capture:
-                        if result.success:
-                            variables[step.capture] = result.value
-                        else:
-                            # Capture error for later use
-                            variables[step.capture] = result.error
+                        # Capture result if requested
+                        if step.capture:
+                            if result.success:
+                                variables[step.capture] = result.value
+                            else:
+                                # Capture error for later use
+                                variables[step.capture] = result.error
 
-                    # Verify expectation if present
-                    if step.expect:
+                        # Verify expectation if present
+                        if not step.expect:
+                            break
                         step_desc = f"step '{run_code[:30]}...'"
-                        self._verify_expectation(step.expect, result, step_desc)
+                        try:
+                            self._verify_expectation(step.expect, result, step_desc)
+                        except AssertionError:
+                            if poll_deadline is None or time.monotonic() >= poll_deadline:
+                                raise
+                            time.sleep(POLL_INTERVAL)
+                            continue
+                        break
 
         finally:
             # Run cleanup steps (always, even on failure)
@@ -833,6 +856,21 @@ class YamlTestRunner:
                     conn.close()
                 except Exception:
                     pass
+
+    def _expected_output(self, step: TestStep) -> Callable[[list[str]], bool] | None:
+        """Return a predicate telling a raw read its expected output has arrived."""
+        if step.expect is None or step.expect.output is None:
+            return None
+        expected = step.expect.output
+
+        def satisfied(lines: list[str]) -> bool:
+            try:
+                self._verify_output(expected, lines, "raw read")
+            except AssertionError:
+                return False
+            return True
+
+        return satisfied
 
     def _declared_expectation_fields(self, expect: Expectation) -> set[str]:
         """Return the fields a programmatically constructed expectation declares."""
@@ -1100,6 +1138,18 @@ class YamlTestRunner:
             )
 
         new_content = self._read_log_since_offset()
+        if assertion.timeout_ms:
+            # Wait for text that must appear (schema forbids it with not_contains).
+            deadline = time.monotonic() + assertion.timeout_ms / 1000.0
+            while time.monotonic() < deadline and not (
+                (assertion.contains is None or assertion.contains in new_content)
+                and (
+                    assertion.contains_any is None
+                    or any(text in new_content for text in assertion.contains_any)
+                )
+            ):
+                time.sleep(POLL_INTERVAL)
+                new_content = self._read_log_since_offset()
 
         def _excerpt() -> str:
             excerpt = new_content[:500]

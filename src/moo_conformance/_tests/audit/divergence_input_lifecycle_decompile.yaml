@@ -87,13 +87,13 @@ tests:
       - send:
           connection: rdc
           text: "answer42"
-      - wait: 500
       - run: |
           return #0.dri_log;
         as: wizard
         expect:
           value:
             - ["got", "answer42"]
+        poll_ms: 10000
       - close_connection: rdc
     cleanup:
       - run: |
@@ -165,7 +165,6 @@ tests:
       - send:
           connection: slc
           text: "whoami"
-      - wait: 500
       - run: |
           return #0.dsl_log;
         as: wizard
@@ -174,6 +173,7 @@ tests:
             - ["login", ""]
             - ["login", "go"]
             - ["login", "whoami"]
+        poll_ms: 10000
       - close_connection: slc
     cleanup:
       - run: |

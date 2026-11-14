@@ -2,6 +2,8 @@ import builtins
 import os
 import stat
 import subprocess
+import threading
+import time
 from io import BytesIO
 from pathlib import Path
 from unittest.mock import Mock
@@ -46,6 +48,41 @@ class _FakeProcess:
 
     def wait(self, timeout=None):
         return 0
+
+
+def test_port_wait_polls_a_starting_server_at_a_short_interval(monkeypatch):
+    attempts = []
+    sleeps = []
+
+    class RefusingTwiceSocket:
+        def __init__(self, *args):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+        def settimeout(self, timeout):
+            pass
+
+        def connect(self, address):
+            attempts.append(address)
+            if len(attempts) <= 2:
+                raise ConnectionRefusedError
+
+    monkeypatch.setattr("moo_conformance.server.socket.socket", RefusingTwiceSocket)
+    monkeypatch.setattr("moo_conformance.server.time.sleep", sleeps.append)
+    server = ManagedServer("fake-server {db} {port}", Path("unused.db"), port=17777)
+    server._port = 17777
+    server._process = _FakeProcess()
+
+    server._wait_for_port(timeout=30.0)
+
+    assert len(attempts) == 3
+    assert len(sleeps) == 2
+    assert all(0 < interval <= 0.05 for interval in sleeps)
 
 
 def test_restart_preserves_db_and_records_fresh_process_log_boundary(
@@ -738,6 +775,44 @@ def test_post_exit_log_assertion_accepts_reused_marker_from_new_process(
         else LogAssertion(contains_any=["OTHER DIAGNOSTIC", "REUSED PROCESS MARKER"])
     )
     runner._execute_assert_log(assertion, "reused-marker")
+
+
+def test_assert_log_timeout_waits_for_text_written_later(tmp_path: Path):
+    log_path = tmp_path / "server.log"
+    log_path.write_text("before\n", encoding="utf-8")
+    runner = YamlTestRunner(Mock(), log_file_path=str(log_path))
+    runner._log_offset = len("before\n")
+
+    with pytest.raises(RunnerAssertionError, match="not found"):
+        runner._execute_assert_log(LogAssertion(contains="LATE MARKER"), "no-timeout")
+
+    def write_later() -> None:
+        time.sleep(0.3)
+        with open(log_path, "a", encoding="utf-8") as log:
+            log.write("LATE MARKER\n")
+
+    writer = threading.Thread(target=write_later)
+    writer.start()
+    try:
+        runner._execute_assert_log(
+            LogAssertion(contains="LATE MARKER", timeout_ms=10000), "with-timeout"
+        )
+    finally:
+        writer.join()
+
+
+def test_assert_log_timeout_reports_missing_text_at_its_deadline(tmp_path: Path):
+    log_path = tmp_path / "server.log"
+    log_path.write_text("", encoding="utf-8")
+    runner = YamlTestRunner(Mock(), log_file_path=str(log_path))
+    runner._log_offset = 0
+
+    started = time.monotonic()
+    with pytest.raises(RunnerAssertionError, match="none was found"):
+        runner._execute_assert_log(
+            LogAssertion(contains_any=["NEVER"], timeout_ms=300), "deadline"
+        )
+    assert time.monotonic() - started >= 0.3
 
 
 def test_assert_file_byte_compare_rejects_false_positive_text_match(tmp_path: Path):

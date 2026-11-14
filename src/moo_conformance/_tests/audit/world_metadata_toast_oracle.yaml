@@ -61,9 +61,8 @@ tests:
         as: wizard
         expect:
           value: 0
-      - wait: 1500
       - restart_server:
-      - wait: 500
+          checkpoint_timeout_ms: 10000
       - run: |
           metadata = {moved_object}.last_move;
           return {

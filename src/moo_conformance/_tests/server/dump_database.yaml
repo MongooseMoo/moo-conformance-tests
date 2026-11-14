@@ -22,9 +22,9 @@ tests:
           return dump_database();
         expect:
           value: 0
-      - wait: 1000
       - assert_log:
           contains: "CHECKPOINTING"
+          timeout_ms: 10000
 
   - name: dump_database_requires_wizard
     permission: programmer

@@ -294,11 +294,18 @@ tests:
   - name: crypt_one_char_salt_randomizes_salt
     description: >
       A salt shorter than two characters is replaced with a fresh random salt
-      on every call, so repeated calls disagree.
+      on every call, so repeated calls disagree. The salt is two characters
+      from a 64-character alphabet, so two calls agree by chance once in 4096;
+      eight calls all agree with probability 4096^-7.
     permission: wizard
-    code: "crypt(\"foo\", \"x\") == crypt(\"foo\", \"x\")"
+    statement: |
+      results = {};
+      for i in [1..8]
+        results = setadd(results, crypt("foo", "x"));
+      endfor
+      return length(results) > 1;
     expect:
-      value: 0
+      value: 1
 
   - name: crypt_sha512_empty_salt_body_is_invarg
     permission: wizard

@@ -1,5 +1,6 @@
 import builtins
 import os
+import socket
 import stat
 import subprocess
 import threading
@@ -120,6 +121,73 @@ def test_restart_preserves_db_and_records_fresh_process_log_boundary(
     assert len(created) == 2
     assert server.process_log_offset == previous_log_size
     assert server.process_file_snapshot["baseline.db"][2] == len("checkpointed")
+
+
+def _listening_socket() -> socket.socket:
+    """Listen like ToastStunt: SO_REUSEADDR, bound to 127.0.0.1."""
+    listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    listener.bind(("127.0.0.1", 0))
+    listener.listen()
+    return listener
+
+
+_POSIX_ONLY = pytest.mark.skipif(
+    os.name != "posix", reason="forked children inherit listeners only on POSIX"
+)
+
+
+@_POSIX_ONLY
+def test_restart_waits_for_forked_child_to_release_port_before_launch(
+    monkeypatch, tmp_path: Path
+):
+    baseline = tmp_path / "baseline.db"
+    baseline.write_text("baseline", encoding="utf-8")
+    # Stands in for a checkpointer child that inherited the old server's
+    # listening socket and outlives the server process itself.
+    child_listener = _listening_socket()
+    port = child_listener.getsockname()[1]
+    launches = []
+    released = []
+
+    def fake_popen(*args, **kwargs):
+        launches.append(time.monotonic())
+        return _FakeProcess()
+
+    def release_port():
+        released.append(time.monotonic())
+        child_listener.close()
+
+    monkeypatch.setattr("moo_conformance.server.subprocess.Popen", fake_popen)
+    monkeypatch.setattr(ManagedServer, "_wait_for_port", lambda self, timeout=30.0: None)
+
+    server = ManagedServer("fake-server {db} {port}", baseline, port=port)
+    server.start()
+    timer = threading.Timer(0.3, release_port)
+    timer.start()
+    try:
+        server.restart()
+    finally:
+        timer.cancel()
+        child_listener.close()
+        server.stop()
+
+    assert len(launches) == 2
+    assert released and launches[1] >= released[0]
+
+
+@_POSIX_ONLY
+def test_port_release_wait_fails_with_lifecycle_error_while_port_stays_bound():
+    child_listener = _listening_socket()
+    try:
+        port = child_listener.getsockname()[1]
+        server = ManagedServer("fake-server {db} {port}", Path("unused.db"), port=port)
+        server._port = port
+
+        with pytest.raises(ManagedServerLifecycleError, match=f"port {port} was still bound"):
+            server._wait_for_port_release(timeout=0.2)
+    finally:
+        child_listener.close()
 
 
 def test_restart_adopts_checkpoint_before_shutdown_can_overwrite_output(

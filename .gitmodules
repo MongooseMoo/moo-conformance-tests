@@ -1,3 +1,0 @@
-[submodule "src/moo_conformance/_db/startup/toastcore"]
-	path = src/moo_conformance/_db/startup/toastcore
-	url = https://github.com/lisdude/toastcore.git

@@ -32,6 +32,11 @@ This controller PR, which must land before #85:
 
 - `.gitmodules` before the gitlink: `.gitmodules` is controller and the
   gitlink is data, and `change_boundary.py` rejects a PR mixing them.
+- `.gitmodules` in its own follow-up PR: the classify job runs the base
+  branch's `change_boundary.py`, which classed `.gitmodules` as unknown, so
+  this PR's first run failed with "unclassified semantic paths: .gitmodules".
+  Order: this PR (classifier, validator, checkouts), then `.gitmodules`, then
+  #85.
 
 ## Next step
 

@@ -1,0 +1,178 @@
+name: toastcore_interactive_lifecycle
+description: ToastCore login, room, command, and database lifecycle behavior.
+
+requires:
+  features:
+    - toastcore_fixture
+  builtins:
+    - add_verb
+    - add_property
+    - boot_player
+    - create
+    - delete_property
+    - move
+    - recycle
+    - set_player_flag
+    - verb_code
+    - set_verb_code
+
+tests:
+  - name: toastcore_first_login_and_disconnect_run_lifecycle_hooks
+    description: A first login invokes native connect, location/player confunc, and disconnect hooks.
+    permission: wizard
+    steps:
+      - run: |
+          for prop in ({"toastcore_session_player", "toastcore_session_location", "toastcore_connected_seen", "toastcore_connected_callers", "toastcore_location_seen", "toastcore_player_seen", "toastcore_disconnected_seen", "toastcore_login_saved", "toastcore_connected_saved", "toastcore_disconnected_saved"})
+            try
+              add_property(#0, prop, {}, {#0, "rw"});
+            except (E_INVARG)
+            endtry
+          endfor
+          login_player = create(#2);
+          login_location = create($nothing);
+          set_player_flag(login_player, 1);
+          login_player.name = "ToastCore Conformance Player";
+          move(login_player, login_location);
+          #0.toastcore_session_player = login_player;
+          #0.toastcore_session_location = login_location;
+          #0.toastcore_disconnected_seen = {};
+          add_verb(login_location, {login_player, "rxd", "confunc"}, {"this", "none", "this"});
+          location_errors = set_verb_code(login_location, "confunc", {
+            "#0.toastcore_location_seen = {this, caller, args[1]};",
+            "return 1;"
+          });
+          add_verb(login_player, {login_player, "rxd", "confunc"}, {"this", "none", "this"});
+          player_errors = set_verb_code(login_player, "confunc", {
+            "#0.toastcore_player_seen = {this, caller, args};",
+            "return 1;"
+          });
+          #0.toastcore_login_saved = verb_code(#0, "do_login_command");
+          #0.toastcore_connected_saved = verb_code(#0, "user_connected");
+          #0.toastcore_disconnected_saved = verb_code(#0, "user_client_disconnected");
+          login_errors = set_verb_code(#0, "do_login_command", {
+            "return #0.toastcore_session_player;"
+          });
+          connected_errors = set_verb_code(#0, "user_connected", {
+            "#0.toastcore_connected_seen = {this, player, caller, args, argstr};",
+            "#0.toastcore_connected_callers = callers();",
+            @#0.toastcore_connected_saved
+          });
+          disconnected_errors = set_verb_code(#0, "user_client_disconnected", {
+            "#0.toastcore_disconnected_seen = {@#0.toastcore_disconnected_seen, {this, player, caller, args, argstr}};",
+            @#0.toastcore_disconnected_saved
+          });
+          return {
+            location_errors,
+            player_errors,
+            login_errors,
+            connected_errors,
+            disconnected_errors,
+            length(verb_code(#0, "user_connected")) == length(#0.toastcore_connected_saved) + 2,
+            length(verb_code(#0, "user_client_disconnected")) == length(#0.toastcore_disconnected_saved) + 1
+          };
+        as: wizard
+        expect:
+          value: [[], [], [], [], [], 1, 1]
+      - new_connection:
+          capture: conn1
+      - send:
+          connection: conn1
+          text: "toastcore-first-login"
+      - run: |
+          seen = #0.toastcore_connected_seen;
+          return {
+            seen[1] == #0,
+            seen[2] == #0.toastcore_session_player,
+            seen[2].location == #0.toastcore_session_location,
+            seen[3] == #-1,
+            seen[4] == {seen[2]},
+            seen[5] == "",
+            #0.toastcore_connected_callers == {},
+            #0.toastcore_location_seen == {#0.toastcore_session_location, #0, seen[2]},
+            #0.toastcore_player_seen == {seen[2], #0, {}}
+          };
+        as: wizard
+        expect:
+          value: [1, 1, 1, 1, 1, 1, 1, 1, 1]
+      - close_connection: conn1
+      - wait: 500
+      - run: |
+          seen = #0.toastcore_disconnected_seen;
+          return {
+            length(seen) == 1,
+            seen[1][1] == #0,
+            seen[1][2] == #0.toastcore_session_player,
+            seen[1][3] == #-1,
+            seen[1][4] == {#0.toastcore_session_player},
+            seen[1][5] == ""
+          };
+        as: wizard
+        expect:
+          value: [1, 1, 1, 1, 1, 1]
+    cleanup:
+      - run: |
+          try
+            set_verb_code(#0, "do_login_command", #0.toastcore_login_saved);
+            set_verb_code(#0, "user_connected", #0.toastcore_connected_saved);
+            set_verb_code(#0, "user_client_disconnected", #0.toastcore_disconnected_saved);
+          except (ANY)
+          endtry
+          try
+            boot_player(#0.toastcore_session_player);
+          except (ANY)
+          endtry
+          try
+            recycle(#0.toastcore_session_player);
+          except (ANY)
+          endtry
+          try
+            recycle(#0.toastcore_session_location);
+          except (ANY)
+          endtry
+          for prop in ({"toastcore_session_player", "toastcore_session_location", "toastcore_connected_seen", "toastcore_connected_callers", "toastcore_location_seen", "toastcore_player_seen", "toastcore_disconnected_seen", "toastcore_login_saved", "toastcore_connected_saved", "toastcore_disconnected_saved"})
+            try
+              delete_property(#0, prop);
+            except (ANY)
+            endtry
+          endfor
+        as: wizard
+
+  - name: toastcore_wizard_starts_in_first_room
+    description: The profile logs Wizard in as #2 at #62, The First Room.
+    permission: wizard
+    code: '{player, player.name, player.location, player.location.name}'
+    expect:
+      value:
+        - "#2"
+        - Wizard
+        - "#62"
+        - The First Room
+
+  - name: toastcore_look_describes_first_room
+    description: ToastCore dispatches the ordinary look command in the starting room.
+    permission: wizard
+    steps:
+      - command: look
+        expect:
+          output:
+            exact:
+              - The First Room
+              - This is all there is right now.
+
+  - name: toastcore_say_dispatches_in_first_room
+    description: ToastCore dispatches say and echoes the player's speech.
+    permission: wizard
+    steps:
+      - command: say toastcore-conformance-probe
+        expect:
+          output:
+            exact: 'You say, "toastcore-conformance-probe"'
+
+  - name: toastcore_inventory_dispatches
+    description: ToastCore dispatches inventory for the empty-handed Wizard.
+    permission: wizard
+    steps:
+      - command: inventory
+        expect:
+          output:
+            exact: You are empty-handed.

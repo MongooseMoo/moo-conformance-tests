@@ -22,6 +22,7 @@ tests:
 
   - name: next_recycled_object_invarg_min_int
     permission: wizard
+    skip_if: "not feature.64bit"
     code: "next_recycled_object(toobj(-9223372036854775807 - 1))"
     expect:
       error: E_INVARG

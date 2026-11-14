@@ -466,3 +466,170 @@ tests:
       return length(stats) > 0;
     expect:
       value: 1
+
+  # ===========================================================================
+  # pcre_match() - Match loop iteration limit
+  # Toast counts every pass of its match loop (pcre_moo.cc bf_pcre_match). When
+  # a pass finds a match and the count has reached the limit, it raises
+  # E_MAXREC before adding that match. The limit is
+  # $server_options.pcre_match_max_iterations, read on every call (no
+  # load_server_options() needed), default 1000, at least 100 and at most
+  # 100000000. So limit - 1 matches are returned and the limit-th match raises.
+  # ===========================================================================
+
+  - name: pcre_match_iteration_limit_default_allows_999_matches
+    description: "With no server option, 999 matches are returned"
+    statement: |
+      s = "";
+      for i in [1..999]
+        s = s + "a";
+      endfor
+      return length(pcre_match(s, "a"));
+    expect:
+      value: 999
+
+  - name: pcre_match_iteration_limit_default_raises_on_1000th_match
+    description: "With no server option, the 1000th match raises E_MAXREC with Toast's message"
+    statement: |
+      s = "";
+      for i in [1..1000]
+        s = s + "a";
+      endfor
+      try
+        return length(pcre_match(s, "a"));
+      except e (ANY)
+        return {e[1] == E_MAXREC, e[2]};
+      endtry
+    expect:
+      value: [1, "Too many iterations of matching loop: 1000"]
+
+  - name: pcre_match_iteration_limit_no_match_on_limit_pass_returns
+    description: "The 1000th pass finding no match is not an error: 999 matches then unmatched text"
+    statement: |
+      s = "";
+      for i in [1..999]
+        s = s + "a";
+      endfor
+      return length(pcre_match(s + "bbb", "a"));
+    expect:
+      value: 999
+
+  - name: pcre_match_iteration_limit_not_reached_without_find_all
+    description: "find_all=0 stops after one pass, so 1000 possible matches return one"
+    statement: |
+      s = "";
+      for i in [1..1000]
+        s = s + "a";
+      endfor
+      return length(pcre_match(s, "a", 0, 0));
+    expect:
+      value: 1
+
+  - name: pcre_match_iteration_limit_server_option_raises_limit
+    description: "pcre_match_max_iterations = 1500 allows 1499 matches and raises on the 1500th, with no reload"
+    permission: wizard
+    statement: |
+      add_property($server_options, "pcre_match_max_iterations", 1500, {player, "r"});
+      try
+        s = "";
+        for i in [1..1499]
+          s = s + "a";
+        endfor
+        under = length(pcre_match(s, "a"));
+        try
+          at = length(pcre_match(s + "a", "a"));
+        except e (ANY)
+          at = {e[1] == E_MAXREC, e[2]};
+        endtry
+      finally
+        delete_property($server_options, "pcre_match_max_iterations");
+      endtry
+      return {under, at};
+    expect:
+      value: [1499, [1, "Too many iterations of matching loop: 1500"]]
+
+  - name: pcre_match_iteration_limit_server_option_lowers_limit
+    description: "pcre_match_max_iterations = 150 allows 149 matches and raises on the 150th"
+    permission: wizard
+    statement: |
+      add_property($server_options, "pcre_match_max_iterations", 150, {player, "r"});
+      try
+        s = "";
+        for i in [1..149]
+          s = s + "a";
+        endfor
+        under = length(pcre_match(s, "a"));
+        try
+          at = length(pcre_match(s + "a", "a"));
+        except e (ANY)
+          at = {e[1] == E_MAXREC, e[2]};
+        endtry
+      finally
+        delete_property($server_options, "pcre_match_max_iterations");
+      endtry
+      return {under, at};
+    expect:
+      value: [149, [1, "Too many iterations of matching loop: 150"]]
+
+  - name: pcre_match_iteration_limit_server_option_clamped_to_100
+    description: "pcre_match_max_iterations below 100 acts as 100: 99 matches pass, the 100th raises"
+    permission: wizard
+    statement: |
+      add_property($server_options, "pcre_match_max_iterations", 5, {player, "r"});
+      try
+        s = "";
+        for i in [1..99]
+          s = s + "a";
+        endfor
+        under = length(pcre_match(s, "a"));
+        try
+          at = length(pcre_match(s + "a", "a"));
+        except e (ANY)
+          at = {e[1] == E_MAXREC, e[2]};
+        endtry
+      finally
+        delete_property($server_options, "pcre_match_max_iterations");
+      endtry
+      return {under, at};
+    expect:
+      value: [99, [1, "Too many iterations of matching loop: 100"]]
+
+  - name: pcre_match_iteration_limit_negative_server_option_is_maximum
+    description: "A negative pcre_match_max_iterations is read as unsigned and clamps to the maximum, so 1200 matches pass"
+    permission: wizard
+    statement: |
+      add_property($server_options, "pcre_match_max_iterations", -1, {player, "r"});
+      try
+        s = "";
+        for i in [1..1200]
+          s = s + "a";
+        endfor
+        return length(pcre_match(s, "a"));
+      finally
+        delete_property($server_options, "pcre_match_max_iterations");
+      endtry
+    expect:
+      value: 1200
+
+  - name: pcre_match_iteration_limit_non_integer_server_option_is_default
+    description: "A non-integer pcre_match_max_iterations is ignored: the default 1000 applies"
+    permission: wizard
+    statement: |
+      add_property($server_options, "pcre_match_max_iterations", "150", {player, "r"});
+      try
+        s = "";
+        for i in [1..999]
+          s = s + "a";
+        endfor
+        under = length(pcre_match(s, "a"));
+        try
+          at = length(pcre_match(s + "a", "a"));
+        except e (ANY)
+          at = {e[1] == E_MAXREC, e[2]};
+        endtry
+      finally
+        delete_property($server_options, "pcre_match_max_iterations");
+      endtry
+      return {under, at};
+    expect:
+      value: [999, [1, "Too many iterations of matching loop: 1000"]]

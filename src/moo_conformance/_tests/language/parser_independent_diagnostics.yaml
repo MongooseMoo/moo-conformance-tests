@@ -1,0 +1,172 @@
+name: parser_independent_diagnostics
+description: Independent compilation errors remain ordered and preserve the old verb
+
+tests:
+  - name: loop_exits
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+      set_verb_code(o, "probe", {"return 99;"});
+      errors = set_verb_code(o, "probe", {"break;", "continue;"});
+      result = {errors, o:probe()};
+      recycle(o);
+      return result;
+    expect:
+      value: [["Line 1:  No enclosing loop for `break' statement", "Line 2:  No enclosing loop for `continue' statement"], 99]
+
+  - name: unknown_builtin_calls
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+      set_verb_code(o, "probe", {"return 99;"});
+      errors = set_verb_code(o, "probe", {"diagnostic_missing_one();", "diagnostic_missing_two();"});
+      result = {errors, o:probe()};
+      recycle(o);
+      return result;
+    expect:
+      value: [["Line 1:  Unknown built-in function: diagnostic_missing_one", "Line 2:  Unknown built-in function: diagnostic_missing_two"], 99]
+
+  - name: floating_point_overflows
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+      set_verb_code(o, "probe", {"return 99;"});
+      errors = set_verb_code(o, "probe", {"a = 1e400;", "b = 2e400;"});
+      result = {errors, o:probe()};
+      recycle(o);
+      return result;
+    expect:
+      value: [["Line 1:  Floating-point literal out of range", "Line 2:  Floating-point literal out of range"], 99]
+
+  - name: scattering_targets
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+      set_verb_code(o, "probe", {"return 99;"});
+      errors = set_verb_code(o, "probe", {"{1} = {};", "{@a, @b} = {};", "{} = {};"});
+      result = {errors, o:probe()};
+      recycle(o);
+      return result;
+    expect:
+      value: [["Line 1:  Scattering assignment targets must be simple variables.", "Line 2:  More than one `@' target in scattering assignment.", "Line 3:  Empty list in scattering assignment."], 99]
+
+  - name: index_boundaries
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+      set_verb_code(o, "probe", {"return 99;"});
+      errors = set_verb_code(o, "probe", {"return ^;", "return $;"});
+      result = {errors, o:probe()};
+      recycle(o);
+      return result;
+    expect:
+      value: [["Line 1:  Illegal context for `^' expression.", "Line 2:  Illegal context for `$' expression."], 99]
+
+  - name: ordinary_syntax_is_fail_fast
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+      set_verb_code(o, "probe", {"return 99;"});
+      errors = set_verb_code(o, "probe", {"a = ;", "break;", "continue;"});
+      result = {errors, o:probe()};
+      recycle(o);
+      return result;
+    expect:
+      value: [["Line 1:  syntax error"], 99]
+
+  - name: semantic_before_syntax
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+      set_verb_code(o, "probe", {"return 99;"});
+      errors = set_verb_code(o, "probe", {"break;", "a = ;", "continue;"});
+      result = {errors, o:probe()};
+      recycle(o);
+      return result;
+    expect:
+      value: [["Line 1:  No enclosing loop for `break' statement", "Line 2:  syntax error"], 99]
+
+  - name: named_loop_exits
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+      set_verb_code(o, "probe", {"return 99;"});
+      errors = set_verb_code(o, "probe", {"while (1)", "break missing_one;", "continue missing_two;", "endwhile"});
+      result = {errors, o:probe()};
+      recycle(o);
+      return result;
+    expect:
+      value: [["Line 2:  Invalid loop name in `break' statement: missing_one", "Line 3:  Invalid loop name in `continue' statement: missing_two"], 99]
+
+  - name: illegal_assignment_targets
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+      set_verb_code(o, "probe", {"return 99;"});
+      errors = set_verb_code(o, "probe", {"1 = 2;", "{}[1] = 2;"});
+      result = {errors, o:probe()};
+      recycle(o);
+      return result;
+    expect:
+      value: [["Line 1:  Illegal expression on left side of assignment.", "Line 2:  Illegal expression on left side of assignment."], 99]
+
+  - name: unreachable_except_clauses
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+      set_verb_code(o, "probe", {"return 99;"});
+      errors = set_verb_code(o, "probe", {"try", "except (ANY)", "except (E_TYPE)", "except (ANY)", "except (E_DIV)", "endtry"});
+      result = {errors, o:probe()};
+      recycle(o);
+      return result;
+    expect:
+      value: [["Line 3:  Unreachable EXCEPT clause", "Line 5:  Unreachable EXCEPT clause"], 99]
+
+  - name: nested_unknown_builtin_calls
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+      set_verb_code(o, "probe", {"return 99;"});
+      errors = set_verb_code(o, "probe", {"missing_outer(missing_inner());"});
+      result = {errors, o:probe()};
+      recycle(o);
+      return result;
+    expect:
+      value: [["Line 1:  Unknown built-in function: missing_inner", "Line 1:  Unknown built-in function: missing_outer"], 99]
+
+  - name: incomplete_builtin_arguments_fail_fast
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+      set_verb_code(o, "probe", {"return 99;"});
+      errors = set_verb_code(o, "probe", {"missing_outer(;", "break;"});
+      result = {errors, o:probe()};
+      recycle(o);
+      return result;
+    expect:
+      value: [["Line 1:  syntax error"], 99]
+
+  - name: invalid_scatter_prefix_avoids_cascades
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+      set_verb_code(o, "probe", {"return 99;"});
+      errors = set_verb_code(o, "probe", {"{@a, @b, 1} = {};", "{1, ?a} = {};", "break;"});
+      result = {errors, o:probe()};
+      recycle(o);
+      return result;
+    expect:
+      value: [["Line 1:  Scattering assignment targets must be simple variables.", "Line 2:  Scattering assignment targets must be simple variables.", "Line 3:  No enclosing loop for `break' statement"], 99]

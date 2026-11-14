@@ -1,0 +1,22 @@
+name: verb_code_string_roundtrip
+description: Canonical verb source preserves MOO string bytes when recompiled
+
+tests:
+  - name: control_high_quote_backslash_bytes
+    permission: wizard
+    statement: |
+      value = "tab" + chr(9) + "carriage" + chr(13)
+              + "high" + chr(128) + "quote" + chr(34) + "slash" + chr(92);
+      literal = strsub(strsub(value, "\\", "\\\\"), "\"", "\\\"");
+      source = {"return \"" + literal + "\";"};
+      o = create($nothing);
+      add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+      first_errors = set_verb_code(o, "probe", source);
+      canonical = verb_code(o, "probe");
+      second_errors = set_verb_code(o, "probe", canonical);
+      result = {first_errors, second_errors, o:probe() == value,
+                canonical == verb_code(o, "probe"), canonical == source};
+      recycle(o);
+      return result;
+    expect:
+      value: [[], [], 1, 1, 1]

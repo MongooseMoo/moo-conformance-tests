@@ -1,0 +1,46 @@
+name: dump_database_hook_order
+description: A requested checkpoint starts after the requesting task finishes.
+requires:
+  builtins: [dump_database]
+  config: [managed_server]
+
+tests:
+  - name: checkpoint_started_observes_completed_dump_caller
+    steps:
+      - restart_server: {reset_db: true}
+      - run: |
+          add_property(#0, "order_probe", 0, {player, "rw"});
+          add_property(#0, "seen", {}, {player, "rw"});
+          owner = create($nothing);
+          owner.programmer = 1;
+          try delete_verb(#0, "checkpoint_started"); except (E_VERBNF) endtry
+          add_verb(#0, {owner, "rxd", "checkpoint_started"}, {"this", "none", "this"});
+          set_verb_code(#0, "checkpoint_started", {
+            "#0.seen = {@#0.seen, #0.order_probe};"
+          });
+          return 1;
+        as: wizard
+        expect: {value: 1}
+      - run: |
+          padding = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+          for i in [1..8]
+            padding = padding + padding;
+          endfor
+          #0.order_probe = 1;
+          r = dump_database();
+          for i in [1..2000]
+            strsub(padding, "x", "x");
+          endfor
+          #0.order_probe = 2;
+          return r;
+        as: wizard
+        expect: {value: 0}
+      - run: |
+          for attempt in [1..100]
+            if (length(#0.seen)) break; endif
+            suspend(0.05);
+          endfor
+          return #0.seen;
+        as: wizard
+        expect: {value: [2]}
+      - restart_server: {reset_db: true}

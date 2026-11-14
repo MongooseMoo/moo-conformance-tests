@@ -1,0 +1,460 @@
+name: divergence_parenting_task_lifecycle
+description: >
+  Parenting (chparent/chparents, multiple inheritance, pass) and task
+  (fork/suspend/resume/kill_task) lifecycle semantics. Expectations are stock
+  WSL Toast behavior (2026-08-30 campaign, batch 4).
+
+tests:
+  - name: chparent_to_descendant_is_recmove
+    steps:
+      - run: |
+          a = create($nothing);
+          b = create(a);
+          try
+            return chparent(a, b);
+          finally
+            recycle(b);
+            recycle(a);
+          endtry
+        as: wizard
+        expect:
+          error: E_RECMOVE
+
+  - name: chparents_duplicate_parents_is_invarg
+    steps:
+      - run: |
+          p = create($nothing);
+          o = create($nothing);
+          try
+            return chparents(o, {p, p});
+          finally
+            recycle(o);
+            recycle(p);
+          endtry
+        as: wizard
+        expect:
+          error: E_INVARG
+
+  - name: chparents_empty_list_allowed
+    steps:
+      - run: |
+          o = create(#1);
+          r = chparents(o, {});
+          ps = parents(o);
+          recycle(o);
+          return {r, ps};
+        as: wizard
+        expect:
+          value:
+            - 0
+            - []
+
+  - name: chparents_conflicting_property_definitions_is_invarg
+    description: Two prospective parents defining the same property name cannot be combined.
+    steps:
+      - run: |
+          p1 = create($nothing);
+          p2 = create($nothing);
+          add_property(p1, "shared_prop_zz", 1, {player, "r"});
+          add_property(p2, "shared_prop_zz", 2, {player, "r"});
+          o = create($nothing);
+          try
+            return chparents(o, {p1, p2});
+          finally
+            recycle(o);
+            recycle(p2);
+            recycle(p1);
+          endtry
+        as: wizard
+        expect:
+          error: E_INVARG
+
+  - name: chparent_preserves_clear_property_inheritance
+    steps:
+      - run: |
+          p1 = create($nothing);
+          p2 = create($nothing);
+          add_property(p1, "cp_zz", "from-p1", {player, "r"});
+          add_property(p2, "cp_zz", "from-p2", {player, "r"});
+          o = create(p1);
+          before = o.cp_zz;
+          chparent(o, p2);
+          after = o.cp_zz;
+          recycle(o);
+          recycle(p2);
+          recycle(p1);
+          return {before, after};
+        as: wizard
+        expect:
+          value: ["from-p1", "from-p2"]
+
+  - name: chparent_keeps_explicit_child_value
+    steps:
+      - run: |
+          p1 = create($nothing);
+          p2 = create($nothing);
+          add_property(p1, "cp2_zz", "parent1", {player, "rw"});
+          add_property(p2, "cp2_zz", "parent2", {player, "rw"});
+          o = create(p1);
+          o.cp2_zz = "mine";
+          chparent(o, p2);
+          after = o.cp2_zz;
+          recycle(o);
+          recycle(p2);
+          recycle(p1);
+          return after;
+        as: wizard
+        expect:
+          value: "parent2"
+
+  - name: multi_parent_verb_lookup_prefers_first_parent
+    steps:
+      - run: |
+          p1 = create($nothing);
+          p2 = create($nothing);
+          add_verb(p1, {player, "xd", "which"}, {"this", "none", "this"});
+          set_verb_code(p1, "which", {"return \"p1\";"});
+          add_verb(p2, {player, "xd", "which"}, {"this", "none", "this"});
+          set_verb_code(p2, "which", {"return \"p2\";"});
+          o = create({p1, p2});
+          r = o:which();
+          recycle(o);
+          recycle(p2);
+          recycle(p1);
+          return r;
+        as: wizard
+        expect:
+          value: "p1"
+
+  - name: multi_parent_property_lookup_prefers_first_parent
+    steps:
+      - run: |
+          p1 = create($nothing);
+          p2 = create($nothing);
+          gp = create($nothing);
+          add_property(gp, "mp_zz", "gp", {player, "r"});
+          chparent(p1, gp);
+          add_property(p2, "mp_zz2", "p2", {player, "r"});
+          o = create({p1, p2});
+          r = o.mp_zz;
+          recycle(o);
+          recycle(p2);
+          recycle(p1);
+          recycle(gp);
+          return r;
+        as: wizard
+        expect:
+          value: "gp"
+
+  - name: pass_follows_definer_parents_not_this_parent_list
+    description: >
+      pass() from the child's verb reaches the leftmost parent; pass() from
+      that parent's verb searches the DEFINER's own (empty) parents, so the
+      second parent in the child's parent list is never reached.
+    steps:
+      - run: |
+          p1 = create($nothing);
+          p2 = create($nothing);
+          add_verb(p1, {player, "xd", "chain"}, {"this", "none", "this"});
+          set_verb_code(p1, "chain", {"return {\"p1\", @`pass() ! ANY => {}'};"});
+          add_verb(p2, {player, "xd", "chain"}, {"this", "none", "this"});
+          set_verb_code(p2, "chain", {"return {\"p2\", @`pass() ! ANY => {}'};"});
+          o = create({p1, p2});
+          add_verb(o, {player, "xd", "chain"}, {"this", "none", "this"});
+          set_verb_code(o, "chain", {"return {\"o\", @`pass() ! ANY => {}'};"});
+          r = o:chain();
+          recycle(o);
+          recycle(p2);
+          recycle(p1);
+          return r;
+        as: wizard
+        expect:
+          value: ["o", "p1"]
+
+  - name: pass_with_no_parent_verb_is_verbnf
+    steps:
+      - run: |
+          o = create($nothing);
+          add_verb(o, {player, "xd", "lonely"}, {"this", "none", "this"});
+          set_verb_code(o, "lonely", {"return pass();"});
+          try
+            return o:lonely();
+          finally
+            recycle(o);
+          endtry
+        as: wizard
+        expect:
+          error: E_INVIND
+
+  - name: fork_negative_delay_is_invarg
+    steps:
+      - run: |
+          try
+            fork (-1)
+              x = 1;
+            endfork
+          except e (ANY)
+            return toliteral(e[1]);
+          endtry
+          return 0;
+        as: wizard
+        expect:
+          value: "E_INVARG"
+
+  - name: fork_float_delay_allowed
+    steps:
+      - run: |
+          try
+            add_property(#0, "dtk_log", {}, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          #0.dtk_log = {};
+          fork (0.1)
+            #0.dtk_log = {@#0.dtk_log, "forked"};
+          endfork
+          suspend(1);
+          return #0.dtk_log;
+        as: wizard
+        expect:
+          value: ["forked"]
+    cleanup:
+      - run: |
+          try
+            delete_property(#0, "dtk_log");
+          except (ANY)
+          endtry
+          return 0;
+        as: wizard
+
+  - name: fork_variable_matches_child_task_id
+    steps:
+      - run: |
+          try
+            add_property(#0, "dtk_log", {}, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          #0.dtk_log = {};
+          fork tid (0)
+            #0.dtk_log = {@#0.dtk_log, task_id() == tid};
+          endfork
+          suspend(1);
+          return {typeof(tid) == INT, tid != task_id(), #0.dtk_log};
+        as: wizard
+        expect:
+          value:
+            - 1
+            - 1
+            - [1]
+    cleanup:
+      - run: |
+          try
+            delete_property(#0, "dtk_log");
+          except (ANY)
+          endtry
+          return 0;
+        as: wizard
+
+  - name: kill_task_prevents_queued_fork
+    steps:
+      - run: |
+          try
+            add_property(#0, "dtk_log", {}, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          #0.dtk_log = {};
+          fork tid (1)
+            #0.dtk_log = {@#0.dtk_log, "ran"};
+          endfork
+          r = kill_task(tid);
+          suspend(2);
+          return {r, #0.dtk_log};
+        as: wizard
+        expect:
+          value:
+            - 0
+            - []
+    cleanup:
+      - run: |
+          try
+            delete_property(#0, "dtk_log");
+          except (ANY)
+          endtry
+          return 0;
+        as: wizard
+
+  - name: resume_delivers_value_to_suspend
+    steps:
+      - run: |
+          try
+            add_property(#0, "dtk_log", {}, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          try
+            add_property(#0, "dtk_tid", 0, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          #0.dtk_log = {};
+          fork (0)
+            #0.dtk_tid = task_id();
+            #0.dtk_log = {@#0.dtk_log, suspend()};
+          endfork
+          suspend(1);
+          r = resume(#0.dtk_tid, "delivered");
+          suspend(1);
+          return {r, #0.dtk_log};
+        as: wizard
+        expect:
+          value:
+            - 0
+            - ["delivered"]
+    cleanup:
+      - run: |
+          try
+            delete_property(#0, "dtk_log");
+          except (ANY)
+          endtry
+          try
+            delete_property(#0, "dtk_tid");
+          except (ANY)
+          endtry
+          return 0;
+        as: wizard
+
+  - name: resume_error_value_raises_inside_suspended_task
+    description: resume(id, E_PERM) makes the suspend() call raise E_PERM in the resumed task.
+    steps:
+      - run: |
+          try
+            add_property(#0, "dtk_log", {}, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          try
+            add_property(#0, "dtk_tid", 0, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          #0.dtk_log = {};
+          fork (0)
+            #0.dtk_tid = task_id();
+            try
+              suspend();
+              #0.dtk_log = {@#0.dtk_log, "no-error"};
+            except e (ANY)
+              #0.dtk_log = {@#0.dtk_log, {"caught", toliteral(e[1])}};
+            endtry
+          endfork
+          suspend(1);
+          resume(#0.dtk_tid, E_PERM);
+          suspend(1);
+          return #0.dtk_log;
+        as: wizard
+        expect:
+          value:
+            - ["caught", "E_PERM"]
+    cleanup:
+      - run: |
+          try
+            delete_property(#0, "dtk_log");
+          except (ANY)
+          endtry
+          try
+            delete_property(#0, "dtk_tid");
+          except (ANY)
+          endtry
+          return 0;
+        as: wizard
+
+  - name: resume_non_suspended_task_is_invarg
+    steps:
+      - run: |
+          try
+            add_property(#0, "dtk_tid", 0, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          fork tid (10)
+            x = 1;
+          endfork
+          #0.dtk_tid = tid;
+          try
+            return resume(tid);
+          finally
+            kill_task(tid);
+          endtry
+        as: wizard
+        expect:
+          error: E_INVARG
+    cleanup:
+      - run: |
+          try
+            delete_property(#0, "dtk_tid");
+          except (ANY)
+          endtry
+          return 0;
+        as: wizard
+
+  - name: fork_task_runs_with_forking_permissions
+    steps:
+      - run: |
+          try
+            add_property(#0, "dtk_log", {}, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          #0.dtk_log = {};
+          p = create($nothing);
+          p.programmer = 1;
+          o = create($nothing);
+          o.owner = p;
+          add_verb(o, {p, "xd", "forker"}, {"this", "none", "this"});
+          set_verb_code(o, "forker", {
+            "fork (0)",
+            "#0.dtk_log = {@#0.dtk_log, task_perms()};",
+            "endfork"
+          });
+          o:forker();
+          suspend(1);
+          log = #0.dtk_log;
+          r = {length(log), log[1] == p};
+          recycle(o);
+          recycle(p);
+          return r;
+        as: wizard
+        expect:
+          value: [1, 1]
+    cleanup:
+      - run: |
+          try
+            delete_property(#0, "dtk_log");
+          except (ANY)
+          endtry
+          return 0;
+        as: wizard
+
+  - name: queued_fork_reports_verb_location
+    steps:
+      - run: |
+          try
+            add_property(#0, "dtk_tid", 0, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          fork tid (10)
+            x = 1;
+          endfork
+          #0.dtk_tid = tid;
+          found = {};
+          for t in (queued_tasks())
+            if (t[1] == tid)
+              found = t;
+            endif
+          endfor
+          kill_task(tid);
+          return {found != {}, found != {} && found[5] == player};
+        as: wizard
+        expect:
+          value: [1, 1]
+    cleanup:
+      - run: |
+          try
+            delete_property(#0, "dtk_tid");
+          except (ANY)
+          endtry
+          return 0;
+        as: wizard

@@ -22,6 +22,7 @@ TOAST_EXCEPTION_BASELINE_PATH = (
     Path(__file__).resolve().parents[1] / "ci" / "toast-never-executed.json"
 )
 PINNED_ACTION = re.compile(r"^[^@]+@[0-9a-f]{40}$")
+TOAST_ORACLE_SHA = "eaaa1972f0993a1247f787dbf2dd5a01702ef442"
 
 
 def load_workflow(path=WORKFLOW_PATH):
@@ -218,6 +219,47 @@ def test_candidate_controller_quality_is_explicitly_untrusted_and_nonauthoritati
     assert "candidate-quality" not in workflow["jobs"]["full-suite"]["needs"]
 
 
+def test_candidate_controller_toast_suite_is_untrusted_and_informational() -> None:
+    workflow = load_workflow(TOAST_WORKFLOW_PATH)
+    job = workflow["jobs"]["candidate-full-suite"]
+    assert job["permissions"] == {"contents": "read"}
+    assert job["env"]["UNTRUSTED_CANDIDATE_CODE"] == "true"
+    assert job["env"]["TOAST_ORACLE_SHA"] == TOAST_ORACLE_SHA
+    assert job["needs"] == ["classify-changes"]
+    assert job["if"] == (
+        "needs.classify-changes.result == 'success' && "
+        "needs.classify-changes.outputs.mode == 'controller'"
+    )
+    job_text = str(job)
+    assert "secrets." not in job_text
+    assert "github.token" not in job_text
+    assert "GH_TOKEN" not in job_text
+    assert "trusted-controller" not in job_text
+    assert "candidate-data" not in job_text
+
+    steps = steps_by_name(workflow, "candidate-full-suite")
+    assert all("upload-artifact" not in step.get("uses", "") for step in steps.values())
+    for step in steps.values():
+        if step.get("uses", "").startswith("actions/checkout@"):
+            assert step["with"]["persist-credentials"] == "false"
+    checkout = steps["Check out exact untrusted candidate controller"]["with"]
+    assert checkout["ref"] == (
+        "${{ inputs.conformance_sha || github.event.pull_request.head.sha || github.sha }}"
+    )
+    assert checkout["path"] == "candidate-controller"
+    assert steps["Check out pinned Toast oracle"]["with"]["ref"] == "${{ env.TOAST_ORACLE_SHA }}"
+    packaged = steps["Run every packaged conformance case with the candidate controller"]["run"]
+    assert "uv run --project candidate-controller --frozen pytest" in packaged
+    assert "-m conformance" in packaged
+    assert "--fail-on-unexpected-skip" in packaged
+
+    # Nothing authoritative may wait on or read from the untrusted lane.
+    for name, other in workflow["jobs"].items():
+        if name != "candidate-full-suite":
+            assert "candidate-full-suite" not in other.get("needs", [])
+            assert "needs.candidate-full-suite" not in str(other)
+
+
 def test_push_neutral_runs_toast_after_skipped_candidate_quality_and_green_aggregate() -> None:
     workflow = load_workflow(TOAST_WORKFLOW_PATH)
     candidate_quality = workflow["jobs"]["candidate-quality"]
@@ -399,6 +441,40 @@ def test_toast_candidate_and_oracle_are_fixed_credentialless_siblings() -> None:
     assert not oracle["path"].startswith(candidate["path"] + "/")
 
 
+def test_toast_oracle_revision_is_universal_across_admitted_change_modes() -> None:
+    workflow = load_workflow(TOAST_WORKFLOW_PATH)
+    full_suite = workflow["jobs"]["full-suite"]
+
+    assert full_suite["env"] == {"TOAST_ORACLE_SHA": TOAST_ORACLE_SHA}
+    assert "aecc51e9449c6e7c95272f0f044b5ba38948459e" not in str(workflow)
+    assert "needs.classify-changes.outputs.mode == 'data'" not in str(
+        full_suite["env"]
+    )
+
+
+def test_selected_toast_revision_couples_checkout_admission_and_profile_evidence() -> None:
+    steps = steps_by_name(load_workflow(TOAST_WORKFLOW_PATH), "full-suite")
+    oracle = steps["Check out pinned Toast oracle"]["with"]
+    prepare = steps["Prepare evidence directory"]["run"]
+    provenance = steps["Verify selected Toast oracle revision"]["run"]
+    profile = steps["Record the exact Toast capability profile"]["run"]
+
+    assert oracle["repository"] == "MongooseMoo/toaststunt"
+    assert oracle["ref"] == "${{ env.TOAST_ORACLE_SHA }}"
+    assert '"$TOAST_ORACLE_SHA" >> "${GITHUB_ENV}"' in prepare
+    assert 'toast_revision=%s\\n' in prepare
+    assert prepare.count('"$TOAST_ORACLE_SHA"') == 2
+    assert (
+        'actual_revision=$(git -C "${GITHUB_WORKSPACE}/toast-oracle" rev-parse HEAD)'
+        in provenance
+    )
+    assert 'test "$actual_revision" = "$TOAST_ORACLE_SHA"' in provenance
+    assert 'selected_revision=%s\\nactual_revision=%s\\n' in provenance
+    assert '"$TOAST_ORACLE_SHA" "$actual_revision"' in provenance
+    assert '"implementation_revision": os.environ["TOAST_ORACLE_SHA"]' in profile
+    assert TOAST_ORACLE_SHA not in str(steps)
+
+
 def test_toast_quality_executes_only_trusted_code_against_candidate_data() -> None:
     steps = steps_by_name(load_workflow(TOAST_WORKFLOW_PATH), "trusted-quality")
     assert steps["Install locked trusted controller"]["run"] == (
@@ -557,6 +633,7 @@ def test_toast_python_setup_is_cacheless_in_every_job() -> None:
     for job_name in (
         "classify-changes",
         "candidate-quality",
+        "candidate-full-suite",
         "trusted-quality",
         "full-suite",
         "execution-ledger",

@@ -1,0 +1,150 @@
+name: verb_setters_inherited
+description: Verb-descriptor setters look the verb up on the named object only. A verb the
+  object merely inherits is E_VERBNF, and the ancestor's definition is left unchanged.
+requires:
+  builtins:
+  - add_verb
+  - delete_verb
+  - verb_info
+  - set_verb_info
+  - verb_args
+  - set_verb_args
+  - verb_code
+  - set_verb_code
+  - create
+  - recycle
+tests:
+- name: set_verb_code_inherited_verb_is_verbnf
+  description: set_verb_code on a child for a verb only its parent defines raises E_VERBNF
+    and leaves the parent's code alone
+  permission: wizard
+  steps:
+  - run: p = create($nothing); add_verb(p, {player, "rxd", "inh"}, {"this", "none", "this"}); set_verb_code(p, "inh", {"return 1;"}); return p;
+    capture: parent
+  - run: create({parent})
+    capture: child
+  - run: return set_verb_code({child}, "inh", {"return 9;"});
+    expect:
+      error: E_VERBNF
+  - run: return {verb_code({parent}, "inh"), {child}:inh()};
+    expect:
+      value: [["return 1;"], 1]
+  cleanup:
+  - run: recycle({child}); recycle({parent});
+- name: set_verb_info_inherited_verb_is_verbnf
+  description: set_verb_info on a child for a verb only its parent defines raises E_VERBNF
+    and leaves the parent's info alone
+  permission: wizard
+  steps:
+  - run: p = create($nothing); add_verb(p, {player, "rxd", "inh"}, {"this", "none", "this"}); return p;
+    capture: parent
+  - run: create({parent})
+    capture: child
+  - run: set_verb_info({child}, "inh", {player, "rx", "renamed"})
+    expect:
+      error: E_VERBNF
+  - run: return verb_info({parent}, 1)[2..3];
+    expect:
+      value: ["rxd", "inh"]
+  cleanup:
+  - run: recycle({child}); recycle({parent});
+- name: set_verb_args_inherited_verb_is_verbnf
+  description: set_verb_args on a child for a verb only its parent defines raises E_VERBNF
+    and leaves the parent's args alone
+  permission: wizard
+  steps:
+  - run: p = create($nothing); add_verb(p, {player, "rxd", "inh"}, {"this", "none", "this"}); return p;
+    capture: parent
+  - run: create({parent})
+    capture: child
+  - run: set_verb_args({child}, "inh", {"any", "none", "any"})
+    expect:
+      error: E_VERBNF
+  - run: return verb_args({parent}, "inh");
+    expect:
+      value: ["this", "none", "this"]
+  cleanup:
+  - run: recycle({child}); recycle({parent});
+- name: delete_verb_inherited_verb_is_verbnf
+  description: delete_verb on a child for a verb only its parent defines raises E_VERBNF
+    and leaves the parent's verb in place
+  permission: wizard
+  steps:
+  - run: p = create($nothing); add_verb(p, {player, "rxd", "inh"}, {"this", "none", "this"}); return p;
+    capture: parent
+  - run: create({parent})
+    capture: child
+  - run: delete_verb({child}, "inh")
+    expect:
+      error: E_VERBNF
+  - run: return verbs({parent});
+    expect:
+      value: ["inh"]
+  cleanup:
+  - run: recycle({child}); recycle({parent});
+- name: set_verb_code_inherited_verb_nonowner_is_verbnf_not_perm
+  description: For a programmer who does not own the inherited verb, set_verb_code reports
+    E_VERBNF; the lookup fails before any permission check
+  permission: programmer
+  steps:
+  - run: p = create($nothing); add_verb(p, {player, "rxd", "inh"}, {"this", "none", "this"}); set_verb_code(p, "inh", {"return 1;"}); return p;
+    capture: parent
+    as: wizard
+  - run: create({parent})
+    capture: child
+    as: wizard
+  - run: return set_verb_code({child}, "inh", {"return 9;"});
+    as: programmer
+    expect:
+      error: E_VERBNF
+  - run: return verb_code({parent}, "inh");
+    as: wizard
+    expect:
+      value: ["return 1;"]
+  cleanup:
+  - run: recycle({child}); recycle({parent});
+    as: wizard
+- name: set_verb_info_inherited_verb_nonowner_is_verbnf_not_perm
+  description: For a programmer who does not own the inherited verb, set_verb_info reports
+    E_VERBNF; the lookup fails before any permission check
+  permission: programmer
+  steps:
+  - run: p = create($nothing); add_verb(p, {player, "rxd", "inh"}, {"this", "none", "this"}); return p;
+    capture: parent
+    as: wizard
+  - run: create({parent})
+    capture: child
+    as: wizard
+  - run: set_verb_info({child}, "inh", {player, "rx", "renamed"})
+    as: programmer
+    expect:
+      error: E_VERBNF
+  - run: return verb_info({parent}, 1)[2..3];
+    as: wizard
+    expect:
+      value: ["rxd", "inh"]
+  cleanup:
+  - run: recycle({child}); recycle({parent});
+    as: wizard
+- name: set_verb_args_inherited_verb_nonowner_is_verbnf_not_perm
+  description: For a programmer who does not own the inherited verb, set_verb_args reports
+    E_VERBNF; the lookup fails before any permission check
+  permission: programmer
+  steps:
+  - run: p = create($nothing); add_verb(p, {player, "rxd", "inh"}, {"this", "none", "this"}); return p;
+    capture: parent
+    as: wizard
+  - run: create({parent})
+    capture: child
+    as: wizard
+  - run: set_verb_args({child}, "inh", {"any", "none", "any"})
+    as: programmer
+    expect:
+      error: E_VERBNF
+  - run: return verb_args({parent}, "inh");
+    as: wizard
+    expect:
+      value: ["this", "none", "this"]
+  cleanup:
+  - run: recycle({child}); recycle({parent});
+    as: wizard

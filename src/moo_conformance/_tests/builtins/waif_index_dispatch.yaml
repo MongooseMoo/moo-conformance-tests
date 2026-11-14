@@ -1,0 +1,42 @@
+name: waif_index_dispatch
+description: Setter and compound-read opcodes enforce callable wizard-owned class hooks and preserve setter return semantics.
+requires:
+  builtins: [new_waif]
+tests:
+  - name: waif_{operation}_{restriction}_dispatch_error
+    permission: wizard
+    table:
+      product:
+        - columns: [operation, expression]
+          rows:
+            - [write, 'w["key"] = 42;']
+            - [compound_read, 'w["key"][1] = 42;']
+        - columns: [restriction, installed, permissions, nonwizard, invalid, error]
+          rows:
+            - [missing, 0, rxd, 0, 0, E_TYPE]
+            - [nonexecutable, 1, rd, 0, 0, E_TYPE]
+            - [nonwizard, 1, rxd, 1, 0, E_TYPE]
+            - [invalid, 1, rxd, 0, 1, E_INVIND]
+    statement: |
+      class = create($waif);
+      owner = create($nothing);
+      rec = create($nothing);
+      add_property(rec, "called", 0, {player, "rw"});
+      add_property(#0, "cb_rec", rec, {player, "r"});
+      if ({installed})
+        for name in ({":_index", ":_set_index"})
+          add_verb(class, {player, "{permissions}", name}, {"this", "none", "this"});
+          set_verb_code(class, name, {"#0.cb_rec.called = 1;", "return this;"});
+        endfor
+      endif
+      w = class:new();
+      if ({nonwizard}) class.owner = owner; endif
+      if ({invalid}) recycle(class); endif
+      result = E_NONE;
+      try {expression} except e (ANY) result = e[1]; endtry
+      answer = {result, rec.called};
+      if (valid(class)) recycle(class); endif
+      delete_property(#0, "cb_rec");
+      recycle(rec); recycle(owner);
+      return answer;
+    expect: {value: ["{error}", 0]}

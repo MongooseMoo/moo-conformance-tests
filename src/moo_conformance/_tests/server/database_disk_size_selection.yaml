@@ -1,0 +1,27 @@
+name: database_disk_size_selection
+description: Reports one active database file, ignoring stale checkpoints before the first dump.
+server_db: disk_size_selection.db
+requires:
+  builtins: [db_disk_size, dump_database]
+  config: [managed_server, server_dir, server_db_dir]
+# The managed server command must use {db}.new as its output database.
+tests:
+  - name: chooses_input_before_dump_and_checkpoint_after_dump
+    permission: wizard
+    steps:
+      - write_file:
+          path: disk_size_selection.db.new
+          content: stale
+      - run: return db_disk_size();
+        expect:
+          value: 2035
+      - run: return dump_database();
+        expect:
+          value: 0
+      - wait: 1500
+      - write_file:
+          path: disk_size_selection.db.new
+          content: checkpoint-size-probe
+      - run: return db_disk_size();
+        expect:
+          value: 21

@@ -2,7 +2,7 @@ name: object_hierarchy
 description: Tests for object hierarchy query builtins - players, is_player, set_player_flag, locate_by_name, occupants, locations, recycled_objects, next_recycled_object, owned_objects, object_bytes expansion
 
 requires:
-  builtins: [create, recycle, valid, move, is_player, set_player_flag, players, locate_by_name, occupants, locations, recycled_objects, next_recycled_object, owned_objects, object_bytes, add_property, max_object, toobj]
+  builtins: [create, recreate, recycle, valid, move, is_player, set_player_flag, players, locate_by_name, occupants, locations, recycled_objects, next_recycled_object, owned_objects, object_bytes, add_property, max_object, toobj]
 
 tests:
   # =========================================================================
@@ -558,10 +558,16 @@ tests:
   - name: next_recycled_object_returns_zero_when_none
     permission: wizard
     statement: |
-      result = next_recycled_object(max_object());
-      return result;
+      o = create($nothing);
+      was_max = o == max_object();
+      recycle(o);
+      found = next_recycled_object(o);
+      recreated = recreate(o, $nothing);
+      none = next_recycled_object(o);
+      recycle(recreated);
+      return {was_max, found == o, recreated == o, none};
     expect:
-      value: 0
+      value: [1, 1, 1, 0]
 
   - name: next_recycled_object_invarg_nothing
     permission: wizard

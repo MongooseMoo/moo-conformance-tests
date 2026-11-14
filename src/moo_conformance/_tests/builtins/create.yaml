@@ -465,6 +465,28 @@ tests:
   code: create({$anonymous, $anonymous}, 1)
   expect:
     error: E_INVARG
+- name: anonymous_object_is_not_a_parent
+  description: Parents must be OBJ values (Toast is_obj_or_list_of_objs), so an
+    anonymous object cannot be a parent, whether the new object is anonymous or not.
+  permission: wizard
+  statement: 'a = create($anonymous, 1);
+
+    return {`create(a, 1) ! ANY'', `create(a, 0) ! ANY''};
+
+    '
+  expect:
+    value:
+    - E_TYPE
+    - E_TYPE
+- name: anonymous_object_in_parent_list_is_not_a_parent
+  permission: wizard
+  statement: 'a = create($anonymous, 1);
+
+    return create({a}, 1);
+
+    '
+  expect:
+    error: E_TYPE
 - name: parents_cannot_have_same_property_name
   permission: wizard
   statement: 'a = create($nothing);

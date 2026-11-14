@@ -1,0 +1,59 @@
+name: output_capacity
+description: Cached output capacity follows server-option reloads and canonicalization.
+
+tests:
+  - name: output_capacity_reload_applies_in_same_task
+    permission: wizard
+    statement: |
+      had = 1;
+      try original = $server_options.max_queued_output;
+      except (E_PROPNF) had = 0;
+      endtry
+      try
+        if (had)
+          $server_options.max_queued_output = 4096;
+        else
+          add_property($server_options, "max_queued_output", 4096, {player, "r"});
+        endif
+        load_server_options();
+        observed = buffered_output_length();
+      finally
+        if (had)
+          $server_options.max_queued_output = original;
+        else
+          delete_property($server_options, "max_queued_output");
+        endif
+        load_server_options();
+      endtry
+      return observed;
+    expect:
+      value: 4096
+
+  - name: output_capacity_canonicalizes_only_small_positive_values
+    permission: wizard
+    statement: |
+      had = 1;
+      try original = $server_options.max_queued_output;
+      except (E_PROPNF) had = 0;
+      endtry
+      observed = {};
+      try
+        if (!had)
+          add_property($server_options, "max_queued_output", 65536, {player, "r"});
+        endif
+        for value in ({1, 0, -1, "invalid"})
+          $server_options.max_queued_output = value;
+          load_server_options();
+          observed = {@observed, buffered_output_length()};
+        endfor
+      finally
+        if (had)
+          $server_options.max_queued_output = original;
+        else
+          delete_property($server_options, "max_queued_output");
+        endif
+        load_server_options();
+      endtry
+      return observed;
+    expect:
+      value: [2048, 0, -1, 65536]

@@ -38,6 +38,8 @@ def _split_suite_selectors(args: list[str]) -> tuple[list[str], list[str]]:
 
 
 def _normalize_suite_selector(arg: str) -> str | None:
+    if arg.startswith("-"):
+        return None
     normalized = arg.replace("\\", "/")
     parts = PurePosixPath(normalized).parts
     if "_tests" not in parts:

@@ -1,0 +1,194 @@
+name: server_options_same_task
+description: >
+  load_server_options() takes effect for the task that calls it, before that
+  task finishes. Toast refreshes its option cache in place (server.cc
+  load_server_options), string concatenation checks the cached
+  max_string_concat on every concat (execute.cc OP_ADD), and yin() validates
+  its minimums against the live fg_ticks (bf_yield_if_needed). The exception
+  is max_stack_depth: Toast samples it when a task starts
+  (check_activ_stack_size(current_max_stack_size()) in the task-start paths)
+  and checks every call against that sample, so a raise waits for the next
+  task. Every row changes an option, reloads, observes the result, and
+  restores the database.
+
+requires:
+  builtins:
+    - load_server_options
+    - add_property
+    - delete_property
+    - add_verb
+    - set_verb_code
+    - create
+    - recycle
+    - yin
+
+tests:
+  - name: max_string_concat_reload_applies_in_same_task
+    description: Lowering max_string_concat and reloading makes the next concat in the same task raise E_QUOTA.
+    permission: wizard
+    statement: |
+      saved = {};
+      for name in ({"max_concat_catchable", "max_string_concat"})
+        try
+          saved = {@saved, {name, 1, $server_options.(name)}};
+        except (E_PROPNF)
+          saved = {@saved, {name, 0, 0}};
+        endtry
+      endfor
+      outcome = E_NONE;
+      try
+        for entry in (saved)
+          if (entry[2])
+            $server_options.(entry[1]) = 1021;
+          else
+            add_property($server_options, entry[1], 1021, {player, "r"});
+          endif
+        endfor
+        $server_options.max_concat_catchable = 1;
+        load_server_options();
+        try
+          s = "";
+          for i in [1..60]
+            s = s + "xxxxxxxxxxxxxxxxxxxx";
+          endfor
+          outcome = length(s);
+        except error (E_QUOTA)
+          outcome = error[1];
+        endtry
+      finally
+        for entry in (saved)
+          if (entry[2])
+            $server_options.(entry[1]) = entry[3];
+          else
+            delete_property($server_options, entry[1]);
+          endif
+        endfor
+        load_server_options();
+      endtry
+      return outcome;
+    expect:
+      value: E_QUOTA
+
+  - name: max_stack_depth_raise_waits_for_next_task
+    description: Raising max_stack_depth and reloading does not deepen the running task's stack; recursing past 50 frames still raises E_MAXREC.
+    permission: wizard
+    statement: |
+      had = 1;
+      try
+        original = $server_options.max_stack_depth;
+      except (E_PROPNF)
+        had = 0;
+      endtry
+      outcome = E_NONE;
+      try
+        if (had)
+          $server_options.max_stack_depth = 200;
+        else
+          add_property($server_options, "max_stack_depth", 200, {player, "r"});
+        endif
+        load_server_options();
+        o = create($nothing);
+        add_verb(o, {player, "rxd", "deep"}, {"this", "none", "this"});
+        set_verb_code(o, "deep", {"if (args[1] <= 0)", "return 0;", "endif", "return 1 + this:deep(args[1] - 1);"});
+        try
+          outcome = o:deep(120);
+        except error (E_MAXREC)
+          outcome = error[1];
+        endtry
+        recycle(o);
+      finally
+        if (had)
+          $server_options.max_stack_depth = original;
+        else
+          delete_property($server_options, "max_stack_depth");
+        endif
+        load_server_options();
+      endtry
+      return outcome;
+    expect:
+      value: E_MAXREC
+
+  - name: max_stack_depth_raise_applies_to_next_task
+    description: A task started after max_stack_depth was raised and reloaded can recurse past the default 50 frames.
+    steps:
+      - run: |
+          try
+            add_property(#0, "sost_saved_max_stack_depth", {0, 0}, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          try
+            #0.sost_saved_max_stack_depth = {1, $server_options.max_stack_depth};
+            $server_options.max_stack_depth = 200;
+          except (E_PROPNF)
+            #0.sost_saved_max_stack_depth = {0, 0};
+            add_property($server_options, "max_stack_depth", 200, {player, "r"});
+          endtry
+          load_server_options();
+          return 1;
+        as: wizard
+      - run: |
+          o = create($nothing);
+          add_verb(o, {player, "rxd", "deep"}, {"this", "none", "this"});
+          set_verb_code(o, "deep", {"if (args[1] <= 0)", "return 0;", "endif", "return 1 + this:deep(args[1] - 1);"});
+          try
+            outcome = o:deep(120);
+          except error (E_MAXREC)
+            outcome = error[1];
+          endtry
+          recycle(o);
+          return outcome;
+        as: wizard
+        expect:
+          value: 120
+    cleanup:
+      - run: |
+          try
+            saved = #0.sost_saved_max_stack_depth;
+            if (saved[1])
+              $server_options.max_stack_depth = saved[2];
+            else
+              delete_property($server_options, "max_stack_depth");
+            endif
+          except (ANY)
+          endtry
+          try
+            delete_property(#0, "sost_saved_max_stack_depth");
+          except (ANY)
+          endtry
+          load_server_options();
+        as: wizard
+
+  - name: yin_reads_raised_fg_ticks_in_same_task
+    description: After raising fg_ticks and reloading, yin() in the same task accepts a minimum that the default fg_ticks (60000) would reject.
+    permission: wizard
+    statement: |
+      had = 1;
+      try
+        original = $server_options.fg_ticks;
+      except (E_PROPNF)
+        had = 0;
+      endtry
+      outcome = E_NONE;
+      try
+        if (had)
+          $server_options.fg_ticks = 100000;
+        else
+          add_property($server_options, "fg_ticks", 100000, {player, "r"});
+        endif
+        load_server_options();
+        try
+          outcome = yin(0, 60000);
+        except error (E_INVARG)
+          outcome = error[1];
+        endtry
+      finally
+        if (had)
+          $server_options.fg_ticks = original;
+        else
+          delete_property($server_options, "fg_ticks");
+        endif
+        load_server_options();
+      endtry
+      return outcome;
+    expect:
+      value: 0

@@ -312,10 +312,10 @@ tests:
       - send:
           connection: worker
           text: "; return {obj}:baz(2.5);"
-      - wait: 7000
       - run: "return {obj}.task_local_done;"
         expect:
           value: 1
+        poll_ms: 20000
       - run: "return {obj}.task_local_result;"
         expect:
           value: 97.65625

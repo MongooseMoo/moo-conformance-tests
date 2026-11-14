@@ -1,0 +1,52 @@
+name: error_handler_outcomes
+description: Handler completion and truth control printing the original traceback without recursive dispatch.
+requires:
+  config: [managed_server]
+tests:
+  - name: uncaught_handler_{outcome}_fallback_and_context
+    table:
+      columns: [outcome, installed, permissions, tail, output_pattern, calls]
+      rows:
+        - [false, 1, rxd, "return 0;", '.*original-callback-error.*\(End of traceback\).*', 1]
+        - [true, 1, rxd, "return 1;", '^$', 1]
+        - [abort, 1, rxd, 'raise(E_PERM, \"handler-error\");', '.*handler-error.*\(End of traceback\).*original-callback-error.*\(End of traceback\).*', 1]
+        - [blocked, 1, rxd, "suspend(0); return 0;", '^$', 1]
+        - [absent, 0, rxd, "return 1;", '.*original-callback-error.*\(End of traceback\).*', 0]
+        - [nonexecutable, 1, rd, "return 1;", '.*original-callback-error.*\(End of traceback\).*', 0]
+    steps:
+      - restart_server: {reset_db: true}
+      - run: |
+          owner = create($nothing); owner.programmer = 1;
+          add_property(#0, "cb_owner", owner, {player, "r"});
+          add_property(#0, "cb_events", {}, {player, "rw"});
+          try delete_verb(#0, "handle_uncaught_error"); except (E_VERBNF) endtry
+          if ({installed})
+            add_verb(#0, {owner, "{permissions}", "handle_uncaught_error"}, {"this", "none", "this"});
+            set_verb_code(#0, "handle_uncaught_error", {
+              "#0.cb_events = {@#0.cb_events, {verb, this, caller, player, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()}};",
+              "{tail}"
+            });
+          endif
+          add_verb(player, {player, "rxd", "cb_fail"}, {"none", "none", "none"});
+          return set_verb_code(player, "cb_fail", {"raise(E_INVARG, \"original-callback-error\", 37);"});
+        as: wizard
+        expect: {value: []}
+      - command: cb_fail
+        expect:
+          output:
+            match: '(?s)^{output_pattern}'
+      - run: |
+          events = #0.cb_events;
+          if (!{calls}) return events == {}; endif
+          e = events[1]; p = e[5];
+          return length(events) == 1 &&
+            {e[1..4], e[6..14]} == {
+              {"handle_uncaught_error", #0, #-1, player},
+              {"", #-1, "", "", #-1, "", #0.cb_owner, #-1, {}}
+            } &&
+            p[1..3] == {E_INVARG, "original-callback-error", 37} &&
+            p[4][1][1..5] == {player, "cb_fail", player, player, player} &&
+            length(p[5]) > 0;
+        as: wizard
+        expect: {value: 1}
+      - restart_server: {reset_db: true}

@@ -1,0 +1,218 @@
+name: move_hooks_suspend_toast_oracle
+description: >
+  Toast-oracle coverage for suspend() inside move() lifecycle verbs. ToastStunt
+  runs accept/exitfunc/enterfunc as continuations of the calling task
+  (objects.cc do_move, case 3/4), so a hook may suspend and resume, and
+  bf_move completes after the hook returns.
+
+requires:
+  builtins: [create, recycle, move, add_property, add_verb, set_verb_code, suspend]
+
+tests:
+  - name: move_enterfunc_suspend_then_records_property
+    permission: wizard
+    setup:
+      code: |
+        dest = create($nothing);
+        what = create($nothing);
+        add_property(what, "move_trace", {}, {player, "rw"});
+        add_verb(dest, {player, "rxd", "enterfunc"}, {"this", "none", "this"});
+        set_verb_code(dest, "enterfunc", {
+          "suspend(0);",
+          "args[1].move_trace = {@args[1].move_trace, \"enter-resumed\"};"
+        });
+    statement: |
+      move(what, dest);
+      return {what.move_trace, what.location == dest};
+    expect:
+      value: [[enter-resumed], 1]
+    teardown:
+      code: |
+        recycle(what);
+        recycle(dest);
+
+  - name: move_exitfunc_suspend_then_records_property
+    permission: wizard
+    setup:
+      code: |
+        old = create($nothing);
+        dest = create($nothing);
+        what = create($nothing);
+        move(what, old);
+        add_property(what, "move_trace", {}, {player, "rw"});
+        add_verb(old, {player, "rxd", "exitfunc"}, {"this", "none", "this"});
+        set_verb_code(old, "exitfunc", {
+          "suspend(0);",
+          "args[1].move_trace = {@args[1].move_trace, \"exit-resumed\"};"
+        });
+        add_verb(dest, {player, "rxd", "enterfunc"}, {"this", "none", "this"});
+        set_verb_code(dest, "enterfunc", {
+          "args[1].move_trace = {@args[1].move_trace, \"enter\"};"
+        });
+    statement: |
+      move(what, dest);
+      return {what.move_trace, what.location == dest};
+    expect:
+      value: [[exit-resumed, enter], 1]
+    teardown:
+      code: |
+        recycle(what);
+        recycle(old);
+        recycle(dest);
+
+  - name: move_player_enterfunc_suspend_completes
+    permission: wizard
+    setup:
+      code: |
+        dest = create($nothing);
+        add_property(dest, "move_trace", {}, {player, "rw"});
+        add_verb(dest, {player, "rxd", "enterfunc"}, {"this", "none", "this"});
+        set_verb_code(dest, "enterfunc", {
+          "suspend(0);",
+          "this.move_trace = {@this.move_trace, {\"enter-resumed\", args[1] == player, player.location == this}};"
+        });
+    statement: |
+      home = player.location;
+      move(player, dest);
+      after = player.location == dest;
+      move(player, home);
+      return {dest.move_trace, after, player.location == home};
+    expect:
+      value: [[[enter-resumed, 1, 1]], 1, 1]
+    teardown:
+      code: |
+        recycle(dest);
+
+  - name: move_enterfunc_nested_verb_suspends_in_contents_loop
+    description: >
+      Mongoose room shape: enterfunc delegates to a helper that walks
+      this.contents, calls each occupant under an error-catching expression,
+      and suspend(0)s once per iteration.
+    permission: wizard
+    setup:
+      code: |
+        dest = create($nothing);
+        occupant = create($nothing);
+        what = create($nothing);
+        move(occupant, dest);
+        add_property(what, "move_trace", {}, {player, "rw"});
+        add_verb(dest, {player, "rxd", "enterfunc"}, {"this", "none", "this"});
+        set_verb_code(dest, "enterfunc", {"this:loc_enter(args[1], this);"});
+        add_verb(dest, {player, "rxd", "loc_enter loc_exit"}, {"this", "none", "this"});
+        set_verb_code(dest, "loc_enter", {
+          "{what, where, ?level = 0} = args;",
+          "for c in (this.contents)",
+          "`c:(verb)(what, where, level + 1) ! ANY => 0';",
+          "suspend(0);",
+          "what.move_trace = {@what.move_trace, \"resumed\"};",
+          "endfor",
+          "what.move_trace = {@what.move_trace, {\"done\", what.location == this}};"
+        });
+    statement: |
+      move(what, dest);
+      return {length(what.move_trace), what.move_trace[$], what.location == dest};
+    expect:
+      value: [3, [done, 1], 1]
+    teardown:
+      code: |
+        recycle(what);
+        recycle(occupant);
+        recycle(dest);
+
+  - name: do_command_dispatch_completes_after_enterfunc_suspend
+    description: >
+      Mongoose command shape: #0:do_command dispatches the command itself
+      (tasks.cc do_command_task runs the hook as a task; a blocked outcome
+      counts as handled). The dispatched verb move()s the player into a room
+      whose enterfunc suspends; the hook resumes, the move completes, the
+      verb finishes, and the server does not re-dispatch the command.
+    steps:
+      - run: |
+          try
+            add_property(#0, "dcs_trace", {}, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          try
+            add_property(#0, "dcs_room", #-1, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          try
+            add_property(#0, "dcs_home", #-1, {#0, "rw"});
+          except (E_INVARG)
+          endtry
+          #0.dcs_trace = {};
+          #0.dcs_home = player.location;
+          room = create($nothing);
+          #0.dcs_room = room;
+          try
+            add_verb(#0, {#0, "rxd", "do_command"}, {"this", "none", "this"});
+          except (E_INVARG)
+          endtry
+          set_verb_code(#0, "do_command", {
+            "if (args == {\"dcshome\"})",
+            "  return player:dcs_home();",
+            "endif",
+            "return 0;"
+          });
+          add_verb(player, {player, "xd", "dcs_home"}, {"this", "none", "this"});
+          set_verb_code(player, "dcs_home", {
+            "#0.dcs_trace = {@#0.dcs_trace, \"home-start\"};",
+            "move(player, #0.dcs_room);",
+            "#0.dcs_trace = {@#0.dcs_trace, {\"home-done\", player.location == #0.dcs_room}};",
+            "move(player, #0.dcs_home);",
+            "return 1;"
+          });
+          add_verb(room, {player, "xd", "enterfunc"}, {"this", "none", "this"});
+          set_verb_code(room, "enterfunc", {
+            "#0.dcs_trace = {@#0.dcs_trace, \"enter-before\"};",
+            "suspend(0);",
+            "#0.dcs_trace = {@#0.dcs_trace, \"enter-after\"};"
+          });
+          add_verb(player, {player, "xd", "huh"}, {"any", "any", "any"});
+          set_verb_code(player, "huh", {
+            "#0.dcs_trace = {@#0.dcs_trace, {\"huh\", argstr}};"
+          });
+          return 1;
+        as: wizard
+      - command: 'dcshome'
+      - wait: 500
+      - run: |
+          trace = #0.dcs_trace;
+          home = player.location == #0.dcs_home;
+          move(player, #0.dcs_home);
+          return {trace, home};
+        as: wizard
+        expect:
+          value:
+            - ["home-start", "enter-before", "enter-after", ["home-done", 1]]
+            - 1
+    cleanup:
+      - run: |
+          try
+            delete_verb(#0, "do_command");
+          except (ANY)
+          endtry
+          try
+            delete_verb(player, "dcs_home");
+          except (ANY)
+          endtry
+          try
+            delete_verb(player, "huh");
+          except (ANY)
+          endtry
+          try
+            move(player, #0.dcs_home);
+          except (ANY)
+          endtry
+          try
+            recycle(#0.dcs_room);
+          except (ANY)
+          endtry
+          for p in ({"dcs_trace", "dcs_room", "dcs_home"})
+            try
+              delete_property(#0, p);
+            except (ANY)
+            endtry
+          endfor
+          return 0;
+        as: wizard

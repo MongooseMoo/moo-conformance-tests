@@ -1,0 +1,131 @@
+name: parser_comment_contract
+description: Block comment and division syntax with atomic failed verb compilation
+
+tests:
+  - name: leading_trailing_block
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+      set_verb_code(o, "probe", {"return 99;"});
+      errors = set_verb_code(o, "probe", {"/* one */ return 7; /* last */"});
+      result = {length(errors) == 0, o:probe()};
+      recycle(o);
+      return result;
+    expect:
+      value: [1, 7]
+
+  - name: consecutive_blocks
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+      set_verb_code(o, "probe", {"return 99;"});
+      errors = set_verb_code(o, "probe", {"/* one */", " /* two */ /* three */", "return 7;"});
+      result = {length(errors) == 0, o:probe()};
+      recycle(o);
+      return result;
+    expect:
+      value: [1, 7]
+
+  - name: inline_division
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+      set_verb_code(o, "probe", {"return 99;"});
+      errors = set_verb_code(o, "probe", {"return 18 /* spacer */ / /* spacer */ 3;"});
+      result = {length(errors) == 0, o:probe()};
+      recycle(o);
+      return result;
+    expect:
+      value: [1, 6]
+
+  - name: nested_looking_first_close
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+      set_verb_code(o, "probe", {"return 99;"});
+      errors = set_verb_code(o, "probe", {"/* outer /* inner */ return 7;"});
+      result = {length(errors) == 0, o:probe()};
+      recycle(o);
+      return result;
+    expect:
+      value: [1, 7]
+
+  - name: quoted_comment_markers
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+      set_verb_code(o, "probe", {"return 99;"});
+      errors = set_verb_code(o, "probe", {"return \"/* text */ // text\";"});
+      result = {length(errors) == 0, o:probe()};
+      recycle(o);
+      return result;
+    expect:
+      value: [1, "/* text */ // text"]
+
+  - name: reject_line_comment
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+      set_verb_code(o, "probe", {"return 99;"});
+      errors = set_verb_code(o, "probe", {"// one", "return 7;"});
+      result = {length(errors) > 0, o:probe()};
+      recycle(o);
+      return result;
+    expect:
+      value: [1, 99]
+
+  - name: reject_consecutive_line_comments
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+      set_verb_code(o, "probe", {"return 99;"});
+      errors = set_verb_code(o, "probe", {"// one", "// two", "return 7;"});
+      result = {length(errors) > 0, o:probe()};
+      recycle(o);
+      return result;
+    expect:
+      value: [1, 99]
+
+  - name: reject_unterminated_block
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+      set_verb_code(o, "probe", {"return 99;"});
+      errors = set_verb_code(o, "probe", {"return 7; /* unfinished"});
+      result = {length(errors) > 0, o:probe()};
+      recycle(o);
+      return result;
+    expect:
+      value: [1, 99]
+
+  - name: reject_nested_block_remainder
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+      set_verb_code(o, "probe", {"return 99;"});
+      errors = set_verb_code(o, "probe", {"/* outer /* inner */ outer */ return 7;"});
+      result = {length(errors) > 0, o:probe()};
+      recycle(o);
+      return result;
+    expect:
+      value: [1, 99]
+
+  - name: multiline_unterminated_diagnostics
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+      result = set_verb_code(o, "probe", {"return 7;", "/*", "unfinished"});
+      recycle(o);
+      return result;
+    expect:
+      value: ["Line 2:  End of program while in a comment"]

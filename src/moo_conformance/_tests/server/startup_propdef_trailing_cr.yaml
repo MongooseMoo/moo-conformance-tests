@@ -1,0 +1,45 @@
+name: startup_propdef_trailing_cr
+description: >
+  A property definition name is read from the database by removing only the
+  terminating newline, so a name line "tail\r\n" loads as the five-character
+  name "tail" followed by a carriage return. A checkpoint writes the name back
+  with its carriage return and the restarted server reads the same name again.
+  MOO string literals cannot spell a carriage return, so the name is shown with
+  encode_binary and used through properties().
+server_db: propdef_trailing_cr.db
+requires:
+  builtins:
+    - dump_database
+    - encode_binary
+  config: [managed_server, server_dir, server_db_dir]
+tests:
+  - name: name_keeps_trailing_carriage_return_across_checkpoints
+    permission: wizard
+    steps:
+      - run: |
+          name = properties(#2)[1];
+          return {length(properties(#2)), encode_binary(name), length(name), #2.(name)};
+        expect:
+          value: [1, "tail~0D", 5, "kept"]
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+          wait_ms: 300
+      - run: |
+          name = properties(#2)[1];
+          return {length(properties(#2)), encode_binary(name), length(name), #2.(name)};
+        expect:
+          value: [1, "tail~0D", 5, "kept"]
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+          wait_ms: 300
+      - run: |
+          name = properties(#2)[1];
+          return {length(properties(#2)), encode_binary(name), length(name), #2.(name)};
+        expect:
+          value: [1, "tail~0D", 5, "kept"]

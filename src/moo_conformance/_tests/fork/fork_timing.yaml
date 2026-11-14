@@ -25,10 +25,10 @@ tests:
           return "forked";
         expect:
           value: "forked"
-      - wait: 500
       - run: "return #0.__ft_zero;"
         expect:
           value: 42
+        poll_ms: 10000
     cleanup:
       - run: "delete_property(#0, \"__ft_zero\");"
         as: wizard
@@ -115,3 +115,245 @@ tests:
       return length(queued_tasks()) > 0;
     expect:
       value: 1
+
+  - name: fork_ten_billion_second_int_delay_starts_in_far_future
+    description: |
+      A fork delayed by 10000000000 seconds is scheduled that many seconds
+      after now: queued_tasks() reports its start time at least
+      time() + 9999999990.
+    permission: wizard
+    statement: |
+      fork t (10000000000)
+        1;
+      endfork
+      now = time();
+      start = 0;
+      for entry in (queued_tasks())
+        if (entry[1] == t)
+          start = entry[2];
+        endif
+      endfor
+      kill_task(t);
+      return start - now >= 9999999990;
+    expect:
+      value: 1
+
+  - name: fork_ten_billion_second_float_delay_starts_in_far_future
+    description: |
+      A fork delayed by 1.0e10 seconds is scheduled that many seconds after
+      now: queued_tasks() reports its start time at least
+      time() + 9999999990.
+    permission: wizard
+    statement: |
+      fork t (1.0e10)
+        1;
+      endfork
+      now = time();
+      start = 0;
+      for entry in (queued_tasks())
+        if (entry[1] == t)
+          start = entry[2];
+        endif
+      endfor
+      kill_task(t);
+      return start - now >= 9999999990;
+    expect:
+      value: 1
+
+  - name: suspend_ten_billion_seconds_resumes_in_far_future
+    description: |
+      A task suspended for 10000000000 seconds is scheduled to resume that
+      many seconds after now: queued_tasks() reports its start time at least
+      time() + 9999999990. The zero-delay child runs to its suspend() while
+      the parent is in suspend(0).
+    permission: wizard
+    statement: |
+      fork child (0)
+        suspend(10000000000);
+      endfork
+      suspend(0);
+      now = time();
+      start = 0;
+      for entry in (queued_tasks())
+        if (entry[1] == child)
+          start = entry[2];
+        endif
+      endfor
+      kill_task(child);
+      return start - now >= 9999999990;
+    expect:
+      value: 1
+
+  - name: suspend_ten_billion_seconds_in_verb_resumes_in_far_future
+    description: |
+      A task suspended for 10000000000 seconds inside a verb is scheduled to
+      resume that many seconds after now: queued_tasks() reports its start
+      time at least time() + 9999999990. The fork is made inside a verb, as
+      in ordinary MOO code.
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "park"}, {"this", "none", "this"});
+      set_verb_code(o, "park", {"suspend(10000000000);"});
+      add_verb(o, {player, "xd", "run"}, {"this", "none", "this"});
+      set_verb_code(o, "run", {"fork child (0)", "  this:park();", "endfork", "suspend(0);", "now = time();", "start = 0;", "for entry in (queued_tasks())", "  if (entry[1] == child)", "    start = entry[2];", "  endif", "endfor", "kill_task(child);", "return start - now >= 9999999990;"});
+      result = o:run();
+      recycle(o);
+      return result;
+    expect:
+      value: 1
+
+  - name: fork_zero_delay_child_observes_rest_of_forking_slice
+    description: |
+      A zero-delay child starts only after the slice that forked it has ended,
+      so it observes writes the parent made after the fork statement. The
+      forking verb is owned by a different programmer than the connected
+      player, so the child runs under a different principal than its parent.
+    permission: wizard
+    steps:
+      - run: |
+          o = create($nothing);
+          add_property(o, "mark", 0, {o, "rw"});
+          add_property(o, "saw", -1, {o, "rw"});
+          add_verb(o, {o, "xd", "spawn"}, {"this", "none", "this"});
+          set_verb_code(o, "spawn", {"fork (0)", "  this.saw = this.mark;", "endfork", "big = \"abcdefghij\";", "for i in [1..14]", "  big = big + big;", "endfor", "for i in [1..200]", "  string_hash(big);", "endfor", "this.mark = 1;"});
+          return o;
+        capture: obj
+      - run: |
+          {obj}:spawn();
+          return "spawned";
+        expect:
+          value: "spawned"
+      - run: "return {obj}.saw;"
+        expect:
+          value: 1
+        poll_ms: 10000
+    cleanup:
+      - run: "recycle({obj});"
+        as: wizard
+
+  - name: suspend_zero_read_only_parent_observes_ready_child
+    description: |
+      A task that forks a zero-delay child and then calls suspend(0) resumes
+      only after the child's slice has finished, even when the resumed task
+      only reads. The child becomes ready before the parent's suspension, so
+      it runs first and the parent observes its write.
+    permission: wizard
+    steps:
+      - run: |
+          add_property(#0, "__ft_ready_child", 0, {#2, "r"});
+          return "setup_done";
+      - run: |
+          fork (0)
+            for i in [1..3000]
+            endfor
+            #0.__ft_ready_child = 1;
+          endfork
+          suspend(0);
+          return #0.__ft_ready_child;
+        expect:
+          value: 1
+    cleanup:
+      - run: "delete_property(#0, \"__ft_ready_child\");"
+        as: wizard
+
+  - name: suspend_zero_queued_tasks_lists_child_suspended_first
+    description: |
+      After suspend(0), queued_tasks() lists a zero-delay child that ran to
+      its own suspend() before the parent resumed. A child that is still
+      running would be absent from queued_tasks(). The fork is made inside a
+      verb, as in ordinary MOO code.
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "park"}, {"this", "none", "this"});
+      set_verb_code(o, "park", {"for i in [1..3000]", "endfor", "suspend();"});
+      add_verb(o, {player, "xd", "run"}, {"this", "none", "this"});
+      set_verb_code(o, "run", {"fork child (0)", "  this:park();", "endfork", "suspend(0);", "found = 0;", "for entry in (queued_tasks())", "  if (entry[1] == child)", "    found = 1;", "  endif", "endfor", "kill_task(child);", "return found;"});
+      result = o:run();
+      recycle(o);
+      return result;
+    expect:
+      value: 1
+
+  - name: suspend_zero_after_resume_observes_resumed_slice
+    description: |
+      resume() readies the target at once, so a task that resumes another and
+      then calls suspend(0) resumes only after the target's next slice has
+      finished.
+    permission: wizard
+    steps:
+      - run: |
+          add_property(#0, "__ft_resumed_child", 0, {#2, "r"});
+          return "setup_done";
+      - run: |
+          fork child (0)
+            suspend();
+            for i in [1..3000]
+            endfor
+            #0.__ft_resumed_child = 1;
+          endfork
+          suspend(0);
+          resume(child);
+          suspend(0);
+          return #0.__ft_resumed_child;
+        expect:
+          value: 1
+    cleanup:
+      - run: "delete_property(#0, \"__ft_resumed_child\");"
+        as: wizard
+
+  - name: resume_reaches_task_waiting_in_suspend_zero
+    description: |
+      A task in suspend(0) stays suspended until it runs again
+      (find_suspended_task searches waiting_tasks). A zero-delay child, which
+      runs first, can resume it, and suspend(0) returns the resume value.
+    permission: wizard
+    steps:
+      - run: |
+          add_property(#0, "__ft_resume_zero", -1, {#2, "r"});
+          return "setup_done";
+      - run: |
+          me = task_id();
+          fork (0)
+            #0.__ft_resume_zero = `resume(me, 42) ! ANY';
+          endfork
+          v = suspend(0);
+          return {#0.__ft_resume_zero, v};
+        expect:
+          value: [0, 42]
+    cleanup:
+      - run: "delete_property(#0, \"__ft_resume_zero\");"
+        as: wizard
+
+  - name: resume_reaches_task_whose_suspension_expired_unrun
+    description: |
+      A timed suspension that expires while another task is running stays
+      suspended until the task runs again (find_suspended_task also searches
+      the background queues the expired task moves to), so the running task
+      can still resume it and suspend() returns the resume value.
+    permission: wizard
+    steps:
+      - run: |
+          add_property(#0, "__ft_resume_expired", -1, {#2, "r"});
+          return "setup_done";
+      - run: |
+          me = task_id();
+          fork (0)
+            s = "x";
+            for i in [1..24]
+              s = s + s;
+            endfor
+            start = ftime();
+            while (ftime() - start < 1.5)
+              string_hash(s);
+            endwhile
+            #0.__ft_resume_expired = `resume(me, 42) ! ANY';
+          endfork
+          v = suspend(1);
+          return {#0.__ft_resume_expired, v};
+        expect:
+          value: [0, 42]
+    cleanup:
+      - run: "delete_property(#0, \"__ft_resume_expired\");"
+        as: wizard

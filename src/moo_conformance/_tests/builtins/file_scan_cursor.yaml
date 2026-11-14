@@ -1,0 +1,90 @@
+name: file_scan_cursor
+description: File scans rewind and leave their shared cursor at the consumed input.
+
+requires:
+  builtins: [file_open]
+
+tests:
+  - name: count_lines_rewinds_and_consumes_file
+    permission: wizard
+    setup: &scan_file_setup
+      permission: wizard
+      code: 'h = file_open("__file_scan_cursor.txt", "w-tn"); try for line in ({"alpha", "needle", "omega"}) file_writeline(h, line); endfor finally file_close(h); endtry'
+    teardown: &scan_file_teardown
+      permission: wizard
+      code: 'file_remove("__file_scan_cursor.txt");'
+    statement: |
+      h = file_open("__file_scan_cursor.txt", "r-tn");
+      try
+        file_seek(h, 6, "SEEK_SET");
+        count = file_count_lines(h);
+        observed = {count, file_tell(h)};
+      finally
+        file_close(h);
+      endtry
+      return observed;
+    expect:
+      value: [3, 19]
+
+  - name: grep_first_match_leaves_next_line_unread
+    permission: wizard
+    setup: *scan_file_setup
+    teardown: *scan_file_teardown
+    statement: |
+      h = file_open("__file_scan_cursor.txt", "r-tn");
+      try
+        file_seek(h, 18, "SEEK_SET");
+        matches = file_grep(h, "needle");
+        position = file_tell(h);
+        observed = {matches, position, file_readline(h)};
+      finally
+        file_close(h);
+      endtry
+      return observed;
+    expect:
+      value: [[["needle", 2]], 13, "omega"]
+
+  - name: grep_all_matches_consumes_file
+    permission: wizard
+    setup: *scan_file_setup
+    teardown: *scan_file_teardown
+    statement: |
+      h = file_open("__file_scan_cursor.txt", "r-tn");
+      try
+        file_seek(h, 18, "SEEK_SET");
+        matches = file_grep(h, "a", 1);
+        observed = {matches, file_tell(h)};
+      finally
+        file_close(h);
+      endtry
+      return observed;
+    expect:
+      value: [[["alpha", 1], ["omega", 3]], 19]
+
+  - name: scans_accept_long_lines
+    permission: wizard
+    statement: |
+      payload = "x";
+      for i in [1..16]
+        payload = payload + payload;
+      endfor
+      h = file_open("__file_scan_long.txt", "w-tn");
+      try
+        file_writeline(h, payload);
+        file_writeline(h, "tail");
+      finally
+        file_close(h);
+      endtry
+      h = file_open("__file_scan_long.txt", "r-tn");
+      try
+        count = file_count_lines(h);
+        matches = file_grep(h, "x");
+        position = file_tell(h);
+        observed = {count, length(matches[1][1]), matches[1][2], position, file_readline(h)};
+      finally
+        file_close(h);
+        file_remove("__file_scan_long.txt");
+      endtry
+      return observed;
+    expect:
+      value: [2, 65536, 1, 65537, "tail"]

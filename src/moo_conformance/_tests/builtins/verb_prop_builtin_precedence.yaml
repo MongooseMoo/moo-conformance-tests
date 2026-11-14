@@ -1,0 +1,285 @@
+name: verb_prop_builtin_precedence
+description: >-
+  Error precedence and lookup rules of the verb and property builtins.
+  disassemble() looks only at verbs defined on the object itself. add_verb()
+  validates the whole info list and then the whole args list (E_TYPE for a
+  wrong shape) before it looks at the object. delete_verb() checks write
+  permission on the object before it looks the verb up. verb_info(),
+  verb_args(), verb_code() and set_verb_code() reject a bad verb descriptor
+  before an invalid object, and an invalid object is E_INVARG.
+  set_verb_code() rejects non-string code lines first. set_property_info()
+  checks the object, then the whole info list, then looks the property up,
+  then checks permission; a property with the w flag may be changed by a
+  non-owner who keeps its owner.
+
+requires:
+  builtins:
+    - add_verb
+    - add_property
+    - delete_verb
+    - disassemble
+    - verb_info
+    - verb_args
+    - verb_code
+    - set_verb_code
+    - set_property_info
+    - property_info
+    - verbs
+    - create
+    - recycle
+    - decode_binary
+
+tests:
+  # disassemble() uses find_described_verb: a verb defined on the object itself.
+  - name: disassemble_inherited_verb_is_verbnf
+    permission: wizard
+    steps:
+      - run: p = create($nothing); add_verb(p, {player, "rxd", "foo"}, {"this", "none", "this"}); set_verb_code(p, "foo", {"return 1;"}); return p;
+        capture: parent
+      - run: create({parent})
+        capture: child
+      - run: 'return {typeof(disassemble({parent}, "foo")) == LIST, `disassemble({child}, "foo") ! ANY''};'
+        expect:
+          value: [1, E_VERBNF]
+    cleanup:
+      - run: recycle({child})
+      - run: recycle({parent})
+
+  # add_verb() validates info, then args, then the object.
+  - name: add_verb_bad_shape_{kind}
+    permission: wizard
+    table:
+      columns: [kind, info_expr, args_expr]
+      rows:
+        - [short_info, '{player, "rx"}', '{"this", "none", "this"}']
+        - [long_info, '{player, "rx", "foo", 1}', '{"this", "none", "this"}']
+        - [short_args, '{player, "rx", "foo"}', '{"this", "none"}']
+        - [long_args, '{player, "rx", "foo"}', '{"this", "none", "this", "x"}']
+    steps:
+      - run: create($nothing)
+        capture: obj
+      - run: 'return {`add_verb({obj}, {info_expr}, {args_expr}) ! ANY'', verbs({obj})};'
+        expect:
+          value: [E_TYPE, []]
+    cleanup:
+      - run: recycle({obj})
+
+  - name: add_verb_info_before_object_{kind}
+    permission: wizard
+    table:
+      columns: [kind, obj_expr, info_expr, args_expr, error]
+      rows:
+        - [non_object_bad_flags, '1', '{player, "q", "foo"}', '{"this", "none", "this"}', E_INVARG]
+        - [invalid_object_owner_type, '#999999', '{1, "rx", "foo"}', '{"this", "none", "this"}', E_TYPE]
+        - [invalid_object_short_args, '#999999', '{player, "rx", "foo"}', '{"this", "none"}', E_TYPE]
+        - [invalid_object_args_type, '#999999', '{player, "rx", "foo"}', '{1, "none", "this"}', E_TYPE]
+        - [invalid_object, '#999999', '{player, "rx", "foo"}', '{"this", "none", "this"}', E_INVARG]
+        - [nothing_object, '$nothing', '{player, "rx", "foo"}', '{"this", "none", "this"}', E_INVARG]
+    code: 'add_verb({obj_expr}, {info_expr}, {args_expr})'
+    expect:
+      error: '{error}'
+
+  - name: add_verb_tab_only_names_is_one_name
+    permission: wizard
+    steps:
+      - run: create($nothing)
+        capture: obj
+      - run: 'tab = decode_binary("~09")[1]; return {add_verb({obj}, {player, "rx", tab}, {"this", "none", "this"}), verbs({obj}) == {tab}};'
+        expect:
+          value: [1, 1]
+    cleanup:
+      - run: recycle({obj})
+
+  # delete_verb() checks object write permission before the lookup.
+  - name: delete_verb_unwritable_object_{kind}
+    permission: programmer
+    table:
+      columns: [kind, desc_expr]
+      rows:
+        - [missing_name, '"nosuch"']
+        - [missing_index, '5']
+        - [existing_name, '"foo"']
+    steps:
+      - run: obj = create($nothing); add_verb(obj, {player, "rx", "foo"}, {"this", "none", "this"}); return obj;
+        capture: obj
+        as: wizard
+      - run: 'delete_verb({obj}, {desc_expr})'
+        as: programmer
+        expect:
+          error: E_PERM
+    cleanup:
+      - run: recycle({obj})
+        as: wizard
+
+  # The descriptor is checked before object validity; invalid is E_INVARG.
+  - name: verb_reader_invalid_object_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr, error]
+      rows:
+        - [verb_info_bad_desc, 'verb_info(#999999, 1.5)', E_TYPE]
+        - [verb_info_nothing_bad_desc, 'verb_info($nothing, {})', E_TYPE]
+        - [verb_info_name, 'verb_info(#999999, "x")', E_INVARG]
+        - [verb_info_nothing_index, 'verb_info($nothing, 1)', E_INVARG]
+        - [verb_args_bad_desc, 'verb_args(#999999, 1.5)', E_TYPE]
+        - [verb_args_name, 'verb_args(#999999, "x")', E_INVARG]
+        - [verb_args_nothing_index, 'verb_args($nothing, 1)', E_INVARG]
+        - [verb_code_bad_desc, 'verb_code(#999999, 1.5)', E_TYPE]
+        - [verb_code_name, 'verb_code(#999999, "x")', E_INVARG]
+        - [verb_code_nothing_index, 'verb_code($nothing, 1)', E_INVARG]
+        - [set_verb_code_bad_desc, 'set_verb_code(#999999, 1.5, {})', E_TYPE]
+        - [set_verb_code_name, 'set_verb_code(#999999, "x", {})', E_INVARG]
+        - [set_verb_code_nothing_index, 'set_verb_code($nothing, 1, {})', E_INVARG]
+    code: '{expr}'
+    expect:
+      error: '{error}'
+
+  # set_verb_code() rejects a non-string code line before anything else.
+  - name: set_verb_code_non_string_line_first_{kind}
+    permission: wizard
+    table:
+      columns: [kind, obj_expr, desc_expr]
+      rows:
+        - [invalid_object, '#999999', '"foo"']
+        - [bad_descriptor, '#999999', '1.5']
+        - [missing_verb, '{obj}', '"nosuch"']
+    steps:
+      - run: create($nothing)
+        capture: obj
+      - run: 'return set_verb_code({obj_expr}, {desc_expr}, {"return 1;", 2});'
+        expect:
+          error: E_TYPE
+    cleanup:
+      - run: recycle({obj})
+
+  - name: set_verb_code_non_string_line_before_permission
+    permission: programmer
+    steps:
+      - run: obj = create($nothing); add_verb(obj, {player, "rx", "foo"}, {"this", "none", "this"}); return obj;
+        capture: obj
+        as: wizard
+      - run: 'return set_verb_code({obj}, "foo", {"return 1;", 2});'
+        as: programmer
+        expect:
+          error: E_TYPE
+    cleanup:
+      - run: recycle({obj})
+        as: wizard
+
+  # set_property_info(): object, then info list, then lookup, then permission.
+  - name: set_property_info_invalid_object_{kind}
+    permission: wizard
+    table:
+      columns: [kind, obj_expr, info_expr]
+      rows:
+        - [missing_object, '#999999', '{player, "r"}']
+        - [nothing_object, '$nothing', '{player, "r"}']
+        - [missing_object_bad_info, '#999999', '{player}']
+    code: 'set_property_info({obj_expr}, "foo", {info_expr})'
+    expect:
+      error: E_INVARG
+
+  - name: set_property_info_anonymous_object_is_type_error
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p, "foo", 1, {player, "rw"});
+      a = create(p, 1);
+      r = `set_property_info(a, "foo", {player, "r"}) ! ANY';
+      recycle(p);
+      return r;
+    expect:
+      value: E_TYPE
+
+  - name: set_property_info_waif_is_type_error
+    permission: wizard
+    statement: |
+      c = create($nothing);
+      add_verb(c, {player, "rxd", "new"}, {"this", "none", "this"});
+      set_verb_code(c, "new", {"return new_waif();"});
+      w = c:new();
+      r = `set_property_info(w, "foo", {player, "r"}) ! ANY';
+      w = 0;
+      recycle(c);
+      return r;
+    expect:
+      value: E_TYPE
+
+  - name: set_property_info_bad_info_missing_property_{kind}
+    permission: wizard
+    table:
+      columns: [kind, info_expr, error]
+      rows:
+        - [bad_flags, '{player, "q"}', E_INVARG]
+        - [invalid_owner, '{#999999, "r"}', E_INVARG]
+        - [owner_type, '{1, "r"}', E_TYPE]
+        - [perms_type, '{player, 1}', E_TYPE]
+        - [short_list, '{player}', E_TYPE]
+        - [empty_list, '{}', E_TYPE]
+        - [long_list, '{player, "r", "bar", 1}', E_TYPE]
+        - [name_type, '{player, "r", 1}', E_TYPE]
+    steps:
+      - run: create($nothing)
+        capture: obj
+      - run: 'set_property_info({obj}, "nosuch", {info_expr})'
+        expect:
+          error: '{error}'
+    cleanup:
+      - run: recycle({obj})
+
+  - name: set_property_info_bad_info_existing_property_{kind}
+    permission: wizard
+    table:
+      columns: [kind, info_expr, error]
+      rows:
+        - [invalid_owner, '{#999999, "rw"}', E_INVARG]
+        - [short_list, '{player}', E_TYPE]
+        - [long_list, '{player, "rw", "bar", 1}', E_TYPE]
+    steps:
+      - run: create($nothing)
+        capture: obj
+      - run: 'add_property({obj}, "foo", 0, {player, "r"})'
+      - run: 'set_property_info({obj}, "foo", {info_expr})'
+        expect:
+          error: '{error}'
+      - run: 'info = property_info({obj}, "foo"); return {info[1] == player, info[2]};'
+        expect:
+          value: [1, r]
+    cleanup:
+      - run: recycle({obj})
+
+  - name: set_property_info_bad_info_before_permission_{kind}
+    permission: programmer
+    table:
+      columns: [kind, info_expr, error]
+      rows:
+        - [bad_flags, '{player, "q"}', E_INVARG]
+        - [short_list, '{player}', E_TYPE]
+    steps:
+      - run: obj = create($nothing); add_property(obj, "foo", 0, {player, ""}); return obj;
+        capture: obj
+        as: wizard
+      - run: 'set_property_info({obj}, "foo", {info_expr})'
+        as: programmer
+        expect:
+          error: '{error}'
+    cleanup:
+      - run: recycle({obj})
+        as: wizard
+
+  - name: set_property_info_write_flag_allows_non_owner
+    description: >-
+      A property with the w flag may have its flags changed by a programmer
+      who does not own it, as long as the owner stays the same.
+    permission: programmer
+    steps:
+      - run: obj = create($nothing); add_property(obj, "foo", 0, {player, "rw"}); return obj;
+        capture: obj
+        as: wizard
+      - run: 'owner = property_info({obj}, "foo")[1]; r = set_property_info({obj}, "foo", {owner, "rwc"}); info = property_info({obj}, "foo"); return {r, info[1] == owner, info[1] == player, info[2]};'
+        as: programmer
+        expect:
+          value: [0, 1, 0, rwc]
+    cleanup:
+      - run: recycle({obj})
+        as: wizard

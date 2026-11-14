@@ -1,0 +1,58 @@
+name: signals_checkpoint
+description: USR2 fallback, checkpoint hooks, child reaping, and persistence boundaries.
+requires:
+  config: [managed_server, posix_signals, server_dir, log_file]
+tests:
+  - name: usr2_{label}_requests_repeatable_checkpoint
+    table:
+      columns: [label, body]
+      rows:
+        - [absent, absent]
+        - [false_integer, "return 0;"]
+        - [false_string, 'return \"\";']
+        - [false_list, "return {};"]
+    steps:
+      - restart_server: {reset_db: true}
+      - run: |
+          add_property(#0, "signal_marker", "checkpoint-{label}-first", {player, "rw"});
+          add_property(#0, "signal_checkpoint_events", {}, {player, "rw"});
+          try delete_verb(#0, "handle_signal"); except (E_VERBNF) endtry
+          if ("{label}" != "absent")
+            add_verb(#0, {player, "rxd", "handle_signal"}, {"this", "none", "this"});
+            set_verb_code(#0, "handle_signal", {"{body}"});
+          endif
+          for name in ({"checkpoint_started", "checkpoint_finished"})
+            try delete_verb(#0, name); except (E_VERBNF) endtry
+            add_verb(#0, {player, "rxd", name}, {"this", "none", "this"});
+          endfor
+          set_verb_code(#0, "checkpoint_started", {"#0.signal_checkpoint_events = {@#0.signal_checkpoint_events, {\"started\"}};"});
+          set_verb_code(#0, "checkpoint_finished", {
+            "#0.signal_checkpoint_events = {@#0.signal_checkpoint_events, {\"finished\", args[1]}};",
+            "server_log(\"SIGNAL-CHECKPOINT-{label}-\" + tostr(length(#0.signal_checkpoint_events)));"
+          });
+          return 1;
+        as: wizard
+        expect: {value: 1}
+      - signal_server: SIGUSR2
+      - assert_file: {path: server.log, contains: "SIGNAL-CHECKPOINT-{label}-2", timeout_ms: 10000}
+      - run: 'return #0.signal_checkpoint_events;'
+        as: wizard
+        expect: {value: [[started], [finished, 1]]}
+      - assert_log: {contains: "CHECKPOINTING due to remote request signal."}
+      - assert_file: {path: Test.db.new, contains: "checkpoint-{label}-first", timeout_ms: 10000}
+      - restart_server: {checkpoint_timeout_ms: 10000}
+      - run: |
+          before = #0.signal_checkpoint_events;
+          #0.signal_checkpoint_events = {};
+          #0.signal_marker = "checkpoint-{label}-second";
+          return before;
+        as: wizard
+        expect: {value: [[started]]}
+      - signal_server: SIGUSR2
+      - assert_file: {path: server.log, contains: "SIGNAL-CHECKPOINT-{label}-2", timeout_ms: 10000}
+      - assert_file: {path: Test.db.new, contains: "checkpoint-{label}-second", timeout_ms: 10000}
+      - restart_server: {checkpoint_timeout_ms: 10000}
+      - run: 'return {#0.signal_marker, #0.signal_checkpoint_events};'
+        as: wizard
+        expect: {value: ["checkpoint-{label}-second", [[started]]]}
+      - restart_server: {reset_db: true}

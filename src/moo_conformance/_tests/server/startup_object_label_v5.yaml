@@ -1,0 +1,18 @@
+name: startup_object_label_v5
+description: >
+  A v5 (DBV_NextGen and later) numbered object record is placed at its record
+  position; ng_read_object reads its "#N" label and ignores it. Record 2 of
+  V5MismatchedLabel.db is labelled #9.
+server_db: V5MismatchedLabel.db
+requires:
+  config:
+    - managed_server
+    - server_dir
+    - log_file
+    - server_db_dir
+tests:
+  - name: mismatched_label_loads_at_record_position
+    steps:
+      - wait_for_server_exit: {timeout_ms: 5000, exit_code: 0}
+      - assert_log:
+          contains: "LABEL PROBE valid2=1 valid9=0 name2=The First Room max=#3 wizloc=#2"

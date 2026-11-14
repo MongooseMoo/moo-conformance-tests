@@ -1,0 +1,18 @@
+name: cache_stats_authority
+description: Cache-stat observation and logging require wizard authority
+
+tests:
+  - name: programmer_denied
+    permission: programmer
+    statement: |
+      return {`verb_cache_stats() ! E_PERM => E_PERM',
+              `log_cache_stats() ! E_PERM => E_PERM'};
+    expect:
+      value: [E_PERM, E_PERM]
+
+  - name: wizard_allowed
+    permission: wizard
+    statement: |
+      return {typeof(verb_cache_stats()) == LIST, log_cache_stats()};
+    expect:
+      value: [1, 0]

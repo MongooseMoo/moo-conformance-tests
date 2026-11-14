@@ -1,0 +1,42 @@
+name: max_line_bytes
+description: >
+  A connection whose unterminated input reaches MAX_LINE_BYTES (5242880 bytes,
+  ToastStunt include/options.h) is closed and logged (network.cc pull_input and
+  process_telnet_byte). The last one-byte send makes the server read again after
+  the pending input has reached the limit.
+
+tests:
+  - name: unterminated_line_at_limit_closes_connection
+    steps:
+      - new_connection:
+          capture: long_line
+      - send_bytes:
+          connection: long_line
+          hex: "61"
+          repeat: 5242880
+      - send_bytes:
+          connection: long_line
+          hex: "61"
+      - assert_log:
+          contains: "closed for exceeding MAX_LINE_BYTES!"
+          timeout_ms: 10000
+      - close_connection: long_line
+
+  - name: telnet_subnegotiation_at_limit_closes_connection
+    steps:
+      - new_connection:
+          capture: long_subneg
+      - send_bytes:
+          connection: long_subneg
+          hex: "fffa"
+      - send_bytes:
+          connection: long_subneg
+          hex: "61"
+          repeat: 5242878
+      - send_bytes:
+          connection: long_subneg
+          hex: "61"
+      - assert_log:
+          contains: "exceeded MAX_LINE_BYTES in telnet command!"
+          timeout_ms: 10000
+      - close_connection: long_subneg

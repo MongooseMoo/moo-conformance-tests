@@ -1,0 +1,72 @@
+name: verb_identity_same_task
+description: A verb keeps its identity within one task across a rename and across
+  the deletion of another verb sharing its first name, and a verb whose first name
+  starts with a colon is not found by the name without the colon.
+requires:
+  builtins:
+  - add_verb
+  - set_verb_code
+  - set_verb_info
+  - delete_verb
+  - verb_code
+  - verb_info
+  - verbs
+  - create
+  - recycle
+tests:
+- name: set_verb_code_survives_set_verb_info_rename_in_same_task
+  description: add_verb, set_verb_code and a set_verb_info rename in one task keep
+    the new code on the renamed verb
+  permission: programmer
+  steps:
+  - run: create($nothing)
+    capture: obj
+  - run: add_verb({obj}, {player, "rxd", "old"}, {"this", "none", "this"}); set_verb_code({obj},
+      "old", {"return 7;"}); return set_verb_info({obj}, "old", {player, "rxd", "new
+      alt"});
+    expect:
+      value: 0
+  - run: '{verb_info({obj}, 1)[3], verb_code({obj}, 1), {obj}:alt()}'
+    expect:
+      value: ["new alt", ["return 7;"], 7]
+  cleanup:
+  - run: recycle({obj})
+- name: set_verb_code_survives_delete_of_later_verb_sharing_first_name
+  description: set_verb_code on verb 1 then delete_verb of verb 2 in one task keeps
+    verb 1's new code when both verbs have the same first name
+  permission: programmer
+  steps:
+  - run: create($nothing)
+    capture: obj
+  - run: add_verb({obj}, {player, "rxd", "foo"}, {"this", "none", "this"})
+    expect:
+      value: 1
+  - run: add_verb({obj}, {player, "rxd", "foo bar"}, {"this", "none", "this"})
+    expect:
+      value: 2
+  - run: set_verb_code({obj}, 1, {"return 77;"}); return delete_verb({obj}, 2);
+    expect:
+      value: 0
+  - run: '{verbs({obj}), verb_code({obj}, 1), {obj}:foo()}'
+    expect:
+      value: [["foo"], ["return 77;"], 77]
+  cleanup:
+  - run: recycle({obj})
+- name: verb_named_with_leading_colon_is_not_found_without_it
+  description: verb_info by the bare name does not find a verb whose only name is
+    the same name with a leading colon
+  permission: programmer
+  steps:
+  - run: create($nothing)
+    capture: obj
+  - run: add_verb({obj}, {player, "xd", ":greet"}, {"this", "none", "this"})
+    expect:
+      value: 1
+  - run: verb_info({obj}, ":greet")[3]
+    expect:
+      value: ":greet"
+  - run: verb_info({obj}, "greet")
+    expect:
+      error: E_VERBNF
+  cleanup:
+  - run: recycle({obj})

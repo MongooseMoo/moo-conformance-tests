@@ -10,12 +10,15 @@ requires:
 tests:
   - name: invalid_object_references_are_repaired
     steps:
-      - wait: 500
       - assert_log:
+          timeout_ms: 10000
           contains: "#0.parent = #"
       - assert_log:
+          timeout_ms: 10000
           contains: "#0.child = #"
       - assert_log:
+          timeout_ms: 10000
           contains: "#0.location = #101 <invalid> ... fixed"
       - assert_log:
+          timeout_ms: 10000
           contains: "#0.content = #"

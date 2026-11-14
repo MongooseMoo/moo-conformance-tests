@@ -13,10 +13,10 @@ requires:
 tests:
   - name: cross_vm_cycle_remains_owned_by_two_suspended_tasks
     steps:
-      - wait: 750
       - assert_file:
           path: Anon7.db.new
           contains: "\n0 values pending finalization\n"
+          timeout_ms: 5000
       - assert_file:
           path: Anon7.db.new
           contains: "\n2 suspended tasks\n"

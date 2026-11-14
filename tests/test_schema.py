@@ -18,6 +18,26 @@ def _minimal_suite() -> dict:
     }
 
 
+@pytest.mark.parametrize("arguments", [[], ["--start-line", 'return "{db}; $x";']])
+def test_restart_arguments_preserve_literal_tokens(arguments):
+    data = _minimal_suite()
+    data["tests"][0] = {"name": "startup", "steps": [
+        {"restart_server": {"arguments": arguments}}
+    ]}
+    suite = validate_test_suite(data)
+    assert suite.tests[0].steps[0].restart_server.arguments == arguments
+
+
+@pytest.mark.parametrize("arguments", [None, "--start-line", {}, [1], [False], [[]], ["a\x00b"]])
+def test_restart_arguments_reject_non_argv_values(arguments):
+    data = _minimal_suite()
+    data["tests"][0] = {"name": "startup", "steps": [
+        {"restart_server": {"arguments": arguments}}
+    ]}
+    with pytest.raises(ValueError, match="list of NUL-free strings"):
+        validate_test_suite(data)
+
+
 def _mapping_at(data: dict, path: tuple[str | int, ...]) -> dict:
     current = data
     for part in path:
@@ -138,6 +158,24 @@ def test_unknown_fields_are_rejected_in_structured_actions(
     }
 
     with pytest.raises(ValueError, match=r"Unknown field.*unexpected"):
+        validate_test_suite(data)
+
+
+@pytest.mark.parametrize("repeat", [0, -1, True, "2", 1.5])
+def test_send_bytes_repeat_must_be_a_positive_integer(repeat: object) -> None:
+    data = {
+        "name": "send_bytes_repeat",
+        "tests": [
+            {
+                "name": "one",
+                "steps": [
+                    {"send_bytes": {"hex": "61", "connection": "c", "repeat": repeat}}
+                ],
+            }
+        ],
+    }
+
+    with pytest.raises(ValueError, match="repeat must be a positive integer"):
         validate_test_suite(data)
 
 
@@ -416,6 +454,11 @@ def _suite_with_assert_log(assert_log: dict) -> dict:
     [
         {},
         {"contain": "misspelled predicate"},
+        {"contains_any": []},
+        {"contains_any": "diagnostic"},
+        {"contains_any": [""]},
+        {"contains_any": [1]},
+        {"contains_any": None},
     ],
 )
 def test_assert_log_requires_recognized_predicate(assert_log):
@@ -428,6 +471,7 @@ def test_assert_log_requires_recognized_predicate(assert_log):
     [
         {"contains": "checkpoint complete"},
         {"not_contains": "context deadline exceeded"},
+        {"contains_any": ["Trying to dump database", "write database:"]},
     ],
 )
 def test_assert_log_accepts_known_predicates(assert_log):
@@ -437,6 +481,59 @@ def test_assert_log_accepts_known_predicates(assert_log):
     assert parsed_assertion is not None
     assert parsed_assertion.contains == assert_log.get("contains")
     assert parsed_assertion.not_contains == assert_log.get("not_contains")
+    assert parsed_assertion.contains_any == assert_log.get("contains_any")
+
+
+def test_assert_log_timeout_waits_only_for_present_text():
+    suite = validate_test_suite(
+        _suite_with_assert_log({"contains": "CHECKPOINTING", "timeout_ms": 10000})
+    )
+
+    parsed_assertion = suite.tests[0].steps[0].assert_log
+    assert parsed_assertion is not None
+    assert parsed_assertion.timeout_ms == 10000
+
+
+@pytest.mark.parametrize(
+    "assert_log",
+    [
+        {"contains": "x", "timeout_ms": -1},
+        {"contains": "x", "timeout_ms": True},
+        {"contains": "x", "timeout_ms": "100"},
+        {"not_contains": "x", "timeout_ms": 100},
+    ],
+)
+def test_assert_log_rejects_invalid_timeout(assert_log):
+    with pytest.raises(ValueError, match="assert_log"):
+        validate_test_suite(_suite_with_assert_log(assert_log))
+
+
+def _suite_with_step(step: dict) -> dict:
+    return {"name": "step_suite", "tests": [{"name": "one", "steps": [step]}]}
+
+
+def test_run_step_accepts_poll_ms_with_an_expectation():
+    suite = validate_test_suite(
+        _suite_with_step({"run": "return 1;", "expect": {"value": 1}, "poll_ms": 5000})
+    )
+
+    assert suite.tests[0].steps[0].poll_ms == 5000
+
+
+@pytest.mark.parametrize(
+    "step",
+    [
+        {"run": "return 1;", "poll_ms": 5000},
+        {"command": "look", "expect": {"output": {"contains": "x"}}, "poll_ms": 5000},
+        {"wait": 100, "poll_ms": 5000},
+        {"run": "return 1;", "expect": {"value": 1}, "poll_ms": 0},
+        {"run": "return 1;", "expect": {"value": 1}, "poll_ms": True},
+        {"run": "return 1;", "expect": {"value": 1}, "poll_ms": "5000"},
+    ],
+)
+def test_poll_ms_requires_a_run_step_with_an_expectation(step: dict):
+    with pytest.raises(ValueError, match="poll_ms"):
+        validate_test_suite(_suite_with_step(step))
 
 
 def test_table_expands_dict_rows_into_concrete_tests() -> None:

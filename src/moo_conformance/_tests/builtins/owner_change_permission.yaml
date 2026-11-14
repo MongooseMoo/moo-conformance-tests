@@ -1,0 +1,109 @@
+name: owner_change_permission
+description: >-
+  A non-wizard cannot change the owner of a verb with set_verb_info() or of a
+  property with set_property_info(): when the new owner differs from the
+  current owner the call raises E_PERM and nothing changes. The owner may
+  still change the other fields while keeping the same owner, and a wizard
+  may change the owner.
+
+requires:
+  builtins:
+    - add_verb
+    - add_property
+    - set_verb_info
+    - set_property_info
+    - verb_info
+    - property_info
+    - create
+    - recycle
+
+tests:
+  - name: set_verb_info_non_wizard_owner_change
+    description: >-
+      The programmer adds a verb it owns, then names another object as its
+      owner: E_PERM, and the verb keeps its owner, flags and names.
+    permission: programmer
+    steps:
+      - run: obj = create($nothing); obj.w = 1; return obj;
+        capture: obj
+        as: wizard
+      - run: 'add_verb({obj}, {player, "rx", "foobar"}, {"this", "none", "this"}); r = `set_verb_info({obj}, "foobar", {{obj}, "rx", "foobar"}) ! ANY''; info = verb_info({obj}, "foobar"); return {r, info[1] == player, info[2], info[3]};'
+        as: programmer
+        expect:
+          value: [E_PERM, 1, rx, foobar]
+    cleanup:
+      - run: recycle({obj})
+        as: wizard
+
+  - name: set_verb_info_non_wizard_same_owner
+    description: >-
+      The programmer keeps itself as owner and changes the flags and names:
+      the call succeeds.
+    permission: programmer
+    steps:
+      - run: obj = create($nothing); obj.w = 1; return obj;
+        capture: obj
+        as: wizard
+      - run: 'add_verb({obj}, {player, "rx", "foobar"}, {"this", "none", "this"}); r = set_verb_info({obj}, "foobar", {player, "r", "barfoo"}); info = verb_info({obj}, "barfoo"); return {r, info[1] == player, info[2], info[3]};'
+        as: programmer
+        expect:
+          value: [0, 1, r, barfoo]
+    cleanup:
+      - run: recycle({obj})
+        as: wizard
+
+  - name: set_verb_info_wizard_owner_change
+    permission: wizard
+    steps:
+      - run: create($nothing)
+        capture: obj
+      - run: 'add_verb({obj}, {player, "rx", "foobar"}, {"this", "none", "this"}); r = set_verb_info({obj}, "foobar", {{obj}, "rx", "foobar"}); return {r, verb_info({obj}, "foobar")[1] == {obj}};'
+        expect:
+          value: [0, 1]
+    cleanup:
+      - run: recycle({obj})
+
+  - name: set_property_info_non_wizard_owner_change
+    description: >-
+      The programmer adds a property it owns, then names another object as its
+      owner: E_PERM, and the property keeps its owner and flags.
+    permission: programmer
+    steps:
+      - run: obj = create($nothing); obj.w = 1; return obj;
+        capture: obj
+        as: wizard
+      - run: 'add_property({obj}, "foobar", 0, {player, "r"}); r = `set_property_info({obj}, "foobar", {{obj}, "r"}) ! ANY''; info = property_info({obj}, "foobar"); return {r, info[1] == player, info[2]};'
+        as: programmer
+        expect:
+          value: [E_PERM, 1, r]
+    cleanup:
+      - run: recycle({obj})
+        as: wizard
+
+  - name: set_property_info_non_wizard_same_owner
+    description: >-
+      The programmer keeps itself as owner and changes the flags: the call
+      succeeds.
+    permission: programmer
+    steps:
+      - run: obj = create($nothing); obj.w = 1; return obj;
+        capture: obj
+        as: wizard
+      - run: 'add_property({obj}, "foobar", 0, {player, "r"}); r = set_property_info({obj}, "foobar", {player, "rw"}); info = property_info({obj}, "foobar"); return {r, info[1] == player, info[2]};'
+        as: programmer
+        expect:
+          value: [0, 1, rw]
+    cleanup:
+      - run: recycle({obj})
+        as: wizard
+
+  - name: set_property_info_wizard_owner_change
+    permission: wizard
+    steps:
+      - run: create($nothing)
+        capture: obj
+      - run: 'add_property({obj}, "foobar", 0, {player, "r"}); r = set_property_info({obj}, "foobar", {{obj}, "r"}); return {r, property_info({obj}, "foobar")[1] == {obj}};'
+        expect:
+          value: [0, 1]
+    cleanup:
+      - run: recycle({obj})

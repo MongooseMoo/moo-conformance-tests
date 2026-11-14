@@ -1,0 +1,15 @@
+name: parser_list_range
+description: List entries are expressions, not standalone ranges
+tests:
+  - name: range_in_list_rejected
+    code: 'eval("return {0..0};")'
+    expect:
+      value: [0, ["Line 1:  syntax error"]]
+  - name: range_in_indexed_list_rejected
+    code: 'eval("return {0..0}[1];")'
+    expect:
+      value: [0, ["Line 1:  syntax error"]]
+  - name: indexing_range_remains_valid
+    code: 'eval("return {0, 1}[1..2];")'
+    expect:
+      value: [1, [0, 1]]

@@ -1,0 +1,224 @@
+name: property_definition_anonymous_slot_owner
+description: >
+  add_property() on a parent gives each anonymous descendant its own clear
+  slot, exactly as it does a permanent descendant: with the "c" flag the
+  anonymous object's slot is owned by the anonymous object's owner, and
+  without it by the property's owner. Rows cover an anonymous child of the
+  parent itself and of a permanent descendant, in one task and in separate
+  tasks (objects are held in properties of #0 between steps).
+setup:
+  permission: wizard
+  code: 'try delete_property(#0, "pdas_parent"); except (ANY) endtry
+
+    try delete_property(#0, "pdas_mid"); except (ANY) endtry
+
+    try delete_property(#0, "pdas_anon"); except (ANY) endtry
+
+    try delete_property(#0, "pdas_owner"); except (ANY) endtry
+
+    add_property(#0, "pdas_parent", #-1, {player, "rw"});
+
+    add_property(#0, "pdas_mid", #-1, {player, "rw"});
+
+    add_property(#0, "pdas_anon", 0, {player, "rw"});
+
+    add_property(#0, "pdas_owner", #-1, {player, "rw"});
+
+    '
+teardown:
+  permission: wizard
+  code: '$pdas_anon = 0;
+
+    try if (valid($pdas_mid)) recycle($pdas_mid); endif except (ANY) endtry
+
+    try if (valid($pdas_parent)) recycle($pdas_parent); endif except (ANY) endtry
+
+    try if (valid($pdas_owner)) recycle($pdas_owner); endif except (ANY) endtry
+
+    delete_property(#0, "pdas_parent");
+
+    delete_property(#0, "pdas_mid");
+
+    delete_property(#0, "pdas_anon");
+
+    delete_property(#0, "pdas_owner");
+
+    '
+tests:
+  - name: chown_property_anonymous_child_owns_its_slot_same_task
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      p = create($nothing);
+      a = create(p, o, 1);
+      add_property(p, "x", 5, {player, "rc"});
+      info = property_info(a, "x");
+      r = {info[1] == o, info[2], is_clear_property(a, "x"), a.x};
+      recycle(p);
+      recycle(o);
+      return r;
+    expect:
+      value: [1, "rc", 1, 5]
+
+  - name: plain_property_anonymous_child_slot_owned_by_property_owner_same_task
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      p = create($nothing);
+      a = create(p, o, 1);
+      add_property(p, "x", 5, {player, "r"});
+      info = property_info(a, "x");
+      r = {info[1] == player, info[2], is_clear_property(a, "x"), a.x};
+      recycle(p);
+      recycle(o);
+      return r;
+    expect:
+      value: [1, "r", 1, 5]
+
+  - name: chown_property_anonymous_grandchild_owns_its_slot_same_task
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      p = create($nothing);
+      m = create(p);
+      a = create(m, o, 1);
+      add_property(p, "x", 5, {player, "rc"});
+      info = property_info(a, "x");
+      r = {info[1] == o, info[2], is_clear_property(a, "x"), a.x};
+      recycle(m);
+      recycle(p);
+      recycle(o);
+      return r;
+    expect:
+      value: [1, "rc", 1, 5]
+
+  - name: plain_property_anonymous_grandchild_slot_owned_by_property_owner_same_task
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      p = create($nothing);
+      m = create(p);
+      a = create(m, o, 1);
+      add_property(p, "x", 5, {player, "r"});
+      info = property_info(a, "x");
+      r = {info[1] == player, info[2], is_clear_property(a, "x"), a.x};
+      recycle(m);
+      recycle(p);
+      recycle(o);
+      return r;
+    expect:
+      value: [1, "r", 1, 5]
+
+  - name: chown_property_anonymous_child_owns_its_slot_separate_tasks
+    permission: wizard
+    steps:
+      - run: |
+          $pdas_anon = 0;
+          if (valid($pdas_mid)) recycle($pdas_mid); endif
+          if (valid($pdas_parent)) recycle($pdas_parent); endif
+          if (valid($pdas_owner)) recycle($pdas_owner); endif
+          $pdas_owner = create($nothing);
+          $pdas_parent = create($nothing);
+          $pdas_anon = create($pdas_parent, $pdas_owner, 1);
+          return 0;
+        as: wizard
+        expect:
+          value: 0
+      - run: |
+          add_property($pdas_parent, "x", 5, {player, "rc"});
+          return 0;
+        as: wizard
+        expect:
+          value: 0
+      - run: |
+          info = property_info($pdas_anon, "x");
+          return {info[1] == $pdas_owner, info[2], is_clear_property($pdas_anon, "x"), $pdas_anon.x};
+        as: wizard
+        expect:
+          value: [1, "rc", 1, 5]
+
+  - name: plain_property_anonymous_child_slot_owned_by_property_owner_separate_tasks
+    permission: wizard
+    steps:
+      - run: |
+          $pdas_anon = 0;
+          if (valid($pdas_mid)) recycle($pdas_mid); endif
+          if (valid($pdas_parent)) recycle($pdas_parent); endif
+          if (valid($pdas_owner)) recycle($pdas_owner); endif
+          $pdas_owner = create($nothing);
+          $pdas_parent = create($nothing);
+          $pdas_anon = create($pdas_parent, $pdas_owner, 1);
+          return 0;
+        as: wizard
+        expect:
+          value: 0
+      - run: |
+          add_property($pdas_parent, "x", 5, {player, "r"});
+          return 0;
+        as: wizard
+        expect:
+          value: 0
+      - run: |
+          info = property_info($pdas_anon, "x");
+          return {info[1] == player, info[2], is_clear_property($pdas_anon, "x"), $pdas_anon.x};
+        as: wizard
+        expect:
+          value: [1, "r", 1, 5]
+
+  - name: chown_property_anonymous_grandchild_owns_its_slot_separate_tasks
+    permission: wizard
+    steps:
+      - run: |
+          $pdas_anon = 0;
+          if (valid($pdas_mid)) recycle($pdas_mid); endif
+          if (valid($pdas_parent)) recycle($pdas_parent); endif
+          if (valid($pdas_owner)) recycle($pdas_owner); endif
+          $pdas_owner = create($nothing);
+          $pdas_parent = create($nothing);
+          $pdas_mid = create($pdas_parent);
+          $pdas_anon = create($pdas_mid, $pdas_owner, 1);
+          return 0;
+        as: wizard
+        expect:
+          value: 0
+      - run: |
+          add_property($pdas_parent, "x", 5, {player, "rc"});
+          return 0;
+        as: wizard
+        expect:
+          value: 0
+      - run: |
+          info = property_info($pdas_anon, "x");
+          return {info[1] == $pdas_owner, info[2], is_clear_property($pdas_anon, "x"), $pdas_anon.x};
+        as: wizard
+        expect:
+          value: [1, "rc", 1, 5]
+
+  - name: plain_property_anonymous_grandchild_slot_owned_by_property_owner_separate_tasks
+    permission: wizard
+    steps:
+      - run: |
+          $pdas_anon = 0;
+          if (valid($pdas_mid)) recycle($pdas_mid); endif
+          if (valid($pdas_parent)) recycle($pdas_parent); endif
+          if (valid($pdas_owner)) recycle($pdas_owner); endif
+          $pdas_owner = create($nothing);
+          $pdas_parent = create($nothing);
+          $pdas_mid = create($pdas_parent);
+          $pdas_anon = create($pdas_mid, $pdas_owner, 1);
+          return 0;
+        as: wizard
+        expect:
+          value: 0
+      - run: |
+          add_property($pdas_parent, "x", 5, {player, "r"});
+          return 0;
+        as: wizard
+        expect:
+          value: 0
+      - run: |
+          info = property_info($pdas_anon, "x");
+          return {info[1] == player, info[2], is_clear_property($pdas_anon, "x"), $pdas_anon.x};
+        as: wizard
+        expect:
+          value: [1, "r", 1, 5]

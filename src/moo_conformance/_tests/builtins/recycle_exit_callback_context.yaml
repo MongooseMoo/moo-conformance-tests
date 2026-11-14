@@ -1,0 +1,54 @@
+name: recycle_exit_callback_context
+description: Recycling a located object or a container calls exitfunc after moving its contents to nothing.
+requires:
+  builtins: [recycle, move]
+tests:
+  - name: recycle_{target}_{continuation}_exitfunc_frame
+    permission: wizard
+    table:
+      product:
+        - columns: [target, operation]
+          rows: [[located_object, "recycle(what);"], [container, "recycle(old);"]]
+        - columns: [continuation, pause]
+          rows: [[immediate, ""], [resumed, "suspend(0);"]]
+    setup:
+      code: |
+        rec = create($nothing);
+        owner = create($nothing); owner.programmer = 1;
+        proto = create($nothing); old = create(proto);
+        what = create($nothing); driver = create($nothing); alternate = create($nothing);
+        move(what, old);
+        add_property(#0, "cb_rec", rec, {player, "r"});
+        add_property(rec, "seen", {}, {player, "rw"});
+        add_property(rec, "frame", {}, {player, "rw"});
+        add_property(rec, "owned", {what, old, driver, alternate, proto, owner}, {player, "r"});
+        add_verb(rec, {player, "rxd", "observe"}, {"this", "none", "this"});
+        set_verb_code(rec, "observe", {"return callers()[1];"});
+        add_verb(proto, {owner, "rxd", "exitfunc"}, {"this", "none", "this"});
+        set_verb_code(proto, "exitfunc", {
+          "{pause}",
+          "#0.cb_rec.seen = {this, caller, player, verb, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()[1..2], args[1].location};",
+          "#0.cb_rec.frame = #0.cb_rec:observe();"
+        });
+        add_verb(driver, {player, "rxd", "drive"}, {"this", "none", "this"});
+        set_verb_code(driver, "drive", {
+          "{what, old, alternate} = args;",
+          "player = alternate; argstr = \"kept input\"; dobj = what; dobjstr = \"direct\"; prepstr = \"from\"; iobj = old; iobjstr = \"indirect\";",
+          "{operation}"
+        });
+    statement: |
+      driver:drive(what, old, alternate);
+      return {
+        rec.seen == {old, driver, alternate, "exitfunc", {what}, "kept input", what, "direct", "from", old, "indirect", owner, player,
+          {{#-1, "recycle", #-1, #-1, alternate}, {driver, "drive", player, driver, player}}, #-1},
+        rec.frame == {old, "exitfunc", owner, proto, alternate},
+        "{target}" == "container" ? !valid(old) && valid(what) && what.location == #-1 | !valid(what) && valid(old)
+      };
+    expect: {value: [1, 1, 1]}
+    teardown:
+      code: |
+        rec = #0.cb_rec;
+        delete_verb(rec.owned[5], "exitfunc");
+        delete_property(#0, "cb_rec");
+        for obj in (rec.owned) if (valid(obj)) recycle(obj); endif endfor
+        recycle(rec);

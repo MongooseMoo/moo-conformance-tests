@@ -1,0 +1,73 @@
+name: max_recursion_caller_context
+description: >
+  A verb call or pass() refused with E_MAXREC leaves the calling activation's
+  permissions and thread mode untouched. A non-wizard verb that catches the
+  E_MAXREC raised while entering a wizard-owned verb keeps its own authority.
+requires:
+  builtins:
+    - add_verb
+    - caller_perms
+    - create
+    - recycle
+    - set_thread_mode
+    - set_verb_code
+    - task_perms
+
+tests:
+  - name: maxrec_on_verb_call_keeps_caller_context
+    description: >
+      At the activation-depth limit, a programmer-owned verb catches E_MAXREC
+      from calling a wizard-owned verb and still runs with its own task
+      permissions, thread mode, and lack of wizard authority.
+    permission: wizard
+    statement: |
+      low = create($nothing);
+      low.programmer = 1;
+      obj = create($nothing);
+      add_verb(obj, {low, "rxd", "climb"}, {"this", "none", "this"});
+      set_verb_code(obj, "climb", {
+        "r = `this:climb() ! E_MAXREC => 0';",
+        "if (r != 0) return r; endif",
+        "set_thread_mode(0);",
+        "w = `this:wizverb() ! E_MAXREC => \"maxrec\"';",
+        "return {w, task_perms(), caller_perms(), set_thread_mode(), `this.wizard = 1 ! E_PERM => \"denied\"'};"
+      });
+      add_verb(obj, {player, "rxd", "wizverb"}, {"this", "none", "this"});
+      set_verb_code(obj, "wizverb", {"return \"entered\";"});
+      r = obj:climb();
+      result = {r[1], r[2] == low, r[3] == low, r[4], r[5], obj.wizard};
+      recycle(obj);
+      recycle(low);
+      return result;
+    expect:
+      value: ["maxrec", 1, 1, 0, "denied", 0]
+
+  - name: maxrec_on_pass_keeps_caller_context
+    description: >
+      At the activation-depth limit, a programmer-owned verb catches E_MAXREC
+      from pass() to a wizard-owned parent verb and still runs with its own
+      task permissions, thread mode, and lack of wizard authority.
+    permission: wizard
+    statement: |
+      low = create($nothing);
+      low.programmer = 1;
+      parent = create($nothing);
+      add_verb(parent, {player, "rxd", "climb"}, {"this", "none", "this"});
+      set_verb_code(parent, "climb", {"return \"entered\";"});
+      obj = create(parent);
+      add_verb(obj, {low, "rxd", "climb"}, {"this", "none", "this"});
+      set_verb_code(obj, "climb", {
+        "r = `this:climb() ! E_MAXREC => 0';",
+        "if (r != 0) return r; endif",
+        "set_thread_mode(0);",
+        "w = `pass() ! E_MAXREC => \"maxrec\"';",
+        "return {w, task_perms(), caller_perms(), set_thread_mode(), `this.wizard = 1 ! E_PERM => \"denied\"'};"
+      });
+      r = obj:climb();
+      result = {r[1], r[2] == low, r[3] == low, r[4], r[5], obj.wizard};
+      recycle(obj);
+      recycle(parent);
+      recycle(low);
+      return result;
+    expect:
+      value: ["maxrec", 1, 1, 0, "denied", 0]

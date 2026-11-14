@@ -410,6 +410,25 @@ tests:
     expect:
       value: 1
 
+  - name: precedence_or_and_share_one_left_associative_level
+    description: Toast's grammar declares `%left tOR tAND`, so `a || b && c` is `(a || b) && c`.
+    code: "1 || 0 && 0"
+    expect:
+      value: 0
+
+  - name: precedence_or_and_unparse
+    description: Decompiled code parenthesizes && and || by their shared level.
+    permission: programmer
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "t"}, {"this", "none", "this"});
+      set_verb_code(o, "t", {"x = a || b && c;", "x = a || (b && c);", "x = (a && b) || c;", "return (a || b) && c;"});
+      r = verb_code(o, "t");
+      recycle(o);
+      return r;
+    expect:
+      value: ["x = a || b && c;", "x = a || (b && c);", "x = a && b || c;", "return a || b && c;"]
+
   - name: shift_roundtrip_7_32bit
     skip_if: "feature.64bit"
     code: "(-2147483648 >> 7) << 7"

@@ -1,7 +1,10 @@
 import builtins
 import os
+import socket
 import stat
 import subprocess
+import threading
+import time
 from io import BytesIO
 from pathlib import Path
 from unittest.mock import Mock
@@ -48,6 +51,41 @@ class _FakeProcess:
         return 0
 
 
+def test_port_wait_polls_a_starting_server_at_a_short_interval(monkeypatch):
+    attempts = []
+    sleeps = []
+
+    class RefusingTwiceSocket:
+        def __init__(self, *args):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+        def settimeout(self, timeout):
+            pass
+
+        def connect(self, address):
+            attempts.append(address)
+            if len(attempts) <= 2:
+                raise ConnectionRefusedError
+
+    monkeypatch.setattr("moo_conformance.server.socket.socket", RefusingTwiceSocket)
+    monkeypatch.setattr("moo_conformance.server.time.sleep", sleeps.append)
+    server = ManagedServer("fake-server {db} {port}", Path("unused.db"), port=17777)
+    server._port = 17777
+    server._process = _FakeProcess()
+
+    server._wait_for_port(timeout=30.0)
+
+    assert len(attempts) == 3
+    assert len(sleeps) == 2
+    assert all(0 < interval <= 0.05 for interval in sleeps)
+
+
 def test_restart_preserves_db_and_records_fresh_process_log_boundary(
     monkeypatch, tmp_path: Path
 ):
@@ -83,6 +121,73 @@ def test_restart_preserves_db_and_records_fresh_process_log_boundary(
     assert len(created) == 2
     assert server.process_log_offset == previous_log_size
     assert server.process_file_snapshot["baseline.db"][2] == len("checkpointed")
+
+
+def _listening_socket() -> socket.socket:
+    """Listen like ToastStunt: SO_REUSEADDR, bound to 127.0.0.1."""
+    listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    listener.bind(("127.0.0.1", 0))
+    listener.listen()
+    return listener
+
+
+_POSIX_ONLY = pytest.mark.skipif(
+    os.name != "posix", reason="forked children inherit listeners only on POSIX"
+)
+
+
+@_POSIX_ONLY
+def test_restart_waits_for_forked_child_to_release_port_before_launch(
+    monkeypatch, tmp_path: Path
+):
+    baseline = tmp_path / "baseline.db"
+    baseline.write_text("baseline", encoding="utf-8")
+    # Stands in for a checkpointer child that inherited the old server's
+    # listening socket and outlives the server process itself.
+    child_listener = _listening_socket()
+    port = child_listener.getsockname()[1]
+    launches = []
+    released = []
+
+    def fake_popen(*args, **kwargs):
+        launches.append(time.monotonic())
+        return _FakeProcess()
+
+    def release_port():
+        released.append(time.monotonic())
+        child_listener.close()
+
+    monkeypatch.setattr("moo_conformance.server.subprocess.Popen", fake_popen)
+    monkeypatch.setattr(ManagedServer, "_wait_for_port", lambda self, timeout=30.0: None)
+
+    server = ManagedServer("fake-server {db} {port}", baseline, port=port)
+    server.start()
+    timer = threading.Timer(0.3, release_port)
+    timer.start()
+    try:
+        server.restart()
+    finally:
+        timer.cancel()
+        child_listener.close()
+        server.stop()
+
+    assert len(launches) == 2
+    assert released and launches[1] >= released[0]
+
+
+@_POSIX_ONLY
+def test_port_release_wait_fails_with_lifecycle_error_while_port_stays_bound():
+    child_listener = _listening_socket()
+    try:
+        port = child_listener.getsockname()[1]
+        server = ManagedServer("fake-server {db} {port}", Path("unused.db"), port=port)
+        server._port = port
+
+        with pytest.raises(ManagedServerLifecycleError, match=f"port {port} was still bound"):
+            server._wait_for_port_release(timeout=0.2)
+    finally:
+        child_listener.close()
 
 
 def test_restart_adopts_checkpoint_before_shutdown_can_overwrite_output(
@@ -684,8 +789,9 @@ def test_wait_for_server_exit_rejects_ordinary_code_as_abort(status: int):
     server.stop.assert_not_called()
 
 
+@pytest.mark.parametrize("predicate", ["contains", "contains_any"])
 def test_post_exit_empty_output_rejects_stale_marker_from_previous_process(
-    tmp_path: Path,
+    tmp_path: Path, predicate: str,
 ):
     old_output = "REUSED PROCESS MARKER\n"
     log_path = tmp_path / "server.log"
@@ -703,13 +809,20 @@ def test_post_exit_empty_output_rejects_stale_marker_from_previous_process(
         WaitForServerExit(timeout_ms=2500, exit_code=0), "empty-new-process"
     )
 
-    with pytest.raises(RunnerAssertionError, match="but it was not found"):
+    assertion = (
+        LogAssertion(contains="REUSED PROCESS MARKER") if predicate == "contains"
+        else LogAssertion(contains_any=["OTHER DIAGNOSTIC", "REUSED PROCESS MARKER"])
+    )
+    with pytest.raises(RunnerAssertionError, match="not found|none was found"):
         runner._execute_assert_log(
-            LogAssertion(contains="REUSED PROCESS MARKER"), "stale-marker"
+            assertion, "stale-marker"
         )
 
 
-def test_post_exit_log_assertion_accepts_reused_marker_from_new_process(tmp_path: Path):
+@pytest.mark.parametrize("predicate", ["contains", "contains_any"])
+def test_post_exit_log_assertion_accepts_reused_marker_from_new_process(
+    tmp_path: Path, predicate: str,
+):
     marker = "REUSED PROCESS MARKER\n"
     log_path = tmp_path / "server.log"
     log_path.write_text(marker + marker, encoding="utf-8")
@@ -725,9 +838,49 @@ def test_post_exit_log_assertion_accepts_reused_marker_from_new_process(tmp_path
     runner._execute_wait_for_server_exit(
         WaitForServerExit(timeout_ms=2500, exit_code=0), "new-process-marker"
     )
-    runner._execute_assert_log(
-        LogAssertion(contains="REUSED PROCESS MARKER"), "reused-marker"
+    assertion = (
+        LogAssertion(contains="REUSED PROCESS MARKER") if predicate == "contains"
+        else LogAssertion(contains_any=["OTHER DIAGNOSTIC", "REUSED PROCESS MARKER"])
     )
+    runner._execute_assert_log(assertion, "reused-marker")
+
+
+def test_assert_log_timeout_waits_for_text_written_later(tmp_path: Path):
+    log_path = tmp_path / "server.log"
+    log_path.write_text("before\n", encoding="utf-8")
+    runner = YamlTestRunner(Mock(), log_file_path=str(log_path))
+    runner._log_offset = len("before\n")
+
+    with pytest.raises(RunnerAssertionError, match="not found"):
+        runner._execute_assert_log(LogAssertion(contains="LATE MARKER"), "no-timeout")
+
+    def write_later() -> None:
+        time.sleep(0.3)
+        with open(log_path, "a", encoding="utf-8") as log:
+            log.write("LATE MARKER\n")
+
+    writer = threading.Thread(target=write_later)
+    writer.start()
+    try:
+        runner._execute_assert_log(
+            LogAssertion(contains="LATE MARKER", timeout_ms=10000), "with-timeout"
+        )
+    finally:
+        writer.join()
+
+
+def test_assert_log_timeout_reports_missing_text_at_its_deadline(tmp_path: Path):
+    log_path = tmp_path / "server.log"
+    log_path.write_text("", encoding="utf-8")
+    runner = YamlTestRunner(Mock(), log_file_path=str(log_path))
+    runner._log_offset = 0
+
+    started = time.monotonic()
+    with pytest.raises(RunnerAssertionError, match="none was found"):
+        runner._execute_assert_log(
+            LogAssertion(contains_any=["NEVER"], timeout_ms=300), "deadline"
+        )
+    assert time.monotonic() - started >= 0.3
 
 
 def test_assert_file_byte_compare_rejects_false_positive_text_match(tmp_path: Path):
@@ -1153,6 +1306,49 @@ def test_managed_server_installs_exec_fixtures(monkeypatch, tmp_path: Path):
         server.stop()
 
 
+def test_restart_arguments_are_literal_and_apply_to_one_launch(monkeypatch, tmp_path):
+    baseline = tmp_path / "baseline.db"
+    baseline.write_text("baseline", encoding="utf-8")
+    launches = []
+
+    def launch(argv, **kwargs):
+        launches.append((argv, kwargs))
+        return _FakeProcess()
+
+    monkeypatch.setattr("moo_conformance.server.subprocess.Popen", launch)
+    monkeypatch.setattr(ManagedServer, "_find_free_port", lambda self: 17777)
+    monkeypatch.setattr(ManagedServer, "_wait_for_port", lambda self, timeout=30: None)
+    server = ManagedServer("fake-server {db} {port}", baseline)
+    arguments = ["--start-line", 'return "{db}; $(literal)";']
+    try:
+        server.start()
+        original = launches[0][0]
+        server.restart(arguments=arguments)
+        assert launches[1][0] == [original[0], *arguments, *original[1:]]
+        assert launches[1][1].get("shell", False) is False
+        server.restart()
+        assert launches[2][0] == original
+        assert arguments == ["--start-line", 'return "{db}; $(literal)";']
+    finally:
+        server.stop()
+
+
+def test_runner_forwards_restart_arguments():
+    transport = Mock()
+    transport.current_user = "wizard"
+    server = Mock()
+    server.process_log_offset = 0
+    server.process_file_snapshot = {}
+    runner = YamlTestRunner(transport, managed_server=server)
+    arguments = ["--start-line", "return 1;"]
+    runner._execute_restart_server(0, "startup", arguments=arguments)
+    server.restart.assert_called_once_with(
+        db_path=None, down_ms=0, ignore_sighup=False, arguments=arguments,
+        checkpoint_timeout_ms=None, checkpoint_boundary=None,
+    )
+    transport.connect.assert_called_once_with("wizard")
+
+
 def test_managed_server_opens_process_stdin_pipe(monkeypatch, tmp_path: Path):
     baseline = tmp_path / "baseline.db"
     baseline.write_text("baseline", encoding="utf-8")
@@ -1244,3 +1440,39 @@ def test_login_script_substitutes_requested_user(monkeypatch):
     transport._login("Programmer")
 
     assert sent == ["connect Programmer"]
+
+
+def test_snapshot_skips_file_removed_between_listing_and_stat(tmp_path, monkeypatch):
+    # Toast renames its "<db>.new.#N#" checkpoint temporary when a dump
+    # finishes; a snapshot racing that rename must not fail.
+    (tmp_path / "Test.db").write_bytes(b"db")
+    (tmp_path / "Test.db.new.#1#").write_bytes(b"partial")
+    real_stat = os.stat
+
+    def racing_stat(path, *args, **kwargs):
+        if os.fspath(path).endswith("#1#"):
+            os.remove(path)
+        return real_stat(path, *args, **kwargs)
+
+    monkeypatch.setattr(os, "stat", racing_stat)
+    assert set(snapshot_regular_files(tmp_path)) == {"Test.db"}
+
+
+def test_snapshot_skips_directory_removed_after_listing(tmp_path, monkeypatch):
+    (tmp_path / "Test.db").write_bytes(b"db")
+    (tmp_path / "gone").mkdir()
+    (tmp_path / "gone" / "file").write_bytes(b"x")
+    real_scandir = os.scandir
+
+    def racing_scandir(path):
+        if os.fspath(path).endswith("gone"):
+            raise FileNotFoundError(path)
+        return real_scandir(path)
+
+    monkeypatch.setattr(os, "scandir", racing_scandir)
+    assert set(snapshot_regular_files(tmp_path)) == {"Test.db"}
+
+
+def test_snapshot_of_missing_root_still_raises(tmp_path):
+    with pytest.raises(FileNotFoundError):
+        snapshot_regular_files(tmp_path / "missing")

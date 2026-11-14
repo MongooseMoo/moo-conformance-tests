@@ -1,0 +1,162 @@
+name: error_callback_context
+description: Uncaught-error and resource-timeout callbacks get fresh server frames after the originating task unwinds.
+requires:
+  config: [managed_server]
+tests:
+  - name: killed_suspended_task_does_not_invoke_error_or_timeout_handler
+    steps:
+      - restart_server: {reset_db: true}
+      - run: |
+          add_property(#0, "cb_events", {}, {player, "rw"});
+          add_property(#0, "cb_task", 0, {player, "rw"});
+          for name in ({"handle_uncaught_error", "handle_task_timeout"})
+            try delete_verb(#0, name); except (E_VERBNF) endtry
+            add_verb(#0, {player, "rxd", name}, {"this", "none", "this"});
+            set_verb_code(#0, name, {"#0.cb_events = {@#0.cb_events, verb};", "return 1;"});
+          endfor
+          fork (0)
+            #0.cb_task = task_id();
+            suspend(1000);
+          endfork
+          return 1;
+        as: wizard
+        expect: {value: 1}
+      - run: |
+          for attempt in [1..100]
+            if (#0.cb_task) break; endif
+            suspend(0.01);
+          endfor
+          kill_task(#0.cb_task);
+          suspend(0);
+          return #0.cb_events;
+        as: wizard
+        expect: {value: []}
+      - restart_server: {reset_db: true}
+
+  - name: uncaught_{origin}_frame_payload_and_finally_order
+    table:
+      columns: [origin, before, after]
+      rows:
+        - [foreground, "", ""]
+        - [forked, "fork (0)", "endfork"]
+        - [resumed, "suspend(0);", ""]
+    steps:
+      - restart_server: {reset_db: true}
+      - run: |
+          add_property(#0, "cb_events", {}, {player, "rw"});
+          owner = create($nothing);
+          owner.programmer = 1;
+          add_property(#0, "cb_owner", owner, {player, "r"});
+          add_property(#0, "cb_player", player, {player, "r"});
+          add_property(#0, "cb_finally", 0, {player, "rw"});
+          add_property(#0, "cb_finally_seen", 0, {player, "rw"});
+          try delete_verb(#0, "handle_uncaught_error"); except (E_VERBNF) endtry
+          add_verb(#0, {owner, "rxd", "handle_uncaught_error"}, {"this", "none", "this"});
+          set_verb_code(#0, "handle_uncaught_error", {
+            "#0.cb_events = {@#0.cb_events, {verb, this, caller, player, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()}};",
+            "#0.cb_finally_seen = #0.cb_finally;",
+            "return 1;"
+          });
+          add_verb(player, {player, "rxd", "cb_error"}, {"none", "none", "none"});
+          set_verb_code(player, "cb_error", {
+            "{before}",
+            "try",
+            "  raise(E_INVARG, \"callback payload\", {17, \"seventeen\"});",
+            "finally",
+            "  #0.cb_finally = 1;",
+            "endtry",
+            "{after}"
+          });
+          return 1;
+        as: wizard
+        expect: {value: 1}
+      - command: cb_error
+      - run: |
+          for attempt in [1..100]
+            if (length(#0.cb_events)) break; endif
+            suspend(0.01);
+          endfor
+          e = #0.cb_events[1];
+          p = e[5];
+          frame = p[4][1];
+          return {
+            length(#0.cb_events),
+            {e[1..4], e[6..14]} == {
+              {"handle_uncaught_error", #0, #-1, #0.cb_player},
+              {"", #-1, "", "", #-1, "", #0.cb_owner, #-1, {}}
+            },
+            length(p) == 5 && p[1..3] == {E_INVARG, "callback payload", {17, "seventeen"}},
+            frame[1..5] == {#0.cb_player, "cb_error", #0.cb_player, #0.cb_player, #0.cb_player} && frame[6] > 0,
+            typeof(p[5]) == LIST && length(p[5]) > 0 && index(p[5][1], "callback payload") > 0,
+            #0.cb_finally_seen
+          };
+        as: wizard
+        expect: {value: [1, 1, 1, 1, 1, 1]}
+      - restart_server: {reset_db: true}
+
+  - name: caught_error_does_not_call_uncaught_handler
+    steps:
+      - restart_server: {reset_db: true}
+      - run: |
+          add_property(#0, "cb_events", {}, {player, "rw"});
+          owner = create($nothing);
+          owner.programmer = 1;
+          add_property(#0, "cb_owner", owner, {player, "r"});
+          try delete_verb(#0, "handle_uncaught_error"); except (E_VERBNF) endtry
+          add_verb(#0, {owner, "rxd", "handle_uncaught_error"}, {"this", "none", "this"});
+          set_verb_code(#0, "handle_uncaught_error", {"#0.cb_events = {@#0.cb_events, {verb, this, caller, player, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()}};", "return 1;"});
+          try raise(E_INVARG, "caught"); except (E_INVARG) endtry
+          return 1;
+        as: wizard
+        expect: {value: 1}
+      - run: 'return #0.cb_events;'
+        as: wizard
+        expect: {value: []}
+      - restart_server: {reset_db: true}
+
+  - name: timeout_{resource}_frame_and_payload
+    table:
+      columns: [resource, ticks, seconds, message]
+      rows:
+        - [ticks, 100, 10, "Task ran out of ticks"]
+        - [seconds, 2147483647, 1, "Task ran out of seconds"]
+    steps:
+      - restart_server: {reset_db: true}
+      - run: |
+          add_property(#0, "cb_events", {}, {player, "rw"});
+          owner = create($nothing);
+          owner.programmer = 1;
+          add_property(#0, "cb_owner", owner, {player, "r"});
+          add_property(#0, "cb_player", player, {player, "r"});
+          for option in ({"bg_ticks", "bg_seconds"})
+            try add_property($server_options, option, 100, {player, "rw"}); except (E_INVARG) endtry
+          endfor
+          $server_options.bg_ticks = {ticks};
+          $server_options.bg_seconds = {seconds};
+          load_server_options();
+          try delete_verb(#0, "handle_task_timeout"); except (E_VERBNF) endtry
+          add_verb(#0, {owner, "rxd", "handle_task_timeout"}, {"this", "none", "this"});
+          set_verb_code(#0, "handle_task_timeout", {"#0.cb_events = {@#0.cb_events, {verb, this, caller, player, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()}};", "return 1;"});
+          add_verb(player, {player, "rxd", "cb_timeout"}, {"none", "none", "none"});
+          set_verb_code(player, "cb_timeout", {"fork (0)", "while (1) endwhile", "endfork"});
+          return 1;
+        as: wizard
+        expect: {value: 1}
+      - command: cb_timeout
+      - wait: 2500
+      - run: |
+          e = #0.cb_events[1];
+          p = e[5]; frame = p[2][1];
+          return {
+            length(#0.cb_events),
+            {e[1..4], e[6..14]} == {
+              {"handle_task_timeout", #0, #-1, #0.cb_player},
+              {"", #-1, "", "", #-1, "", #0.cb_owner, #-1, {}}
+            },
+            length(p) == 3 && p[1] == "{resource}",
+            frame[1..5] == {#0.cb_player, "cb_timeout", #0.cb_player, #0.cb_player, #0.cb_player} && frame[6] > 0,
+            index(p[3][1], "{message}") > 0
+          };
+        as: wizard
+        expect: {value: [1, 1, 1, 1, 1]}
+      - restart_server: {reset_db: true}

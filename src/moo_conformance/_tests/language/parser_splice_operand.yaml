@@ -1,0 +1,19 @@
+name: parser_splice_operand
+description: A splice prefixes an argument entry and cannot be a binary operand
+tests:
+  - name: numeric_division_splice_rejected
+    code: 'eval("return {1/@{}};")'
+    expect:
+      value: [0, ["Line 1:  syntax error"]]
+  - name: string_division_splice_rejected
+    code: 'eval("return {\"\"/@{}};")'
+    expect:
+      value: [0, ["Line 1:  syntax error"]]
+  - name: list_and_call_splices_remain_valid
+    code: 'eval("return {length(@{{1}}), @{2, 3}};")'
+    expect:
+      value: [1, [1, 2, 3]]
+  - name: rest_before_optional_scatter_remains_valid
+    code: 'eval("{command, @rest, ?last = 9} = {1, 2, 3}; return {command, rest, last};")'
+    expect:
+      value: [1, [1, [2], 3]]

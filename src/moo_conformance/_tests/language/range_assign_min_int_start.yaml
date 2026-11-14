@@ -1,0 +1,33 @@
+name: range_assign_min_int_start
+description: >
+  Range assignment whose start is the minimum 64-bit integer. A start below 1
+  keeps no prefix, so the most negative start behaves like a start of 1 and
+  must not wrap around when one is subtracted from it.
+
+tests:
+  - name: string_range_assign_start_min_int
+    statement: |
+      s = "abcdef";
+      s[-9223372036854775807 - 1..2] = "X";
+      return s;
+    expect:
+      value: "Xcdef"
+    skip_if: "not feature.64bit"
+
+  - name: string_range_assign_start_min_int_end_zero
+    statement: |
+      s = "ab";
+      s[-9223372036854775807 - 1..0] = "z";
+      return s;
+    expect:
+      value: "zab"
+    skip_if: "not feature.64bit"
+
+  - name: list_range_assign_start_min_int
+    statement: |
+      l = {1, 2, 3};
+      l[-9223372036854775807 - 1..1] = {9};
+      return l;
+    expect:
+      value: [9, 2, 3]
+    skip_if: "not feature.64bit"

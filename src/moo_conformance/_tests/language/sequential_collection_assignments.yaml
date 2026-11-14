@@ -1,0 +1,57 @@
+name: sequential_collection_assignments
+description: >
+  A verb made of hundreds of sequential index and range assignments over a few
+  variables compiles and runs; the number of such statements does not exhaust
+  the verb's local variables.
+
+requires:
+  builtins:
+    - add_verb
+    - delete_verb
+    - set_verb_code
+
+tests:
+  - name: many_sequential_index_and_range_assignments_compile_and_run
+    description: >
+      Six hundred sequential list, map, string, nested index and nested range
+      assignments in one verb compile and leave the last assigned values,
+      including a range assignment whose value contains another index
+      assignment.
+    permission: programmer
+    steps:
+      - verb_setup:
+          object: player
+          name: seq_collection_assign_target
+          args: ["this", "none", "this"]
+          code: "return 0;"
+        expect:
+          value: []
+      - verb_setup:
+          object: player
+          name: seq_collection_assign_helper
+          args: ["this", "none", "this"]
+          code: |
+            lines = {"l = {0, 0, 0};", "m = [\"a\" -> {0, 0}];", "s = \"abc\";", "n = {{0, 0}, {0, 0}};", "o = {0};"};
+            for i in [1..100]
+              v = tostr(i);
+              lines = {@lines,
+                       "l[2] = " + v + ";",
+                       "l[1..1] = {" + v + "};",
+                       "m[\"a\"][1] = " + v + ";",
+                       "m[\"a\"][2..2] = {" + v + "};",
+                       "s[2] = \"x\";",
+                       "n[2][1..1] = {o[1] = " + v + "};"};
+            endfor
+            lines = {@lines, "return {l, m, s, n, o};"};
+            return set_verb_code(player, "seq_collection_assign_target", lines);
+        expect:
+          value: []
+      - run: "player:seq_collection_assign_helper()"
+        expect:
+          value: []
+      - run: "player:seq_collection_assign_target()"
+        expect:
+          value: [[100, 100, 0], {"a": [100, 100]}, "axc", [[0, 0], [100, 0]], [100]]
+    cleanup:
+      - run: 'delete_verb(player, "seq_collection_assign_helper");'
+      - run: 'delete_verb(player, "seq_collection_assign_target");'

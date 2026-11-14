@@ -1,0 +1,60 @@
+name: divergence_builtin_inventory
+description: >
+  Builtin names absent from every supported Toast CI profile. Compile-conditional
+  builtins are covered by feature-aware suites instead of universal absence checks.
+
+tests:
+  - name: builtin_inventory_no_capitalize
+    code: "function_info(\"capitalize\")"
+    expect:
+      error: E_INVARG
+
+  - name: builtin_inventory_no_connection_option
+    code: "function_info(\"connection_option\")"
+    expect:
+      error: E_INVARG
+
+  - name: builtin_inventory_no_downcase
+    code: "function_info(\"downcase\")"
+    expect:
+      error: E_INVARG
+
+  - name: builtin_inventory_no_implode
+    code: "function_info(\"implode\")"
+    expect:
+      error: E_INVARG
+
+  - name: builtin_inventory_no_ltrim
+    code: "function_info(\"ltrim\")"
+    expect:
+      error: E_INVARG
+
+  - name: builtin_inventory_no_mapmerge
+    code: "function_info(\"mapmerge\")"
+    expect:
+      error: E_INVARG
+
+  - name: builtin_inventory_no_read_stdin
+    code: "function_info(\"read_stdin\")"
+    expect:
+      error: E_INVARG
+
+  - name: builtin_inventory_no_rtrim
+    code: "function_info(\"rtrim\")"
+    expect:
+      error: E_INVARG
+
+  - name: builtin_inventory_no_trim
+    code: "function_info(\"trim\")"
+    expect:
+      error: E_INVARG
+
+  - name: builtin_inventory_no_unique
+    code: "function_info(\"unique\")"
+    expect:
+      error: E_INVARG
+
+  - name: builtin_inventory_no_upcase
+    code: "function_info(\"upcase\")"
+    expect:
+      error: E_INVARG

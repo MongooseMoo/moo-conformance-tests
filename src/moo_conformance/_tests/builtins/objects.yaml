@@ -273,6 +273,33 @@ tests:
     - 1
     - 1
     - 1
+- name: chparent_anonymous_not_added_to_parent_children
+  permission: wizard
+  description: Reparenting an anonymous object leaves it out of the old and new parents'
+    children() and descendants()
+  statement: 'p = create($nothing);
+
+    q = create($nothing);
+
+    a = create(p, 1);
+
+    before = {children(p), descendants(p)};
+
+    chparent(a, q);
+
+    return {before, children(p), children(q), descendants(p), descendants(q), parent(a)
+    == q};
+
+    '
+  expect:
+    value:
+    - - []
+      - []
+    - []
+    - []
+    - []
+    - []
+    - 1
 - name: ancestors_basic
   permission: wizard
   statement: 'a = create($nothing);
@@ -2004,3 +2031,27 @@ tests:
     '
   expect:
     error: E_INVARG
+- name: chparent_to_anonymous_object
+  description: The new parent must be an OBJ (Toast is_obj_or_list_of_objs), so an
+    anonymous object is a type error.
+  permission: wizard
+  statement: 'a = create($nothing);
+
+    b = create($anonymous, 1);
+
+    return chparent(a, b);
+
+    '
+  expect:
+    error: E_TYPE
+- name: chparents_with_anonymous_object_in_list
+  permission: wizard
+  statement: 'a = create($nothing);
+
+    b = create($anonymous, 1);
+
+    return chparents(a, {b});
+
+    '
+  expect:
+    error: E_TYPE

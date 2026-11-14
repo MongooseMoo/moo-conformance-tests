@@ -21,3 +21,17 @@ tests:
     code: 'set_connection_option(#999999, "call-shape-invalid-option", {expr})'
     expect:
       error: E_INVARG
+
+  - name: set_connection_option_programmer_other_unconnected_is_perm
+    description: The permission check comes before the connection lookup.
+    steps:
+      - run: create($nothing)
+        capture: obj
+        as: wizard
+      - run: 'set_connection_option({obj}, "hold-input", 1)'
+        as: programmer
+        expect:
+          error: E_PERM
+    cleanup:
+      - run: recycle({obj})
+        as: wizard

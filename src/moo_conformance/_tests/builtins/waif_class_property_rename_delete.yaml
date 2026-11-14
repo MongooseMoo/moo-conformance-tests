@@ -1,0 +1,297 @@
+name: waif_class_property_rename_delete
+description: >-
+  A WAIF's value for a ":" property of its class follows a rename of that
+  property by set_property_info(), on the class and on its descendant classes,
+  and is gone after delete_property(); re-adding the property gives the class
+  default. Adding another property leaves the values alone. A WAIF property
+  the class does not define is E_PROPNF on write as on read. The rows read the
+  WAIF between a class change and the next one where it matters: Toast
+  reconciles a WAIF lazily, on its next access, against the class's current
+  WAIF propdefs.
+
+requires:
+  builtins:
+    - add_property
+    - delete_property
+    - set_property_info
+    - add_verb
+    - set_verb_code
+    - new_waif
+    - create
+    - recycle
+    - suspend
+
+tests:
+  # A WAIF's value for a class property follows the rename.
+  - name: rename_waif_class_property
+    permission: wizard
+    statement: |
+      c = create($nothing);
+      add_property(c, ":foo", 1, {player, "rw"});
+      add_verb(c, {player, "rxd", "new"}, {"this", "none", "this"});
+      set_verb_code(c, "new", {"return new_waif();"});
+      w = c:new();
+      w.foo = 5;
+      set_property_info(c, ":foo", {player, "rw", ":bar"});
+      res = {w.bar, `w.foo ! ANY' == E_PROPNF};
+      w = 0;
+      recycle(c);
+      return res;
+    expect:
+      value: [5, 1]
+
+  # A WAIF of a descendant class keeps its value under the new name.
+  - name: rename_follows_descendant_class_waif
+    permission: wizard
+    statement: |
+      c = create($nothing);
+      add_property(c, ":foo", 1, {player, "rw"});
+      add_verb(c, {player, "rxd", "new"}, {"this", "none", "this"});
+      set_verb_code(c, "new", {"return new_waif();"});
+      d = create(c);
+      w = d:new();
+      w.foo = 5;
+      set_property_info(c, ":foo", {player, "rw", ":bar"});
+      res = {w.class == d, w.bar, `w.foo ! ANY' == E_PROPNF};
+      w = 0;
+      recycle(d);
+      recycle(c);
+      return res;
+    expect:
+      value: [1, 5, 1]
+
+  # A WAIF held only by an object property keeps its value too.
+  - name: rename_follows_waif_held_in_property
+    permission: wizard
+    statement: |
+      c = create($nothing);
+      add_property(c, ":foo", 1, {player, "rw"});
+      add_verb(c, {player, "rxd", "new"}, {"this", "none", "this"});
+      set_verb_code(c, "new", {"return new_waif();"});
+      o = create($nothing);
+      add_property(o, "held", 0, {player, "rw"});
+      w = c:new();
+      w.foo = 5;
+      o.held = w;
+      w = 0;
+      set_property_info(c, ":foo", {player, "rw", ":bar"});
+      res = {o.held.bar, `o.held.foo ! ANY' == E_PROPNF};
+      recycle(o);
+      recycle(c);
+      return res;
+    expect:
+      value: [5, 1]
+
+  # A WAIF that never wrote the property reads the class value by its new name.
+  - name: rename_unwritten_waif_reads_class_value
+    permission: wizard
+    statement: |
+      c = create($nothing);
+      add_property(c, ":foo", 1, {player, "rw"});
+      add_verb(c, {player, "rxd", "new"}, {"this", "none", "this"});
+      set_verb_code(c, "new", {"return new_waif();"});
+      w = c:new();
+      set_property_info(c, ":foo", {player, "rw", ":bar"});
+      res = {w.bar, `w.foo ! ANY' == E_PROPNF};
+      w = 0;
+      recycle(c);
+      return res;
+    expect:
+      value: [1, 1]
+
+  - name: rename_and_rename_back_keeps_value
+    permission: wizard
+    statement: |
+      c = create($nothing);
+      add_property(c, ":foo", 1, {player, "rw"});
+      add_verb(c, {player, "rxd", "new"}, {"this", "none", "this"});
+      set_verb_code(c, "new", {"return new_waif();"});
+      w = c:new();
+      w.foo = 5;
+      set_property_info(c, ":foo", {player, "rw", ":bar"});
+      set_property_info(c, ":bar", {player, "rw", ":foo"});
+      res = {w.foo, `w.bar ! ANY' == E_PROPNF};
+      w = 0;
+      recycle(c);
+      return res;
+    expect:
+      value: [5, 1]
+
+  # Swapping two names in one task swaps the values.
+  - name: rename_swap_swaps_values
+    permission: wizard
+    statement: |
+      c = create($nothing);
+      add_property(c, ":a", 1, {player, "rw"});
+      add_property(c, ":b", 2, {player, "rw"});
+      add_verb(c, {player, "rxd", "new"}, {"this", "none", "this"});
+      set_verb_code(c, "new", {"return new_waif();"});
+      w = c:new();
+      w.a = 10;
+      w.b = 20;
+      set_property_info(c, ":a", {player, "rw", ":t"});
+      set_property_info(c, ":b", {player, "rw", ":a"});
+      set_property_info(c, ":t", {player, "rw", ":b"});
+      res = {w.a, w.b};
+      w = 0;
+      recycle(c);
+      return res;
+    expect:
+      value: [20, 10]
+
+  # A write after the rename uses the new name; the old one is E_PROPNF.
+  - name: rename_then_write_in_one_task
+    permission: wizard
+    statement: |
+      c = create($nothing);
+      add_property(c, ":foo", 1, {player, "rw"});
+      add_verb(c, {player, "rxd", "new"}, {"this", "none", "this"});
+      set_verb_code(c, "new", {"return new_waif();"});
+      w = c:new();
+      w.foo = 5;
+      set_property_info(c, ":foo", {player, "rw", ":bar"});
+      w.bar = w.bar + 1;
+      try
+        w.foo = 9;
+        r = 0;
+      except e (ANY)
+        r = e[1];
+      endtry
+      res = {w.bar, r};
+      w = 0;
+      recycle(c);
+      return res;
+    expect:
+      value: [6, E_PROPNF]
+
+  # The write, the rename and the reads each in their own task segment.
+  - name: rename_across_suspends
+    permission: wizard
+    statement: |
+      c = create($nothing);
+      add_property(c, ":foo", 1, {player, "rw"});
+      add_verb(c, {player, "rxd", "new"}, {"this", "none", "this"});
+      set_verb_code(c, "new", {"return new_waif();"});
+      w = c:new();
+      w.foo = 5;
+      suspend(0);
+      set_property_info(c, ":foo", {player, "rw", ":bar"});
+      suspend(0);
+      a = w.bar;
+      w.bar = a + 1;
+      suspend(0);
+      res = {a, w.bar, `w.foo ! ANY' == E_PROPNF};
+      w = 0;
+      recycle(c);
+      return res;
+    expect:
+      value: [5, 6, 1]
+
+  # Renaming to a name without ":" drops the value; renaming back gives the
+  # class value.
+  - name: rename_to_plain_name_drops_value
+    permission: wizard
+    statement: |
+      c = create($nothing);
+      add_property(c, ":foo", 1, {player, "rw"});
+      add_verb(c, {player, "rxd", "new"}, {"this", "none", "this"});
+      set_verb_code(c, "new", {"return new_waif();"});
+      w = c:new();
+      w.foo = 5;
+      set_property_info(c, ":foo", {player, "rw", "plain"});
+      r1 = `w.foo ! ANY';
+      set_property_info(c, "plain", {player, "rw", ":foo"});
+      res = {r1, w.foo};
+      w = 0;
+      recycle(c);
+      return res;
+    expect:
+      value: [E_PROPNF, 1]
+
+  # Deleting the property drops the WAIF's value; re-adding it gives the class
+  # value.
+  - name: delete_drops_waif_value
+    permission: wizard
+    statement: |
+      c = create($nothing);
+      add_property(c, ":foo", 1, {player, "rw"});
+      add_verb(c, {player, "rxd", "new"}, {"this", "none", "this"});
+      set_verb_code(c, "new", {"return new_waif();"});
+      w = c:new();
+      w.foo = 5;
+      delete_property(c, ":foo");
+      r1 = `w.foo ! ANY';
+      try
+        w.foo = 9;
+        r2 = 0;
+      except e (ANY)
+        r2 = e[1];
+      endtry
+      add_property(c, ":foo", 1, {player, "rw"});
+      res = {r1, r2, w.foo};
+      w = 0;
+      recycle(c);
+      return res;
+    expect:
+      value: [E_PROPNF, E_PROPNF, 1]
+
+  - name: delete_and_readd_across_suspends
+    permission: wizard
+    statement: |
+      c = create($nothing);
+      add_property(c, ":foo", 1, {player, "rw"});
+      add_verb(c, {player, "rxd", "new"}, {"this", "none", "this"});
+      set_verb_code(c, "new", {"return new_waif();"});
+      w = c:new();
+      w.foo = 5;
+      suspend(0);
+      delete_property(c, ":foo");
+      suspend(0);
+      add_property(c, ":" + "foo", 1, {player, "rw"});
+      suspend(0);
+      res = {w.foo};
+      w = 0;
+      recycle(c);
+      return res;
+    expect:
+      value: [1]
+
+  - name: add_property_keeps_waif_values
+    permission: wizard
+    statement: |
+      c = create($nothing);
+      add_property(c, ":foo", 1, {player, "rw"});
+      add_verb(c, {player, "rxd", "new"}, {"this", "none", "this"});
+      set_verb_code(c, "new", {"return new_waif();"});
+      w = c:new();
+      w.foo = 5;
+      add_property(c, ":x", 3, {player, "rw"});
+      r1 = w.foo;
+      set_property_info(c, ":foo", {player, "rw", ":bar"});
+      res = {r1, w.x, w.bar};
+      w = 0;
+      recycle(c);
+      return res;
+    expect:
+      value: [5, 3, 5]
+
+  - name: write_undefined_waif_property
+    permission: wizard
+    statement: |
+      c = create($nothing);
+      add_property(c, ":foo", 1, {player, "rw"});
+      add_verb(c, {player, "rxd", "new"}, {"this", "none", "this"});
+      set_verb_code(c, "new", {"return new_waif();"});
+      w = c:new();
+      try
+        w.nope = 3;
+        r = 0;
+      except e (ANY)
+        r = e[1];
+      endtry
+      res = {r, `w.nope ! ANY'};
+      w = 0;
+      recycle(c);
+      return res;
+    expect:
+      value: [E_PROPNF, E_PROPNF]

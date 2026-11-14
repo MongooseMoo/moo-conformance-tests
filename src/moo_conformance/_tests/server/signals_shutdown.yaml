@@ -1,0 +1,40 @@
+name: signals_shutdown
+description: INT and TERM take Toast's graceful shutdown path and persist current state.
+requires:
+  config: [managed_server, posix_signals, server_dir, log_file]
+tests:
+  - name: graceful_{signal}_persists_without_user_signal_hook
+    table:
+      rows: [[SIGINT], [SIGTERM]]
+      columns: [signal]
+    steps:
+      - restart_server: {reset_db: true}
+      - run: |
+          add_property(#0, "signal_marker", "graceful-{signal}", {player, "rw"});
+          add_property(#0, "signal_hook_called", 0, {player, "rw"});
+          add_property(#0, "signal_checkpoint_called", 0, {player, "rw"});
+          try delete_verb(#0, "handle_signal"); except (E_VERBNF) endtry
+          add_verb(#0, {player, "rxd", "handle_signal"}, {"this", "none", "this"});
+          set_verb_code(#0, "handle_signal", {"#0.signal_hook_called = 1;", "return 1;"});
+          for name in ({"checkpoint_started", "checkpoint_finished"})
+            try delete_verb(#0, name); except (E_VERBNF) endtry
+            add_verb(#0, {player, "rxd", name}, {"this", "none", "this"});
+            set_verb_code(#0, name, {"#0.signal_checkpoint_called = 1;"});
+          endfor
+          return 1;
+        as: wizard
+        expect: {value: 1}
+      - new_connection: {capture: observer}
+      - send: {connection: observer, text: "connect Programmer"}
+      - signal_server: "{signal}"
+      - read_connection: {connection: observer}
+        expect:
+          output: {contains: "*** Shutting down: shutdown signal received ***"}
+      - wait_for_server_exit: {timeout_ms: 10000, exit_code: 0}
+      - assert_log: {contains: "SHUTDOWN: shutdown signal received"}
+      - assert_file: {path: Test.db.new, contains: "graceful-{signal}"}
+      - restart_server: {}
+      - run: 'return {#0.signal_marker, #0.signal_hook_called, #0.signal_checkpoint_called};'
+        as: wizard
+        expect: {value: ["graceful-{signal}", 0, 0]}
+      - restart_server: {reset_db: true}

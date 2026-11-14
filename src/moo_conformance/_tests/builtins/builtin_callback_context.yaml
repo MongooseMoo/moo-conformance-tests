@@ -1,0 +1,149 @@
+name: builtin_callback_context
+description: Builtin callbacks inherit caller command context while using the selected verb owner and definer.
+requires:
+  builtins: [create, recreate, recycle, move, callers, caller_perms]
+tests:
+  - name: initialize_{kind}_{lookup}_returns_created_object_without_callback
+    permission: wizard
+    table:
+      product:
+        - columns: [kind, operation, type]
+          rows:
+            - [permanent, "create(parent)", OBJ]
+            - [anonymous, "create(parent, 1)", ANON]
+            - [recreated, "recreate(slot, parent)", OBJ]
+        - columns: [lookup, installed]
+          rows: [[absent, 0], [nonexecutable, 1]]
+    statement: |
+      parent = create($nothing); parent.a = 1;
+      add_property(parent, "called", 0, {player, "rw"});
+      if ({installed})
+        add_verb(parent, {player, "rd", "initialize"}, {"this", "none", "this"});
+        set_verb_code(parent, "initialize", {"this.called = 1;", "raise(E_INVARG);"});
+      endif
+      slot = create($nothing); recycle(slot);
+      result = {operation};
+      answer = {typeof(result) == {type}, parent(result) == parent, result.called == 0};
+      recycle(result); recycle(parent);
+      return answer;
+    expect: {value: [1, 1, 1]}
+
+  - name: initialize_{kind}_{outcome}_inherited_frame
+    permission: wizard
+    table:
+      product:
+        - columns: [kind, operation, init_args]
+          rows:
+            - [permanent, "create(parent, {7, 8})", "{7, 8}"]
+            - [anonymous, "create(parent, 1, {7, 8})", "{7, 8}"]
+            - [recreated, "recreate(slot, parent)", "{}"]
+        - columns: [outcome, tail, error]
+          rows:
+            - [returns, "return 99;", E_NONE]
+            - [suspends, "suspend(0); return 99;", E_NONE]
+            - [raises, "raise(E_INVARG);", E_INVARG]
+    setup:
+      code: |
+        rec = create($nothing);
+        owner = create($nothing);
+        owner.programmer = 1;
+        parent = create($nothing);
+        parent.a = 1;
+        driver = create($nothing);
+        alternate = create($nothing);
+        add_property(rec, "owned", {driver, parent, alternate, owner}, {player, "r"});
+        add_property(#0, "cb_rec", rec, {player, "r"});
+        add_property(rec, "seen", {}, {player, "rw"});
+        add_property(rec, "frame", {}, {player, "rw"});
+        add_verb(rec, {player, "rxd", "observe"}, {"this", "none", "this"});
+        set_verb_code(rec, "observe", {"return callers()[1];"});
+        add_verb(parent, {owner, "rxd", "initialize"}, {"this", "none", "this"});
+        set_verb_code(parent, "initialize", {
+          "#0.cb_rec.seen = {this, caller, player, verb, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers()};",
+          "#0.cb_rec.frame = #0.cb_rec:observe();",
+          "{tail}"
+        });
+        add_verb(driver, {player, "rxd", "drive"}, {"this", "none", "this"});
+        set_verb_code(driver, "drive", {
+          "{parent, alternate} = args;",
+          "player = alternate;",
+          "argstr = \"kept input\"; dobj = this; dobjstr = \"direct\"; prepstr = \"with\"; iobj = parent; iobjstr = \"indirect\";",
+          "slot = create($nothing); recycle(slot);",
+          "return {operation};"
+        });
+    statement: |
+      status = E_NONE;
+      try result = driver:drive(parent, alternate);
+      except error (ANY)
+        status = error[1]; result = rec.seen[1];
+      endtry
+      seen = rec.seen;
+      expected_builtin = "{kind}" == "recreated" ? "recreate" | "create";
+      answer = {
+        seen[1..13] == {result, driver, alternate, "initialize", {init_args}, "kept input", driver, "direct", "with", parent, "indirect", owner, player},
+        seen[14][1] == {#-1, expected_builtin, #-1, #-1, alternate},
+        seen[14][2] == {driver, "drive", player, driver, player},
+        rec.frame == {result, "initialize", owner, parent, alternate},
+        typeof(result) == ("{kind}" == "anonymous" ? ANON | OBJ) && status == {error}
+      };
+      recycle(result);
+      return answer;
+    expect: {value: [1, 1, 1, 1, 1]}
+    teardown:
+      code: |
+        rec = #0.cb_rec;
+        delete_property(#0, "cb_rec");
+        for obj in (rec.owned) recycle(obj); endfor
+        recycle(rec);
+
+  - name: explicit_recycle_{kind}_has_nested_frame
+    permission: wizard
+    table:
+      columns: [kind, anonymous]
+      rows: [[permanent, 0], [anonymous, 1]]
+    setup:
+      code: |
+        rec = create($nothing);
+        owner = create($nothing); owner.programmer = 1;
+        parent = create($nothing); parent.a = 1;
+        driver = create($nothing);
+        add_property(rec, "owned", {driver, parent, owner}, {player, "r"});
+        add_property(#0, "cb_rec", rec, {player, "r"});
+        add_property(rec, "seen", {}, {player, "rw"});
+        add_property(rec, "frame", {}, {player, "rw"});
+        add_verb(rec, {player, "rxd", "observe"}, {"this", "none", "this"});
+        set_verb_code(rec, "observe", {"return callers()[1];"});
+        add_verb(parent, {owner, "rxd", "recycle"}, {"this", "none", "this"});
+        add_property(rec, "calls", 0, {player, "rw"});
+        set_verb_code(parent, "recycle", {
+          "#0.cb_rec.calls = #0.cb_rec.calls + 1;",
+          "#0.cb_rec.seen = {caller, player, verb, args, argstr, dobj, dobjstr, prepstr, iobj, iobjstr, task_perms(), caller_perms(), callers(), typeof(this), this == iobj};",
+          "f = #0.cb_rec:observe(); #0.cb_rec.frame = {f[2], f[3], f[4], f[5]};"
+        });
+        add_verb(driver, {player, "rxd", "drive"}, {"this", "none", "this"});
+        set_verb_code(driver, "drive", {
+          "argstr = \"kept input\"; dobj = this; dobjstr = \"direct\"; prepstr = \"with\"; iobj = args[1]; iobjstr = \"indirect\";",
+          "recycle(args[1]);"
+        });
+    statement: |
+      target = create(parent, {anonymous});
+      driver:drive(target);
+      seen = rec.seen;
+      answer = {
+        seen[1..12] == {driver, player, "recycle", {}, "kept input", driver, "direct", "with", target, "indirect", owner, player},
+        seen[13][1] == {#-1, "recycle", #-1, #-1, player},
+        seen[13][2] == {driver, "drive", player, driver, player},
+        seen[14] == ("{kind}" == "anonymous" ? ANON | OBJ),
+        rec.frame == {"recycle", owner, parent, player} && seen[15]
+      };
+      target = 0; seen = {}; rec.seen = {};
+      suspend(0.05);
+      return {@answer, rec.calls};
+    expect: {value: [1, 1, 1, 1, 1, 1]}
+    teardown:
+      code: |
+        rec = #0.cb_rec;
+        delete_verb(rec.owned[2], "recycle");
+        delete_property(#0, "cb_rec");
+        for obj in (rec.owned) recycle(obj); endfor
+        recycle(rec);

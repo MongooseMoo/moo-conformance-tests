@@ -1,0 +1,972 @@
+name: tick_accounting
+description: >
+  Exact per-construct tick charges. ToastStunt charges one tick for every
+  executed opcode numbered at or below OP_G_PUT (opcode.h COUNT_TICK, checked
+  in execute.cc before the opcode runs) and one tick for every extended opcode
+  at or above EOP_CATCH (COUNT_EOP_TICK). Pushes, immediates, list building
+  after the first element, jumps, returns, pops, and map construction are free.
+  Each test measures `a = ticks_left(); <code>; b = ticks_left(); return a - b;`.
+  The empty program costs 2: the PUT into `a` and the BI_FUNC_CALL for the
+  second ticks_left().
+
+requires:
+  builtins:
+    - ticks_left
+    - add_property
+    - delete_property
+    - load_server_options
+    - create
+    - recycle
+    - add_verb
+    - set_verb_code
+    - verb_code
+    - suspend
+    - kill_task
+
+tests:
+  # ===========================================================================
+  # Baseline, literals, and variable assignment (OP_PUT)
+  # ===========================================================================
+
+  - name: tick_baseline_empty
+    permission: programmer
+    statement: |
+      a = ticks_left();
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 2
+
+  - name: tick_assign_small_literal
+    description: OP_PUT costs one tick; the immediate push is free.
+    permission: programmer
+    statement: |
+      a = ticks_left();
+      x = 5;
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 3
+
+  - name: tick_assign_large_literal
+    description: A literal outside the immediate range is one OP_IMM push, free.
+    permission: programmer
+    statement: |
+      a = ticks_left();
+      x = 123456789;
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 3
+
+  - name: tick_assign_negative_literal
+    permission: programmer
+    statement: |
+      a = ticks_left();
+      x = -5;
+      y = -123456789;
+      z = -1.5;
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 5
+
+  - name: tick_assign_string_literal
+    permission: programmer
+    statement: |
+      a = ticks_left();
+      x = "hello";
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 3
+
+  - name: tick_expression_statement_literal_is_free
+    permission: programmer
+    statement: |
+      a = ticks_left();
+      5;
+      "x";
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 2
+
+  - name: tick_assign_variable
+    permission: programmer
+    statement: |
+      y = 1;
+      a = ticks_left();
+      x = y;
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 3
+
+  - name: tick_chained_assignment
+    permission: programmer
+    statement: |
+      a = ticks_left();
+      x = y = 1;
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 4
+
+  # ===========================================================================
+  # Arithmetic, comparison, logic, bitwise
+  # ===========================================================================
+
+  - name: tick_add_literals_not_folded
+    permission: programmer
+    statement: |
+      a = ticks_left();
+      x = 1 + 2;
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 4
+
+  - name: tick_arithmetic_operators
+    permission: programmer
+    statement: |
+      y = 7;
+      a = ticks_left();
+      x = y + 2;
+      x = y - 2;
+      x = y * 2;
+      x = y / 2;
+      x = y % 2;
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 12
+
+  - name: tick_exponent_operator
+    permission: programmer
+    statement: |
+      y = 2;
+      a = ticks_left();
+      x = y ^ 3;
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 4
+
+  - name: tick_unary_minus_on_variable
+    permission: programmer
+    statement: |
+      y = 5;
+      a = ticks_left();
+      x = -y;
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 4
+
+  - name: tick_not_operator
+    permission: programmer
+    statement: |
+      y = 1;
+      a = ticks_left();
+      x = !y;
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 4
+
+  - name: tick_comparison_operators
+    permission: programmer
+    statement: |
+      y = 2;
+      a = ticks_left();
+      x = y == 2;
+      x = y != 2;
+      x = y < 2;
+      x = y <= 2;
+      x = y > 2;
+      x = y >= 2;
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 14
+
+  - name: tick_in_operator
+    permission: programmer
+    statement: |
+      y = {1, 2};
+      a = ticks_left();
+      x = 1 in y;
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 4
+
+  - name: tick_and_or_operators
+    permission: programmer
+    statement: |
+      y = 1;
+      a = ticks_left();
+      x = y && 0;
+      x = y || 0;
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 6
+
+  - name: tick_and_short_circuit_skips_right_side
+    permission: programmer
+    statement: |
+      y = 0;
+      a = ticks_left();
+      x = y && (z = 1);
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 4
+
+  - name: tick_bitwise_operators
+    permission: programmer
+    statement: |
+      y = 6;
+      a = ticks_left();
+      x = y &. 3;
+      x = y |. 3;
+      x = y ^. 3;
+      x = y << 1;
+      x = y >> 1;
+      x = ~y;
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 14
+
+  - name: tick_ternary
+    permission: programmer
+    statement: |
+      y = 1;
+      a = ticks_left();
+      x = y ? 2 | 3;
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 4
+
+  - name: tick_string_concatenation
+    permission: programmer
+    statement: |
+      a = ticks_left();
+      x = "a" + "b";
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 4
+
+  - name: tick_self_add_statement
+    permission: programmer
+    statement: |
+      x = 0;
+      a = ticks_left();
+      x = x + 1;
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 4
+
+  # ===========================================================================
+  # List and map literals, splices
+  # ===========================================================================
+
+  - name: tick_empty_list_literal_is_free
+    permission: programmer
+    statement: |
+      a = ticks_left();
+      x = {};
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 3
+
+  - name: tick_list_literal_charges_first_element_only
+    permission: programmer
+    statement: |
+      a = ticks_left();
+      x = {1};
+      y = {1, 2, 3, 4};
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 6
+
+  - name: tick_list_literal_with_splices
+    permission: programmer
+    statement: |
+      y = {1, 2};
+      a = ticks_left();
+      x = {@y, 3};
+      x = {3, @y};
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 6
+
+  - name: tick_self_append_statement
+    permission: programmer
+    statement: |
+      v = {};
+      a = ticks_left();
+      v = {@v, 1};
+      v = {@v};
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 6
+
+  - name: tick_map_literal_is_free
+    permission: programmer
+    statement: |
+      a = ticks_left();
+      x = [];
+      y = [1 -> 2, 3 -> 4];
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 4
+
+  # ===========================================================================
+  # Indexing and ranges
+  # ===========================================================================
+
+  - name: tick_index
+    permission: programmer
+    statement: |
+      y = {1, 2, 3};
+      a = ticks_left();
+      x = y[2];
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 4
+
+  - name: tick_range
+    permission: programmer
+    statement: |
+      y = {1, 2, 3};
+      a = ticks_left();
+      x = y[1..2];
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 4
+
+  - name: tick_first_last_markers_are_free
+    permission: programmer
+    statement: |
+      y = {1, 2, 3};
+      a = ticks_left();
+      x = y[$];
+      x = y[^];
+      x = y[^..$];
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 8
+
+  - name: tick_index_assignment
+    permission: programmer
+    statement: |
+      y = {1, 2, 3};
+      a = ticks_left();
+      y[2] = 5;
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 4
+
+  - name: tick_index_assignment_with_last_marker
+    permission: programmer
+    statement: |
+      y = {1, 2, 3};
+      a = ticks_left();
+      y[$] = 5;
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 4
+
+  - name: tick_nested_index_assignment
+    permission: programmer
+    statement: |
+      y = {{1, 2}, {3, 4}};
+      a = ticks_left();
+      y[2][1] = 5;
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 5
+
+  - name: tick_map_index_assignment
+    permission: programmer
+    statement: |
+      m = ["a" -> 1];
+      a = ticks_left();
+      m["b"] = 2;
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 4
+
+  - name: tick_range_assignment
+    permission: programmer
+    statement: |
+      y = {1, 2, 3};
+      a = ticks_left();
+      y[1..2] = {7};
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 4
+
+  - name: tick_nested_range_assignment
+    permission: programmer
+    statement: |
+      y = {{1, 2}, {3, 4}};
+      a = ticks_left();
+      y[2][1..1] = {9};
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 5
+
+  - name: tick_index_assignment_as_expression
+    permission: programmer
+    statement: |
+      y = {1, 2, 3};
+      a = ticks_left();
+      x = y[2] = 5;
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 5
+
+  # ===========================================================================
+  # Properties
+  # ===========================================================================
+
+  - name: tick_property_read
+    permission: programmer
+    statement: |
+      a = ticks_left();
+      x = $nothing;
+      y = #0.name;
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 6
+
+  - name: tick_property_write_and_indexed_writes
+    permission: programmer
+    statement: |
+      o = create($nothing);
+      add_property(o, "p", {1, 2, 3}, {player, "rw"});
+      a = ticks_left();
+      o.p = {4, 5, 6};
+      c = ticks_left();
+      o.p[2] = 7;
+      d = ticks_left();
+      o.p[1..2] = {8};
+      e = ticks_left();
+      x = o.p[1];
+      f = ticks_left();
+      x = o.("p");
+      g = ticks_left();
+      recycle(o);
+      return {a - c, c - d, d - e, e - f, f - g};
+    expect:
+      value: [4, 5, 5, 5, 4]
+
+  # ===========================================================================
+  # Builtin calls, verb calls, pass()
+  # ===========================================================================
+
+  - name: tick_builtin_call_without_args
+    permission: programmer
+    statement: |
+      a = ticks_left();
+      x = time();
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 4
+
+  - name: tick_builtin_call_with_args
+    description: The first argument's MAKE_SINGLETON_LIST ticks; later arguments do not.
+    permission: programmer
+    statement: |
+      a = ticks_left();
+      x = max(1, 2);
+      y = max(1, 2, 3, 4);
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 8
+
+  - name: tick_builtin_call_with_splice
+    permission: programmer
+    statement: |
+      y = {1, 2};
+      a = ticks_left();
+      x = max(@y);
+      x = max(0, @y);
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 8
+
+  - name: tick_nested_builtin_calls
+    permission: programmer
+    statement: |
+      a = ticks_left();
+      x = length(tostr(1));
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 7
+
+  - name: tick_verb_calls
+    permission: programmer
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "v"}, {"this", "none", "this"});
+      set_verb_code(o, "v", {"return 5;"});
+      add_verb(o, {player, "xd", "w"}, {"this", "none", "this"});
+      set_verb_code(o, "w", {"y = 1;", "return y + 1;"});
+      a = ticks_left();
+      x = o:v();
+      c = ticks_left();
+      x = o:v(1, 2);
+      d = ticks_left();
+      x = o:w();
+      e = ticks_left();
+      x = o:("v")();
+      f = ticks_left();
+      recycle(o);
+      return {a - c, c - d, d - e, e - f};
+    expect:
+      value: [4, 5, 6, 4]
+
+  - name: tick_pass_calls
+    permission: programmer
+    statement: |
+      p = create($nothing);
+      add_verb(p, {player, "xd", "v"}, {"this", "none", "this"});
+      set_verb_code(p, "v", {"return 1;"});
+      add_verb(p, {player, "xd", "w"}, {"this", "none", "this"});
+      set_verb_code(p, "w", {"return 1;"});
+      o = create(p);
+      add_verb(o, {player, "xd", "v"}, {"this", "none", "this"});
+      set_verb_code(o, "v", {"return pass();"});
+      add_verb(o, {player, "xd", "w"}, {"this", "none", "this"});
+      set_verb_code(o, "w", {"return pass(@args);"});
+      a = ticks_left();
+      x = o:v();
+      c = ticks_left();
+      x = o:w(1);
+      d = ticks_left();
+      recycle(o);
+      recycle(p);
+      return {a - c, c - d};
+    expect:
+      value: [5, 7]
+
+  # ===========================================================================
+  # Conditionals and loops
+  # ===========================================================================
+
+  - name: tick_if_true
+    permission: programmer
+    statement: |
+      y = 1;
+      a = ticks_left();
+      if (y)
+        x = 1;
+      endif
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 4
+
+  - name: tick_if_false_else
+    permission: programmer
+    statement: |
+      y = 0;
+      a = ticks_left();
+      if (y)
+        x = 1;
+      else
+        x = 2;
+      endif
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 4
+
+  - name: tick_elseif_chain
+    permission: programmer
+    statement: |
+      y = 0;
+      a = ticks_left();
+      if (y)
+        x = 1;
+      elseif (y)
+        x = 2;
+      elseif (1)
+        x = 3;
+      else
+        x = 4;
+      endif
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 6
+
+  - name: tick_while_loop
+    permission: programmer
+    statement: |
+      i = 0;
+      a = ticks_left();
+      while (i < 3)
+        i = i + 1;
+      endwhile
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 16
+
+  - name: tick_named_while_loop
+    permission: programmer
+    statement: |
+      i = 0;
+      a = ticks_left();
+      while loop (i < 3)
+        i = i + 1;
+      endwhile
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 16
+
+  - name: tick_for_list_loop
+    permission: programmer
+    statement: |
+      a = ticks_left();
+      for z in ({1, 2, 3})
+      endfor
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 7
+
+  - name: tick_for_list_loop_with_index
+    permission: programmer
+    statement: |
+      a = ticks_left();
+      for z, k in ({1, 2, 3})
+      endfor
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 7
+
+  - name: tick_for_map_loop
+    permission: programmer
+    statement: |
+      a = ticks_left();
+      for v, k in ([1 -> 2, 3 -> 4])
+      endfor
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 5
+
+  - name: tick_for_string_loop
+    permission: programmer
+    statement: |
+      a = ticks_left();
+      for c in ("abc")
+      endfor
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 6
+
+  - name: tick_for_range_loop
+    permission: programmer
+    statement: |
+      a = ticks_left();
+      for z in [1..3]
+      endfor
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 6
+
+  - name: tick_for_range_loop_with_body
+    permission: programmer
+    statement: |
+      s = 0;
+      a = ticks_left();
+      for z in [1..10]
+        s = s + z;
+      endfor
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 33
+
+  - name: tick_break_and_continue
+    permission: programmer
+    statement: |
+      a = ticks_left();
+      for z in [1..3]
+        break;
+      endfor
+      c = ticks_left();
+      for z in [1..3]
+        continue;
+      endfor
+      d = ticks_left();
+      while (1)
+        break;
+      endwhile
+      e = ticks_left();
+      i = 0;
+      f = ticks_left();
+      while (i < 2)
+        i = i + 1;
+        continue;
+      endwhile
+      g = ticks_left();
+      for z in ({1, 2})
+        break z;
+      endfor
+      h = ticks_left();
+      return {a - c, c - d, d - e, f - g, g - h};
+    expect:
+      value: [4, 9, 4, 14, 5]
+
+  # ===========================================================================
+  # fork, return
+  # ===========================================================================
+
+  - name: tick_fork
+    permission: programmer
+    statement: |
+      a = ticks_left();
+      fork (0)
+        x = 1;
+      endfork
+      c = ticks_left();
+      fork t (0)
+        x = 1;
+      endfork
+      d = ticks_left();
+      kill_task(t);
+      return {a - c, c - d};
+    expect:
+      value: [3, 3]
+
+  # ===========================================================================
+  # Exceptions
+  # ===========================================================================
+
+  - name: tick_try_except_no_error
+    permission: programmer
+    statement: |
+      a = ticks_left();
+      try
+        x = 1;
+      except (ANY)
+      endtry
+      c = ticks_left();
+      try
+        x = 1;
+      except (E_DIV)
+      endtry
+      d = ticks_left();
+      try
+        x = 1;
+      except (E_DIV, E_TYPE)
+      except (E_RANGE)
+      except (ANY)
+      endtry
+      e = ticks_left();
+      return {a - c, c - d, d - e};
+    expect:
+      value: [4, 5, 6]
+
+  - name: tick_try_except_caught
+    permission: programmer
+    statement: |
+      y = 0;
+      a = ticks_left();
+      try
+        x = 1 / y;
+      except e (E_DIV)
+      endtry
+      c = ticks_left();
+      try
+        x = 1 / y;
+      except (E_DIV)
+      endtry
+      d = ticks_left();
+      return {a - c, c - d};
+    expect:
+      value: [6, 5]
+
+  - name: tick_try_finally
+    permission: programmer
+    statement: |
+      a = ticks_left();
+      try
+        x = 1;
+      finally
+        y = 2;
+      endtry
+      b = ticks_left();
+      return a - b;
+    expect:
+      value: 5
+
+  - name: tick_catch_expression
+    permission: programmer
+    statement: |
+      y = 0;
+      a = ticks_left();
+      x = `1 ! ANY';
+      c = ticks_left();
+      x = `1 ! E_DIV';
+      d = ticks_left();
+      x = `1 / y ! E_DIV';
+      e = ticks_left();
+      x = `1 / y ! E_DIV => 5';
+      f = ticks_left();
+      return {a - c, c - d, d - e, e - f};
+    expect:
+      value: [4, 5, 7, 6]
+
+  # ===========================================================================
+  # Scatter assignment
+  # ===========================================================================
+
+  - name: tick_scatter
+    permission: programmer
+    statement: |
+      a = ticks_left();
+      {p, q} = {1, 2};
+      c = ticks_left();
+      {p, ?q = 7} = {1};
+      d = ticks_left();
+      {p, ?q = 7} = {1, 2};
+      e = ticks_left();
+      {p, @r} = {1, 2, 3};
+      f = ticks_left();
+      {?p, @r, ?q} = {1};
+      g = ticks_left();
+      return {a - c, c - d, d - e, e - f, f - g};
+    expect:
+      value: [4, 5, 4, 4, 4]
+
+  # ===========================================================================
+  # Exhaustion: ordinary ticking opcodes test the budget before running, so
+  # the opcode that takes it to zero never executes. Extended opcodes at or
+  # above EOP_CATCH decrement without testing. Both cases run in a background
+  # task with a small bg_ticks budget while #0:handle_task_timeout returns 1,
+  # which suppresses the timeout traceback so only the task's effects remain.
+  # ===========================================================================
+
+  - name: tick_exhaustion_stops_before_the_charging_opcode
+    description: >
+      With bg_ticks = 1000 the task spends 1 tick on `i = 0` and 4 per
+      iteration (WHILE, ADD, PUT, PUT_PROP). After 249 iterations 3 ticks
+      remain; iteration 250's PUT_PROP takes the budget to zero and is aborted
+      before it stores 250.
+    steps:
+      - run: |
+          add_property($server_options, "bg_ticks", 1000, {player, "r"});
+          add_property(#0, "tick_probe", 0, {#0, "rw"});
+          add_property(#0, "tick_saved_hook", verb_code(#0, "handle_task_timeout"), {#0, ""});
+          set_verb_code(#0, "handle_task_timeout", {"return 1;"});
+          load_server_options();
+          return 1;
+        as: wizard
+      - run: |
+          fork (0)
+            i = 0;
+            while (1)
+              #0.tick_probe = i = i + 1;
+            endwhile
+          endfork
+          suspend(0);
+          return #0.tick_probe;
+        as: wizard
+        expect:
+          value: 249
+    cleanup:
+      - run: |
+          set_verb_code(#0, "handle_task_timeout", #0.tick_saved_hook);
+          delete_property(#0, "tick_saved_hook");
+          delete_property($server_options, "bg_ticks");
+          delete_property(#0, "tick_probe");
+          load_server_options();
+        as: wizard
+
+  - name: tick_exhaustion_extended_opcode_does_not_test_the_budget
+    description: >
+      EOP_FOR_LIST decrements without testing. With bg_ticks = 1001 the setup
+      costs 30 ticks and each iteration 5 (FOR_LIST, PUT m, ADD, PUT n,
+      PUT_PROP), so iteration 195's FOR_LIST takes the budget to exactly zero
+      and the body still starts: its tick-free OP_MAP_INSERT raises E_TYPE on
+      the list key planted at element 195. #0:handle_uncaught_error records
+      that error; had the loop test aborted the task instead, only the
+      (suppressed) timeout hook would have run.
+    steps:
+      - run: |
+          add_property($server_options, "bg_ticks", 1001, {player, "r"});
+          add_property(#0, "tick_probe", 0, {#0, "rw"});
+          add_property(#0, "tick_saved_hook", verb_code(#0, "handle_task_timeout"), {#0, ""});
+          add_property(#0, "tick_saved_uncaught", verb_code(#0, "handle_uncaught_error"), {#0, ""});
+          set_verb_code(#0, "handle_task_timeout", {"return 1;"});
+          set_verb_code(#0, "handle_uncaught_error", {"#0.tick_probe = {#0.tick_probe, args[1]};", "return 1;"});
+          load_server_options();
+          return 1;
+        as: wizard
+      - run: |
+          fork (0)
+            l = {1};
+            for j in [1..8]
+              l = {@l, @l};
+            endfor
+            l[195] = {};
+            n = 0;
+            for c in (l)
+              m = [c -> 1];
+              #0.tick_probe = n = n + 1;
+            endfor
+          endfork
+          suspend(0);
+          p = #0.tick_probe;
+          return typeof(p) == LIST ? {p[1], p[2] == E_TYPE} | {p, 0};
+        as: wizard
+        expect:
+          value: [194, 1]
+    cleanup:
+      - run: |
+          set_verb_code(#0, "handle_task_timeout", #0.tick_saved_hook);
+          set_verb_code(#0, "handle_uncaught_error", #0.tick_saved_uncaught);
+          delete_property(#0, "tick_saved_hook");
+          delete_property(#0, "tick_saved_uncaught");
+          delete_property($server_options, "bg_ticks");
+          delete_property(#0, "tick_probe");
+          load_server_options();
+        as: wizard

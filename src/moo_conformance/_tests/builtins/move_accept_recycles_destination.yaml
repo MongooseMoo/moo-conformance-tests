@@ -1,0 +1,82 @@
+name: move_accept_recycles_destination
+description: >
+  When the destination's :accept verb recycles the destination and returns
+  true, move() re-checks both objects after :accept returns and, finding the
+  destination invalid, returns 0 without moving: the object keeps its old
+  location, stays in the old location's contents, and neither :exitfunc nor
+  :enterfunc runs. One row moves in a fresh task; the other moves in the same
+  task that created the objects.
+
+requires:
+  builtins: [create, recycle, move, valid, add_property, add_verb, set_verb_code]
+
+tests:
+  - name: move_into_destination_recycled_by_accept_fresh_task
+    steps:
+      - run: 'return create($nothing);'
+        capture: old
+        as: wizard
+      - run: 'return create($nothing);'
+        capture: what
+        as: wizard
+      - run: 'return create($nothing);'
+        capture: dest
+        as: wizard
+      - run: |
+          move({what}, {old});
+          add_property({what}, "move_trace", {}, {player, "rw"});
+          add_verb({old}, {player, "rxd", "exitfunc"}, {"this", "none", "this"});
+          set_verb_code({old}, "exitfunc", {"args[1].move_trace = {@args[1].move_trace, \"exitfunc\"};"});
+          add_verb({dest}, {player, "rxd", "accept"}, {"this", "none", "this"});
+          set_verb_code({dest}, "accept", {"args[1].move_trace = {@args[1].move_trace, \"accept\"};", "recycle(this);", "return 1;"});
+          add_verb({dest}, {player, "rxd", "enterfunc"}, {"this", "none", "this"});
+          set_verb_code({dest}, "enterfunc", {"args[1].move_trace = {@args[1].move_trace, \"enterfunc\"};"});
+          return 1;
+        as: wizard
+      - run: |
+          r = move({what}, {dest});
+          return {r, {what}.location == {old}, {what} in {old}.contents, valid({dest}), {what}.move_trace};
+        as: wizard
+        expect:
+          value: [0, 1, 1, 0, [accept]]
+      - run: 'return {{what}.location == {old}, {what} in {old}.contents, valid({dest})};'
+        as: wizard
+        expect:
+          value: [1, 1, 0]
+    cleanup:
+      - run: |
+          try
+            recycle({what});
+          except (ANY)
+          endtry
+          try
+            recycle({old});
+          except (ANY)
+          endtry
+          try
+            recycle({dest});
+          except (ANY)
+          endtry
+        as: wizard
+
+  - name: move_into_destination_recycled_by_accept_same_task_as_create
+    permission: wizard
+    statement: |
+      old = create($nothing);
+      what = create($nothing);
+      dest = create($nothing);
+      move(what, old);
+      add_property(what, "move_trace", {}, {player, "rw"});
+      add_verb(old, {player, "rxd", "exitfunc"}, {"this", "none", "this"});
+      set_verb_code(old, "exitfunc", {"args[1].move_trace = {@args[1].move_trace, \"exitfunc\"};"});
+      add_verb(dest, {player, "rxd", "accept"}, {"this", "none", "this"});
+      set_verb_code(dest, "accept", {"args[1].move_trace = {@args[1].move_trace, \"accept\"};", "recycle(this);", "return 1;"});
+      add_verb(dest, {player, "rxd", "enterfunc"}, {"this", "none", "this"});
+      set_verb_code(dest, "enterfunc", {"args[1].move_trace = {@args[1].move_trace, \"enterfunc\"};"});
+      r = `move(what, dest) ! ANY';
+      result = {r, what.location == old, what in old.contents, valid(dest), what.move_trace};
+      recycle(what);
+      recycle(old);
+      return result;
+    expect:
+      value: [0, 1, 1, 0, [accept]]

@@ -1,0 +1,118 @@
+name: fork_trailing_block_checkpoint_restart
+description: >
+  Verifies that queued forked tasks whose bodies end in a compound statement
+  (if/endif, while/endwhile, try/endtry, nested fork/endfork) survive
+  dump_database() and a managed server restart, and then run their full body
+  once due. The forks live in a verb with multi-line source. The closing
+  keyword of the trailing block emits no code, so a server that saves only
+  the lines that emit code drops it and the restored task cannot be compiled.
+requires:
+  builtins:
+    - dump_database
+    - queued_tasks
+    - kill_task
+    - add_property
+    - delete_property
+    - add_verb
+    - set_verb_code
+    - recycle
+  config: [managed_server]
+tests:
+  - name: trailing_block_forks_run_after_checkpoint_restart
+    permission: wizard
+    steps:
+      - run: |
+          for p in ({"trailing_fork_log", "trailing_fork_tasks", "trailing_fork_obj"})
+            if (p in properties(#0))
+              delete_property(#0, p);
+            endif
+          endfor
+          o = create($nothing);
+          add_property(#0, "trailing_fork_obj", o, {player, "rw"});
+          add_property(#0, "trailing_fork_log", {}, {player, "rw"});
+          return o;
+        capture: obj
+      - verb_setup:
+          object: "{obj}"
+          name: "start"
+          args: ["this", "none", "this"]
+          code: |
+            tasks = {};
+            n = 1;
+            fork t (6)
+              if (n)
+                #0.trailing_fork_log = {@#0.trailing_fork_log, "if"};
+              endif
+            endfork
+            tasks = {@tasks, t};
+            fork t (6)
+              while (n)
+                #0.trailing_fork_log = {@#0.trailing_fork_log, "while"};
+                n = 0;
+              endwhile
+            endfork
+            tasks = {@tasks, t};
+            fork t (6)
+              try
+                #0.trailing_fork_log = {@#0.trailing_fork_log, "try"};
+              finally
+                #0.trailing_fork_log = {@#0.trailing_fork_log, "finally"};
+              endtry
+            endfork
+            tasks = {@tasks, t};
+            fork t (6)
+              fork (0)
+                #0.trailing_fork_log = {@#0.trailing_fork_log, "fork"};
+              endfork
+            endfork
+            tasks = {@tasks, t};
+            return tasks;
+        expect:
+          value: []
+      - run: |
+          tasks = {obj}:start();
+          add_property(#0, "trailing_fork_tasks", tasks, {player, "rw"});
+          return length(tasks);
+        expect:
+          value: 4
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - restart_server:
+          checkpoint_timeout_ms: 10000
+      - run: |
+          ids = {};
+          for q in (queued_tasks())
+            ids = {@ids, q[1]};
+          endfor
+          found = 0;
+          for t in (#0.trailing_fork_tasks)
+            found = found + (t in ids > 0);
+          endfor
+          return {found, #0.trailing_fork_log};
+        expect:
+          value: [4, []]
+      - run: |
+          log = #0.trailing_fork_log;
+          return {length(log), "if" in log > 0, "while" in log > 0, "try" in log > 0, "finally" in log > 0, "fork" in log > 0};
+        expect:
+          value: [5, 1, 1, 1, 1, 1]
+        poll_ms: 15000
+    cleanup:
+      - run: |
+          if ("trailing_fork_tasks" in properties(#0))
+            for t in (#0.trailing_fork_tasks)
+              `kill_task(t) ! ANY';
+            endfor
+            delete_property(#0, "trailing_fork_tasks");
+          endif
+          if ("trailing_fork_log" in properties(#0))
+            delete_property(#0, "trailing_fork_log");
+          endif
+          if ("trailing_fork_obj" in properties(#0))
+            if (valid(#0.trailing_fork_obj))
+              recycle(#0.trailing_fork_obj);
+            endif
+            delete_property(#0, "trailing_fork_obj");
+          endif
+          return 0;

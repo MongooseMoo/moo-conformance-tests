@@ -1,0 +1,313 @@
+name: property_rename_and_numbered_object_checks
+description: >-
+  set_property_info() with a three-element info list {owner, perms, new-name}
+  renames a property the object itself defines. The definition keeps its place
+  in properties(), and every descendant's slot follows the new name with its
+  value, owner, perms and clear state. Renaming an inherited name, or to a
+  name already defined on the object, an ancestor or a descendant, or to a
+  built-in property name, is E_INVARG and changes nothing; a change of case
+  alone is allowed. add_property() rejects a three-element info list with
+  E_TYPE, after it validates the info list and before it looks at the object.
+  The verb builtins that change verbs, and verb_args(), reject an anonymous
+  object with E_TYPE; the ones that validate the verb descriptor first still
+  do so.
+
+requires:
+  builtins:
+    - add_property
+    - delete_property
+    - set_property_info
+    - property_info
+    - properties
+    - is_clear_property
+    - add_verb
+    - delete_verb
+    - verb_args
+    - set_verb_args
+    - set_verb_info
+    - set_verb_code
+    - verb_info
+    - verb_code
+    - verbs
+    - new_waif
+    - create
+    - recycle
+
+tests:
+  # The rename on the definer: the old name is gone, the value, place and the
+  # info from the same call stay with the new name.
+  - name: rename_on_definer
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p, "one", 1, {player, "r"});
+      add_property(p, "foo", 2, {player, "rw"});
+      add_property(p, "three", 3, {player, "r"});
+      r = set_property_info(p, "foo", {player, "r", "bar"});
+      info = property_info(p, "bar");
+      res = {r, properties(p), p.bar, `p.foo ! ANY' == E_PROPNF, info[1] == player, info[2], `property_info(p, "foo") ! ANY' == E_PROPNF};
+      recycle(p);
+      return res;
+    expect:
+      value: [0, [one, bar, three], 2, 1, 1, r, 1]
+
+  # Descendants keep their slots under the new name: an override keeps its
+  # value, owner and perms; a clear slot stays clear.
+  - name: rename_descendant_slots
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      o = create($nothing);
+      add_property(p, "foo", 1, {player, "rw"});
+      c = create(p);
+      g = create(c);
+      h = create(c);
+      k = create(p);
+      c.foo = 5;
+      set_property_info(c, "foo", {o, "r"});
+      g.foo = 9;
+      p.foo = 7;
+      set_property_info(p, "foo", {player, "rwc", "bar"});
+      cinfo = property_info(c, "bar");
+      res = {c.bar, cinfo[1] == o, cinfo[2], is_clear_property(c, "bar"), `c.foo ! ANY' == E_PROPNF, g.bar, is_clear_property(g, "bar"), h.bar, is_clear_property(h, "bar"), k.bar, is_clear_property(k, "bar"), properties(c), property_info(k, "bar")[2]};
+      recycle(g);
+      recycle(h);
+      recycle(k);
+      recycle(c);
+      recycle(p);
+      recycle(o);
+      return res;
+    expect:
+      value: [5, 1, r, 0, 1, 9, 0, 5, 1, 7, 1, [], rw]
+
+  # The same rename, with setup, rename and reads in separate tasks.
+  - name: rename_descendant_slots_across_tasks
+    permission: wizard
+    steps:
+      - run: |
+          p = create($nothing);
+          add_property(p, "foo", 1, {player, "rw"});
+          c = create(p);
+          create(c);
+          c.foo = 5;
+          return p;
+        capture: p
+      - run: 'set_property_info({p}, "foo", {player, "rw", "bar"})'
+        expect:
+          value: 0
+      - run: 'c = children({p})[1]; g = children(c)[1]; return {properties({p}), {p}.bar, c.bar, g.bar, is_clear_property(g, "bar"), `c.foo ! ANY'' == E_PROPNF, `g.foo ! ANY'' == E_PROPNF};'
+        expect:
+          value: [[bar], 1, 5, 5, 1, 1, 1]
+    cleanup:
+      - run: 'c = children({p})[1]; recycle(children(c)[1]); recycle(c); recycle({p});'
+
+  # An anonymous child's slot follows the rename too.
+  - name: rename_anonymous_child_slot
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p, "foo", 1, {player, "rw"});
+      a = create(p, 1);
+      a.foo = 5;
+      set_property_info(p, "foo", {player, "rw", "bar"});
+      res = {a.bar, `a.foo ! ANY' == E_PROPNF, p.bar};
+      recycle(p);
+      return res;
+    expect:
+      value: [5, 1, 1]
+
+  # Only the definer can rename: an inherited name is E_INVARG and the info
+  # from the call is not applied.
+  - name: rename_inherited_name_is_invarg
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p, "foo", 1, {player, "rw"});
+      c = create(p);
+      r = `set_property_info(c, "foo", {player, "r", "bar"}) ! ANY';
+      res = {r == E_INVARG, properties(p), `c.bar ! ANY' == E_PROPNF, property_info(c, "foo")[2]};
+      recycle(c);
+      recycle(p);
+      return res;
+    expect:
+      value: [1, [foo], 1, rw]
+
+  # A new name defined anywhere in the object's ancestry or below it, or a
+  # built-in property name, is E_INVARG; nothing changes.
+  - name: rename_clash_{kind}
+    permission: wizard
+    table:
+      columns: [kind, new_name]
+      rows:
+        - [same_object, 'bar']
+        - [same_object_other_case, 'BAR']
+        - [ancestor, 'anc']
+        - [child, 'baz']
+        - [grandchild, 'QUX']
+        - [builtin_name, 'name']
+        - [builtin_owner_other_case, 'Owner']
+        - [builtin_location, 'location']
+        - [builtin_a_flag, 'A']
+    statement: |
+      q = create($nothing);
+      add_property(q, "anc", 0, {player, "r"});
+      p = create(q);
+      add_property(p, "foo", 1, {player, "rw"});
+      add_property(p, "bar", 2, {player, "rw"});
+      c = create(p);
+      add_property(c, "baz", 3, {player, "r"});
+      g = create(c);
+      add_property(g, "qux", 4, {player, "r"});
+      r = `set_property_info(p, "foo", {player, "r", "{new_name}"}) ! ANY';
+      res = {r == E_INVARG, properties(p), p.foo, property_info(p, "foo")[2], properties(c), properties(g)};
+      recycle(g);
+      recycle(c);
+      recycle(p);
+      recycle(q);
+      return res;
+    expect:
+      value: [1, [foo, bar], 1, rw, [baz], [qux]]
+
+  # A change of case alone is a rename; the same name is a no-op rename.
+  - name: rename_{kind}
+    permission: wizard
+    table:
+      columns: [kind, new_name]
+      rows:
+        - [case_only, 'FOO']
+        - [same_name, 'foo']
+    statement: |
+      p = create($nothing);
+      add_property(p, "foo", 1, {player, "rw"});
+      add_property(p, "bar", 2, {player, "rw"});
+      c = create(p);
+      c.foo = 5;
+      r = set_property_info(p, "foo", {player, "rw", "{new_name}"});
+      res = {r, properties(p)[1], p.foo, c.foo, is_clear_property(c, "foo")};
+      recycle(c);
+      recycle(p);
+      return res;
+    expect:
+      value: [0, '{new_name}', 1, 5, 0]
+
+  # Three renames in one task swap two names; values and descendant slots
+  # follow.
+  - name: rename_swap_in_one_task
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p, "x", 1, {player, "rw"});
+      add_property(p, "y", 2, {player, "rw"});
+      c = create(p);
+      c.x = 10;
+      set_property_info(p, "x", {player, "rw", "tmp"});
+      set_property_info(p, "y", {player, "rw", "x"});
+      set_property_info(p, "tmp", {player, "rw", "y"});
+      res = {properties(p), p.x, p.y, c.x, c.y, is_clear_property(c, "x"), is_clear_property(c, "y")};
+      recycle(c);
+      recycle(p);
+      return res;
+    expect:
+      value: [[y, x], 2, 1, 2, 10, 1, 0]
+
+  # After a rename the old name is free: it can be defined again, and deleting
+  # the renamed property removes it from descendants.
+  - name: rename_then_define_old_name_and_delete_new
+    permission: wizard
+    statement: |
+      p = create($nothing);
+      add_property(p, "foo", 1, {player, "rw"});
+      c = create(p);
+      c.foo = 5;
+      set_property_info(p, "foo", {player, "rw", "bar"});
+      add_property(p, "foo", 3, {player, "r"});
+      first = {properties(p), p.foo, c.foo, c.bar};
+      delete_property(p, "bar");
+      second = {properties(p), `c.bar ! ANY' == E_PROPNF, c.foo};
+      recycle(c);
+      recycle(p);
+      return {first, second};
+    expect:
+      value: [[[bar, foo], 3, 3, 5], [[foo], 1, 3]]
+
+  # add_property(): the info list is validated first, then a new-name element
+  # is E_TYPE, then the object is checked.
+  - name: add_property_info_{kind}
+    permission: wizard
+    table:
+      columns: [kind, obj_expr, info_expr, error]
+      rows:
+        - [three_elements, 'o', '{player, "r", "y"}', E_TYPE]
+        - [three_elements_invalid_object, '#999999', '{player, "r", "y"}', E_TYPE]
+        - [three_elements_nothing, '$nothing', '{player, "r", "y"}', E_TYPE]
+        - [three_elements_non_object, '1', '{player, "r", "y"}', E_TYPE]
+        - [three_elements_bad_perms, '#999999', '{player, "q", "y"}', E_INVARG]
+        - [three_elements_name_type, 'o', '{player, "r", 1}', E_TYPE]
+        - [owner_type_invalid_object, '#999999', '{1, "r"}', E_TYPE]
+        - [invalid_owner_non_object, '1', '{#999999, "r"}', E_INVARG]
+        - [invalid_object, '#999999', '{player, "r"}', E_INVARG]
+    statement: |
+      o = create($nothing);
+      r = `add_property({obj_expr}, "x", 1, {info_expr}) ! ANY';
+      res = {r == {error}, properties(o)};
+      recycle(o);
+      return res;
+    expect:
+      value: [1, []]
+
+  # add_property() checks write permission before it looks for a clash.
+  - name: add_property_permission_before_clash
+    permission: programmer
+    steps:
+      - run: obj = create($nothing); add_property(obj, "foo", 0, {player, "r"}); return obj;
+        capture: obj
+        as: wizard
+      - run: 'add_property({obj}, "foo", 1, {player, "r"})'
+        as: programmer
+        expect:
+          error: E_PERM
+    cleanup:
+      - run: recycle({obj})
+        as: wizard
+
+  # The verb builtins that take a numbered object (Toast is_obj()) reject an
+  # anonymous object with E_TYPE, in the same place they reject a non-object.
+  - name: anonymous_object_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr, error]
+      rows:
+        - [verb_args, 'verb_args(a, "x")', E_TYPE]
+        - [verb_args_zero_index, 'verb_args(a, 0)', E_TYPE]
+        - [set_verb_info, 'set_verb_info(a, "x", {player, "rx", "x"})', E_TYPE]
+        - [set_verb_info_zero_index, 'set_verb_info(a, 0, {player, "rx", "x"})', E_INVARG]
+        - [set_verb_args, 'set_verb_args(a, "x", {"this", "none", "this"})', E_TYPE]
+        - [set_verb_args_zero_index, 'set_verb_args(a, 0, {"this", "none", "this"})', E_INVARG]
+        - [set_verb_code, 'set_verb_code(a, "x", {})', E_TYPE]
+        - [set_verb_code_zero_index, 'set_verb_code(a, 0, {})', E_TYPE]
+        - [set_verb_code_bad_line, 'set_verb_code(a, "x", {1})', E_TYPE]
+        - [delete_verb, 'delete_verb(a, "x")', E_TYPE]
+        - [delete_verb_zero_index, 'delete_verb(a, 0)', E_INVARG]
+        - [add_verb, 'add_verb(a, {player, "rx", "x"}, {"this", "none", "this"})', E_TYPE]
+        - [add_property, 'add_property(a, "x", 1, {player, "r"})', E_TYPE]
+        - [set_property_info, 'set_property_info(a, "x", {player, "r", "y"})', E_TYPE]
+    statement: |
+      p = create($nothing);
+      add_verb(p, {player, "rxd", "x"}, {"this", "none", "this"});
+      add_property(p, "x", 0, {player, "rw"});
+      a = create(p, 1);
+      r = `{expr} ! ANY';
+      res = {r == {error}, verbs(p), properties(p)};
+      recycle(p);
+      return res;
+    expect:
+      value: [1, [x], [x]]
+
+  # The verb readers take any object (Toast is_object()), anonymous included.
+  - name: anonymous_object_verb_readers
+    permission: wizard
+    statement: |
+      a = create($nothing, 1);
+      return {verbs(a), `verb_info(a, "x") ! ANY' == E_VERBNF, `verb_code(a, "x") ! ANY' == E_VERBNF};
+    expect:
+      value: [[], 1, 1]

@@ -1,0 +1,72 @@
+name: renumber_staged_writes
+description: Scalar, property and verb-code updates survive renumber across task boundaries.
+requires:
+  builtins: [create, recycle, renumber, valid, add_property, add_verb, set_verb_code, suspend, server_log]
+
+tests:
+  - name: renumber_{boundary}
+    table:
+      columns: [boundary, mode, self_owned]
+      rows:
+        - [first_boundary_control, 0, 0]
+        - [after_resume, 1, 0]
+        - [after_irreversible_boundary, 2, 0]
+        - [after_resume_and_irreversible_boundary, 3, 0]
+        - [self_owned_first_boundary_control, 0, 1]
+        - [self_owned_after_resume, 1, 1]
+        - [self_owned_after_irreversible_boundary, 2, 1]
+        - [self_owned_after_resume_and_irreversible_boundary, 3, 1]
+    steps:
+      - run: |
+          driver = create($nothing);
+          gap = create($nothing);
+          target = create($nothing);
+          add_property(driver, "survivor", target, {player, "rw"});
+          add_property(target, "marker", "before", {player, "rw"});
+          target.name = "before";
+          target.r = 1; target.w = 1; target.f = 0;
+          add_verb(target, {player, "rxd", "probe"}, {"this", "none", "this"});
+          set_verb_code(target, "probe", {"return 1;"});
+          add_verb(driver, {player, "rxd", "drive"}, {"this", "none", "this"});
+          set_verb_code(driver, "drive", {
+            "target = args[1]; mode = args[2];",
+            "if (mode == 1 || mode == 3) suspend(0); endif",
+            "if (mode >= 2) server_log(\"renumber_staged_writes boundary\"); endif",
+            "target.name = \"after\"; target.owner = args[4] ? target | this;",
+            "target.r = 0; target.w = 0; target.f = 1;",
+            "target.marker = \"after\";",
+            "set_verb_code(target, \"probe\", {\"return 42;\"});",
+            "moved = renumber(target); this.survivor = moved;",
+            "return {this == args[3], moved < target, !valid(target),",
+            "moved.name == \"after\", moved.owner == (args[4] ? moved | this),",
+            "!moved.r, !moved.w, moved.f, moved.marker == \"after\", moved:probe() == 42};"
+          });
+          recycle(gap);
+          return {driver, target};
+        as: wizard
+        capture: fixture
+      - run: |
+          fixture = {fixture};
+          return fixture[1]:drive(fixture[2], {mode}, fixture[1], {self_owned});
+        as: wizard
+        expect:
+          value: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+      - run: |
+          fixture = {fixture}; moved = fixture[1].survivor;
+          return {moved < fixture[2], !valid(fixture[2]),
+            moved.name == "after", moved.owner == ({self_owned} ? moved | fixture[1]),
+            !moved.r, !moved.w, moved.f, moved.marker == "after", moved:probe() == 42};
+        as: wizard
+        expect:
+          value: [1, 1, 1, 1, 1, 1, 1, 1, 1]
+    cleanup:
+      - run: |
+          fixture = {fixture};
+          if (valid(fixture[1]))
+            target = fixture[1].survivor;
+            if (valid(target)) recycle(target); endif
+          endif
+          for obj in (fixture)
+            if (valid(obj)) recycle(obj); endif
+          endfor
+        as: wizard

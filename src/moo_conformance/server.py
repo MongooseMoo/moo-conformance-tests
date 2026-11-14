@@ -12,6 +12,7 @@ import signal
 import socket
 import stat
 import subprocess
+import sys
 import tempfile
 import time
 from importlib import resources
@@ -19,6 +20,9 @@ from pathlib import Path
 from typing import TextIO
 
 FileSnapshotSignature = tuple[int, int, int, int, int]
+
+# Pause between connection attempts while a started server opens its port.
+PORT_POLL_INTERVAL = 0.05
 
 
 def file_snapshot_signature(info: os.stat_result) -> FileSnapshotSignature:
@@ -39,11 +43,24 @@ def snapshot_regular_files(root: str | os.PathLike[str]) -> dict[str, FileSnapsh
     stack = [(root_path, "")]
     while stack:
         directory, relative_directory = stack.pop()
-        entries = list(os.scandir(directory))
+        try:
+            entries = list(os.scandir(directory))
+        except FileNotFoundError:
+            # A subdirectory removed after its parent was listed no longer
+            # exists; the root itself must exist.
+            if relative_directory == "":
+                raise
+            continue
         for entry in entries:
             # DirEntry.stat() can report zero identity fields for regular
             # files on Windows; os.stat() preserves the handle-comparable ID.
-            info = os.stat(entry.path, follow_symlinks=False)
+            try:
+                info = os.stat(entry.path, follow_symlinks=False)
+            except FileNotFoundError:
+                # The server can remove a file between listing and stat, e.g.
+                # Toast renaming its "<db>.new.#N#" checkpoint temporary when a
+                # dump completes. It is absent from the resulting snapshot.
+                continue
             attributes = getattr(info, "st_file_attributes", 0)
             is_reparse = bool(attributes & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0))
             if stat.S_ISLNK(info.st_mode) or is_reparse:
@@ -167,7 +184,11 @@ class ManagedServer:
             raise RuntimeError("Server not started")
         return dict(self._process_file_snapshot)
 
-    def start(self, db_path: Path | None = None, wait_for_port: bool = True) -> None:
+    def start(
+        self, db_path: Path | None = None, wait_for_port: bool = True,
+        ignore_sighup: bool = False,
+        arguments: list[str] | None = None,
+    ) -> None:
         """Start the server subprocess.
 
         When wait_for_port is False, the process is started and may exit on its
@@ -252,6 +273,7 @@ class ManagedServer:
                 db=db_posix,
                 manifest=manifest_path.as_posix(),
                 server_dir=Path(self._temp_dir).as_posix(),
+                log=Path(self._temp_dir, "server.log").as_posix(),
             )
 
             # Open log file for server output
@@ -261,9 +283,22 @@ class ManagedServer:
             self._process_log_offset = os.path.getsize(self._log_path)
             self._process_file_snapshot = snapshot_regular_files(self._temp_dir)
 
+            argv = shlex.split(command)
+            argv[1:1] = arguments or []
+            if ignore_sighup:
+                if os.name != "posix":
+                    raise ValueError("ignore_sighup requires POSIX")
+                # exec preserves the managed PID and the inherited SIG_IGN.
+                # Avoid preexec_fn, which is unsafe in a threaded harness.
+                argv = [sys.executable, "-c", (
+                    "import os,signal,sys; "
+                    "signal.signal(signal.SIGHUP, signal.SIG_IGN); "
+                    "os.execvp(sys.argv[1], sys.argv[1:])"
+                ), *argv]
+
             # Start server process
             self._process = subprocess.Popen(
-                shlex.split(command),
+                argv,
                 stdin=subprocess.PIPE,
                 stdout=self._log_file,
                 stderr=subprocess.STDOUT,
@@ -354,6 +389,21 @@ class ManagedServer:
             )
             raise failure from exc
 
+    def send_signal(self, name: str) -> None:
+        """Deliver a named POSIX signal to the directly managed PID only."""
+        if os.name != "posix":
+            raise ValueError("signal_server requires POSIX")
+        if name not in {item.name for item in signal.Signals}:
+            raise ValueError(f"Unknown signal_server signal: {name!r}")
+        self.require_transport()
+        assert self._process is not None
+        try:
+            self._process.send_signal(signal.Signals[name])
+        except OSError as exc:
+            raise self._record_lifecycle_failure(
+                f"Managed server signal {name} delivery failed: {exc}"
+            ) from exc
+
     def require_transport(self) -> None:
         """Fail with stable evidence if a live managed transport is unavailable."""
         if self._lifecycle_failure is not None:
@@ -381,7 +431,11 @@ class ManagedServer:
             ) from exc
 
     def restart(
-        self, db_path: Path | None = None, wait_for_port: bool = True, down_ms: int = 0
+        self, db_path: Path | None = None, wait_for_port: bool = True, down_ms: int = 0,
+        checkpoint_timeout_ms: int | None = None,
+        checkpoint_boundary: dict[str, FileSnapshotSignature] | None = None,
+        ignore_sighup: bool = False,
+        arguments: list[str] | None = None,
     ) -> None:
         """Restart the server process in-place, preserving the working database.
 
@@ -392,21 +446,42 @@ class ManagedServer:
         """
         if self._lifecycle_failure is not None:
             raise self._lifecycle_failure
+        if checkpoint_timeout_ms is not None and (
+            db_path is not None or checkpoint_boundary is None
+        ):
+            raise ValueError("Checkpoint restart requires a boundary and the current database")
         if db_path is None:
             # Capture the requested checkpoint before stopping the server.
             # Toast performs a separate graceful-shutdown dump on SIGTERM,
             # which can overwrite {db}.out and must not become the artifact
             # adopted by an explicit restart checkpoint test.
-            self._sync_checkpoint_output()
+            self._sync_checkpoint_output(checkpoint_timeout_ms, checkpoint_boundary)
         self.stop(preserve_temp=True)
+        # The restarted server reuses the same port. A process the old server
+        # forked (ToastStunt's checkpointer child) inherits its listening
+        # socket and can outlive it; launching before that socket closes
+        # makes the new server fail to bind.
+        self._wait_for_port_release(timeout=30.0)
         if down_ms > 0:
             time.sleep(down_ms / 1000.0)
-        if db_path is None:
-            self.start(wait_for_port=wait_for_port)
+        if arguments is not None:
+            self.start(db_path=db_path, wait_for_port=wait_for_port,
+                       ignore_sighup=ignore_sighup, arguments=arguments)
+        elif db_path is None:
+            if ignore_sighup:
+                self.start(wait_for_port=wait_for_port, ignore_sighup=True)
+            else:
+                self.start(wait_for_port=wait_for_port)
         else:
-            self.start(db_path=db_path, wait_for_port=wait_for_port)
+            if ignore_sighup:
+                self.start(db_path=db_path, wait_for_port=wait_for_port, ignore_sighup=True)
+            else:
+                self.start(db_path=db_path, wait_for_port=wait_for_port)
 
-    def _sync_checkpoint_output(self) -> None:
+    def _sync_checkpoint_output(
+        self, timeout_ms: int | None = None,
+        boundary: dict[str, FileSnapshotSignature] | None = None,
+    ) -> None:
         """Adopt common external checkpoint outputs back into the input DB path.
 
         Some servers (e.g., ToastStunt) write checkpoints to a separate output
@@ -415,20 +490,42 @@ class ManagedServer:
         file to the managed input DB path if present.
         """
         if self._db_copy_path is None:
+            if timeout_ms is not None:
+                raise RuntimeError("No managed database to checkpoint")
             return
 
-        best: Path | None = None
-        best_mtime = -1.0
-        for cand in self._checkpoint_output_candidates():
-            if not cand.exists() or cand.is_dir():
-                continue
-            mtime = cand.stat().st_mtime
-            if mtime > best_mtime:
-                best = cand
-                best_mtime = mtime
+        deadline = time.monotonic() + (timeout_ms or 0) / 1000
+        while True:
+            best: Path | None = None
+            best_mtime = -1
+            for cand in self._checkpoint_output_candidates():
+                try:
+                    info = cand.lstat()
+                except FileNotFoundError:
+                    continue
+                if not stat.S_ISREG(info.st_mode):
+                    continue
+                if timeout_ms is not None:
+                    assert boundary is not None
+                    key = cand.relative_to(self._db_copy_path.parent).as_posix()
+                    previous = boundary.get(key)
+                    if previous is not None and previous[:4] == file_snapshot_signature(info)[:4]:
+                        continue
+                if info.st_mtime_ns > best_mtime:
+                    best = cand
+                    best_mtime = info.st_mtime_ns
 
-        if best is not None:
-            shutil.copy2(best, self._db_copy_path)
+            if best is not None:
+                shutil.copy2(best, self._db_copy_path)
+                return
+            if timeout_ms is None:
+                return
+            if time.monotonic() >= deadline:
+                raise TimeoutError(
+                    f"No fresh completed checkpoint within {timeout_ms} ms; "
+                    "managed server was not stopped"
+                )
+            time.sleep(min(0.05, max(0.0, deadline - time.monotonic())))
 
     def _checkpoint_output_candidates(self, db_copy_path: Path | None = None) -> list[Path]:
         src = db_copy_path if db_copy_path is not None else self._db_copy_path
@@ -487,12 +584,41 @@ class ManagedServer:
                     s.connect((self.host, self._port))
                     return  # Connection succeeded
             except (ConnectionRefusedError, OSError):
-                time.sleep(0.5)
+                time.sleep(PORT_POLL_INTERVAL)
 
         raise self._record_lifecycle_failure(
             f"Managed server did not accept connections on port {self._port} "
             f"within {timeout}s"
         )
+
+    def _wait_for_port_release(self, timeout: float = 30.0) -> None:
+        """Poll until no socket is listening on the server port.
+
+        Only POSIX servers fork children that inherit the listener. The probe
+        is a wildcard bind with SO_REUSEADDR, as a POSIX server binds: Linux
+        refuses it while any address on the port is listening, and ignores
+        TIME_WAIT connections. Windows bind rules differ (SO_REUSEADDR there
+        can take over a live port), so the probe is not used on Windows.
+        """
+        if self._port is None or os.name != "posix":
+            return
+        deadline = time.monotonic() + timeout
+
+        while True:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                try:
+                    s.bind(("", self._port))
+                    return
+                except OSError:
+                    pass
+            if time.monotonic() >= deadline:
+                raise self._record_lifecycle_failure(
+                    f"Managed server port {self._port} was still bound {timeout}s "
+                    "after the previous server exited (a process it forked may "
+                    "still hold the listening socket)"
+                )
+            time.sleep(PORT_POLL_INTERVAL)
 
     def _record_lifecycle_failure(
         self,

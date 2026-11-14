@@ -1,0 +1,46 @@
+name: scatter_error_messages
+description: >
+  Scatter assignment failures raise the error's default message, not a
+  scatter-specific description. Code that logs caught errors (for example a
+  logger verb that scatters its arguments) shows this text to users.
+
+tests:
+  - name: scatter_too_many_message
+    statement: |
+      try
+        {a, b} = {1, 2, 3};
+      except e (ANY)
+        return e[1..2];
+      endtry
+    expect:
+      value: [E_ARGS, "Incorrect number of arguments"]
+
+  - name: scatter_too_few_message
+    statement: |
+      try
+        {a, b, c} = {1, 2};
+      except e (ANY)
+        return e[1..2];
+      endtry
+    expect:
+      value: [E_ARGS, "Incorrect number of arguments"]
+
+  - name: scatter_too_few_with_optional_message
+    statement: |
+      try
+        {a, ?b, c} = {1};
+      except e (ANY)
+        return e[1..2];
+      endtry
+    expect:
+      value: [E_ARGS, "Incorrect number of arguments"]
+
+  - name: scatter_non_list_message
+    statement: |
+      try
+        {a, b} = "hello";
+      except e (ANY)
+        return e[1..2];
+      endtry
+    expect:
+      value: [E_TYPE, "Type mismatch (expected list; got string)"]

@@ -1,0 +1,83 @@
+name: signals_log_rotation
+description: USR1 fallback reopens the named log after rotation; hooks can suppress it.
+requires:
+  config: [managed_server, posix_signals, server_dir, log_file, named_log_file]
+tests:
+  - name: usr1_{label}_reopens_rotated_log
+    table:
+      columns: [label, body]
+      rows:
+        - [absent, absent]
+        - [false_integer, "return 0;"]
+        - [false_string, 'return \"\";']
+        - [false_list, "return {};"]
+    steps:
+      - restart_server: {reset_db: true}
+      - run: |
+          try delete_verb(#0, "handle_signal"); except (E_VERBNF) endtry
+          if ("{label}" != "absent")
+            add_verb(#0, {player, "rxd", "handle_signal"}, {"this", "none", "this"});
+            set_verb_code(#0, "handle_signal", {"{body}"});
+          endif
+          server_log("SIGNAL-ROTATE-{label}-BEFORE");
+          return 1;
+        as: wizard
+        expect: {value: 1}
+      - rename_file: {path: server.log, to: "signal-{label}-first.log"}
+      - signal_server: SIGUSR1
+      - assert_file:
+          path: server.log
+          contains: "LOGFILE: Reopening due to remote request signal."
+          timeout_ms: 5000
+      - run: 'server_log("SIGNAL-ROTATE-{label}-AFTER"); return 1;'
+        as: wizard
+        expect: {value: 1}
+      - assert_file: {path: server.log, contains: "SIGNAL-ROTATE-{label}-AFTER", timeout_ms: 5000}
+      - assert_file: {path: "signal-{label}-first.log", contains: "SIGNAL-ROTATE-{label}-BEFORE"}
+      - assert_file:
+          path: "signal-{label}-first.log"
+          contains: "LOGFILE: Closing due to remote request signal."
+      - rename_file: {path: server.log, to: "signal-{label}-second.log"}
+      - signal_server: SIGUSR1
+      - assert_file:
+          path: server.log
+          contains: "LOGFILE: Reopening due to remote request signal."
+          timeout_ms: 5000
+      - run: 'server_log("SIGNAL-ROTATE-{label}-TWICE"); return 1;'
+        as: wizard
+        expect: {value: 1}
+      - assert_file: {path: server.log, contains: "SIGNAL-ROTATE-{label}-TWICE", timeout_ms: 5000}
+      - assert_file: {path: Test.db.new, exists: false}
+      - restart_server: {reset_db: true}
+
+  - name: usr1_{label}_hook_keeps_rotated_descriptor_open
+    table:
+      columns: [label, body]
+      rows:
+        - [handled, "return 1;"]
+        - [aborted, "raise(E_PERM);"]
+        - [suspended, "suspend(10); return 0;"]
+    steps:
+      - restart_server: {reset_db: true}
+      - run: |
+          try delete_verb(#0, "handle_signal"); except (E_VERBNF) endtry
+          add_verb(#0, {player, "rxd", "handle_signal"}, {"this", "none", "this"});
+          return set_verb_code(#0, "handle_signal", {
+            "server_log(\"SIGNAL-ROTATE-{label}-HANDLED\");", "{body}"
+          });
+        as: wizard
+        expect: {value: []}
+      - rename_file: {path: server.log, to: "signal-{label}-handled.log"}
+      - signal_server: SIGUSR1
+      - assert_file:
+          path: "signal-{label}-handled.log"
+          contains: "SIGNAL-ROTATE-{label}-HANDLED"
+          timeout_ms: 5000
+      - run: 'suspend(0.1); server_log("SIGNAL-ROTATE-{label}-STILL-OLD"); return 1;'
+        as: wizard
+        expect: {value: 1}
+      - assert_file: {path: server.log, exists: false}
+      - assert_file:
+          path: "signal-{label}-handled.log"
+          contains: "SIGNAL-ROTATE-{label}-STILL-OLD"
+      - restart_server: {reset_db: true}

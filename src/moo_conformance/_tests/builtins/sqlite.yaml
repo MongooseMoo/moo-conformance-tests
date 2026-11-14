@@ -16,6 +16,7 @@ requires:
     - sqlite_limit
     - sqlite_interrupt
     - call_function
+    - file_remove
 
 tests:
   - name: sqlite_exists_in_runtime
@@ -56,6 +57,88 @@ tests:
           value: [1, 1, 1, 1, 1, 1]
     cleanup:
       - run: "sqlite_close({h});"
+        as: wizard
+
+  - name: sqlite_open_file_path_is_reported_under_files
+    description: >
+      Toast resolves a file-backed database through file_resolve_path, so
+      sqlite_info()["path"] is the FILE_SUBDIR-prefixed string "files/<name>"
+      with forward slashes, exactly as the caller spelled it. Mongoose's
+      SQLite abstraction compares this string to decide whether a database
+      is open.
+    permission: wizard
+    assumes: [sqlite]
+    steps:
+      - run: 'sqlite_open("__conf_sqlite_path.sqlite")'
+        capture: h
+        expect:
+          range: [1, 2147483647]
+      - run: 'sqlite_info({h})["path"]'
+        expect:
+          value: "files/__conf_sqlite_path.sqlite"
+    cleanup:
+      - run: 'sqlite_close({h}); file_remove("__conf_sqlite_path.sqlite");'
+        as: wizard
+
+  - name: sqlite_open_strips_one_leading_slash_from_path
+    permission: wizard
+    assumes: [sqlite]
+    steps:
+      - run: 'sqlite_open("/__conf_sqlite_slash.sqlite")'
+        capture: h
+        expect:
+          range: [1, 2147483647]
+      - run: 'sqlite_info({h})["path"]'
+        expect:
+          value: "files/__conf_sqlite_slash.sqlite"
+    cleanup:
+      - run: 'sqlite_close({h}); file_remove("__conf_sqlite_slash.sqlite");'
+        as: wizard
+
+  - name: sqlite_open_same_file_twice_raises_with_existing_handle
+    description: >
+      Opening a file that is already open raises E_INVARG with the message
+      "Database already open with handle: N" and the existing handle as the
+      error value, and does not allocate a second handle.
+    permission: wizard
+    assumes: [sqlite]
+    steps:
+      - run: 'sqlite_open("__conf_sqlite_dup.sqlite")'
+        capture: h
+        expect:
+          range: [1, 2147483647]
+      - run: |
+          before = length(sqlite_handles());
+          try
+            sqlite_open("__conf_sqlite_dup.sqlite");
+            return "opened twice";
+          except e (ANY)
+            return {e[1] == E_INVARG, e[2] == tostr("Database already open with handle: ", {h}), e[3] == {h}, length(sqlite_handles()) == before};
+          endtry
+        expect:
+          value: [1, 1, 1, 1]
+    cleanup:
+      - run: 'sqlite_close({h}); file_remove("__conf_sqlite_dup.sqlite");'
+        as: wizard
+
+  - name: sqlite_open_memory_twice_gives_distinct_handles
+    description: In-memory databases are never treated as duplicates of each other.
+    permission: wizard
+    assumes: [sqlite]
+    steps:
+      - run: 'sqlite_open(":memory:")'
+        capture: h1
+        expect:
+          range: [1, 2147483647]
+      - run: 'sqlite_open(":memory:")'
+        capture: h2
+        expect:
+          range: [1, 2147483647]
+      - run: '{h1} != {h2}'
+        expect:
+          value: 1
+    cleanup:
+      - run: 'sqlite_close({h1}); sqlite_close({h2});'
         as: wizard
 
   - name: sqlite_execute_insert_updates_last_insert_row_id

@@ -1,0 +1,33 @@
+name: last_move_anon_checkpoint
+description: >
+  An anonymous object referenced only from a numbered object's last_move
+  survives dump_database() and a managed server restart, and last_move still
+  refers to it.
+server_db: LastMoveAnonReference.db
+requires:
+  builtins: [dump_database]
+  config: [managed_server, server_dir, server_db_dir]
+# The managed server command must use {db}.new as its output database.
+# The fixture gives #4 a last_move of ["source" -> anonymous #8, "time" -> 0].
+# Anonymous #8 (parent #5, name "last_move_anon") has no other reference:
+# no property, task or pending-finalization value holds it.
+tests:
+  - name: last_move_only_anon_survives_dump_and_restart
+    permission: wizard
+    steps:
+      - run: |
+          s = #4.last_move["source"];
+          return {typeof(s), valid(s), parent(s), s.name, #4.last_move["time"]};
+        expect:
+          value: [12, 1, "#5", "last_move_anon", 0]
+      - run: return dump_database();
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+          wait_ms: 300
+      - run: |
+          s = #4.last_move["source"];
+          return {typeof(s), valid(s), parent(s), s.name, #4.last_move["time"]};
+        expect:
+          value: [12, 1, "#5", "last_move_anon", 0]

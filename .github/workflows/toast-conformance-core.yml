@@ -261,18 +261,23 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # ToastCore suites start the shipped _db/startup/toastcore.db
+          # fixture; one lane runs them.
           - profile: 64bit-outbound-on
             only_32_bits: "OFF"
             outbound: "true"
             outbound_argument: --outbound
+            toastcore_fixture: "true"
           - profile: 64bit-outbound-off
             only_32_bits: "OFF"
             outbound: "false"
             outbound_argument: --no-outbound
+            toastcore_fixture: "false"
           - profile: 32bit-outbound-on
             only_32_bits: "ON"
             outbound: "true"
             outbound_argument: --outbound
+            toastcore_fixture: "false"
 
     steps:
       - name: Prepare evidence directory
@@ -411,6 +416,7 @@ jobs:
           PROFILE_ID: ${{ matrix.profile }}
           PROFILE_OUTBOUND: ${{ matrix.outbound }}
           PROFILE_32BIT: ${{ matrix.only_32_bits }}
+          PROFILE_TOASTCORE: ${{ matrix.toastcore_fixture }}
         run: |
           uv run --project trusted-controller --frozen python - <<'PY'
           from pathlib import Path
@@ -440,6 +446,7 @@ jobs:
                   "feature.exec_support": True,
                   "feature.command_dispatch": True,
                   "feature.server_options": True,
+                  "feature.toastcore_fixture": os.environ["PROFILE_TOASTCORE"] == "true",
               },
           }
           output = Path(os.environ["REPORTS_DIR"], "profile.json")
@@ -519,18 +526,23 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # ToastCore suites start the shipped _db/startup/toastcore.db
+          # fixture; one lane runs them.
           - profile: 64bit-outbound-on
             only_32_bits: "OFF"
             outbound: "true"
             outbound_argument: --outbound
+            toastcore_fixture: "true"
           - profile: 64bit-outbound-off
             only_32_bits: "OFF"
             outbound: "false"
             outbound_argument: --no-outbound
+            toastcore_fixture: "false"
           - profile: 32bit-outbound-on
             only_32_bits: "ON"
             outbound: "true"
             outbound_argument: --outbound
+            toastcore_fixture: "false"
 
     steps:
       - name: Prepare isolated untrusted environment
@@ -622,6 +634,7 @@ jobs:
           PROFILE_ID: ${{ matrix.profile }}
           PROFILE_OUTBOUND: ${{ matrix.outbound }}
           PROFILE_32BIT: ${{ matrix.only_32_bits }}
+          PROFILE_TOASTCORE: ${{ matrix.toastcore_fixture }}
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -651,6 +664,7 @@ jobs:
                   "feature.exec_support": True,
                   "feature.command_dispatch": True,
                   "feature.server_options": True,
+                  "feature.toastcore_fixture": os.environ["PROFILE_TOASTCORE"] == "true",
               },
           }
           output = Path(os.environ["REPORTS_DIR"], "profile.json")

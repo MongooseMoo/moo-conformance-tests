@@ -457,6 +457,11 @@ class ManagedServer:
             # adopted by an explicit restart checkpoint test.
             self._sync_checkpoint_output(checkpoint_timeout_ms, checkpoint_boundary)
         self.stop(preserve_temp=True)
+        # The restarted server reuses the same port. A process the old server
+        # forked (ToastStunt's checkpointer child) inherits its listening
+        # socket and can outlive it; launching before that socket closes
+        # makes the new server fail to bind.
+        self._wait_for_port_release(timeout=30.0)
         if down_ms > 0:
             time.sleep(down_ms / 1000.0)
         if arguments is not None:
@@ -585,6 +590,35 @@ class ManagedServer:
             f"Managed server did not accept connections on port {self._port} "
             f"within {timeout}s"
         )
+
+    def _wait_for_port_release(self, timeout: float = 30.0) -> None:
+        """Poll until no socket is listening on the server port.
+
+        Only POSIX servers fork children that inherit the listener. The probe
+        is a wildcard bind with SO_REUSEADDR, as a POSIX server binds: Linux
+        refuses it while any address on the port is listening, and ignores
+        TIME_WAIT connections. Windows bind rules differ (SO_REUSEADDR there
+        can take over a live port), so the probe is not used on Windows.
+        """
+        if self._port is None or os.name != "posix":
+            return
+        deadline = time.monotonic() + timeout
+
+        while True:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                try:
+                    s.bind(("", self._port))
+                    return
+                except OSError:
+                    pass
+            if time.monotonic() >= deadline:
+                raise self._record_lifecycle_failure(
+                    f"Managed server port {self._port} was still bound {timeout}s "
+                    "after the previous server exited (a process it forked may "
+                    "still hold the listening socket)"
+                )
+            time.sleep(PORT_POLL_INTERVAL)
 
     def _record_lifecycle_failure(
         self,

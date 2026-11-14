@@ -1,0 +1,27 @@
+name: next_recycled_object_negative_start
+description: >
+  next_recycled_object() rejects every negative starting object with E_INVARG,
+  not only $nothing (#-1). A start such as #-2, a large negative id, or the
+  minimum integer id must fail immediately rather than scanning upward.
+
+requires:
+  builtins: [next_recycled_object, toobj]
+
+tests:
+  - name: next_recycled_object_invarg_minus_two
+    permission: wizard
+    code: "next_recycled_object(#-2)"
+    expect:
+      error: E_INVARG
+
+  - name: next_recycled_object_invarg_large_negative
+    permission: wizard
+    code: "next_recycled_object(toobj(-1000000))"
+    expect:
+      error: E_INVARG
+
+  - name: next_recycled_object_invarg_min_int
+    permission: wizard
+    code: "next_recycled_object(toobj(-9223372036854775807 - 1))"
+    expect:
+      error: E_INVARG

@@ -17,5 +17,12 @@ what it pins.
 - Managed stock WSL Toast oracle, `K=crypt_one_char_salt_randomizes_salt`:
   2 passed (admission and this test).
 
+- Main was red from PR #202: `builtins/next_recycled_object_negative_start.yaml`
+  `next_recycled_object_invarg_min_int` uses `-9223372036854775807 - 1` with no
+  64-bit gate. The profile contract guard refuses it, and the 32-bit Toast
+  profile returns `#26` instead of E_INVARG. It now has
+  `skip_if: "not feature.64bit"`, like the other 64-bit literals. The
+  pre-commit guard checks the whole tree, so this branch carries that fix.
+
 ## Next step
 Merge; Barn's queue then runs the new form.

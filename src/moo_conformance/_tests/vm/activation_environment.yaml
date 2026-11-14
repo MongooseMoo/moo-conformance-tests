@@ -1,0 +1,217 @@
+name: activation_environment
+description: Implicit constants and error locations survive activation changes.
+requires:
+  builtins: [add_verb, delete_verb, add_property, create, recycle, set_verb_code, suspend, resume]
+tests:
+  - name: implicit_type_constants_in_eval
+    code: '{NUM, INT, OBJ, STR, ERR, LIST, FLOAT, MAP, ANON, WAIF, BOOL}'
+    expect:
+      value: [0, 0, 1, 2, 3, 4, 9, 10, 12, 13, 14]
+  - name: implicit_type_constants_in_nested_verb
+    permission: wizard
+    statement: |
+      receiver = create($nothing);
+      add_verb(receiver, {player, "rxd", "constants"}, {"this", "none", "this"});
+      set_verb_code(receiver, "constants", {"return {NUM, INT, OBJ, STR, ERR, LIST, FLOAT, MAP, ANON, WAIF, BOOL};"});
+      result = receiver:constants();
+      recycle(receiver);
+      return result;
+    expect:
+      value: [0, 0, 1, 2, 3, 4, 9, 10, 12, 13, 14]
+  - name: implicit_type_constants_after_suspend
+    statement: |
+      suspend(0);
+      return {NUM, INT, OBJ, STR, ERR, LIST, FLOAT, MAP, ANON, WAIF, BOOL};
+    expect:
+      value: [0, 0, 1, 2, 3, 4, 9, 10, 12, 13, 14]
+  - name: implicit_type_constants_in_nested_fork_after_resume
+    permission: wizard
+    statement: |
+      receiver = create($nothing);
+      add_property(receiver, "result", 0, {player, "rw"});
+      parent = task_id();
+      fork (0)
+        worker = task_id();
+        fork (0)
+          suspend(0);
+          receiver.result = {NUM, INT, OBJ, STR, ERR, LIST, FLOAT, MAP, ANON, WAIF, BOOL};
+          resume(worker);
+        endfork
+        suspend(5);
+        resume(parent);
+      endfork
+      suspend(5);
+      result = receiver.result;
+      recycle(receiver);
+      return result;
+    expect:
+      value: [0, 0, 1, 2, 3, 4, 9, 10, 12, 13, 14]
+  - name: implicit_type_constant_assignment_is_inherited_by_fork
+    permission: wizard
+    statement: |
+      receiver = create($nothing);
+      add_property(receiver, "result", 0, {player, "rw"});
+      parent = task_id();
+      OBJ = 77;
+      fork (0)
+        suspend(0);
+        receiver.result = OBJ;
+        resume(parent);
+      endfork
+      OBJ = 88;
+      suspend(5);
+      result = {receiver.result, OBJ};
+      recycle(receiver);
+      return result;
+    expect:
+      value: [77, 88]
+  - name: caught_error_trace_starts_at_current_receiver_after_previous_error
+    permission: wizard
+    statement: |
+      driver = create($nothing);
+      helper = create($nothing);
+      add_verb(helper, {player, "rxd", "fail"}, {"this", "none", "this"});
+      set_verb_code(helper, "fail", {"raise(E_TYPE, \"helper failure\");"});
+      add_verb(driver, {player, "rxd", "run"}, {"this", "none", "this"});
+      set_verb_code(driver, "run", {
+        "try this:fail(); except (E_TYPE) endtry",
+        "args[1]:fail();"
+      });
+      add_verb(driver, {player, "rxd", "fail"}, {"this", "none", "this"});
+      set_verb_code(driver, "fail", {"raise(E_TYPE, \"first failure\");"});
+      try
+        driver:run(helper);
+      except error (E_TYPE)
+        frame = error[4][1];
+        result = {error[2], frame[1] == helper, frame[2], frame[4] == helper, frame[6]};
+      endtry
+      recycle(helper);
+      recycle(driver);
+      return result;
+    expect:
+      value: ["helper failure", 1, "fail", 1, 1]
+  - name: caught_trace_ends_at_nearest_handler_independent_of_outer_path
+    permission: wizard
+    statement: |
+      receiver = create($nothing);
+      add_verb(receiver, {player, "rxd", "fail"}, {"this", "none", "this"});
+      set_verb_code(receiver, "fail", {"raise(E_NONE, \"same failure\", {3.00000001});"});
+      add_verb(receiver, {player, "rxd", "capture"}, {"this", "none", "this"});
+      set_verb_code(receiver, "capture", {"try this:fail(); except error (ANY) return error; endtry"});
+      add_verb(receiver, {player, "rxd", "indirect"}, {"this", "none", "this"});
+      set_verb_code(receiver, "indirect", {"return this:capture();"});
+      first = receiver:capture();
+      second = receiver:indirect();
+      result = {equal(first, second), length(first[4]), first[4][$][2]};
+      recycle(receiver);
+      return result;
+    expect:
+      value: [1, 2, "capture"]
+  - name: finally_preserves_error_origin_after_unwinding_helper
+    permission: wizard
+    statement: |
+      driver = create($nothing);
+      helper = create($nothing);
+      add_verb(helper, {player, "rxd", "fail"}, {"this", "none", "this"});
+      set_verb_code(helper, "fail", {"raise(E_TYPE, \"helper failure\");"});
+      add_verb(driver, {player, "rxd", "run"}, {"this", "none", "this"});
+      set_verb_code(driver, "run", {"try args[1]:fail(); finally length({}); endtry"});
+      try
+        driver:run(helper);
+      except error (E_TYPE)
+        frame = error[4][1];
+        result = {error[2], frame[1] == helper, frame[2], frame[4] == helper, frame[6]};
+      endtry
+      recycle(helper);
+      recycle(driver);
+      return result;
+    expect:
+      value: ["helper failure", 1, "fail", 1, 1]
+  - name: implicit_type_constants_initialized_before_conditional_assignment
+    statement: |
+      if (0)
+        NUM = INT = OBJ = STR = ERR = LIST = FLOAT = MAP = ANON = WAIF = BOOL = 99;
+      endif
+      return {NUM, INT, OBJ, STR, ERR, LIST, FLOAT, MAP, ANON, WAIF, BOOL};
+    expect:
+      value: [0, 0, 1, 2, 3, 4, 9, 10, 12, 13, 14]
+  - name: implicit_type_constant_assignment_is_visible_on_next_iteration
+    statement: |
+      values = {};
+      for iteration in [1..2]
+        values = {@values, OBJ};
+        OBJ = 77;
+      endfor
+      return values;
+    expect:
+      value: [1, 77]
+  - name: finally_preserves_native_error_origin_across_suspend
+    permission: wizard
+    statement: |
+      driver = create($nothing);
+      helper = create($nothing);
+      add_verb(helper, {player, "rxd", "fail"}, {"this", "none", "this"});
+      set_verb_code(helper, "fail", {"return 1 / 0;"});
+      add_verb(driver, {player, "rxd", "run"}, {"this", "none", "this"});
+      set_verb_code(driver, "run", {"try args[1]:fail(); finally suspend(0); endtry"});
+      try
+        driver:run(helper);
+      except error (E_DIV)
+        frame = error[4][1];
+        result = {frame[1] == helper, frame[2], frame[4] == helper, frame[6]};
+      endtry
+      recycle(helper);
+      recycle(driver);
+      return result;
+    expect:
+      value: [1, "fail", 1, 1]
+  - name: finally_new_error_replaces_pending_error_origin
+    permission: wizard
+    statement: |
+      receiver = create($nothing);
+      add_verb(receiver, {player, "rxd", "run"}, {"this", "none", "this"});
+      set_verb_code(receiver, "run", {
+        "try raise(E_TYPE, \"initial\"); finally raise(E_INVARG, \"replacement\"); endtry"
+      });
+      try
+        receiver:run();
+      except error (E_INVARG)
+        result = {error[2], error[4][1][1] == receiver, error[4][1][2]};
+      endtry
+      recycle(receiver);
+      return result;
+    expect:
+      value: ["replacement", 1, "run"]
+  - name: implicit_type_constants_in_nested_verb_before_conditional_assignment
+    permission: wizard
+    statement: |
+      receiver = create($nothing);
+      add_verb(receiver, {player, "rxd", "constants"}, {"this", "none", "this"});
+      set_verb_code(receiver, "constants", {
+        "if (0) NUM = INT = OBJ = STR = ERR = LIST = FLOAT = MAP = ANON = WAIF = BOOL = 99; endif",
+        "return {NUM, INT, OBJ, STR, ERR, LIST, FLOAT, MAP, ANON, WAIF, BOOL};"
+      });
+      result = receiver:constants();
+      recycle(receiver);
+      return result;
+    expect:
+      value: [0, 0, 1, 2, 3, 4, 9, 10, 12, 13, 14]
+  - name: uncaught_finally_error_reports_original_verb
+    permission: wizard
+    steps:
+      - run: |
+          add_verb(player, {player, "rxd", "unwindinner"}, {"this", "none", "this"});
+          set_verb_code(player, "unwindinner", {"return missing_variable;"});
+          add_verb(player, {player, "rxd", "unwindouter"}, {"any", "none", "none"});
+          set_verb_code(player, "unwindouter", {"try this:unwindinner(); finally length({}); endtry"});
+          return 1;
+        expect:
+          value: 1
+      - command: unwindouter
+        expect:
+          output:
+            match: '(?s):unwindinner .*Variable not found.* called from #\d+:unwindouter .*\(End of traceback\)'
+    cleanup:
+      - run: |
+          delete_verb(player, "unwindouter");
+          delete_verb(player, "unwindinner");

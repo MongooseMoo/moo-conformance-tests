@@ -130,6 +130,7 @@ def test_toast_workflow_uses_immutable_trusted_and_fork_candidate_checkouts() ->
             "ref": "${{ github.event.pull_request.base.sha || github.workflow_sha }}",
             "path": "trusted-controller",
             "persist-credentials": "false",
+            "submodules": "true",
         }
         candidate = steps["Check out admitted conformance data"]["with"]
         assert candidate == {
@@ -147,6 +148,7 @@ def test_toast_workflow_uses_immutable_trusted_and_fork_candidate_checkouts() ->
             "path": "candidate-data",
             "persist-credentials": "false",
             "allow-unsafe-pr-checkout": "true",
+            "submodules": "true",
         }
 
 

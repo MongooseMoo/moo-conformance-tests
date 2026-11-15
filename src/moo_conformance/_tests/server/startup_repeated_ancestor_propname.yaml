@@ -1,0 +1,49 @@
+name: startup_repeated_ancestor_propname
+description: >
+  A database can give an object a property definition whose name an ancestor
+  also defines. The fixture's #3 defines "dup" and its child #4 defines "dup"
+  again, so #4 carries two "dup" value slots: its own definition's slot first,
+  then the slot inherited from #3. A property reference resolves the name to
+  the first matching slot, searching the object's own definitions before its
+  ancestors', so #4.dup reads #4's own slot ("own slot", owner #4, perms "r")
+  rather than the inherited one ("inherited slot", owner #3, perms "rw"). The
+  value written to that slot is the one read back after dump_database() and a
+  restart.
+server_db: repeated_ancestor_propname.db
+requires:
+  builtins:
+    - dump_database
+  config: [managed_server, server_dir, server_db_dir]
+tests:
+  - name: repeated_name_resolves_to_first_slot_across_checkpoints
+    permission: wizard
+    steps:
+      - run: |
+          return {#4.dup, property_info(#4, "dup"), properties(#4), is_clear_property(#4, "dup"), #3.dup, property_info(#3, "dup")};
+        expect:
+          value: ["own slot", ["#4", "r"], ["dup"], 0, "wizard slot", ["#3", "r"]]
+      - run: |
+          #4.dup = "written";
+          return #4.dup;
+        expect:
+          value: "written"
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+          wait_ms: 300
+      - run: |
+          return {#4.dup, property_info(#4, "dup"), properties(#4), #3.dup};
+        expect:
+          value: ["written", ["#4", "r"], ["dup"], "wizard slot"]
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+          wait_ms: 300
+      - run: |
+          return {#4.dup, property_info(#4, "dup"), properties(#4), #3.dup};
+        expect:
+          value: ["written", ["#4", "r"], ["dup"], "wizard slot"]

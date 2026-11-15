@@ -1,0 +1,73 @@
+name: dot_source_line_checkpoint_restart
+description: >
+  Verifies that tasks whose eval() source contains lines starting with "."
+  (such as "o\n.prop = 1;" or a bare "." line, which compile to property
+  references) survive dump_database() and a managed server restart: the
+  suspended eval frame and the forked task both resume after reload and
+  perform their property writes.
+requires:
+  builtins:
+    - dump_database
+    - queued_tasks
+    - kill_task
+    - create
+    - recycle
+    - add_property
+    - add_verb
+    - set_verb_code
+    - eval
+    - suspend
+    - chr
+  config: [managed_server]
+tests:
+  - name: dot_leading_source_lines_survive_checkpoint_restart
+    permission: wizard
+    steps:
+      - run: |
+          obj = create($nothing);
+          add_property(obj, "frame_dot", 0, {player, "rw"});
+          add_property(obj, "frame_bare_dot", 0, {player, "rw"});
+          add_property(obj, "fork_dot", 0, {player, "rw"});
+          add_property(obj, "fork_bare_dot", 0, {player, "rw"});
+          add_verb(obj, {player, "xd", "start"}, {"this", "none", "this"});
+          set_verb_code(obj, "start", {
+            "fork t (0)",
+            "  eval(tostr(\"o = \", this, \";\", chr(10), \"suspend(6);\", chr(10), \"o\", chr(10), \".frame_dot = 1;\", chr(10), \"o\", chr(10), \".\", chr(10), \"frame_bare_dot = 2;\"));",
+            "endfork",
+            "r = eval(tostr(\"o = \", this, \";\", chr(10), \"fork (6)\", chr(10), \"o\", chr(10), \".fork_dot = 3;\", chr(10), \"o\", chr(10), \".\", chr(10), \"fork_bare_dot = 4;\", chr(10), \"endfork\"));",
+            "return {t, r};"
+          });
+          return obj;
+        capture: dot_obj
+      - run: |
+          r = {dot_obj}:start();
+          return r[2] == {1, 0} ? r[1] | r;
+        capture: dot_task
+      - run: "return typeof({dot_task});"
+        expect:
+          value: 0
+      - run: |
+          ids = {};
+          for q in (queued_tasks())
+            ids = {@ids, q[1]};
+          endfor
+          return {length(ids) >= 2, {dot_task} in ids > 0};
+        expect:
+          value: [1, 1]
+        poll_ms: 3000
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - restart_server:
+          checkpoint_timeout_ms: 10000
+      - run: |
+          o = {dot_obj};
+          return {o.frame_dot, o.frame_bare_dot, o.fork_dot, o.fork_bare_dot};
+        expect:
+          value: [1, 2, 3, 4]
+        poll_ms: 15000
+    cleanup:
+      - run: |
+          `kill_task({dot_task}) ! ANY';
+          `recycle({dot_obj}) ! ANY';
+          return 0;

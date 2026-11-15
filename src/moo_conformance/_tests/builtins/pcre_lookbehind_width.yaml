@@ -1,0 +1,79 @@
+name: pcre_lookbehind_width
+description: >
+  PCRE2 (10.42, as linked by ToastStunt) only compiles a lookbehind when each
+  of its top-level branches matches a fixed number of characters; branches may
+  differ from one another. A variable-width lookbehind is a compile error, so
+  pcre_match() and pcre_replace() raise E_INVARG instead of matching.
+
+requires:
+  builtins:
+    - pcre_match
+    - pcre_replace
+
+tests:
+  - name: pcre_lookbehind_width_plus_rejected
+    code: 'pcre_match("aab", "(?<=a+)b")'
+    expect:
+      error: E_INVARG
+
+  - name: pcre_lookbehind_width_negative_repeated_group_rejected
+    description: "Shape of the pattern from barn issue #843"
+    code: 'pcre_match("xpab", "(?<!p(..?.)+).")'
+    expect:
+      error: E_INVARG
+
+  - name: pcre_lookbehind_width_optional_rejected
+    code: 'pcre_match("ab", "(?<=a?)b")'
+    expect:
+      error: E_INVARG
+
+  - name: pcre_lookbehind_width_bounded_range_rejected
+    code: 'pcre_match("ab", "(?<=a{1,3})b")'
+    expect:
+      error: E_INVARG
+
+  - name: pcre_lookbehind_width_nested_unequal_branches_rejected
+    code: 'pcre_match("abe", "(?<=a(b|cd))e")'
+    expect:
+      error: E_INVARG
+
+  - name: pcre_lookbehind_width_variable_backref_rejected
+    code: 'pcre_match("aab", "(a+)(?<=\\1)b")'
+    expect:
+      error: E_INVARG
+
+  - name: pcre_lookbehind_width_star_rejected_in_replace
+    code: 'pcre_replace("aab", "s/(?<=a*)b/x/g")'
+    expect:
+      error: E_INVARG
+
+  - name: pcre_lookbehind_width_unequal_top_level_branches_accepted
+    statement: |
+      r = pcre_match("abd cd xd", "(?<=ab|c)d", 0, 1);
+      return {length(r), r[1]["0"]["position"], r[2]["0"]["position"]};
+    expect:
+      value: [2, [3, 3], [6, 6]]
+
+  - name: pcre_lookbehind_width_exact_repeat_accepted
+    statement: |
+      r = pcre_match("ababc abc", "(?<=(?:ab){2})c", 0, 1);
+      return {length(r), r[1]["0"]["position"]};
+    expect:
+      value: [1, [5, 5]]
+
+  - name: pcre_lookbehind_width_fixed_backref_accepted
+    statement: |
+      return length(pcre_match("aab", "(a)(?<=\\1)b", 0, 1));
+    expect:
+      value: 1
+
+  - name: pcre_lookbehind_width_nested_variable_lookahead_accepted
+    statement: |
+      return length(pcre_match("ab", "(?<=a(?=b+))b", 0, 1));
+    expect:
+      value: 1
+
+  - name: pcre_lookbehind_width_fixed_replace
+    code: 'pcre_replace("ab cb", "s/(?<=a)b/x/g")'
+    expect:
+      value: "ax cb"

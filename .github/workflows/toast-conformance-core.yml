@@ -259,7 +259,9 @@ jobs:
       - quality
     timeout-minutes: 60
     env:
-      TOAST_ORACLE_SHA: eaaa1972f0993a1247f787dbf2dd5a01702ef442
+      # Data candidates run on ToastStunt 2.8 (03af4fa); controller validation
+      # stays on the current base-data oracle until the 2.8 data lands.
+      TOAST_ORACLE_SHA: ${{ needs.classify-changes.outputs.mode == 'data' && '03af4fa2b53b418999f03566b646ee42bc7ea647' || 'eaaa1972f0993a1247f787dbf2dd5a01702ef442' }}
     strategy:
       fail-fast: false
       matrix:

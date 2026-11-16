@@ -14,6 +14,7 @@ from pycparser import c_ast, c_parser
 TYPE_NAME_MAP = {
     "TYPE_ANY": "any",
     "TYPE_NUMERIC": "numeric",
+    "TYPE_FLAG": "flag",
     "TYPE_INT": "int",
     "TYPE_OBJ": "obj",
     "_TYPE_STR": "str",
@@ -37,6 +38,7 @@ TYPE_NAME_MAP = {
 TYPE_CODE_MAP = {
     "TYPE_ANY": -1,
     "TYPE_NUMERIC": -2,
+    "TYPE_FLAG": -3,
     "TYPE_INT": 0,
     "TYPE_OBJ": 1,
     "_TYPE_STR": 2,
@@ -74,6 +76,7 @@ VAR_HELPER_TYPES = {
 VALID_WITNESS_MAP = {
     "TYPE_ANY": "1",
     "TYPE_NUMERIC": "1",
+    "TYPE_FLAG": "1",
     "TYPE_INT": "1",
     "TYPE_OBJ": "#0",
     "_TYPE_STR": '"x"',
@@ -89,6 +92,7 @@ VALID_WITNESS_MAP = {
 
 INVALID_WITNESS_MAP = {
     "TYPE_NUMERIC": '"x"',
+    "TYPE_FLAG": '"x"',
     "TYPE_INT": '"x"',
     "TYPE_OBJ": '"x"',
     "_TYPE_STR": "1",
@@ -462,7 +466,8 @@ def _parse_registration(
 def _registration_translation_unit(call_text: str) -> str:
     return (
         "typedef int Byte; typedef int Objid; typedef int Var; typedef int package;\n"
-        "int TYPE_ANY; int TYPE_NUMERIC; int TYPE_INT; int TYPE_OBJ; int _TYPE_STR; int TYPE_STR;\n"
+        "int TYPE_ANY; int TYPE_NUMERIC; int TYPE_FLAG; int TYPE_INT; int TYPE_OBJ; "
+        "int _TYPE_STR; int TYPE_STR;\n"
         "int TYPE_ERR; int _TYPE_LIST; int TYPE_LIST; int _TYPE_FLOAT; int TYPE_FLOAT;\n"
         "int _TYPE_MAP; int TYPE_MAP; int _TYPE_ITER; int TYPE_ITER; "
         "int _TYPE_ANON; int TYPE_ANON;\n"

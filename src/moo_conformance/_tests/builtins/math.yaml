@@ -1176,17 +1176,72 @@ tests:
       value: -2147483648
     skip_if: "feature.64bit"
 
-  # Minint edge cases (64-bit)
-  - name: minint_division_edge_case_64bit
+  # Minint edge cases (64-bit). Integer division by -1 negates with
+  # two's-complement wrap, and modulus by -1 is 0, for every dividend
+  # including the most negative integer (ToastStunt 2.8 do_divide and
+  # do_modulus in numbers.cc).
+  - name: minint_divided_by_neg_one_negates_64bit
     code: "-9223372036854775807 / -1"
     expect:
-      value: -9223372036854775807
+      value: 9223372036854775807
     skip_if: "not feature.64bit"
 
   - name: minint_modulus_edge_case_64bit
     code: "-9223372036854775807 % -1"
     expect:
       value: 0
+    skip_if: "not feature.64bit"
+
+  - name: int64_min_divided_by_neg_one_wraps_64bit
+    statement: |
+      x = -9223372036854775808;
+      return x / -1;
+    expect:
+      value: -9223372036854775808
+    skip_if: "not feature.64bit"
+
+  - name: int64_min_modulus_neg_one_64bit
+    statement: |
+      x = -9223372036854775808;
+      return x % -1;
+    expect:
+      value: 0
+    skip_if: "not feature.64bit"
+
+  - name: maxint_divided_by_neg_one_64bit
+    code: "9223372036854775807 / -1"
+    expect:
+      value: -9223372036854775807
+    skip_if: "not feature.64bit"
+
+  # Floored modulus with divisors near the integer limits: the result takes
+  # the divisor's sign and does not overflow.
+  - name: modulus_large_positive_divisor_64bit
+    code: "9223372036854775806 % 9223372036854775807"
+    expect:
+      value: 9223372036854775806
+    skip_if: "not feature.64bit"
+
+  - name: modulus_large_negative_divisor_64bit
+    code: "-9223372036854775806 % -9223372036854775807"
+    expect:
+      value: -9223372036854775806
+    skip_if: "not feature.64bit"
+
+  - name: modulus_int64_min_divisor_64bit
+    statement: |
+      d = -9223372036854775808;
+      return {5 % d, -5 % d, d % d};
+    expect:
+      value: [-9223372036854775803, -5, 0]
+    skip_if: "not feature.64bit"
+
+  - name: negate_int64_min_wraps_64bit
+    statement: |
+      x = -9223372036854775808;
+      return {-x, -(x + 1)};
+    expect:
+      value: [-9223372036854775808, 9223372036854775807]
     skip_if: "not feature.64bit"
 
   # Signed integer division

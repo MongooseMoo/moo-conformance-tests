@@ -1,0 +1,41 @@
+name: high_slot_self_assignment
+description: >
+  Self-referential assignments (`x[i] = v`, `x = {@x, v}`, `x = x + 1`) to a
+  variable in a slot past the first 32. ToastStunt 2.8 (48ee5dc) compiles the
+  last read of such a variable before its store as OP_G_PUSH_CLEAR, as it
+  already did for low slots with OP_PUSH_CLEAR; the decompiler reads it back
+  as the variable. Built-in variables take 24 slots, so a verb's ninth and
+  later variables of its own are past slot 31. Values, verb_code() text and
+  E_VARNF on an unbound variable are the same as for a low slot.
+
+requires:
+  builtins:
+    - create
+    - recycle
+    - add_verb
+    - set_verb_code
+    - verb_code
+    - toliteral
+    - length
+
+tests:
+  - name: high_slot_self_assignments_run_and_decompile
+    statement: |
+      code = {"a1 = a2 = a3 = a4 = a5 = a6 = a7 = a8 = a9 = 0;", "x = {1, 2, 3};", "x[2] = 20;", "x = {@x, 4};", "s = \"ab\";", "s[1] = \"z\";", "m = [];", "for i in [1..5]", "  m[i] = i * i;", "endfor", "x = {@x, length(m)};", "return {x, s, toliteral(m)};"};
+      o = create($nothing);
+      add_verb(o, {player, "rxd", "high_slot_probe"}, {"this", "none", "this"});
+      compiled = set_verb_code(o, "high_slot_probe", code);
+      result = o:high_slot_probe();
+      decompiled = verb_code(o, "high_slot_probe");
+      recycle(o);
+      return {compiled, result, decompiled == code};
+    expect:
+      value: [[], [[1, 20, 3, 4, 5], "zb", "[1 -> 1, 2 -> 4, 3 -> 9, 4 -> 16, 5 -> 25]"], 1]
+
+  - name: high_slot_unbound_self_reference_raises_varnf
+    statement: |
+      a1 = a2 = a3 = a4 = a5 = a6 = a7 = a8 = a9 = 0;
+      z = z + 1;
+      return z;
+    expect:
+      error: E_VARNF

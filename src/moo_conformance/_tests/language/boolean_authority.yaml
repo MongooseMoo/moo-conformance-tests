@@ -54,7 +54,7 @@ tests:
         maphaskey(values, 0)
       };
     expect:
-      value: ["{0, 1, false, true}", 0, 1, 1, 1]
+      value: ["{0, 1, false, true}", 1, 1, 1, 1]
 
   - name: boolean_indexed_read_and_write_raise_type
     statement: |

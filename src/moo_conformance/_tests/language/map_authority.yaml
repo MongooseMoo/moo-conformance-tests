@@ -35,6 +35,40 @@ tests:
         - "wide"
         - [0, 4294967296]
 
+  - name: full_width_integer_map_keys_order_numerically
+    skip_if: "not feature.64bit"
+    statement: |
+      mapping = [4294967297 -> "a", 1 -> "b", -4294967295 -> "c",
+                 2147483648 -> "d", 0 -> "e"];
+      return {
+        length(mapping), mapping[1], mapping[4294967297],
+        mapping[-4294967295], mapkeys(mapping)
+      };
+    expect:
+      value:
+        - 5
+        - "b"
+        - "a"
+        - "c"
+        - [-4294967295, 0, 1, 2147483648, 4294967297]
+
+  - name: full_width_object_map_keys_order_numerically
+    skip_if: "not feature.64bit"
+    statement: |
+      mapping = [#4294967297 -> "a", #1 -> "b", #-4294967295 -> "c",
+                 #2147483648 -> "d", #0 -> "e"];
+      return {
+        length(mapping), mapping[#1], mapping[#4294967297],
+        mapping[#-4294967295], toliteral(mapkeys(mapping))
+      };
+    expect:
+      value:
+        - 5
+        - "b"
+        - "a"
+        - "c"
+        - "{#-4294967295, #0, #1, #2147483648, #4294967297}"
+
   - name: anon_keys_work_in_vm_mapvalues_and_key_builtins
     statement: |
       anon = create($anonymous, 1);
@@ -109,22 +143,25 @@ tests:
     expect:
       value: [E_RANGE, "Key *anonymous* not found in map", 1, 0]
 
-  - name: reverse_inserted_bool_key_maps_expose_reverse_topology
+  - name: bool_map_keys_order_false_before_true_in_any_insertion_order
     statement: |
       false_first = [false -> 0, true -> 1];
       true_first = [true -> 1, false -> 0];
       return {
-        mapkeys(false_first) == {true, false},
+        mapkeys(false_first) == {false, true},
         mapkeys(true_first) == {false, true},
-        toliteral(false_first) == "[true -> 1, false -> 0]",
+        toliteral(false_first) == "[false -> 0, true -> 1]",
         toliteral(true_first) == "[false -> 0, true -> 1]",
         false_first == true_first,
         equal(false_first, true_first)
       };
     expect:
-      value: [1, 1, 1, 1, 0, 0]
+      value: [1, 1, 1, 1, 1, 1]
 
-  - name: reverse_inserted_waif_key_maps_expose_reverse_topology
+  # Toast orders waif and anonymous-object keys by address, so which of two
+  # such keys comes first is unspecified; the order must not depend on the
+  # order the keys were inserted in.
+  - name: waif_key_map_order_is_independent_of_insertion_order
     statement: |
       class = create($waif);
       first = class:new();
@@ -132,33 +169,29 @@ tests:
       first_first = [first -> 1, second -> 2];
       second_first = [second -> 2, first -> 1];
       result = {
-        mapkeys(first_first) == {second, first},
-        mapkeys(second_first) == {first, second},
-        toliteral(first_first) ==
-          "[" + toliteral(second) + " -> 2, " + toliteral(first) + " -> 1]",
-        toliteral(second_first) ==
-          "[" + toliteral(first) + " -> 1, " + toliteral(second) + " -> 2]",
+        (mapkeys(first_first) in {{first, second}, {second, first}}) > 0,
+        equal(mapkeys(first_first), mapkeys(second_first)),
+        first_first[first] == 1 && first_first[second] == 2,
+        second_first[first] == 1 && second_first[second] == 2,
         first_first == second_first,
         equal(first_first, second_first)
       };
       recycle(class);
       return result;
     expect:
-      value: [1, 1, 1, 1, 0, 0]
+      value: [1, 1, 1, 1, 1, 1]
 
-  - name: reverse_inserted_anon_key_maps_expose_reverse_topology
+  - name: anon_key_map_order_is_independent_of_insertion_order
     statement: |
       first = create($anonymous, 1);
       second = create($anonymous, 1);
       first_first = [first -> 1, second -> 2];
       second_first = [second -> 2, first -> 1];
       result = {
-        mapkeys(first_first) == {second, first},
-        mapkeys(second_first) == {first, second},
-        toliteral(first_first) ==
-          "[" + toliteral(second) + " -> 2, " + toliteral(first) + " -> 1]",
-        toliteral(second_first) ==
-          "[" + toliteral(first) + " -> 1, " + toliteral(second) + " -> 2]",
+        (mapkeys(first_first) in {{first, second}, {second, first}}) > 0,
+        equal(mapkeys(first_first), mapkeys(second_first)),
+        first_first[first] == 1 && first_first[second] == 2,
+        second_first[first] == 1 && second_first[second] == 2,
         first_first == second_first,
         equal(first_first, second_first)
       };
@@ -166,7 +199,7 @@ tests:
       recycle(second);
       return result;
     expect:
-      value: [1, 1, 1, 1, 0, 0]
+      value: [1, 1, 1, 1, 1, 1]
 
   - name: map_literal_evaluates_each_value_before_its_key
     statement: |

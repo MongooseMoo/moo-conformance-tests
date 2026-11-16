@@ -32,7 +32,7 @@ sleep 1
 echo "==> starting toast on :$TOAST_PORT"
 nohup "$TOAST_BIN" /tmp/toast_in.db /tmp/toast_out.db -p "$TOAST_PORT" >/tmp/toast.log 2>&1 &
 echo "==> starting barn on :$BARN_PORT"
-nohup /tmp/barn_linux serve --db /tmp/barn_in.db --port "$BARN_PORT" >/tmp/barn.log 2>&1 &
+nohup /tmp/barn_linux -db /tmp/barn_in.db -port "$BARN_PORT" >/tmp/barn.log 2>&1 &
 sleep 3
 
 echo "==> running benchmark (harness raises tick limits via \$server_options)"

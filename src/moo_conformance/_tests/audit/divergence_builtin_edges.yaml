@@ -296,15 +296,9 @@ tests:
     expect:
       error: E_INVARG
 
-  - name: parse_json_unicode_escape_duplicate_keys_rejected
-    description: The \u0041 escape decodes to the MOO string "~41".
-    code: 'parse_json("{\"~41\":1,\"\\u0041\":2}")'
-    expect:
-      error: E_INVARG
-
-  - name: parse_json_short_escape_duplicate_keys_rejected
-    description: The \n escape decodes to the MOO string "~0A".
-    code: 'parse_json("{\"~0A\":1,\"\\n\":2}")'
+  - name: parse_json_escaped_slash_duplicate_keys_rejected
+    description: The \/ escape decodes to "/".
+    code: 'parse_json("{\"/\":1,\"\\/\":2}")'
     expect:
       error: E_INVARG
 

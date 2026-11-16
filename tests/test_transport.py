@@ -157,7 +157,7 @@ def test_a_reply_that_arrives_after_a_timeout_is_never_returned_to_the_next_requ
     with scripted_server(script) as port:
         transport = SocketTransport("127.0.0.1", port, ensure_standard_properties=False)
         transport.sock = socket.create_connection(("127.0.0.1", port))
-        transport.sock.settimeout(0.3)
+        transport.command_timeout = 0.3
         try:
             try:
                 transport.execute("return 111;")
@@ -177,6 +177,25 @@ def test_a_reply_that_arrives_after_a_timeout_is_never_returned_to_the_next_requ
 
     assert second != 111, "the timed-out request's late reply was given to the next request"
     assert isinstance(second, RuntimeError), second
+
+
+def test_each_command_waits_for_the_command_timeout() -> None:
+    def script(conn: socket.socket) -> None:
+        conn.recv(4096)
+        time.sleep(0.6)
+        conn.sendall(b"-=!-^-!=-\r\n=> 111\r\n-=!-v-!=-\r\n")
+
+    with scripted_server(script) as port:
+        transport = SocketTransport("127.0.0.1", port, ensure_standard_properties=False)
+        transport.sock = socket.create_connection(("127.0.0.1", port))
+        transport.sock.settimeout(0.3)  # replaced by command_timeout for the command
+        transport.command_timeout = 2.0
+        try:
+            value = transport.execute("return 111;").value
+        finally:
+            transport.disconnect()
+
+    assert value == 111
 
 
 def test_toast_incorrect_number_of_arguments_traceback_is_e_args() -> None:

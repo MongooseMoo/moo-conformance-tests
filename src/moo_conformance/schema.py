@@ -515,8 +515,9 @@ class MooTestCase:
     # Cleanup steps (always run, even on failure)
     cleanup: list["TestStep"] = field(default_factory=list)
 
-    # Timeout override
-    timeout_ms: int = 5000
+    # How long each command of this test waits for its reply; None keeps the
+    # transport's default.
+    timeout_ms: int | None = None
 
     # Capability dependencies
     provides: str | None = None   # Capability this test provides (e.g., "fork", "queued_tasks")
@@ -1393,7 +1394,7 @@ def _parse_test_case(data: dict, context: str) -> MooTestCase:
         argstr=data.get('argstr', ''),
         expect=expect,
         cleanup=cleanup,
-        timeout_ms=data.get('timeout_ms', 5000),
+        timeout_ms=data.get('timeout_ms'),
         provides=provides,
         assumes=assumes,
     )

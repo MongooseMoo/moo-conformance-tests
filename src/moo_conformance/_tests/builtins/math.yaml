@@ -1180,7 +1180,7 @@ tests:
   # two's-complement wrap, and modulus by -1 is 0, for every dividend
   # including the most negative integer (ToastStunt 2.8 do_divide and
   # do_modulus in numbers.cc).
-  - name: minint_divided_by_neg_one_negates_64bit
+  - name: minint_division_edge_case_64bit
     code: "-9223372036854775807 / -1"
     expect:
       value: 9223372036854775807

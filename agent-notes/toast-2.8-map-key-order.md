@@ -1,5 +1,9 @@
 # toast-2.8-map-key-order
 
+The rename descriptions below are historical. During integration in #217,
+the existing case names were retained as durable inventory identities while
+their descriptions and assertions were updated for Toast 2.8.
+
 ## Goal
 
 Make the map key-order expectations match stock Toast after upstream

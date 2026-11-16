@@ -281,7 +281,7 @@ tests:
 
   # ToastStunt 2.8 parse_json() fails when two members of one JSON object map
   # to the same MOO key, rather than keeping one of them.
-  - name: parse_json_duplicate_keys_rejected
+  - name: parse_json_duplicate_keys_first_wins
     code: "parse_json(\"{\\\"a\\\":1,\\\"a\\\":2}\")"
     expect:
       error: E_INVARG

@@ -921,7 +921,7 @@ tests:
           load_server_options();
         as: wizard
 
-  - name: tick_exhaustion_extended_opcode_tests_the_budget
+  - name: tick_exhaustion_extended_opcode_does_not_test_the_budget
     description: >
       EOP_FOR_LIST tests the budget like an ordinary ticking opcode. With
       bg_ticks = 1001 the setup costs 30 ticks and each iteration 5 (FOR_LIST,

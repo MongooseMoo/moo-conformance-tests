@@ -69,7 +69,7 @@ tests:
         - "c"
         - "{#-4294967295, #0, #1, #2147483648, #4294967297}"
 
-  - name: anon_keys_work_in_vm_mapvalues_and_key_builtins
+  - name: anon_keys_work_in_vm_and_mapvalues_but_not_key_builtins
     statement: |
       anon = create($anonymous, 1);
       literal = [anon -> "literal"];
@@ -143,7 +143,7 @@ tests:
     expect:
       value: [E_RANGE, "Key *anonymous* not found in map", 1, 0]
 
-  - name: bool_map_keys_order_false_before_true_in_any_insertion_order
+  - name: reverse_inserted_bool_key_maps_expose_reverse_topology
     statement: |
       false_first = [false -> 0, true -> 1];
       true_first = [true -> 1, false -> 0];
@@ -161,7 +161,7 @@ tests:
   # Toast orders waif and anonymous-object keys by address, so which of two
   # such keys comes first is unspecified; the order must not depend on the
   # order the keys were inserted in.
-  - name: waif_key_map_order_is_independent_of_insertion_order
+  - name: reverse_inserted_waif_key_maps_expose_reverse_topology
     statement: |
       class = create($waif);
       first = class:new();
@@ -181,7 +181,7 @@ tests:
     expect:
       value: [1, 1, 1, 1, 1, 1]
 
-  - name: anon_key_map_order_is_independent_of_insertion_order
+  - name: reverse_inserted_anon_key_maps_expose_reverse_topology
     statement: |
       first = create($anonymous, 1);
       second = create($anonymous, 1);

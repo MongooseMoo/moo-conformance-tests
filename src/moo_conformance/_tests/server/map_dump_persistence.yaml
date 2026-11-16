@@ -15,7 +15,7 @@ requires:
     - toliteral
   config: [managed_server]
 tests:
-  - name: ordering_spelling_bytes_and_identity_key_topology_round_trip
+  - name: ordering_spelling_bytes_and_non_total_topology_round_trip
     permission: wizard
     steps:
       - run: |

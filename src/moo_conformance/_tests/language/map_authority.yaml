@@ -35,32 +35,79 @@ tests:
         - "wide"
         - [0, 4294967296]
 
-  - name: anon_keys_work_in_vm_and_mapvalues_but_not_key_builtins
+  - name: anon_keys_work_in_vm_mapvalues_and_key_builtins
     statement: |
       anon = create($anonymous, 1);
       literal = [anon -> "literal"];
       indexed = [];
       indexed[anon] = "indexed";
-      try
-        ignored = maphaskey(literal, anon);
-        haskey_error = E_NONE;
-      except error (ANY)
-        haskey_error = error[1];
-      endtry
-      try
-        ignored = mapdelete(literal, anon);
-        delete_error = E_NONE;
-      except error (ANY)
-        delete_error = error[1];
-      endtry
       result = {
         literal[anon], indexed[anon], mapvalues(literal, anon),
-        haskey_error, delete_error
+        maphaskey(literal, anon), mapdelete(literal, anon)
       };
       recycle(anon);
       return result;
     expect:
-      value: ["literal", "indexed", ["literal"], E_TYPE, E_TYPE]
+      value: ["literal", "indexed", ["literal"], 1, {}]
+
+  - name: maphaskey_finds_present_anon_key_and_not_absent_anon_key
+    statement: |
+      present = create($anonymous, 1);
+      absent = create($anonymous, 1);
+      mapping = [present -> 1];
+      result = {maphaskey(mapping, present), maphaskey(mapping, absent)};
+      recycle(present);
+      recycle(absent);
+      return result;
+    expect:
+      value: [1, 0]
+
+  - name: mapdelete_removes_present_anon_keys_singly_and_by_list
+    statement: |
+      first = create($anonymous, 1);
+      second = create($anonymous, 1);
+      mapping = [first -> 1, second -> 2];
+      single = mapdelete(mapping, first);
+      multi = mapdelete(mapping, {first, second});
+      result = {
+        length(single), maphaskey(single, first), maphaskey(single, second),
+        length(multi)
+      };
+      recycle(first);
+      recycle(second);
+      return result;
+    expect:
+      value: [1, 0, 1, 0]
+
+  - name: mapdelete_absent_anon_key_raises_range
+    statement: |
+      absent = create($anonymous, 1);
+      try
+        ignored = mapdelete([1 -> 2, 3 -> 4], absent);
+        result = E_NONE;
+      except error (ANY)
+        result = error[1];
+      endtry
+      recycle(absent);
+      return result;
+    expect:
+      value: E_RANGE
+
+  - name: multi_key_mapdelete_absent_anon_key_raises_range_with_that_key
+    statement: |
+      present = create($anonymous, 1);
+      absent = create($anonymous, 1);
+      try
+        ignored = mapdelete([present -> 1], {present, absent});
+        result = {E_NONE};
+      except error (ANY)
+        result = {error[1], error[2], error[3] == absent, error[3] == present};
+      endtry
+      recycle(present);
+      recycle(absent);
+      return result;
+    expect:
+      value: [E_RANGE, "Key *anonymous* not found in map", 1, 0]
 
   - name: reverse_inserted_bool_key_maps_expose_reverse_topology
     statement: |

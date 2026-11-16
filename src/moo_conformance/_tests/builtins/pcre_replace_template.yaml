@@ -1,0 +1,79 @@
+name: pcre_replace_template
+description: >
+  pcre_replace() expands its replacement template with pcrs. Only $N, $& and
+  $+ are references: $N is capture group N (all its digits; N above the
+  pattern's capture count is a compile error), $& is the whole match and $+
+  is the highest-numbered group. Any other '$' is a plain character, so "$_",
+  "$$", "${name}" and a trailing "$" are copied literally. A template may hold
+  at most 32 references. Named groups keep their PCRE numbers.
+
+requires:
+  builtins:
+    - pcre_replace
+
+tests:
+  - name: pcre_replace_template_dollar_underscore_literal
+    description: "$_ is not a whole-subject reference; it is copied as text"
+    code: 'pcre_replace("abc", "s/b/[$_]/g")'
+    expect:
+      value: "a[$_]c"
+
+  - name: pcre_replace_template_dollar_underscore_empty_match_global
+    description: "Shape of barn issue #859: empty global match with $_ in the template"
+    code: 'pcre_replace("ab", "s/|/<$_>/g")'
+    expect:
+      value: "<$_>a<$_>b<$_>"
+
+  - name: pcre_replace_template_dollar_dollar_and_braces_literal
+    description: "$$ and ${x} are literal; $& and $0 are the whole match"
+    code: 'pcre_replace("abc", "s/b/[$&|$$|${x}|$0]/g")'
+    expect:
+      value: "a[b|$$|${x}|b]c"
+
+  - name: pcre_replace_template_named_brace_literal
+    description: "${name} does not reference a named group"
+    code: 'pcre_replace("xbx", "s/(?<n>b)/${n}/g")'
+    expect:
+      value: "x${n}x"
+
+  - name: pcre_replace_template_trailing_dollar_literal
+    code: 'pcre_replace("xbx", "s/(b)/a$/g")'
+    expect:
+      value: "xa$x"
+
+  - name: pcre_replace_template_plus_and_named_group_numbers
+    description: "$+ is the highest group; a named group keeps its PCRE number"
+    code: 'pcre_replace("xbcx", "s/(?<n>b)(c)/$2$1$+/")'
+    expect:
+      value: "xcbcx"
+
+  - name: pcre_replace_template_group_out_of_range
+    code: 'pcre_replace("xbx", "s/(b)/$9/")'
+    expect:
+      error: E_INVARG
+
+  - name: pcre_replace_template_group_multi_digit_out_of_range
+    description: "$10 reads every digit, so it is group 10, not group 1 then '0'"
+    code: 'pcre_replace("xbx", "s/(b)/$10/g")'
+    expect:
+      error: E_INVARG
+
+  - name: pcre_replace_template_32_references_accepted
+    statement: |
+      t = "";
+      for i in [1..32]
+        t = t + "$&";
+      endfor
+      return pcre_replace("xbx", "s/b/" + t + "/");
+    expect:
+      value: "xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbx"
+
+  - name: pcre_replace_template_33_references_rejected
+    statement: |
+      t = "";
+      for i in [1..33]
+        t = t + "$&";
+      endfor
+      return pcre_replace("xbx", "s/b/" + t + "/");
+    expect:
+      error: E_INVARG

@@ -18,6 +18,13 @@ def _minimal_suite() -> dict:
     }
 
 
+def test_test_timeout_is_absent_unless_declared():
+    data = _minimal_suite()
+    data["tests"].append({"name": "slow", "code": "1", "timeout_ms": 15000, "expect": {"value": 1}})
+    suite = validate_test_suite(data)
+    assert [test.timeout_ms for test in suite.tests] == [None, 15000]
+
+
 @pytest.mark.parametrize("arguments", [[], ["--start-line", 'return "{db}; $x";']])
 def test_restart_arguments_preserve_literal_tokens(arguments):
     data = _minimal_suite()

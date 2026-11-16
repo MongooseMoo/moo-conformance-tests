@@ -2,12 +2,12 @@
 # This file is a runnable moo-conformance suite.
 # Registration signatures are parsed with pycparser from Toast register_function(...) calls.
 # registration_kind: register_function
-# registration_file: C:\Users\Q\src\toaststunt\src\list.cc
+# registration_file: \\wsl.localhost\Debian\root\src\toaststunt\src\list.cc
 # implementation: bf_explode
-# implementation_file: C:\Users\Q\src\toaststunt\src\list.cc
-# arg_type_tokens: ['TYPE_STR', 'TYPE_STR', 'TYPE_INT']
-# arg_type_names: ['str', 'str', 'int']
-# arg_type_codes: [2, 2, 0]
+# implementation_file: \\wsl.localhost\Debian\root\src\toaststunt\src\list.cc
+# arg_type_tokens: ['TYPE_STR', 'TYPE_STR', 'TYPE_FLAG']
+# arg_type_names: ['str', 'str', 'flag']
+# arg_type_codes: [2, 2, -3]
 # inferred_success_type_names: []
 # inferred_raised_error_codes: []
 # unresolved_returns: ['make_var_pack(ret)']
@@ -29,7 +29,7 @@ tests:
     - 3
     - - 2
       - 2
-      - 0
+      - -3
 - name: explode_too_few_args
   permission: wizard
   code: explode()

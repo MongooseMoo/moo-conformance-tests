@@ -2,12 +2,12 @@
 # This file is a runnable moo-conformance suite.
 # Registration signatures are parsed with pycparser from Toast register_function(...) calls.
 # registration_kind: register_function
-# registration_file: C:\Users\Q\src\toaststunt\src\list.cc
+# registration_file: \\wsl.localhost\Debian\root\src\toaststunt\src\list.cc
 # implementation: bf_sort
-# implementation_file: C:\Users\Q\src\toaststunt\src\list.cc
-# arg_type_tokens: ['TYPE_LIST', 'TYPE_LIST', 'TYPE_INT', 'TYPE_INT']
-# arg_type_names: ['list', 'list', 'int', 'int']
-# arg_type_codes: [4, 4, 0, 0]
+# implementation_file: \\wsl.localhost\Debian\root\src\toaststunt\src\list.cc
+# arg_type_tokens: ['TYPE_LIST', 'TYPE_LIST', 'TYPE_FLAG', 'TYPE_FLAG']
+# arg_type_names: ['list', 'list', 'flag', 'flag']
+# arg_type_codes: [4, 4, -3, -3]
 # inferred_success_type_names: []
 # inferred_raised_error_codes: []
 # unresolved_returns: ['background_thread(sort_callback, &arglist)']
@@ -29,8 +29,8 @@ tests:
     - 4
     - - 4
       - 4
-      - 0
-      - 0
+      - -3
+      - -3
 - name: sort_too_few_args
   permission: wizard
   code: sort()

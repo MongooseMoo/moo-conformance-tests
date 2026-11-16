@@ -1,0 +1,96 @@
+name: flag_args_accept_bool
+description: >
+  ToastStunt 61f2b7a registers the flag arguments of isa(), locate_by_name(),
+  occupants(), locations(), explode(), sort(), queued_tasks(), switch_player(),
+  set_thread_mode(), is_member(), maphaskey(), file_grep() and pcre_match() as
+  TYPE_FLAG (functions.cc call_bi_func admits INT or BOOL there), and each
+  implementation reads the flag with is_true(). A BOOL in a flag position
+  behaves as the corresponding integer; a FLOAT is still E_TYPE.
+
+requires:
+  builtins:
+    - sort
+    - is_member
+    - maphaskey
+    - explode
+    - pcre_match
+    - queued_tasks
+
+tests:
+  - name: sort_bool_reverse_flag_true
+    permission: wizard
+    code: 'sort({3, 1, 2}, {}, false, true)'
+    expect:
+      value: [3, 2, 1]
+
+  - name: sort_bool_reverse_flag_false
+    permission: wizard
+    code: 'sort({3, 1, 2}, {}, false, false)'
+    expect:
+      value: [1, 2, 3]
+
+  - name: sort_float_flag_still_rejected
+    permission: wizard
+    code: 'sort({3, 1, 2}, {}, 0, 1.5)'
+    expect:
+      error: E_TYPE
+
+  - name: is_member_bool_case_flag_true_is_case_sensitive
+    permission: wizard
+    code: 'is_member("a", {"A"}, true)'
+    expect:
+      value: 0
+
+  - name: is_member_bool_case_flag_false_ignores_case
+    permission: wizard
+    code: 'is_member("a", {"A"}, false)'
+    expect:
+      value: 1
+
+  - name: maphaskey_bool_case_flag_true_is_case_sensitive
+    permission: wizard
+    code: 'maphaskey(["A" -> 1], "a", true)'
+    expect:
+      value: 0
+
+  - name: maphaskey_bool_case_flag_false_ignores_case
+    permission: wizard
+    code: 'maphaskey(["A" -> 1], "a", false)'
+    expect:
+      value: 1
+
+  - name: explode_bool_adjacent_flag_true_keeps_empty
+    permission: wizard
+    code: 'explode("a::b", ":", true)'
+    expect:
+      value: ["a", "", "b"]
+
+  - name: explode_bool_adjacent_flag_false_collapses
+    permission: wizard
+    code: 'explode("a::b", ":", false)'
+    expect:
+      value: ["a", "b"]
+
+  - name: pcre_match_bool_case_flag_true_is_case_sensitive
+    permission: wizard
+    code: 'length(pcre_match("A", "a", true))'
+    expect:
+      value: 0
+
+  - name: pcre_match_bool_find_all_false_returns_first_match
+    permission: wizard
+    code: 'length(pcre_match("aa", "a", false, false))'
+    expect:
+      value: 1
+
+  - name: pcre_match_bool_find_all_true_returns_every_match
+    permission: wizard
+    code: 'length(pcre_match("aa", "a", false, true))'
+    expect:
+      value: 2
+
+  - name: queued_tasks_bool_count_flag_returns_int
+    permission: wizard
+    code: 'typeof(queued_tasks(false, true))'
+    expect:
+      value: 0

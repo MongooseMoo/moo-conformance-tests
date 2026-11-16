@@ -43,14 +43,14 @@ The barn project includes `moo_client.exe` - a proper MOO client that handles te
 
 ### Usage
 ```bash
-# Send commands with -cmd flags (NOT stdin)
-/c/Users/Q/code/barn/moo_client.exe -port 9898 -cmd "connect Wizard" -cmd "; return player;"
+# Send commands with -c/--cmd flags (NOT stdin)
+/c/Users/Q/code/barn/moo_client.exe -p 9898 -c "connect Wizard" -c "; return player;"
 
 # Multiple commands
-/c/Users/Q/code/barn/moo_client.exe -port 9898 -cmd "connect Wizard" -cmd "; return player.wizard;"
+/c/Users/Q/code/barn/moo_client.exe -p 9898 -c "connect Wizard" -c "; return player.wizard;"
 
 # Commands from file
-/c/Users/Q/code/barn/moo_client.exe -port 9898 -file commands.txt
+/c/Users/Q/code/barn/moo_client.exe -p 9898 --file commands.txt
 ```
 
 ### Why NOT nc
@@ -62,7 +62,7 @@ The barn project includes `moo_client.exe` - a proper MOO client that handles te
 ### Quick Commands
 ```bash
 # Check if Wizard player works
-/c/Users/Q/code/barn/moo_client.exe -port 9898
+/c/Users/Q/code/barn/moo_client.exe -p 9898
 > connect Wizard
 > ; player
 > ; player.wizard

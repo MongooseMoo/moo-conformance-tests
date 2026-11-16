@@ -103,7 +103,7 @@ Instead of starting a server yourself, pass `--server-command` and the tool hand
 moo-conformance --server-command "./moo {db} {db}.out -p {port}" -v
 
 # Barn (flag args)
-moo-conformance --server-command "./barn -db {db} -port {port}" -v
+moo-conformance --server-command "./barn serve --db {db} --port {port}" -v
 
 # With a specific port
 moo-conformance --server-command "./moo {db} {db}.out -p {port}" --moo-port 9898 -v

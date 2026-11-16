@@ -23,6 +23,12 @@ TOAST_EXCEPTION_BASELINE_PATH = (
 )
 PINNED_ACTION = re.compile(r"^[^@]+@[0-9a-f]{40}$")
 TOAST_ORACLE_SHA = "eaaa1972f0993a1247f787dbf2dd5a01702ef442"
+TOAST_2_8_ORACLE_SHA = "03af4fa2b53b418999f03566b646ee42bc7ea647"
+TOAST_ORACLE_SELECTION = (
+    "${{ needs.classify-changes.outputs.mode == 'data' && "
+    "'03af4fa2b53b418999f03566b646ee42bc7ea647' || "
+    "'eaaa1972f0993a1247f787dbf2dd5a01702ef442' }}"
+)
 
 
 def load_workflow(path=WORKFLOW_PATH):
@@ -443,15 +449,15 @@ def test_toast_candidate_and_oracle_are_fixed_credentialless_siblings() -> None:
     assert not oracle["path"].startswith(candidate["path"] + "/")
 
 
-def test_toast_oracle_revision_is_universal_across_admitted_change_modes() -> None:
+def test_toast_oracle_revision_is_selected_by_admitted_change_mode() -> None:
     workflow = load_workflow(TOAST_WORKFLOW_PATH)
     full_suite = workflow["jobs"]["full-suite"]
 
-    assert full_suite["env"] == {"TOAST_ORACLE_SHA": TOAST_ORACLE_SHA}
+    assert full_suite["env"] == {"TOAST_ORACLE_SHA": TOAST_ORACLE_SELECTION}
+    assert "mode == 'data'" in TOAST_ORACLE_SELECTION
+    assert TOAST_2_8_ORACLE_SHA in TOAST_ORACLE_SELECTION
+    assert TOAST_ORACLE_SHA in TOAST_ORACLE_SELECTION
     assert "aecc51e9449c6e7c95272f0f044b5ba38948459e" not in str(workflow)
-    assert "needs.classify-changes.outputs.mode == 'data'" not in str(
-        full_suite["env"]
-    )
 
 
 def test_selected_toast_revision_couples_checkout_admission_and_profile_evidence() -> None:
@@ -475,6 +481,7 @@ def test_selected_toast_revision_couples_checkout_admission_and_profile_evidence
     assert '"$TOAST_ORACLE_SHA" "$actual_revision"' in provenance
     assert '"implementation_revision": os.environ["TOAST_ORACLE_SHA"]' in profile
     assert TOAST_ORACLE_SHA not in str(steps)
+    assert TOAST_2_8_ORACLE_SHA not in str(steps)
 
 
 def test_toast_quality_executes_only_trusted_code_against_candidate_data() -> None:

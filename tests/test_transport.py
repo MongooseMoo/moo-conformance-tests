@@ -146,6 +146,39 @@ def test_login_returns_at_the_connected_marker() -> None:
     assert elapsed < 1.0
 
 
+def test_a_reply_that_arrives_after_a_timeout_is_never_returned_to_the_next_request() -> None:
+    def script(conn: socket.socket) -> None:
+        conn.recv(4096)
+        time.sleep(0.6)
+        conn.sendall(b"-=!-^-!=-\r\n=> 111\r\n-=!-v-!=-\r\n")
+        conn.recv(4096)
+        conn.sendall(b"-=!-^-!=-\r\n=> 222\r\n-=!-v-!=-\r\n")
+
+    with scripted_server(script) as port:
+        transport = SocketTransport("127.0.0.1", port, ensure_standard_properties=False)
+        transport.sock = socket.create_connection(("127.0.0.1", port))
+        transport.sock.settimeout(0.3)
+        try:
+            try:
+                transport.execute("return 111;")
+            except TimeoutError:
+                pass
+            else:
+                raise AssertionError("the first request should have timed out")
+            time.sleep(0.5)  # the late reply has now reached the client socket
+
+            second: object
+            try:
+                second = transport.execute("return 222;").value
+            except RuntimeError as exc:
+                second = exc
+        finally:
+            transport.disconnect()
+
+    assert second != 111, "the timed-out request's late reply was given to the next request"
+    assert isinstance(second, RuntimeError), second
+
+
 def test_toast_incorrect_number_of_arguments_traceback_is_e_args() -> None:
     response = (
         "#-1:Input to EVAL (this == #-1), line 65:  Incorrect number of arguments "

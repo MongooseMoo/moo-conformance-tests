@@ -366,9 +366,8 @@ class SocketTransport(MooTransport):
                 f'; try add_property(#0, "{name}", {value}, {{#0, "rc"}}); '
                 "except (ANY) return 0; endtry"
             )
-            self._send(cmd)
             # Read and discard response
-            self._receive()
+            self._exchange(cmd)
 
     def switch_user(self, user: str = "programmer") -> None:
         """Switch to a different user by closing and reopening connection.
@@ -454,9 +453,23 @@ class SocketTransport(MooTransport):
         # already include their own return.
         cmd = f"; {code}"
 
-        self._send(cmd)
-        response = self._receive()
+        response = self._exchange(cmd)
         return self._parse_response(response)
+
+    def _exchange(self, command: str) -> str | None:
+        """Send one framed command and read its reply.
+
+        If the exchange fails part way (most often a read timeout), the
+        server may still send this command's reply later. That reply would be
+        read as the answer to the next command, so the connection is dropped;
+        the next command runs on a fresh connection.
+        """
+        try:
+            self._send(command)
+            return self._receive()
+        except BaseException:
+            self.disconnect()
+            raise
 
     def send_command(self, command: str) -> list[str]:
         """Send a raw command and capture output lines.

@@ -17,6 +17,7 @@ _TOASTCORE_GITLINK = "src/moo_conformance/_db/startup/toastcore"
 _CONTROLLER_EXEC_PREFIX = "src/moo_conformance/_exec_fixtures/"
 _CONTROLLER_PREFIXES = (
     ".github/",
+    "bench/",
     "tests/",
 )
 _CONTROLLER_FILES = {

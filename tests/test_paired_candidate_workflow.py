@@ -161,7 +161,8 @@ def test_trusted_classifier_rejects_unadmitted_trees_before_every_lane() -> None
     workflow = load_workflow(TOAST_WORKFLOW_PATH)
     classifier_job = workflow["jobs"]["classify-changes"]
     assert classifier_job["outputs"] == {
-        "mode": "${{ steps.classify.outputs.mode }}"
+        "mode": "${{ steps.classify.outputs.mode }}",
+        "oracle_sha": "${{ steps.oracle.outputs.sha }}",
     }
     classify = steps_by_name(workflow, "classify-changes")[
         "Reject mixed, unknown, or nonregular candidate trees"

@@ -8,7 +8,8 @@ import re
 import socket
 import stat
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
@@ -461,6 +462,23 @@ class YamlTestRunner:
         Raises:
             AssertionError: If the test expectation is not met
         """
+        with self._command_timeout(test.timeout_ms):
+            self._run_test(test)
+
+    @contextmanager
+    def _command_timeout(self, timeout_ms: int | None) -> Iterator[None]:
+        """Make each command wait `timeout_ms` for its reply, when declared."""
+        if timeout_ms is None:
+            yield
+            return
+        previous = self.transport.command_timeout
+        self.transport.command_timeout = timeout_ms / 1000.0
+        try:
+            yield
+        finally:
+            self.transport.command_timeout = previous
+
+    def _run_test(self, test: MooTestCase) -> None:
         # Switch to required user for this test
         if test.permission and self._test_requires_transport(test):
             self._ensure_transport_connected()

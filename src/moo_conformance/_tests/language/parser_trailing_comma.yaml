@@ -1,0 +1,35 @@
+name: parser_trailing_comma
+description: MOO's grammar admits no trailing comma in a list literal, map literal or scatter target
+tests:
+  - name: scatter_trailing_comma_rejected
+    code: 'eval("{a,} = {1}; return rest;")'
+    expect:
+      value: [0, ["Line 1:  syntax error"]]
+  - name: scatter_two_targets_trailing_comma_rejected
+    code: 'eval("{a, b,} = {1, 2};")'
+    expect:
+      value: [0, ["Line 1:  syntax error"]]
+  - name: scatter_optional_trailing_comma_rejected
+    code: 'eval("{a, ?b,} = {1};")'
+    expect:
+      value: [0, ["Line 1:  syntax error"]]
+  - name: scatter_rest_trailing_comma_rejected
+    code: 'eval("{a, @r,} = {1};")'
+    expect:
+      value: [0, ["Line 1:  syntax error"]]
+  - name: list_trailing_comma_rejected
+    code: 'eval("return {1, 2, 3,};")'
+    expect:
+      value: [0, ["Line 1:  syntax error"]]
+  - name: list_splice_trailing_comma_rejected
+    code: 'eval("a = {1}; return {@a,};")'
+    expect:
+      value: [0, ["Line 1:  syntax error"]]
+  - name: map_trailing_comma_rejected
+    code: 'eval("return [\"a\" -> 1, \"b\" -> 2,];")'
+    expect:
+      value: [0, ["Line 1:  syntax error"]]
+  - name: without_trailing_comma_accepted
+    code: 'eval("{a, @r} = {1, 2}; return {{a, r}, {1, 2, 3}, [\"a\" -> 1]};")'
+    expect:
+      value: [1, [[1, [2]], [1, 2, 3], {"a": 1}]]

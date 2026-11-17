@@ -2,12 +2,12 @@
 # This file is a runnable moo-conformance suite.
 # Registration signatures are parsed with pycparser from Toast register_function(...) calls.
 # registration_kind: register_function
-# registration_file: C:\Users\Q\src\toaststunt\src\objects.cc
+# registration_file: \\wsl.localhost\Debian\root\src\toaststunt\src\objects.cc
 # implementation: bf_occupants
-# implementation_file: C:\Users\Q\src\toaststunt\src\objects.cc
-# arg_type_tokens: ['TYPE_LIST', 'TYPE_ANY', 'TYPE_INT', 'TYPE_INT']
-# arg_type_names: ['list', 'any', 'int', 'int']
-# arg_type_codes: [4, -1, 0, 0]
+# implementation_file: \\wsl.localhost\Debian\root\src\toaststunt\src\objects.cc
+# arg_type_tokens: ['TYPE_LIST', 'TYPE_ANY', 'TYPE_FLAG', 'TYPE_FLAG']
+# arg_type_names: ['list', 'any', 'flag', 'flag']
+# arg_type_codes: [4, -1, -3, -3]
 # inferred_success_type_names: []
 # inferred_raised_error_codes: []
 # unresolved_returns: ['make_error_pack(ret.v.err)', 'make_var_pack(ret)']
@@ -29,8 +29,8 @@ tests:
     - 4
     - - 4
       - -1
-      - 0
-      - 0
+      - -3
+      - -3
 - name: occupants_too_few_args
   permission: wizard
   code: occupants()

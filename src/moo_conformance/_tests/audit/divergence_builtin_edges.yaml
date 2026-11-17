@@ -279,11 +279,43 @@ tests:
         expect:
           error: E_INVARG
 
+  # ToastStunt 2.8 parse_json() fails when two members of one JSON object map
+  # to the same MOO key, rather than keeping one of them.
   - name: parse_json_duplicate_keys_first_wins
     code: "parse_json(\"{\\\"a\\\":1,\\\"a\\\":2}\")"
     expect:
-      value:
-        a: 1
+      error: E_INVARG
+
+  - name: parse_json_nested_duplicate_keys_rejected
+    code: 'parse_json("[1,{\"x\":{\"a\":1,\"b\":2,\"a\":3}}]")'
+    expect:
+      error: E_INVARG
+
+  - name: parse_json_case_only_duplicate_keys_rejected
+    code: 'parse_json("{\"a\":1,\"A\":2}")'
+    expect:
+      error: E_INVARG
+
+  - name: parse_json_escaped_slash_duplicate_keys_rejected
+    description: The \/ escape decodes to "/".
+    code: 'parse_json("{\"/\":1,\"\\/\":2}")'
+    expect:
+      error: E_INVARG
+
+  - name: parse_json_embedded_str_duplicate_keys_rejected
+    code: 'parse_json("{\"a\":1,\"a|str\":2}", "embedded-types")'
+    expect:
+      error: E_INVARG
+
+  - name: parse_json_embedded_obj_duplicate_keys_rejected
+    code: 'parse_json("{\"#5|obj\":1,\"5|obj\":2}", "embedded-types")'
+    expect:
+      error: E_INVARG
+
+  - name: parse_json_embedded_distinct_type_keys_accepted
+    code: 'parse_json("{\"1|int\":1,\"1\":2}", "embedded-types") == [1 -> 1, "1" -> 2]'
+    expect:
+      value: 1
 
   - name: parse_json_maxint_stays_integer
     skip_if: "not feature.64bit"

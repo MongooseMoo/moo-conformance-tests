@@ -724,3 +724,24 @@ tests:
     code: "0 ^ -1"
     expect:
       error: E_DIV
+
+  - name: power_neg_one_negative_exponent_sign
+    description: "(-1) ^ n for negative n is -1 for odd n and 1 for even n"
+    code: "{(-1) ^ -1, (-1) ^ -2, (-1) ^ -3, (-1) ^ -4}"
+    expect:
+      value: [-1, 1, -1, 1]
+
+  - name: power_neg_one_negative_exponent_sign_64bit
+    description: "The parity of a negative exponent beyond 2^53 is exact"
+    statement: |
+      m = -9223372036854775808;
+      return {(-1) ^ -9223372036854775807, (-1) ^ m, (-1) ^ -9007199254740993};
+    expect:
+      value: [-1, 1, -1]
+    skip_if: "not feature.64bit"
+
+  - name: power_one_and_other_bases_negative_exponent
+    description: "1 ^ negative is 1; other nonzero bases truncate to 0"
+    code: "{1 ^ -5, (-2) ^ -1, 3 ^ -2}"
+    expect:
+      value: [1, 0, 0]

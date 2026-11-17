@@ -183,3 +183,40 @@ tests:
       value: "caught"
     teardown:
       code: "recycle(o);"
+
+  # --- Non-debug verb: a fork statement whose delay is rejected ---
+  # OP_FORK reports a bad delay with RAISE_TYPE_MISMATCH / RAISE_ERROR, which
+  # push nothing when the verb has no d flag. The fork statement is then
+  # skipped: no task is queued, the body does not run in the parent, and
+  # execution continues after endfork (ToastStunt d427b59 for the non-numeric
+  # delay).
+
+  - name: fork_non_numeric_delay_in_non_debug_verb_skips_the_fork
+    description: >
+      fork ("x") in a verb without the d flag neither raises nor runs its body
+      in the parent; the verb continues after endfork.
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "x", "test_no_debug_fork_type"}, {"this", "none", "this"});
+        set_verb_code(o, "test_no_debug_fork_type", {"r = {\"before\"};", "fork (\"x\")", "r = {@r, \"body\"};", "endfork", "r = {@r, \"after\"};", "return r;"});
+    code: 'o:test_no_debug_fork_type()'
+    expect:
+      value: ["before", "after"]
+    teardown:
+      code: "recycle(o);"
+
+  - name: fork_negative_delay_in_non_debug_verb_skips_the_fork
+    description: >
+      fork (-1) in a verb without the d flag neither raises nor runs its body
+      in the parent; the verb continues after endfork.
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "x", "test_no_debug_fork_neg"}, {"this", "none", "this"});
+        set_verb_code(o, "test_no_debug_fork_neg", {"r = {\"before\"};", "fork (-1)", "r = {@r, \"body\"};", "endfork", "r = {@r, \"after\"};", "return r;"});
+    code: 'o:test_no_debug_fork_neg()'
+    expect:
+      value: ["before", "after"]
+    teardown:
+      code: "recycle(o);"

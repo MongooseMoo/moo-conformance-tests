@@ -878,9 +878,9 @@ tests:
       value: [4, 5, 4, 4, 4]
 
   # ===========================================================================
-  # Exhaustion: ordinary ticking opcodes test the budget before running, so
-  # the opcode that takes it to zero never executes. Extended opcodes at or
-  # above EOP_CATCH decrement without testing. Both cases run in a background
+  # Exhaustion: ticking opcodes test the budget before running, so the opcode
+  # that takes it to zero never executes. Since ToastStunt 2.8 (fdfa9ae) this
+  # includes extended opcodes at or above EOP_CATCH. Both cases run in a background
   # task with a small bg_ticks budget while #0:handle_task_timeout returns 1,
   # which suppresses the timeout traceback so only the task's effects remain.
   # ===========================================================================
@@ -923,13 +923,14 @@ tests:
 
   - name: tick_exhaustion_extended_opcode_does_not_test_the_budget
     description: >
-      EOP_FOR_LIST decrements without testing. With bg_ticks = 1001 the setup
-      costs 30 ticks and each iteration 5 (FOR_LIST, PUT m, ADD, PUT n,
-      PUT_PROP), so iteration 195's FOR_LIST takes the budget to exactly zero
-      and the body still starts: its tick-free OP_MAP_INSERT raises E_TYPE on
-      the list key planted at element 195. #0:handle_uncaught_error records
-      that error; had the loop test aborted the task instead, only the
-      (suppressed) timeout hook would have run.
+      EOP_FOR_LIST tests the budget like an ordinary ticking opcode. With
+      bg_ticks = 1001 the setup costs 30 ticks and each iteration 5 (FOR_LIST,
+      PUT m, ADD, PUT n, PUT_PROP), so iteration 195's FOR_LIST takes the
+      budget to exactly zero and aborts the task before the body starts: the
+      tick-free OP_MAP_INSERT that would raise E_TYPE on the list key planted
+      at element 195 never runs, so #0:handle_uncaught_error records nothing
+      and only the (suppressed) timeout hook runs. The probe keeps the 194
+      written by the last completed iteration.
     steps:
       - run: |
           add_property($server_options, "bg_ticks", 1001, {player, "r"});
@@ -959,7 +960,7 @@ tests:
           return typeof(p) == LIST ? {p[1], p[2] == E_TYPE} | {p, 0};
         as: wizard
         expect:
-          value: [194, 1]
+          value: [194, 0]
     cleanup:
       - run: |
           set_verb_code(#0, "handle_task_timeout", #0.tick_saved_hook);

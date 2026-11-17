@@ -8,8 +8,9 @@ leaving push and controller checks on the previous oracle.
 
 ## State
 
-Updated the existing reusable workflow and its workflow tests. Publication and
-CI are next. No expectation data changes.
+The transition repair merged as #220, followed by the complete expectation
+data in #217. The subsequent universal-pin cleanup removes this transitional
+selector and its migration-only tests after the remaining data PRs land.
 
 ## Decisions and why
 
@@ -27,5 +28,5 @@ PRs and the old oracle after the upgraded data became the trusted base.
 
 ## Next step
 
-Publish the controller-only PR, require the existing CI, then merge before
-conformance #217 and remove the transitional selector after the data cutover.
+This transition is complete. Current delivery continues in
+ci-universal-toast-2.8.md, which records the universal-pin cleanup.

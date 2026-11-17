@@ -24,7 +24,6 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       mode: ${{ steps.classify.outputs.mode }}
-      oracle_sha: ${{ steps.oracle.outputs.sha }}
 
     steps:
       - name: Check out trusted controller
@@ -76,25 +75,6 @@ jobs:
             *) printf 'invalid admitted change mode: %s\n' "$mode" >&2; exit 1 ;;
           esac
           printf 'mode=%s\n' "$mode" >> "${GITHUB_OUTPUT}"
-
-      - name: Select the oracle matching the admitted expectation data
-        id: oracle
-        env:
-          CHANGE_MODE: ${{ steps.classify.outputs.mode }}
-        run: |
-          set -euo pipefail
-          case "$CHANGE_MODE" in
-            data) data_root="${GITHUB_WORKSPACE}/candidate-tree" ;;
-            controller|neutral) data_root="${GITHUB_WORKSPACE}/trusted-controller" ;;
-            *) printf 'unadmitted change mode: %s\n' "$CHANGE_MODE" >&2; exit 1 ;;
-          esac
-          oracle=eaaa1972f0993a1247f787dbf2dd5a01702ef442
-          # This suite arrives with the complete Toast 2.8 expectation update.
-          if [ -f "$data_root/src/moo_conformance/_tests/builtins/flag_args_accept_bool.yaml" ]; then
-            oracle=03af4fa2b53b418999f03566b646ee42bc7ea647
-          fi
-          printf 'sha=%s\n' "$oracle" >> "${GITHUB_OUTPUT}"
-          printf 'oracle=%s data=%s\n' "$oracle" "$data_root"
 
       - name: Upload trusted change-boundary evidence
         if: always()
@@ -279,7 +259,7 @@ jobs:
       - quality
     timeout-minutes: 60
     env:
-      TOAST_ORACLE_SHA: ${{ needs.classify-changes.outputs.oracle_sha }}
+      TOAST_ORACLE_SHA: 03af4fa2b53b418999f03566b646ee42bc7ea647
     strategy:
       fail-fast: false
       matrix:
@@ -546,7 +526,7 @@ jobs:
       contents: read
     env:
       UNTRUSTED_CANDIDATE_CODE: "true"
-      TOAST_ORACLE_SHA: ${{ needs.classify-changes.outputs.oracle_sha }}
+      TOAST_ORACLE_SHA: 03af4fa2b53b418999f03566b646ee42bc7ea647
     strategy:
       fail-fast: false
       matrix:

@@ -110,6 +110,7 @@ jobs:
           path: candidate-controller
           persist-credentials: false
           allow-unsafe-pr-checkout: true
+          submodules: true
 
       - name: Install uv and Python
         uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
@@ -147,6 +148,7 @@ jobs:
           ref: ${{ github.event.pull_request.base.sha || github.workflow_sha }}
           path: trusted-controller
           persist-credentials: false
+          submodules: true
 
       - name: Check out admitted conformance data
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -156,6 +158,7 @@ jobs:
           path: candidate-data
           persist-credentials: false
           allow-unsafe-pr-checkout: true
+          submodules: true
 
       - name: Install uv and Python
         uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
@@ -256,23 +259,30 @@ jobs:
       - quality
     timeout-minutes: 60
     env:
-      TOAST_ORACLE_SHA: eaaa1972f0993a1247f787dbf2dd5a01702ef442
+      # Data candidates run on ToastStunt 2.8 (03af4fa); controller validation
+      # stays on the current base-data oracle until the 2.8 data lands.
+      TOAST_ORACLE_SHA: ${{ needs.classify-changes.outputs.mode == 'data' && '03af4fa2b53b418999f03566b646ee42bc7ea647' || 'eaaa1972f0993a1247f787dbf2dd5a01702ef442' }}
     strategy:
       fail-fast: false
       matrix:
         include:
+          # ToastCore suites start the shipped _db/startup/toastcore.db
+          # fixture; one lane runs them.
           - profile: 64bit-outbound-on
             only_32_bits: "OFF"
             outbound: "true"
             outbound_argument: --outbound
+            toastcore_fixture: "true"
           - profile: 64bit-outbound-off
             only_32_bits: "OFF"
             outbound: "false"
             outbound_argument: --no-outbound
+            toastcore_fixture: "false"
           - profile: 32bit-outbound-on
             only_32_bits: "ON"
             outbound: "true"
             outbound_argument: --outbound
+            toastcore_fixture: "false"
 
     steps:
       - name: Prepare evidence directory
@@ -304,6 +314,7 @@ jobs:
           path: candidate-data
           persist-credentials: false
           allow-unsafe-pr-checkout: true
+          submodules: true
 
       - name: Check out trusted controller
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -312,6 +323,7 @@ jobs:
           ref: ${{ github.event.pull_request.base.sha || github.workflow_sha }}
           path: trusted-controller
           persist-credentials: false
+          submodules: true
 
       - name: Check out pinned Toast oracle
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -411,6 +423,7 @@ jobs:
           PROFILE_ID: ${{ matrix.profile }}
           PROFILE_OUTBOUND: ${{ matrix.outbound }}
           PROFILE_32BIT: ${{ matrix.only_32_bits }}
+          PROFILE_TOASTCORE: ${{ matrix.toastcore_fixture }}
         run: |
           uv run --project trusted-controller --frozen python - <<'PY'
           from pathlib import Path
@@ -440,6 +453,7 @@ jobs:
                   "feature.exec_support": True,
                   "feature.command_dispatch": True,
                   "feature.server_options": True,
+                  "feature.toastcore_fixture": os.environ["PROFILE_TOASTCORE"] == "true",
               },
           }
           output = Path(os.environ["REPORTS_DIR"], "profile.json")
@@ -519,18 +533,23 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # ToastCore suites start the shipped _db/startup/toastcore.db
+          # fixture; one lane runs them.
           - profile: 64bit-outbound-on
             only_32_bits: "OFF"
             outbound: "true"
             outbound_argument: --outbound
+            toastcore_fixture: "true"
           - profile: 64bit-outbound-off
             only_32_bits: "OFF"
             outbound: "false"
             outbound_argument: --no-outbound
+            toastcore_fixture: "false"
           - profile: 32bit-outbound-on
             only_32_bits: "ON"
             outbound: "true"
             outbound_argument: --outbound
+            toastcore_fixture: "false"
 
     steps:
       - name: Prepare isolated untrusted environment
@@ -554,6 +573,7 @@ jobs:
           path: candidate-controller
           persist-credentials: false
           allow-unsafe-pr-checkout: true
+          submodules: true
 
       - name: Check out pinned Toast oracle
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -622,6 +642,7 @@ jobs:
           PROFILE_ID: ${{ matrix.profile }}
           PROFILE_OUTBOUND: ${{ matrix.outbound }}
           PROFILE_32BIT: ${{ matrix.only_32_bits }}
+          PROFILE_TOASTCORE: ${{ matrix.toastcore_fixture }}
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -651,6 +672,7 @@ jobs:
                   "feature.exec_support": True,
                   "feature.command_dispatch": True,
                   "feature.server_options": True,
+                  "feature.toastcore_fixture": os.environ["PROFILE_TOASTCORE"] == "true",
               },
           }
           output = Path(os.environ["REPORTS_DIR"], "profile.json")
@@ -729,6 +751,7 @@ jobs:
           path: candidate-data
           persist-credentials: false
           allow-unsafe-pr-checkout: true
+          submodules: true
 
       - name: Check out trusted controller
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -737,6 +760,7 @@ jobs:
           ref: ${{ github.event.pull_request.base.sha || github.workflow_sha }}
           path: trusted-controller
           persist-credentials: false
+          submodules: true
 
       - name: Install uv and Python
         uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0

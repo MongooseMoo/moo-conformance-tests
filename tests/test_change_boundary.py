@@ -16,6 +16,7 @@ def test_controller_only_change_is_admitted() -> None:
     result = classify_changed_paths(
         {
             ".github/workflows/toast-conformance.yml",
+            "bench/run_bench.sh",
             "src/moo_conformance/_exec_fixtures/echo",
             "src/moo_conformance/runner.py",
             "tests/test_runner.py",
@@ -186,6 +187,51 @@ def test_candidate_change_rejects_non_regular_index_modes(
         match=rf"unsupported git index mode.*unsafe-entry: {mode}",
     ):
         classify_candidate_change(trusted, candidate)
+
+
+_TOASTCORE_GITLINK = "src/moo_conformance/_db/startup/toastcore"
+_TOASTCORE_COMMIT = "1887eacd591d97fdc55d258a76e2167899b1951d"
+
+
+def _add_gitlink(repo: Path, path: str) -> None:
+    _git(repo, "update-index", "--add", "--cacheinfo", f"160000,{_TOASTCORE_COMMIT},{path}")
+
+
+def test_toastcore_gitlink_is_admitted_as_data(tmp_path: Path) -> None:
+    trusted = _tracked_repo(tmp_path / "trusted", {"README.md": "same\n"})
+    candidate = _tracked_repo(tmp_path / "candidate", {"README.md": "same\n"})
+    _add_gitlink(candidate, _TOASTCORE_GITLINK)
+
+    result = classify_candidate_change(trusted, candidate)
+
+    assert result.mode == "data"
+    assert result.data_paths == (_TOASTCORE_GITLINK,)
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "src/moo_conformance/_db/startup/other",
+        "src/moo_conformance/_db/toastcore",
+        "toastcore",
+    ],
+)
+def test_other_gitlinks_are_rejected(tmp_path: Path, path: str) -> None:
+    trusted = _tracked_repo(tmp_path / "trusted", {"README.md": "same\n"})
+    candidate = _tracked_repo(tmp_path / "candidate", {"README.md": "same\n"})
+    _add_gitlink(candidate, path)
+
+    with pytest.raises(
+        ChangeBoundaryError,
+        match=rf"unsupported git index mode.*{path}: 160000",
+    ):
+        classify_candidate_change(trusted, candidate)
+
+
+def test_gitmodules_is_controller() -> None:
+    result = classify_changed_paths({".gitmodules"})
+
+    assert result.mode == "controller"
 
 
 def test_cli_writes_canonical_evidence(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:

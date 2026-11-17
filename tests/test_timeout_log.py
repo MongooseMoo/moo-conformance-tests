@@ -5,6 +5,7 @@ import pytest
 
 from moo_conformance.runner import YamlTestRunner
 from moo_conformance.schema import MooTestCase
+from moo_conformance.transport import ExecutionResult
 
 
 def _runner_whose_command_times_out(log_path: Path | None, logged: str) -> YamlTestRunner:
@@ -63,3 +64,34 @@ def test_command_timeout_says_when_no_log_file_is_configured():
 
     with pytest.raises(TimeoutError, match="no log file is configured"):
         runner.run_test(MooTestCase(name="case", code="return 1;"))
+
+
+def _runner_recording_command_timeouts() -> tuple[YamlTestRunner, list[float]]:
+    transport = Mock()
+    transport.sock = object()
+    transport.command_timeout = 3.0
+    seen: list[float] = []
+
+    def reply(_code: str) -> ExecutionResult:
+        seen.append(transport.command_timeout)
+        return ExecutionResult(success=True, value=1)
+
+    transport.execute.side_effect = reply
+    return YamlTestRunner(transport), seen
+
+
+def test_a_declared_test_timeout_applies_to_the_test_commands_only():
+    runner, seen = _runner_recording_command_timeouts()
+
+    runner.run_test(MooTestCase(name="case", code="return 1;", timeout_ms=15000))
+
+    assert seen == [15.0]
+    assert runner.transport.command_timeout == 3.0
+
+
+def test_a_test_without_a_declared_timeout_keeps_the_transport_timeout():
+    runner, seen = _runner_recording_command_timeouts()
+
+    runner.run_test(MooTestCase(name="case", code="return 1;"))
+
+    assert seen == [3.0]

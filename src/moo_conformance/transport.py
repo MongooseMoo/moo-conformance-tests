@@ -43,6 +43,7 @@ class MooTransport(ABC):
     host: str
     port: int
     current_user: str
+    command_timeout: float
 
     @abstractmethod
     def connect(self, user: str = "programmer") -> None:
@@ -122,6 +123,8 @@ QUIET_BEFORE_DATA = 0.5
 QUIET_AFTER_DATA = 0.1
 # How long a read with an expectation waits for the expected output.
 EXPECTED_OUTPUT_DEADLINE = 10.0
+# How long a framed command waits for its reply unless a test declares timeout_ms.
+COMMAND_TIMEOUT = 3.0
 
 
 class TestConnection:
@@ -278,11 +281,12 @@ class SocketTransport(MooTransport):
         self.ensure_standard_properties = ensure_standard_properties
         self.sock: socket.socket | None = None
         self.current_user = "programmer"
+        self.command_timeout = COMMAND_TIMEOUT
 
     def connect(self, user: str = "programmer") -> None:
         """Connect to MOO server and authenticate."""
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.settimeout(3)  # 3 second timeout to avoid hanging forever
+        self.sock.settimeout(self.command_timeout)
         self.sock.connect((self.host, self.port))
 
         # Map user names to actual database users
@@ -366,9 +370,8 @@ class SocketTransport(MooTransport):
                 f'; try add_property(#0, "{name}", {value}, {{#0, "rc"}}); '
                 "except (ANY) return 0; endtry"
             )
-            self._send(cmd)
             # Read and discard response
-            self._receive()
+            self._exchange(cmd)
 
     def switch_user(self, user: str = "programmer") -> None:
         """Switch to a different user by closing and reopening connection.
@@ -401,7 +404,7 @@ class SocketTransport(MooTransport):
 
         # Open new connection
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.settimeout(3)
+        self.sock.settimeout(self.command_timeout)
         self.sock.connect((self.host, self.port))
 
         # Log in as new user
@@ -454,9 +457,25 @@ class SocketTransport(MooTransport):
         # already include their own return.
         cmd = f"; {code}"
 
-        self._send(cmd)
-        response = self._receive()
+        response = self._exchange(cmd)
         return self._parse_response(response)
+
+    def _exchange(self, command: str) -> str | None:
+        """Send one framed command and read its reply.
+
+        If the exchange fails part way (most often a read timeout), the
+        server may still send this command's reply later. That reply would be
+        read as the answer to the next command, so the connection is dropped;
+        the next command runs on a fresh connection.
+        """
+        try:
+            if self.sock is not None:
+                self.sock.settimeout(self.command_timeout)
+            self._send(command)
+            return self._receive()
+        except BaseException:
+            self.disconnect()
+            raise
 
     def send_command(self, command: str) -> list[str]:
         """Send a raw command and capture output lines.

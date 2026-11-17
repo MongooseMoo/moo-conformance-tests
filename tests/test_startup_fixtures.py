@@ -45,7 +45,10 @@ def test_repository_startup_fixture_manifest_is_exact() -> None:
     )
 
     fixture_names = [fixture["name"] for fixture in evidence["fixtures"]]
-    actual_fixture_names = sorted(path.name for path in fixtures.glob("*.db"))
+    actual_fixture_names = sorted(
+        [path.name for path in fixtures.glob("*.db")]
+        + [f"toastcore/{path.name}" for path in fixtures.glob("toastcore/toastcore.db")]
+    )
 
     assert evidence["schema_version"] == 1
     assert evidence["fixture_count"] == len(actual_fixture_names)
@@ -77,6 +80,8 @@ def test_candidate_manifest_produces_canonical_evidence(tmp_path: Path) -> None:
         (["not-a-digest  Alpha.db"], "malformed startup fixture manifest line"),
         ([f"{'0' * 64}  ../Alpha.db"], "malformed startup fixture manifest line"),
         ([f"{'0' * 64}  nested/Alpha.db"], "malformed startup fixture manifest line"),
+        ([f"{'0' * 64}  toastcore/Alpha.db"], "malformed startup fixture manifest line"),
+        ([f"{'0' * 64}  nested/toastcore.db"], "malformed startup fixture manifest line"),
         ([f"{'0' * 64}  Alpha.txt"], "malformed startup fixture manifest line"),
         ([""], "malformed startup fixture manifest line"),
     ],
@@ -173,6 +178,76 @@ def test_nested_directory_in_fixture_directory_fails_closed(tmp_path: Path) -> N
     (fixtures / "nested").mkdir()
 
     with pytest.raises(StartupFixtureError, match="unexpected startup fixture entry"):
+        validate_startup_fixtures(tmp_path, fixtures, manifest)
+
+
+def _toastcore_submodule(fixtures: Path, database: bytes | None = b"toastcore") -> None:
+    submodule = fixtures / "toastcore"
+    submodule.mkdir()
+    (submodule / ".git").write_text("gitdir: ../../.git/modules/toastcore\n", encoding="utf-8")
+    (submodule / "README.md").write_text("# ToastCore\n", encoding="utf-8")
+    if database is not None:
+        (submodule / "toastcore.db").write_bytes(database)
+
+
+def test_toastcore_submodule_database_is_a_fixture(tmp_path: Path) -> None:
+    fixtures, manifest = _fixture_tree(
+        tmp_path,
+        files={"Alpha.db": b"alpha"},
+        manifest_lines=[
+            f"{_digest(b'alpha')}  Alpha.db",
+            f"{_digest(b'toastcore')}  toastcore/toastcore.db",
+        ],
+    )
+    _toastcore_submodule(fixtures)
+
+    evidence = validate_startup_fixtures(tmp_path, fixtures, manifest)
+
+    assert evidence["fixtures"] == [
+        {"name": "Alpha.db", "sha256": _digest(b"alpha"), "size": 5},
+        {"name": "toastcore/toastcore.db", "sha256": _digest(b"toastcore"), "size": 9},
+    ]
+
+
+def test_unfetched_toastcore_submodule_fails_closed(tmp_path: Path) -> None:
+    fixtures, manifest = _fixture_tree(
+        tmp_path,
+        files={"Alpha.db": b"alpha"},
+        manifest_lines=[
+            f"{_digest(b'alpha')}  Alpha.db",
+            f"{_digest(b'toastcore')}  toastcore/toastcore.db",
+        ],
+    )
+    (fixtures / "toastcore").mkdir()
+
+    with pytest.raises(
+        StartupFixtureError, match="missing startup fixture files: toastcore/toastcore.db"
+    ):
+        validate_startup_fixtures(tmp_path, fixtures, manifest)
+
+
+def test_unlisted_toastcore_database_fails_closed(tmp_path: Path) -> None:
+    fixtures, manifest = _fixture_tree(tmp_path, files={"Alpha.db": b"alpha"})
+    _toastcore_submodule(fixtures)
+
+    with pytest.raises(
+        StartupFixtureError, match="unlisted startup fixture files: toastcore/toastcore.db"
+    ):
+        validate_startup_fixtures(tmp_path, fixtures, manifest)
+
+
+def test_toastcore_database_checksum_mismatch_fails_closed(tmp_path: Path) -> None:
+    fixtures, manifest = _fixture_tree(
+        tmp_path,
+        files={"Alpha.db": b"alpha"},
+        manifest_lines=[
+            f"{_digest(b'alpha')}  Alpha.db",
+            f"{'0' * 64}  toastcore/toastcore.db",
+        ],
+    )
+    _toastcore_submodule(fixtures)
+
+    with pytest.raises(StartupFixtureError, match="checksum mismatch.*toastcore/toastcore.db"):
         validate_startup_fixtures(tmp_path, fixtures, manifest)
 
 

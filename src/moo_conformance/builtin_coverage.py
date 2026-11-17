@@ -278,6 +278,8 @@ def _concrete_types(token: str) -> list[str]:
         return ["int", "float", "obj", "str", "err", "list", "map"]
     if token == "TYPE_NUMERIC":
         return ["int", "float"]
+    if token == "TYPE_FLAG":
+        return ["int", "bool"]
     return {
         "TYPE_INT": ["int"],
         "TYPE_OBJ": ["obj"],

@@ -501,9 +501,10 @@ tests:
       error: E_RANGE
 
   - name: anonymous_object_key
+    description: Anonymous objects are valid key arguments - E_RANGE because key not found
     code: "mapdelete([1 -> 2, 3 -> 4], create($anonymous, 1))"
     expect:
-      error: E_TYPE
+      error: E_RANGE
 
   # Range operations
   - name: first_last_index

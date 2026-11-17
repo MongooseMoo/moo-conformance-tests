@@ -1,6 +1,9 @@
+import os
 import re
+import subprocess
 from pathlib import Path
 
+import pytest
 import yaml
 
 WORKFLOW_PATH = (
@@ -24,11 +27,7 @@ TOAST_EXCEPTION_BASELINE_PATH = (
 PINNED_ACTION = re.compile(r"^[^@]+@[0-9a-f]{40}$")
 TOAST_ORACLE_SHA = "eaaa1972f0993a1247f787dbf2dd5a01702ef442"
 TOAST_2_8_ORACLE_SHA = "03af4fa2b53b418999f03566b646ee42bc7ea647"
-TOAST_ORACLE_SELECTION = (
-    "${{ needs.classify-changes.outputs.mode == 'data' && "
-    "'03af4fa2b53b418999f03566b646ee42bc7ea647' || "
-    "'eaaa1972f0993a1247f787dbf2dd5a01702ef442' }}"
-)
+TOAST_ORACLE_SELECTION = "${{ needs.classify-changes.outputs.oracle_sha }}"
 
 
 def load_workflow(path=WORKFLOW_PATH):
@@ -162,7 +161,8 @@ def test_trusted_classifier_rejects_unadmitted_trees_before_every_lane() -> None
     workflow = load_workflow(TOAST_WORKFLOW_PATH)
     classifier_job = workflow["jobs"]["classify-changes"]
     assert classifier_job["outputs"] == {
-        "mode": "${{ steps.classify.outputs.mode }}"
+        "mode": "${{ steps.classify.outputs.mode }}",
+        "oracle_sha": "${{ steps.oracle.outputs.sha }}",
     }
     classify = steps_by_name(workflow, "classify-changes")[
         "Reject mixed, unknown, or nonregular candidate trees"
@@ -232,7 +232,7 @@ def test_candidate_controller_toast_suite_is_untrusted_and_informational() -> No
     job = workflow["jobs"]["candidate-full-suite"]
     assert job["permissions"] == {"contents": "read"}
     assert job["env"]["UNTRUSTED_CANDIDATE_CODE"] == "true"
-    assert job["env"]["TOAST_ORACLE_SHA"] == TOAST_ORACLE_SHA
+    assert job["env"]["TOAST_ORACLE_SHA"] == TOAST_ORACLE_SELECTION
     assert job["needs"] == ["classify-changes"]
     assert job["if"] == (
         "needs.classify-changes.result == 'success' && "
@@ -449,15 +449,74 @@ def test_toast_candidate_and_oracle_are_fixed_credentialless_siblings() -> None:
     assert not oracle["path"].startswith(candidate["path"] + "/")
 
 
-def test_toast_oracle_revision_is_selected_by_admitted_change_mode() -> None:
+def test_toast_jobs_share_the_admitted_data_oracle_revision() -> None:
     workflow = load_workflow(TOAST_WORKFLOW_PATH)
     full_suite = workflow["jobs"]["full-suite"]
 
     assert full_suite["env"] == {"TOAST_ORACLE_SHA": TOAST_ORACLE_SELECTION}
-    assert "mode == 'data'" in TOAST_ORACLE_SELECTION
-    assert TOAST_2_8_ORACLE_SHA in TOAST_ORACLE_SELECTION
-    assert TOAST_ORACLE_SHA in TOAST_ORACLE_SELECTION
+    assert workflow["jobs"]["classify-changes"]["outputs"]["oracle_sha"] == (
+        "${{ steps.oracle.outputs.sha }}"
+    )
     assert "aecc51e9449c6e7c95272f0f044b5ba38948459e" not in str(workflow)
+
+
+@pytest.mark.parametrize("mode", ["data", "controller", "neutral"])
+@pytest.mark.parametrize(
+    "candidate_new,trusted_new", [(False, False), (True, False), (False, True), (True, True)]
+)
+def test_oracle_selection_runs_against_the_data_used_by_each_mode(
+    tmp_path: Path, mode: str, candidate_new: bool, trusted_new: bool
+) -> None:
+    selection = steps_by_name(load_workflow(TOAST_WORKFLOW_PATH), "classify-changes")[
+        "Select the oracle matching the admitted expectation data"
+    ]
+    assert selection["env"] == {"CHANGE_MODE": "${{ steps.classify.outputs.mode }}"}
+    for root, upgraded in [
+        ("candidate-tree", candidate_new), ("trusted-controller", trusted_new)
+    ]:
+        suites = tmp_path / root / "src/moo_conformance/_tests/builtins"
+        suites.mkdir(parents=True)
+        if upgraded:
+            (suites / "flag_args_accept_bool.yaml").write_text("name: flag_args_accept_bool\n")
+    output = tmp_path / "output"
+    result = subprocess.run(
+        ["bash", "-c", selection["run"]],
+        env={
+            **os.environ,
+            "GITHUB_WORKSPACE": str(tmp_path),
+            "GITHUB_OUTPUT": str(output),
+            "CHANGE_MODE": mode,
+        },
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    upgraded = candidate_new if mode == "data" else trusted_new
+    expected = TOAST_2_8_ORACLE_SHA if upgraded else TOAST_ORACLE_SHA
+    assert output.read_text().strip() == f"sha={expected}"
+
+
+def test_oracle_selection_rejects_an_unadmitted_mode(tmp_path: Path) -> None:
+    selection = steps_by_name(load_workflow(TOAST_WORKFLOW_PATH), "classify-changes")[
+        "Select the oracle matching the admitted expectation data"
+    ]
+    output = tmp_path / "output"
+    result = subprocess.run(
+        ["bash", "-c", selection["run"]],
+        env={
+            **os.environ,
+            "GITHUB_WORKSPACE": str(tmp_path),
+            "GITHUB_OUTPUT": str(output),
+            "CHANGE_MODE": "unknown",
+        },
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode != 0
+    assert "unadmitted change mode" in result.stderr
+    assert not output.exists()
 
 
 def test_selected_toast_revision_couples_checkout_admission_and_profile_evidence() -> None:

@@ -16,6 +16,7 @@ def test_controller_only_change_is_admitted() -> None:
     result = classify_changed_paths(
         {
             ".github/workflows/toast-conformance.yml",
+            "bench/run_bench.sh",
             "src/moo_conformance/_exec_fixtures/echo",
             "src/moo_conformance/runner.py",
             "tests/test_runner.py",

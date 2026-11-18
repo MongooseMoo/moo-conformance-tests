@@ -1,0 +1,96 @@
+name: keyword_case
+description: >
+  MOO keywords match in any letter case. `RETURN', `If', `ENDFOR' and `Any'
+  are keywords, so mixed-case control flow compiles, and `ANY' or `IN' can
+  never be used as a variable or property name: such programs fail to compile
+  instead of running. Compile results are observed through eval(), whose first
+  element is 0 when the program does not compile.
+tests:
+  - name: uppercase_return_compiles
+    code: 'eval("RETURN 5;")'
+    expect:
+      value: [1, 5]
+
+  - name: uppercase_if_endif_compiles
+    code: 'eval("IF (1) RETURN 2; ENDIF")'
+    expect:
+      value: [1, 2]
+
+  - name: mixed_case_for_in_endfor_compiles
+    code: 'eval("s = 0; For x In ({1, 2, 3}) s = s + x; EndFor Return s;")'
+    expect:
+      value: [1, 6]
+
+  - name: mixed_case_while_compiles
+    code: 'eval("i = 0; While (i < 3) i = i + 1; EndWhile return i;")'
+    expect:
+      value: [1, 3]
+
+  - name: mixed_case_try_except_any_catches
+    code: 'eval("TRY return 1 / 0; EXCEPT (Any) return 2; ENDTRY")'
+    expect:
+      value: [1, 2]
+
+  - name: lowercase_any_catch_expression_catches
+    code: 'eval("return `1 / 0 ! any => 2'';")'
+    expect:
+      value: [1, 2]
+
+  - name: uppercase_in_operator_compiles
+    code: 'eval("return 2 IN {1, 2};")'
+    expect:
+      value: [1, 2]
+
+  - name: any_is_not_a_variable_in_expression
+    statement: |
+      r = eval("return ANY;");
+      return {r[1], typeof(r[2])};
+    expect:
+      value: [0, 4]
+
+  - name: any_is_not_assignable
+    statement: |
+      r = eval("ANY = 3; return ANY;");
+      return {r[1], typeof(r[2])};
+    expect:
+      value: [0, 4]
+
+  - name: mixed_case_any_is_not_a_list_element
+    statement: |
+      r = eval("return {Any};");
+      return {r[1], typeof(r[2])};
+    expect:
+      value: [0, 4]
+
+  - name: any_splice_in_catch_codes_does_not_compile
+    statement: |
+      r = eval("return {\"c\", @`pass() ! \"c\", @ ANY => {}'};");
+      return {r[1], typeof(r[2])};
+    expect:
+      value: [0, 4]
+
+  - name: any_after_other_codes_does_not_compile
+    statement: |
+      r = eval("try return 1; except (E_INVARG, ANY) return 2; endtry");
+      return {r[1], typeof(r[2])};
+    expect:
+      value: [0, 4]
+
+  - name: uppercase_in_is_not_a_property_name
+    statement: |
+      r = eval("x = $nothing; return x.IN;");
+      return {r[1], typeof(r[2])};
+    expect:
+      value: [0, 4]
+
+  - name: uppercase_any_is_not_a_verb_name
+    statement: |
+      r = eval("x = $nothing; return x:ANY();");
+      return {r[1], typeof(r[2])};
+    expect:
+      value: [0, 4]
+
+  - name: uppercase_keyword_string_map_key_is_a_string
+    code: 'eval("return [\"ANY\" -> 1][\"ANY\"];")'
+    expect:
+      value: [1, 1]

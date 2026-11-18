@@ -164,6 +164,7 @@ skip_if: "missing builtin.foo"       # Skip if builtin missing
 | `--moo-host` | `localhost` | MOO server host |
 | `--moo-port` | `7777` | MOO server port |
 | `--server-command` | none | Shell command to start a managed MOO server (supports `{port}` and `{db}` placeholders) |
+| `--restart-server-command` | none | Command that starts the server when a `restart_server` step keeps the working database, so a second engine boots from the first engine's checkpoint (same placeholders; requires `--server-command`). See "Restarting as Another Engine" in the README |
 | `--server-db` | bundled Test.db | Database file for managed server |
 | `--server-db-dir` | none | Directory containing canned DB fixtures referenced by `server_db` |
 | `--moo-server-dir` | none | Path to the MOO server's working directory |
@@ -432,6 +433,11 @@ steps:
 adopts checkpoint output, including a graceful signal shutdown dump. An explicit
 `restart_server` may follow `wait_for_server_exit`; live steps are rejected until
 that restart. `reset_db` cannot be combined with `checkpoint_timeout_ms`.
+
+With `--restart-server-command`, a restart without `reset_db` starts the server
+with that command instead, on the database the previous process wrote; a
+`reset_db` restart uses `--server-command`. Tests with a restart that keeps the
+database carry the `kept_db_restart` pytest marker.
 
 `ignore_sighup: true` launches the process with inherited POSIX SIGHUP ignore,
 using exec so signals still target the server PID. The next ordinary restart

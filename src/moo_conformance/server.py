@@ -124,6 +124,14 @@ class ManagedServerLifecycleError(RuntimeError):
         self.log_tail = log_tail
 
 
+class RestartCommandError(RuntimeError):
+    """The --restart-server-command server did not start on the kept database.
+
+    This fails the test that restarted. The next launch from a fresh database
+    uses --server-command, so the session continues.
+    """
+
+
 class ManagedServer:
     """Manages a MOO server subprocess for the duration of a test session."""
 
@@ -133,8 +141,13 @@ class ManagedServer:
         db_path: Path,
         port: int | None = None,
         host: str = "localhost",
+        restart_command_template: str | None = None,
     ):
         self.command_template = command_template
+        # When set, a launch that keeps the working database uses this command
+        # instead, so another engine boots from the database this one wrote.
+        self.restart_command_template = restart_command_template
+        self._on_restart_command = False
         self._default_db_path = db_path
         self.db_path = db_path
         self.host = host
@@ -163,6 +176,11 @@ class ManagedServer:
     @property
     def default_db_path(self) -> Path:
         return self._default_db_path
+
+    @property
+    def on_restart_command(self) -> bool:
+        """Whether the latest launch used the restart command."""
+        return self._on_restart_command
 
     @property
     def manifest_path(self) -> Path:
@@ -203,6 +221,7 @@ class ManagedServer:
         pending_copy_path: Path | None = None
         rollback_copy_path: Path | None = None
         db_copy_path: Path | None = None
+        use_restart_command = False
 
         def restore_failed_copy() -> None:
             if pending_copy_path is not None:
@@ -247,7 +266,9 @@ class ManagedServer:
             # different source database, refresh the managed working copy from the
             # selected input DB. Stage the copy first so a missing source cannot
             # overwrite the last successfully selected working database.
-            if created_temp_dir or db_path is not None or not db_copy_path.exists():
+            fresh_copy = created_temp_dir or db_path is not None or not db_copy_path.exists()
+            use_restart_command = self.restart_command_template is not None and not fresh_copy
+            if fresh_copy:
                 pending_copy_path = db_copy_path.with_name(db_copy_path.name + ".pending")
                 pending_copy_path.unlink(missing_ok=True)
                 shutil.copy2(selected_db_path, pending_copy_path)
@@ -268,7 +289,11 @@ class ManagedServer:
             db_posix = db_dest.as_posix()
 
             # Substitute placeholders in command template
-            command = self.command_template.format(
+            command_template = (
+                self.restart_command_template if use_restart_command else self.command_template
+            )
+            assert command_template is not None
+            command = command_template.format(
                 port=self._port,
                 db=db_posix,
                 manifest=manifest_path.as_posix(),
@@ -297,6 +322,7 @@ class ManagedServer:
                 ), *argv]
 
             # Start server process
+            self._on_restart_command = use_restart_command
             self._process = subprocess.Popen(
                 argv,
                 stdin=subprocess.PIPE,
@@ -322,9 +348,14 @@ class ManagedServer:
             self.db_path = selected_db_path
             self._db_copy_path = db_copy_path
             self._manifest_path = manifest_path
-        except ManagedServerLifecycleError:
+        except ManagedServerLifecycleError as restart_failure:
             self.stop(preserve_temp=True)
             restore_failed_copy()
+            if use_restart_command:
+                # The other engine rejecting this database is the restarting
+                # test's result, not the end of the session.
+                self._lifecycle_failure = None
+                raise RestartCommandError(str(restart_failure)) from restart_failure
             raise
         except Exception as exc:
             failure = self._record_lifecycle_failure(
@@ -418,6 +449,25 @@ class ManagedServer:
                 "Managed server exited unexpectedly while a live transport is required",
                 returncode=returncode,
             )
+
+    def restart_command_exit(self, timeout: float = 2.0) -> RestartCommandError | None:
+        """Describe a restart-command server that exited after opening its port.
+
+        Returns None when the latest launch used --server-command or its
+        process is still running after ``timeout`` seconds.
+        """
+        if not self._on_restart_command or self._process is None:
+            return None
+        try:
+            returncode = self._process.wait(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            return None
+        return RestartCommandError(str(ManagedServerLifecycleError(
+            "Managed server exited after opening its port",
+            returncode=returncode,
+            log_path=self._log_path,
+            log_tail=self._read_log_tail(),
+        )))
 
     def wait_for_exit(self, timeout_ms: int) -> int:
         """Wait for natural process exit without terminating or killing it."""

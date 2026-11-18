@@ -127,6 +127,38 @@ and WAIF values in suspended VMs, interrupted `read()`, `read_http()`, and
 `exec()` waits, former-connection startup ordering, `last_move`, and checkpoint
 hook ordering and persistence boundaries.
 
+### Restarting as Another Engine
+
+`--restart-server-command` takes a second command template with the same
+placeholders. A `restart_server` step that keeps the working database then
+starts the server with this command, so a second engine boots from the
+checkpoint the `--server-command` engine wrote:
+
+```bash
+# Barn writes the checkpoint, Toast resumes from it
+moo-conformance -m "admission or kept_db_restart" \
+  --server-command "./barn serve --db {db} --port {port}" \
+  --restart-server-command "./moo {db} {db}.new -p {port}"
+```
+
+- Every launch from a fresh database uses `--server-command`: the first start,
+  `restart_server: {reset_db: true}`, a suite `server_db` switch, and the
+  relaunch after `wait_for_server_exit`.
+- Later kept-database restarts in the same test stay on the restart command.
+- When the next test begins, the harness relaunches `--server-command` from a
+  fresh copy of the suite database and runs the suite setup again. Database
+  state therefore does not carry from a kept-database restart test into the
+  test after it.
+- A test with a kept-database restart must meet its `requires` and `skip_if`
+  conditions on both engines. The harness runs the restart command's engine on
+  a second fresh database and port for the whole session to answer those
+  probes. If that engine writes `{manifest}`, the manifest is checked against
+  `--oracle-profile-manifest` and its `features` are used.
+- If the restart command's server exits or never accepts connections, that
+  test fails with the server log tail and the session continues.
+- The `kept_db_restart` marker selects exactly the tests that have a
+  kept-database `restart_server` step.
+
 Managed signal cases cover graceful shutdown, panic dumps and recovery,
 user signal hooks, log rotation, checkpoint and exec child completion, and
 timer handling. See [Toast signal handling](docs/SIGNALS.md) for the source
@@ -139,6 +171,7 @@ inventory, run command, and native Windows / WSL requirements.
 | `--moo-host` | `localhost` | MOO server hostname |
 | `--moo-port` | `7777` | MOO server port |
 | `--server-command` | *(none)* | Shell command to start a MOO server (`{port}` and `{db}` placeholders) |
+| `--restart-server-command` | *(none)* | Command for restarts that keep the working database; see [Restarting as Another Engine](#restarting-as-another-engine) |
 | `--server-db` | bundled `Test.db` | Database file for managed server |
 
 ## Test Categories

@@ -31,6 +31,7 @@ from .server import (
     FileSnapshotSignature,
     ManagedServer,
     ManagedServerLifecycleError,
+    RestartCommandError,
     file_snapshot_signature,
     normalize_process_termination,
     snapshot_regular_files,
@@ -221,6 +222,8 @@ class YamlTestRunner:
         self._process_log_boundary_pending = managed_server is not None
         self._server_exited = False
         self._active_server_db_path: Path | None = None
+        # Capability probe target for the --restart-server-command engine.
+        self.restart_engine: Any = None
 
     def run_suite_setup(self, suite: MooTestSuite) -> None:
         """Run suite-level setup.
@@ -394,6 +397,14 @@ class YamlTestRunner:
 
         needs_transport = self._suite_requires_transport(suite)
 
+        # With --restart-server-command, a kept-database restart left the other
+        # engine running (or it failed to start). Every test begins on the
+        # --server-command engine with a fresh database, where no suite setup
+        # has run yet.
+        leave_restart_command = self.managed_server.on_restart_command is True
+        if leave_restart_command:
+            self._suites_setup_done.clear()
+
         if self._server_exited:
             current_user = getattr(self.transport, "current_user", "programmer")
             self.managed_server.restart(db_path=desired_db, wait_for_port=needs_transport)
@@ -406,14 +417,14 @@ class YamlTestRunner:
 
         if self._active_server_db_path is not None:
             current_db = Path(os.path.realpath(self._active_server_db_path))
-            if current_db == desired_db:
+            if current_db == desired_db and not leave_restart_command:
                 if needs_transport:
                     self.managed_server.require_transport()
                 return
 
         if self._active_server_db_path is None:
             current_db = Path(os.path.realpath(self.managed_server.db_path))
-            if current_db == desired_db:
+            if current_db == desired_db and not leave_restart_command:
                 if needs_transport:
                     self.managed_server.require_transport()
                 self._active_server_db_path = desired_db
@@ -967,24 +978,29 @@ class YamlTestRunner:
         current_user = getattr(self.transport, "current_user", "programmer")
 
         self.transport.disconnect()
-        if reset_db or ignore_sighup or arguments is not None:
-            self.managed_server.restart(
-                db_path=(self._active_server_db_path or self.managed_server.db_path)
-                if reset_db else None,
-                down_ms=down_ms, ignore_sighup=ignore_sighup,
-                arguments=arguments,
-                checkpoint_timeout_ms=checkpoint_timeout_ms,
-                checkpoint_boundary=(
-                    self._file_boundary if checkpoint_timeout_ms is not None else None
-                ),
-            )
-        elif checkpoint_timeout_ms is None:
-            self.managed_server.restart(down_ms=down_ms)
-        else:
-            self.managed_server.restart(
-                down_ms=down_ms, checkpoint_timeout_ms=checkpoint_timeout_ms,
-                checkpoint_boundary=self._file_boundary,
-            )
+        try:
+            if reset_db or ignore_sighup or arguments is not None:
+                self.managed_server.restart(
+                    db_path=(self._active_server_db_path or self.managed_server.db_path)
+                    if reset_db else None,
+                    down_ms=down_ms, ignore_sighup=ignore_sighup,
+                    arguments=arguments,
+                    checkpoint_timeout_ms=checkpoint_timeout_ms,
+                    checkpoint_boundary=(
+                        self._file_boundary if checkpoint_timeout_ms is not None else None
+                    ),
+                )
+            elif checkpoint_timeout_ms is None:
+                self.managed_server.restart(down_ms=down_ms)
+            else:
+                self.managed_server.restart(
+                    down_ms=down_ms, checkpoint_timeout_ms=checkpoint_timeout_ms,
+                    checkpoint_boundary=self._file_boundary,
+                )
+        except RestartCommandError:
+            # No server is running; the next test relaunches from a fresh database.
+            self._server_exited = True
+            raise
         self._log_offset = self.managed_server.process_log_offset
         self._file_boundary = self.managed_server.process_file_snapshot
         self._server_exited = False
@@ -996,7 +1012,16 @@ class YamlTestRunner:
         if wait_ms > 0:
             time.sleep(wait_ms / 1000.0)
 
-        self.transport.connect(current_user)
+        try:
+            self.transport.connect(current_user)
+        except Exception as exc:
+            # The restart command's server can open its port and then exit on
+            # the database it loaded; report that, not the socket error.
+            failure = self.managed_server.restart_command_exit()
+            if isinstance(failure, RestartCommandError):
+                self._server_exited = True
+                raise failure from exc
+            raise
 
     def _execute_chmod(self, path: str, mode: int) -> None:
         """Change permissions only on an existing path confined to server_dir."""

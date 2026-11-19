@@ -1,0 +1,120 @@
+name: suspended_computed_codes_checkpoint_restart
+description: >
+  Verifies that a task suspended inside code guarded by a handler with computed
+  (non-literal) error codes survives dump_database() and a managed server
+  restart, and that after it resumes the handler still catches by the codes it
+  evaluated before the guarded code ran. Covers both a catch expression
+  (`expr ! c, E_RANGE => default`) and a try/except statement
+  (`except (c, E_PERM)`), where `c` is a variable. The evaluated codes are part
+  of the suspended task's saved state.
+requires:
+  builtins:
+    - dump_database
+    - queued_tasks
+    - kill_task
+    - suspend
+    - add_property
+    - delete_property
+    - recycle
+  config: [managed_server]
+tests:
+  - name: suspended_computed_code_handlers_catch_after_checkpoint_restart
+    permission: wizard
+    steps:
+      - run: |
+          for p in ({"suspended_codes_log", "suspended_codes_tasks", "suspended_codes_obj"})
+            if (p in properties(#0))
+              delete_property(#0, p);
+            endif
+          endfor
+          o = create($nothing);
+          add_property(#0, "suspended_codes_obj", o, {player, "rw"});
+          add_property(#0, "suspended_codes_log", {}, {player, "rw"});
+          return o;
+        capture: obj
+      - verb_setup:
+          object: "{obj}"
+          name: "start"
+          args: ["this", "none", "this"]
+          code: |
+            tasks = {};
+            fork t (0)
+              c = E_DIV;
+              r = `{suspend(4), 1 / 0} ! c, E_RANGE => 5';
+              #0.suspended_codes_log = {@#0.suspended_codes_log, {"catch", r}};
+            endfork
+            tasks = {@tasks, t};
+            fork t (0)
+              c = E_DIV;
+              try
+                suspend(4);
+                1 / 0;
+                #0.suspended_codes_log = {@#0.suspended_codes_log, {"try", "uncaught"}};
+              except e (c, E_PERM)
+                #0.suspended_codes_log = {@#0.suspended_codes_log, {"try", e[1]}};
+              endtry
+            endfork
+            tasks = {@tasks, t};
+            return tasks;
+        expect:
+          value: []
+      - run: |
+          tasks = {obj}:start();
+          add_property(#0, "suspended_codes_tasks", tasks, {player, "rw"});
+          return length(tasks);
+        expect:
+          value: 2
+      - run: |
+          ids = {};
+          for q in (queued_tasks())
+            ids = {@ids, q[1]};
+          endfor
+          found = 0;
+          for t in (#0.suspended_codes_tasks)
+            found = found + (t in ids > 0);
+          endfor
+          return found;
+        expect:
+          value: 2
+        poll_ms: 2000
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - restart_server:
+          checkpoint_timeout_ms: 10000
+      - run: |
+          ids = {};
+          for q in (queued_tasks())
+            ids = {@ids, q[1]};
+          endfor
+          found = 0;
+          for t in (#0.suspended_codes_tasks)
+            found = found + (t in ids > 0);
+          endfor
+          return {found, #0.suspended_codes_log};
+        expect:
+          value: [2, []]
+      - run: |
+          log = #0.suspended_codes_log;
+          return {length(log), {"catch", 5} in log > 0, {"try", E_DIV} in log > 0};
+        expect:
+          value: [2, 1, 1]
+        poll_ms: 15000
+    cleanup:
+      - run: |
+          if ("suspended_codes_tasks" in properties(#0))
+            for t in (#0.suspended_codes_tasks)
+              `kill_task(t) ! ANY';
+            endfor
+            delete_property(#0, "suspended_codes_tasks");
+          endif
+          if ("suspended_codes_log" in properties(#0))
+            delete_property(#0, "suspended_codes_log");
+          endif
+          if ("suspended_codes_obj" in properties(#0))
+            if (valid(#0.suspended_codes_obj))
+              recycle(#0.suspended_codes_obj);
+            endif
+            delete_property(#0, "suspended_codes_obj");
+          endif
+          return 0;

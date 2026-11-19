@@ -1,0 +1,70 @@
+name: error_name_case
+description: >
+  Error names are keywords: the whole identifier is matched against the error
+  name table in any letter case. `e_type' and `E_Type' are the error value
+  E_TYPE, while an identifier that merely begins with an error name, such as
+  `E_IN3ARG', `E_TYPEx', `E_TYPE3' or `E_TYPE_', is an ordinary variable.
+  Compile results are observed through eval(), whose first element is 0 when
+  the program does not compile.
+tests:
+  - name: lowercase_error_name_is_error_value
+    statement: |
+      r = eval("return e_type;");
+      return {r[1], r[2] == E_TYPE, typeof(r[2])};
+    expect:
+      value: [1, 1, 3]
+
+  - name: mixed_case_error_name_is_error_value
+    statement: |
+      r = eval("return E_Type;");
+      return {r[1], r[2] == E_TYPE};
+    expect:
+      value: [1, 1]
+
+  - name: lowercase_error_name_catches_in_try
+    code: 'eval("try return 1 / 0; except (e_div) return 2; endtry")'
+    expect:
+      value: [1, 2]
+
+  - name: lowercase_error_name_is_not_assignable
+    statement: |
+      r = eval("e_type = 3; return e_type;");
+      return {r[1], typeof(r[2])};
+    expect:
+      value: [0, 4]
+
+  - name: error_name_with_digit_suffix_is_variable
+    code: 'eval("E_IN3ARG = 5; return E_IN3ARG;")'
+    expect:
+      value: [1, 5]
+
+  - name: error_name_with_letter_suffix_is_variable
+    code: 'eval("E_TYPEx = 6; return E_TYPEx;")'
+    expect:
+      value: [1, 6]
+
+  - name: error_name_with_number_suffix_is_variable
+    code: 'eval("E_TYPE3 = 7; return E_TYPE3;")'
+    expect:
+      value: [1, 7]
+
+  - name: error_name_with_underscore_suffix_is_variable
+    code: 'eval("E_TYPE_ = 8; return E_TYPE_;")'
+    expect:
+      value: [1, 8]
+
+  - name: issue_893_program_compiles_and_runs
+    code: 'eval("typeof(this) == OBJ || raise(E_IN3ARG); return 1;")'
+    expect:
+      value: [1, 1]
+
+  - name: unassigned_error_prefixed_variable_raises_varnf
+    statement: |
+      try
+        eval("return E_IN3ARG;");
+        return "no error";
+      except e (ANY)
+        return {e[1] == E_VARNF, e[1] == E_INVARG};
+      endtry
+    expect:
+      value: [1, 0]

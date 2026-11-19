@@ -1,0 +1,86 @@
+name: fork_line_numbers_checkpoint_restart
+description: >
+  Verifies that a queued forked task restored from a checkpoint keeps the line
+  numbers its body has in the verb it was forked from. The checkpoint saves the
+  fork body as its own code together with the verb line of that code's first
+  line, and the reloaded task numbers its lines from there: an error caught in
+  the restored body and a callers(1) frame for it report the verb's line
+  numbers, exactly as an unreloaded run of the same fork does, not lines
+  counted from 1 in the saved body.
+requires:
+  builtins:
+    - dump_database
+    - queued_tasks
+    - kill_task
+    - create
+    - recycle
+    - add_property
+    - add_verb
+    - set_verb_code
+    - callers
+  config: [managed_server]
+tests:
+  - name: queued_fork_keeps_verb_line_numbers_after_checkpoint_restart
+    permission: wizard
+    steps:
+      - run: |
+          obj = create($nothing);
+          add_property(obj, "control_result", {}, {player, "rw"});
+          add_property(obj, "reloaded_result", {}, {player, "rw"});
+          add_verb(obj, {player, "xd", "start"}, {"this", "none", "this"});
+          set_verb_code(obj, "start", {
+            "{prop, delay} = args;",
+            "x = 0;",
+            "fork t (delay)",
+            "  y = 1;",
+            "  try",
+            "    y = 1 + \"a\";",
+            "  except e (ANY)",
+            "    caught = e[4][1][6];",
+            "  endtry",
+            "  here = this:where();",
+            "  this.(prop) = {caught, here};",
+            "endfork",
+            "return t;"
+          });
+          add_verb(obj, {player, "xd", "where"}, {"this", "none", "this"});
+          set_verb_code(obj, "where", {"return callers(1)[1][6];"});
+          return obj;
+        capture: line_obj
+      - run: "return {line_obj}:start(\"control_result\", 0);"
+      - run: "return {line_obj}.control_result;"
+        expect:
+          value: [6, 10]
+        poll_ms: 3000
+      - run: "return {line_obj}:start(\"reloaded_result\", 6);"
+        capture: line_task
+      - run: |
+          ids = {};
+          for q in (queued_tasks())
+            ids = {@ids, q[1]};
+          endfor
+          return {typeof({line_task}) == INT, {line_task} in ids > 0};
+        expect:
+          value: [1, 1]
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - restart_server:
+          checkpoint_timeout_ms: 10000
+      - run: |
+          ids = {};
+          for q in (queued_tasks())
+            ids = {@ids, q[1]};
+          endfor
+          return {{line_obj}.reloaded_result, {line_task} in ids > 0};
+        expect:
+          value: [[], 1]
+      - run: "return {line_obj}.reloaded_result;"
+        expect:
+          value: [6, 10]
+        poll_ms: 15000
+    cleanup:
+      - run: |
+          `kill_task({line_task}) ! ANY';
+          `recycle({line_obj}) ! ANY';
+          return 0;

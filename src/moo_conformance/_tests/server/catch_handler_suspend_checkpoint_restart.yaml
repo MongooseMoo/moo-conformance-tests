@@ -1,0 +1,73 @@
+name: catch_handler_suspend_checkpoint_restart
+description: >
+  A task suspended inside a catch expression's handler survives dump_database()
+  and a checkpoint restart, and resumes with the handler's operand stack at the
+  catch's entry depth: the guarded expression's result was unwound by the error,
+  while the values pushed before the catch expression remain.
+
+requires:
+  builtins:
+    - add_property
+    - add_verb
+    - set_verb_code
+    - create
+    - dump_database
+    - suspend
+    - resume
+    - queued_tasks
+
+tests:
+  - name: suspend_in_catch_handler_resumes_after_checkpoint_restart
+    description: >
+      The forked task suspends in the handler of `1/0 ! ANY => 5 + suspend()',
+      nested under `1 + ...' and a list construction. After a checkpoint
+      restart it is still queued; resuming it with 10 completes the handler
+      (15), the enclosing addition (16), and the following catch expression
+      whose handler yields the default value.
+    steps:
+      - restart_server: {reset_db: true}
+      - run: |
+          obj = create($nothing);
+          add_property(obj, "result", {}, {player, "rw"});
+          add_verb(obj, {player, "xd", "hold"}, {"this", "none", "this"});
+          set_verb_code(obj, "hold", {
+            "fork id (0)",
+            "  this.result = {1 + `1/0 ! ANY => 5 + suspend()', {`1/0 ! E_DIV => \"d\"'}};",
+            "endfork",
+            "suspend(0);",
+            "return id;"
+          });
+          return obj;
+        capture: catch_obj
+        as: wizard
+      - run: "return {catch_obj}:hold();"
+        capture: catch_task
+        as: wizard
+      - run: "return dump_database();"
+        as: wizard
+        expect:
+          value: 0
+      - restart_server:
+          checkpoint_timeout_ms: 10000
+          wait_ms: 300
+      - run: |
+          still_queued = 0;
+          for queued in (queued_tasks())
+            if (queued[1] == {catch_task})
+              still_queued = 1;
+            endif
+          endfor
+          return {{catch_obj}.result, still_queued};
+        as: wizard
+        expect:
+          value: [[], 1]
+      - run: "return resume({catch_task}, 10);"
+        as: wizard
+        expect:
+          value: 0
+      - run: "return {catch_obj}.result;"
+        as: wizard
+        expect:
+          value: [16, ["d"]]
+        poll_ms: 5000
+      - restart_server: {reset_db: true}

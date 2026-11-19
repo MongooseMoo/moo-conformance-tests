@@ -1,0 +1,98 @@
+name: suspend_before_splice_checkpoint_restart
+description: >
+  Verifies that tasks suspended while evaluating the first element of an
+  argument list whose next element is a splice (a list constructor, a
+  builtin call, and a verb call, each of the form "f(suspend(n), @l)")
+  survive dump_database() and a managed server restart: each task resumes
+  after reload, suspend() returns 0, and the spliced list is appended.
+requires:
+  builtins:
+    - dump_database
+    - queued_tasks
+    - kill_task
+    - create
+    - recycle
+    - add_property
+    - add_verb
+    - set_verb_code
+    - suspend
+    - tostr
+  config: [managed_server]
+tests:
+  - name: suspend_in_first_argument_before_splice_survives_checkpoint_restart
+    permission: wizard
+    steps:
+      - run: |
+          obj = create($nothing);
+          add_property(obj, "started", 0, {player, "rw"});
+          add_property(obj, "list_result", 0, {player, "rw"});
+          add_property(obj, "builtin_result", 0, {player, "rw"});
+          add_property(obj, "verb_result", 0, {player, "rw"});
+          add_verb(obj, {player, "xd", "echo"}, {"this", "none", "this"});
+          set_verb_code(obj, "echo", {"return args;"});
+          add_verb(obj, {player, "xd", "run_list"}, {"this", "none", "this"});
+          set_verb_code(obj, "run_list", {
+            "l = {1, 2};",
+            "this.started = this.started + 1;",
+            "this.list_result = {suspend(6), @l};"
+          });
+          add_verb(obj, {player, "xd", "run_builtin"}, {"this", "none", "this"});
+          set_verb_code(obj, "run_builtin", {
+            "l = {1, 2};",
+            "this.started = this.started + 1;",
+            "this.builtin_result = tostr(suspend(6), @l);"
+          });
+          add_verb(obj, {player, "xd", "run_verb"}, {"this", "none", "this"});
+          set_verb_code(obj, "run_verb", {
+            "l = {1, 2};",
+            "this.started = this.started + 1;",
+            "this.verb_result = this:echo(suspend(6), @l);"
+          });
+          add_verb(obj, {player, "xd", "start"}, {"this", "none", "this"});
+          set_verb_code(obj, "start", {
+            "fork a (0)",
+            "  this:run_list();",
+            "endfork",
+            "fork b (0)",
+            "  this:run_builtin();",
+            "endfork",
+            "fork c (0)",
+            "  this:run_verb();",
+            "endfork",
+            "return {a, b, c};"
+          });
+          return obj;
+        capture: splice_obj
+      - run: "return {splice_obj}:start();"
+        capture: splice_tasks
+      - run: |
+          ids = {};
+          for q in (queued_tasks())
+            ids = {@ids, q[1]};
+          endfor
+          found = 0;
+          for t in ({splice_tasks})
+            found = found + (t in ids > 0);
+          endfor
+          return {{splice_obj}.started, found};
+        expect:
+          value: [3, 3]
+        poll_ms: 3000
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - restart_server:
+          checkpoint_timeout_ms: 10000
+      - run: |
+          o = {splice_obj};
+          return {o.list_result, o.builtin_result, o.verb_result};
+        expect:
+          value: [[0, 1, 2], "012", [0, 1, 2]]
+        poll_ms: 15000
+    cleanup:
+      - run: |
+          for t in ({splice_tasks})
+            `kill_task(t) ! ANY';
+          endfor
+          `recycle({splice_obj}) ! ANY';
+          return 0;

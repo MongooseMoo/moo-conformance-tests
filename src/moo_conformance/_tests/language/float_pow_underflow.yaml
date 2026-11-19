@@ -1,0 +1,51 @@
+name: float_pow_underflow
+description: >
+  The float ^ operator raises E_FLOAT when a finite nonzero base raised to a
+  power underflows to zero. Results that remain representable as subnormal
+  floats are returned, and a zero base yields an exact 0.0 without error.
+
+tests:
+  - name: pow_float_base_negative_int_exponent_underflow
+    code: '2.0 ^ -2000'
+    expect:
+      error: E_FLOAT
+
+  - name: pow_just_below_smallest_subnormal_underflow
+    code: '2.0 ^ -1075'
+    expect:
+      error: E_FLOAT
+
+  - name: pow_fraction_base_large_exponent_underflow
+    code: '0.5 ^ 2000'
+    expect:
+      error: E_FLOAT
+
+  - name: pow_negative_base_odd_exponent_underflow
+    code: '(-2.0) ^ -2001'
+    expect:
+      error: E_FLOAT
+
+  - name: pow_float_exponent_underflow
+    code: '1.0e-300 ^ 1.5'
+    expect:
+      error: E_FLOAT
+
+  - name: pow_tenth_underflow
+    code: '0.1 ^ 324'
+    expect:
+      error: E_FLOAT
+
+  - name: pow_underflow_is_catchable
+    code: "`2.0 ^ -2000 ! E_FLOAT => \"caught\"'"
+    expect:
+      value: "caught"
+
+  - name: pow_smallest_subnormal_is_returned
+    code: '{2.0 ^ -1074 == 4.9406564584124654e-324, 0.5 ^ 1074 == 4.9406564584124654e-324, 2.0 ^ -1074 > 0.0}'
+    expect:
+      value: [1, 1, 1]
+
+  - name: pow_zero_base_is_exact_zero
+    code: '0.0 ^ 2.0'
+    expect:
+      value: 0.0

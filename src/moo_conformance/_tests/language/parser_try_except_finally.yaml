@@ -1,0 +1,19 @@
+name: parser_try_except_finally
+description: MOO's grammar has try/except/endtry and try/finally/endtry but no form that combines except clauses with a finally clause
+tests:
+  - name: except_then_finally_rejected
+    code: 'eval("try return 1 / 0; except (ANY) return 0; finally return 1; endtry")'
+    expect:
+      value: [0, ["Line 1:  syntax error"]]
+  - name: named_except_then_finally_rejected
+    code: 'eval("try x = 1; except e (E_DIV) x = 2; finally x = 3; endtry return x;")'
+    expect:
+      value: [0, ["Line 1:  syntax error"]]
+  - name: multiple_excepts_then_finally_rejected
+    code: 'eval("try return 1; except (E_DIV) return 2; except (ANY) return 3; finally return 4; endtry")'
+    expect:
+      value: [0, ["Line 1:  syntax error"]]
+  - name: except_nested_in_finally_accepted
+    code: 'eval("x = {}; try try 1 / 0; except (E_DIV) x = {@x, \"except\"}; endtry finally x = {@x, \"finally\"}; endtry return x;")'
+    expect:
+      value: [1, ["except", "finally"]]

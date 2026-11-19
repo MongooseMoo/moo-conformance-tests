@@ -7,6 +7,8 @@ Run with:
 """
 
 import re
+from contextlib import contextmanager
+from typing import Any, Iterator
 
 import pytest
 
@@ -18,7 +20,12 @@ from .admission import (
     run_capability_admission,
     write_admission_evidence,
 )
-from .conditions import config_skip_reason, parse_min_version, parse_skip_conditions
+from .conditions import (
+    config_skip_reason,
+    keeps_database_across_restart,
+    parse_min_version,
+    parse_skip_conditions,
+)
 from .moo_types import MooError
 from .plugin import _skip_declared_yaml_case
 from .schema import force_statement_mode
@@ -51,13 +58,46 @@ def _execute_probe(runner, capability: str, code: str):
         raise CapabilityProbeError(f"Failed to probe {capability}: {exc}") from exc
 
 
+def _fresh_capability_caches() -> list[Any]:
+    """Empty values for the five capability caches above, in declaration order."""
+    return [{}, None, {}, {}, None]
+
+
+# Probe results for the --restart-server-command engine, kept apart from the
+# --server-command engine's results in the caches above.
+_restart_engine_caches: list[Any] = _fresh_capability_caches()
+
+
+@contextmanager
+def _probing_restart_engine() -> Iterator[None]:
+    """Make the capability probes read and fill the restart engine's caches."""
+    global _builtin_cache, _feature_cache, _dynamic_feature_cache, _option_cache
+    global _version_cache, _restart_engine_caches
+    primary: list[Any] = [
+        _builtin_cache, _feature_cache, _dynamic_feature_cache, _option_cache, _version_cache
+    ]
+    (
+        _builtin_cache, _feature_cache, _dynamic_feature_cache, _option_cache, _version_cache
+    ) = _restart_engine_caches
+    try:
+        yield
+    finally:
+        _restart_engine_caches = [
+            _builtin_cache, _feature_cache, _dynamic_feature_cache, _option_cache, _version_cache
+        ]
+        (
+            _builtin_cache, _feature_cache, _dynamic_feature_cache, _option_cache, _version_cache
+        ) = primary
+
+
 def _reset_capability_caches_for_tests() -> None:
-    global _feature_cache, _version_cache
+    global _feature_cache, _version_cache, _restart_engine_caches
     _builtin_cache.clear()
     _feature_cache = None
     _dynamic_feature_cache.clear()
     _option_cache.clear()
     _version_cache = None
+    _restart_engine_caches = _fresh_capability_caches()
 
 
 def _moo_string_literal(value: str) -> str:
@@ -389,6 +429,17 @@ def test_yaml_conformance(runner, yaml_test_case, moo_config, profile_metadata_g
 
     if _uses_managed_restart(test) and moo_config.get("managed_server") is None:
         pytest.skip(config_skip_reason("managed_server"))
+
+    # With --restart-server-command this test continues on a second engine,
+    # which must meet the same requirements.
+    restart_engine = getattr(runner, "restart_engine", None)
+    if restart_engine is not None and keeps_database_across_restart(test):
+        restart_config = {**moo_config, "named_log_file": restart_engine.named_log_file}
+        with _probing_restart_engine():
+            _enforce_suite_requirements(
+                suite, restart_engine, restart_config, restart_engine.profile_features
+            )
+            _enforce_skip_condition(test, restart_engine, restart_engine.profile_features)
 
     # Run suite setup if not already done
     runner.run_suite_setup(suite)

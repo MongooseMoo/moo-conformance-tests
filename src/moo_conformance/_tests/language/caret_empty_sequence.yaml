@@ -1,0 +1,81 @@
+name: caret_empty_sequence
+description: >
+  On an empty string or list, `^' evaluates to 0 rather than 1, so a range
+  read starting at `^' is [0..0] (or [0..$]) and raises E_RANGE, while an
+  explicit [1..0] or [1..$] is an empty range. On a non-empty sequence `^' is
+  1. A range assignment at [^..$] on an empty value still replaces the whole
+  value.
+
+tests:
+  - name: empty_string_caret_to_dollar_range_error
+    code: '""[^..$]'
+    expect:
+      error: E_RANGE
+
+  - name: empty_list_caret_to_dollar_range_error
+    code: '{}[^..$]'
+    expect:
+      error: E_RANGE
+
+  - name: empty_string_variable_caret_to_dollar_range_error
+    statement: |
+      x = "";
+      return x[^..$];
+    expect:
+      error: E_RANGE
+
+  - name: empty_string_caret_to_zero_range_error
+    code: '""[^..0]'
+    expect:
+      error: E_RANGE
+
+  - name: empty_string_dollar_to_caret_range_error
+    code: '""[$..^]'
+    expect:
+      error: E_RANGE
+
+  - name: empty_list_caret_value_is_zero
+    code: '{}[^ + 1..$]'
+    expect:
+      value: []
+
+  - name: empty_string_explicit_one_to_zero_is_empty
+    code: '""[1..0]'
+    expect:
+      value: ""
+
+  - name: empty_string_one_to_dollar_is_empty
+    code: '""[1..$]'
+    expect:
+      value: ""
+
+  - name: empty_list_one_to_dollar_is_empty
+    code: '{}[1..$]'
+    expect:
+      value: []
+
+  - name: nonempty_string_caret_to_dollar_is_whole
+    code: '"abc"[^..$]'
+    expect:
+      value: "abc"
+
+  - name: nonempty_list_caret_to_caret_is_first
+    code: '{1, 2, 3}[^..^]'
+    expect:
+      value: [1]
+
+  - name: empty_string_caret_range_assign
+    statement: |
+      x = "";
+      x[^..$] = "b";
+      return x;
+    expect:
+      value: "b"
+
+  - name: empty_list_caret_range_assign
+    statement: |
+      x = {};
+      x[^..$] = {1};
+      return x;
+    expect:
+      value: [1]

@@ -1,0 +1,340 @@
+name: scatter_binding_order
+description: >
+  Order of effects inside one scatter assignment. Toast's EOP_SCATTER binds
+  every target that receives a list element in a single pass (optional targets
+  take the spare elements from the left), and only afterwards runs the default
+  expressions of the optional targets that received nothing, left to right.
+
+tests:
+  # ===========================================================================
+  # Which optional targets receive the spare elements
+  # ===========================================================================
+
+  - name: scatter_order_two_values_fill_first_two_of_three_optionals
+    description: With fewer values than optionals the leftmost optionals are filled
+    statement: |
+      a = "a0";
+      b = "b0";
+      c = "c0";
+      {?a, ?b, ?c} = {1, 2};
+      return {a, b, c};
+    expect:
+      value: [1, 2, "c0"]
+
+  - name: scatter_order_one_value_fills_first_of_three_optionals
+    description: A single value goes to the first optional
+    statement: |
+      a = "a0";
+      b = "b0";
+      c = "c0";
+      {?a, ?b, ?c} = {1};
+      return {a, b, c};
+    expect:
+      value: [1, "b0", "c0"]
+
+  - name: scatter_order_spare_value_goes_to_optional_before_required
+    description: One spare value fills the optional left of the required target
+    statement: |
+      a = "a0";
+      c = "c0";
+      {?a, b, ?c} = {1, 2};
+      return {a, b, c};
+    expect:
+      value: [1, 2, "c0"]
+
+  - name: scatter_order_no_spare_value_leaves_both_optionals
+    description: With only the required value neither surrounding optional is filled
+    statement: |
+      a = "a0";
+      c = "c0";
+      {?a, b, ?c} = {1};
+      return {a, b, c};
+    expect:
+      value: ["a0", 1, "c0"]
+
+  # ===========================================================================
+  # A rest target between optionals
+  # ===========================================================================
+
+  - name: scatter_order_rest_between_optionals_no_values
+    description: An empty list fills neither optional and the rest is empty
+    statement: |
+      a = "a0";
+      b = "b0";
+      r = "r0";
+      {?a, @r, ?b} = {};
+      return {a, r, b};
+    expect:
+      value: ["a0", [], "b0"]
+
+  - name: scatter_order_rest_between_optionals_one_value
+    description: One value goes to the optional left of the rest target
+    statement: |
+      a = "a0";
+      b = "b0";
+      r = "r0";
+      {?a, @r, ?b} = {1};
+      return {a, r, b};
+    expect:
+      value: [1, [], "b0"]
+
+  - name: scatter_order_rest_between_optionals_two_values
+    description: Two values fill both optionals before the rest takes anything
+    statement: |
+      a = "a0";
+      b = "b0";
+      r = "r0";
+      {?a, @r, ?b} = {1, 2};
+      return {a, r, b};
+    expect:
+      value: [1, [], 2]
+
+  - name: scatter_order_rest_between_optionals_four_values
+    description: Values beyond the optionals go to the rest target in the middle
+    statement: |
+      a = "a0";
+      b = "b0";
+      r = "r0";
+      {?a, @r, ?b} = {1, 2, 3, 4};
+      return {a, r, b};
+    expect:
+      value: [1, [2, 3], 4]
+
+  - name: scatter_order_rest_between_optionals_default_of_unfilled
+    description: Only the optional right of the rest target takes its default
+    statement: |
+      {?a = "da", @r, ?b = "db"} = {1};
+      return {a, r, b};
+    expect:
+      value: [1, [], "db"]
+
+  # ===========================================================================
+  # A default that reads a variable bound by the same scatter
+  # ===========================================================================
+
+  - name: scatter_order_default_reads_earlier_required_target
+    description: A default sees the value bound to a target on its left
+    statement: |
+      a = 100;
+      {a, ?b = a + 1} = {10};
+      return {a, b};
+    expect:
+      value: [10, 11]
+
+  - name: scatter_order_default_reads_later_required_target
+    description: A default sees the value bound to a required target on its right
+    statement: |
+      c = 5;
+      {?a = c, c} = {9};
+      return {a, c};
+    expect:
+      value: [9, 9]
+
+  - name: scatter_order_default_reads_later_rest_target
+    description: A default sees the list bound to a rest target on its right
+    statement: |
+      c = 5;
+      {a, ?b = c, @c} = {1};
+      return {a, b, c};
+    expect:
+      value: [1, [], []]
+
+  - name: scatter_order_default_reads_earlier_default
+    description: A default sees the default already assigned to an optional on its left
+    statement: |
+      a = 100;
+      {?a = 1, ?b = a + 1} = {};
+      return {a, b};
+    expect:
+      value: [1, 2]
+
+  - name: scatter_order_default_reads_later_default_target
+    description: A default runs before the default of an optional on its right
+    statement: |
+      b = 10;
+      {?a = b, ?b = 2} = {};
+      return {a, b};
+    expect:
+      value: [10, 2]
+
+  - name: scatter_order_default_reads_unset_later_optional
+    description: A default reading a later optional that was never set raises E_VARNF
+    statement: |
+      {?a = b, ?b} = {};
+      return a;
+    expect:
+      error: E_VARNF
+
+  - name: scatter_order_default_reads_rhs_variable_rebound_by_rest
+    description: The list is taken before the rest target rebinds the variable it came from
+    statement: |
+      x = {1};
+      {a, ?b = x, @x} = x;
+      return {a, b, x};
+    expect:
+      value: [1, [], []]
+
+  # ===========================================================================
+  # The same target name in its own default
+  # ===========================================================================
+
+  - name: scatter_order_default_reads_own_prior_value
+    description: A default reading its own target sees the value from before the scatter
+    statement: |
+      b = 3;
+      {a, ?b = b + 1} = {1};
+      return {a, b};
+    expect:
+      value: [1, 4]
+
+  - name: scatter_order_default_reads_own_unset_target
+    description: A default reading its own never-set target raises E_VARNF
+    statement: |
+      {a, ?b = b} = {1};
+      return b;
+    expect:
+      error: E_VARNF
+
+  # ===========================================================================
+  # Defaults with side effects: whether and when they run
+  # ===========================================================================
+
+  - name: scatter_order_default_side_effect_skipped_when_filled
+    description: The default of an optional that received a value is not evaluated
+    statement: |
+      n = 0;
+      {?a = (n = n + 1), ?b = (n = n + 10)} = {5, 6};
+      return {a, b, n};
+    expect:
+      value: [5, 6, 0]
+
+  - name: scatter_order_default_side_effect_runs_only_for_unfilled
+    description: Only the default of the optional that received nothing is evaluated
+    statement: |
+      n = 0;
+      {?a = (n = n + 1), ?b = (n = n + 10)} = {5};
+      return {a, b, n};
+    expect:
+      value: [5, 10, 10]
+
+  - name: scatter_order_default_side_effects_run_left_to_right
+    description: Several unfilled optionals evaluate their defaults left to right
+    statement: |
+      n = 0;
+      {?a = (n = n + 1), ?b = (n = n * 2 + 10)} = {};
+      return {a, b, n};
+    expect:
+      value: [1, 12, 12]
+
+  - name: scatter_order_default_assigns_already_bound_target
+    description: A default that assigns an earlier target overwrites the bound value
+    statement: |
+      {a, ?b = (a = 99)} = {1};
+      return {a, b};
+    expect:
+      value: [99, 99]
+
+  - name: scatter_order_default_assigns_later_bound_target
+    description: A default that assigns a later required target overwrites the bound value
+    statement: |
+      {?a = (c = 99), c} = {1};
+      return {a, c};
+    expect:
+      value: [99, 99]
+
+  - name: scatter_order_default_error_keeps_bound_targets
+    description: A default that raises leaves the targets already bound from the list
+    statement: |
+      a = 0;
+      c = 0;
+      try
+        {a, ?b = 1 / 0, c} = {7, 8};
+      except (E_DIV)
+      endtry
+      return {a, c};
+    expect:
+      value: [7, 8]
+
+  - name: scatter_order_default_error_stops_later_defaults
+    description: A default that raises prevents the defaults to its right from running
+    statement: |
+      n = 0;
+      b = "b0";
+      try
+        {?a = 1 / 0, ?b = (n = 1)} = {};
+      except (E_DIV)
+      endtry
+      return {b, n};
+    expect:
+      value: ["b0", 0]
+
+  - name: scatter_order_too_few_values_binds_nothing_and_runs_no_default
+    description: E_ARGS for too few values leaves every target and runs no default
+    statement: |
+      a = "a0";
+      n = 0;
+      try
+        {a, b, ?c = (n = 1)} = {1};
+      except (E_ARGS)
+      endtry
+      return {a, n};
+    expect:
+      value: ["a0", 0]
+
+  - name: scatter_order_too_many_values_binds_nothing_and_runs_no_default
+    description: E_ARGS for too many values leaves every target and runs no default
+    statement: |
+      a = "a0";
+      c = "c0";
+      n = 0;
+      try
+        {a, ?c = (n = 1)} = {1, 2, 3};
+      except (E_ARGS)
+      endtry
+      return {a, c, n};
+    expect:
+      value: ["a0", "c0", 0]
+
+  # ===========================================================================
+  # The same target name twice in one scatter
+  # ===========================================================================
+
+  - name: scatter_order_duplicate_required_target_keeps_last
+    description: A name used for two required targets ends with the later element
+    statement: |
+      {a, a} = {1, 2};
+      return a;
+    expect:
+      value: 2
+
+  - name: scatter_order_duplicate_required_then_rest_keeps_rest
+    description: A name used as a required and then a rest target ends with the rest list
+    statement: |
+      {a, @a} = {1, 2, 3};
+      return a;
+    expect:
+      value: [2, 3]
+
+  - name: scatter_order_duplicate_required_then_unfilled_optional_default
+    description: An unfilled optional's default overwrites the same name bound as required
+    statement: |
+      {a, ?a = 7} = {1};
+      return a;
+    expect:
+      value: 7
+
+  - name: scatter_order_duplicate_unfilled_optional_default_then_required
+    description: The default runs after binding even when the required duplicate is on the right
+    statement: |
+      {?a = 7, a} = {1};
+      return a;
+    expect:
+      value: 7
+
+  - name: scatter_order_duplicate_default_reads_required_duplicate
+    description: A default sees the value its own name was bound to as a required target
+    statement: |
+      {?a = a + 1, a} = {1};
+      return a;
+    expect:
+      value: 2

@@ -85,6 +85,15 @@ def config_skip_reason(key: str) -> str:
     return f"Requires config '{key}' (use {CONFIG_OPTION_MAP[key]})"
 
 
+def keeps_database_across_restart(test) -> bool:
+    """Whether a ``restart_server`` step restarts on the database the server wrote."""
+    steps = [*getattr(test, "steps", ()), *getattr(test, "cleanup", ())]
+    return any(
+        step.restart_server is not None and not step.restart_server.reset_db
+        for step in steps
+    )
+
+
 def declared_literal_skip_reason(suite, test) -> str | None:
     """Return the one literal skip reason the canonical runner would emit."""
     test_skip = getattr(test, "skip", False)

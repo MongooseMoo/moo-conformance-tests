@@ -35,7 +35,11 @@ from .admission import (
     load_admission_evidence,
 )
 from .capabilities import CapabilityManager
-from .conditions import declared_literal_skip_reason, declared_runtime_skip_reasons
+from .conditions import (
+    declared_literal_skip_reason,
+    declared_runtime_skip_reasons,
+    keeps_database_across_restart,
+)
 from .path_confinement import (
     CandidatePathError,
     iter_confined_files,
@@ -168,6 +172,16 @@ def pytest_addoption(parser):
             "Shell command to start a MOO server. "
             "Supports {port}, {db}, {manifest}, and {server_dir} placeholders. "
             "When set, the server is started/stopped automatically."
+        ),
+    )
+    parser.addoption(
+        "--restart-server-command",
+        default=None,
+        help=(
+            "Shell command that starts the server when a restart_server step keeps "
+            "the working database, so a second engine boots from the database the "
+            "--server-command engine wrote. Same placeholders as --server-command, "
+            "which still starts every launch from a fresh database."
         ),
     )
     parser.addoption(
@@ -307,11 +321,70 @@ def managed_server(request) -> Iterator[ManagedServer | None]:
         except CandidatePathError as exc:
             raise pytest.UsageError(str(exc)) from exc
 
-    server = ManagedServer(command, db_path, port=port, host=host)
+    server = ManagedServer(
+        command,
+        db_path,
+        port=port,
+        host=host,
+        restart_command_template=request.config.getoption("--restart-server-command"),
+    )
     try:
         server.start()
         yield server
     finally:
+        server.stop()
+
+
+@dataclass
+class RestartEngine:
+    """Capability-probe target for the --restart-server-command engine."""
+
+    transport: MooTransport
+    profile_features: dict[str, object]
+    named_log_file: str | None
+
+
+@pytest.fixture(scope="session")
+def restart_engine(request, managed_server) -> Iterator[RestartEngine | None]:
+    """Run the restart command's engine on its own fresh database for probes.
+
+    A test that restarts on a kept database continues on this engine, so its
+    requirements are checked against it before the test starts.
+    """
+    command = request.config.getoption("--restart-server-command")
+    if command is None:
+        yield None
+        return
+
+    server = ManagedServer(command, managed_server.default_db_path, host=managed_server.host)
+    transport = None
+    try:
+        server.start()
+        features: object = None
+        oracle_manifest = request.config.getoption("--oracle-profile-manifest")
+        if oracle_manifest is not None and server.manifest_path.exists():
+            try:
+                validate_manifest_paths(oracle_manifest, server.manifest_path)
+            except ProfileGateError as exc:
+                raise pytest.UsageError(f"--restart-server-command: {exc}") from exc
+            features = load_manifest(server.manifest_path).get("features")
+        transport = SocketTransport(
+            managed_server.host,
+            server.port,
+            login_script=_load_login_script(request),
+            ensure_standard_properties=not request.config.getoption(
+                "--moo-skip-standard-properties"
+            ),
+        )
+        transport.connect("wizard")
+        yield RestartEngine(
+            transport=transport,
+            profile_features=features if isinstance(features, dict) else {},
+            named_log_file="1" if "{log}" in command else None,
+        )
+    finally:
+        if transport is not None:
+            transport.disconnect()
         server.stop()
 
 
@@ -445,10 +518,11 @@ def transport(request, managed_server) -> Iterator[MooTransport]:
 
 @pytest.fixture(scope="session")
 def runner(
-    request, transport, moo_log_file, moo_server_dir, managed_server, moo_server_db_dir
+    request, transport, moo_log_file, moo_server_dir, managed_server, moo_server_db_dir,
+    restart_engine,
 ) -> YamlTestRunner:
     """Create a test runner with the configured transport."""
-    return YamlTestRunner(
+    runner = YamlTestRunner(
         transport,
         log_file_path=moo_log_file,
         server_dir=moo_server_dir,
@@ -456,6 +530,8 @@ def runner(
         server_db_dir=moo_server_db_dir,
         candidate_root=request.config.getoption("--candidate-root"),
     )
+    runner.restart_engine = restart_engine
+    return runner
 
 
 def discover_yaml_tests(
@@ -596,11 +672,13 @@ def pytest_generate_tests(metafunc: Any) -> None:
 
         # Create IDs for each test case
         ids: list[str] = []
-        params: list[tuple[MooTestSuite, MooTestCase]] = []
+        params: list[Any] = []
 
         for yaml_path, suite, test in test_cases:
             ids.append(conformance_case_id(yaml_path, test, tests_dir))
-            params.append((suite, test))
+            # Marked here, not in pytest_collection_modifyitems, so -m sees it.
+            marks = [pytest.mark.kept_db_restart] if keeps_database_across_restart(test) else []
+            params.append(pytest.param((suite, test), marks=marks))
 
         metafunc.parametrize("yaml_test_case", params, ids=ids)
 
@@ -786,6 +864,11 @@ class _UnexpectedCollectionSkipPlugin:
 # Register markers
 def pytest_configure(config):
     """Register custom markers."""
+    if (
+        config.getoption("--restart-server-command") is not None
+        and config.getoption("--server-command") is None
+    ):
+        raise pytest.UsageError("--restart-server-command requires --server-command")
     candidate_root = config.getoption("--candidate-root")
     configured_suite = config.getoption("--moo-suite-root")
     if configured_suite is not None and candidate_root is None:
@@ -819,6 +902,10 @@ def pytest_configure(config):
             raise pytest.UsageError(str(exc)) from exc
     config.addinivalue_line("markers", "conformance: mark test as a MOO conformance test")
     config.addinivalue_line("markers", "admission: mark the canonical capability-admission phase")
+    config.addinivalue_line(
+        "markers",
+        "kept_db_restart: YAML test with a restart_server step that keeps the working database",
+    )
     if config.getoption("--fail-on-unexpected-skip"):
         config.pluginmanager.register(
             _UnexpectedCollectionSkipPlugin(),

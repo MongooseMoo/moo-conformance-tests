@@ -1,0 +1,74 @@
+name: fork_line_number_checkpoint_restart
+description: >
+  Verifies that a queued fork restored from a checkpoint reports the line
+  numbers of its enclosing verb, not line numbers counted from the start of
+  the saved fork body. The checkpoint holds only the fork body's code, with
+  the verb line on which the body begins in the task header; after reload, an
+  error raised inside the body carries the verb's line in its traceback.
+requires:
+  builtins:
+    - dump_database
+    - queued_tasks
+    - kill_task
+    - create
+    - recycle
+    - add_property
+    - add_verb
+    - set_verb_code
+  config: [managed_server]
+tests:
+  - name: restored_fork_error_reports_enclosing_verb_line
+    permission: wizard
+    steps:
+      - run: |
+          obj = create($nothing);
+          add_property(obj, "fork_line_result", {}, {player, "rw"});
+          add_verb(obj, {player, "xd", "start"}, {"this", "none", "this"});
+          set_verb_code(obj, "start", {
+            "a = 1;",
+            "b = 2;",
+            "fork id (6)",
+            "  c = 3;",
+            "  d = 4;",
+            "  try",
+            "    e = c + \"x\";",
+            "  except err (E_TYPE)",
+            "    this.fork_line_result = {err[1], err[4][1][2], err[4][1][6]};",
+            "  endtry",
+            "endfork",
+            "return id;"
+          });
+          return obj;
+        capture: fork_line_obj
+      - run: "return {fork_line_obj}:start();"
+        capture: fork_line_task
+      - run: |
+          ids = {};
+          for q in (queued_tasks())
+            ids = {@ids, q[1]};
+          endfor
+          return {typeof({fork_line_task}) == INT, {fork_line_task} in ids > 0};
+        expect:
+          value: [1, 1]
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - restart_server:
+          checkpoint_timeout_ms: 10000
+      - run: |
+          ids = {};
+          for q in (queued_tasks())
+            ids = {@ids, q[1]};
+          endfor
+          return {{fork_line_obj}.fork_line_result, {fork_line_task} in ids > 0};
+        expect:
+          value: [[], 1]
+      - run: "return {fork_line_obj}.fork_line_result;"
+        expect:
+          value: [E_TYPE, "start", 7]
+        poll_ms: 15000
+    cleanup:
+      - run: |
+          `kill_task({fork_line_task}) ! ANY';
+          `recycle({fork_line_obj}) ! ANY';
+          return 0;

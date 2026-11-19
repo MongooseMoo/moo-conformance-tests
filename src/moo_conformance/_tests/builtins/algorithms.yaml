@@ -1277,6 +1277,9 @@ tests:
 
   - name: crypt_bcrypt_2a_cost_factor_wizard
     permission: wizard
+    # Cost 14 is 2^14 key-setup rounds, about 0.75 s on an idle core; the
+    # default 3 s reply wait was exceeded on oversubscribed CI runners.
+    timeout_ms: 15000
     code: 'crypt("foobar", "$2a$14$KRGxLBS0Lxe3KBCwKxOzLe")'
     expect:
       value: "$2a$14$KRGxLBS0Lxe3KBCwKxOzLe7p.ddns6iDfgZCpWHCQ4hN.RUaeF9Rq"

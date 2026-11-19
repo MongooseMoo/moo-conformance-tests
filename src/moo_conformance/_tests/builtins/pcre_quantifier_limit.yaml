@@ -1,0 +1,45 @@
+name: pcre_quantifier_limit
+description: >
+  PCRE2 rejects a {} quantifier count above 65535 at compile time
+  ("number too big in {} quantifier"), so pcre_match() and pcre_replace()
+  raise E_INVARG.
+requires:
+  builtins:
+    - pcre_match
+    - pcre_replace
+
+tests:
+  - name: pcre_quantifier_limit_max_accepted
+    code: 'length(pcre_match("ab", "a{0,65535}b"))'
+    expect:
+      value: 1
+
+  - name: pcre_quantifier_limit_exact_max_accepted
+    code: 'pcre_match("b", "a{65535}b")'
+    expect:
+      value: []
+
+  - name: pcre_quantifier_limit_exact_too_big
+    code: 'pcre_match("ab", "a{65536}b")'
+    expect:
+      error: E_INVARG
+
+  - name: pcre_quantifier_limit_range_upper_too_big
+    code: 'pcre_match("ab", "a{0,65536}b")'
+    expect:
+      error: E_INVARG
+
+  - name: pcre_quantifier_limit_open_lower_too_big
+    code: 'pcre_match("ab", "a{65536,}b")'
+    expect:
+      error: E_INVARG
+
+  - name: pcre_quantifier_limit_assertion_replace
+    code: 'pcre_replace("0<0", "s/(\\b{1737337})\\1/x/")'
+    expect:
+      error: E_INVARG
+
+  - name: pcre_quantifier_limit_huge_literal_brace_with_letter
+    code: 'pcre_match("a{9999999x}", "a{9999999x}")[1]["0"]["match"]'
+    expect:
+      value: "a{9999999x}"

@@ -1,0 +1,244 @@
+name: fork_debug_flag
+description: >
+  Verifies when a forked task takes the d (debug) flag of the verb that forked
+  it. The fork body adds 1 to a string inside try/except: with debug on the
+  E_TYPE is raised and caught, with debug off it is the value of the
+  expression. While the server keeps running, the flag is the one the verb has
+  when the fork statement executes: changing the verb's d flag afterwards,
+  before the forked task starts, does not change how the forked task runs. A
+  queued forked task saved in a checkpoint and loaded by a restarted server
+  runs with debug on, whatever the verb's flag was at the fork statement and
+  whatever it is when the task is loaded.
+requires:
+  builtins:
+    - dump_database
+    - queued_tasks
+    - kill_task
+    - create
+    - recycle
+    - add_property
+    - add_verb
+    - set_verb_code
+    - set_verb_info
+    - verb_info
+  config: [managed_server]
+tests:
+  - name: fork_from_debug_verb_raises_in_forked_body
+    permission: wizard
+    steps:
+      - &fork_debug_make_debug_verb
+        run: |
+          obj = create($nothing);
+          add_property(obj, "result", {}, {player, "rw"});
+          add_verb(obj, {player, "xd", "start"}, {"this", "none", "this"});
+          set_verb_code(obj, "start", {
+            "{delay} = args;",
+            "fork t (delay)",
+            "  try",
+            "    r = 1 + \"a\";",
+            "    this.result = {\"value\", toliteral(r)};",
+            "  except e (ANY)",
+            "    this.result = {\"raised\", toliteral(e[1])};",
+            "  endtry",
+            "endfork",
+            "return t;"
+          });
+          return obj;
+        capture: fork_obj
+      - run: |
+          {fork_obj}:start(0);
+          return verb_info({fork_obj}, "start")[2];
+        expect:
+          value: "xd"
+      - run: "return {fork_obj}.result;"
+        expect:
+          value: ["raised", "E_TYPE"]
+        poll_ms: 3000
+    cleanup: &fork_debug_cleanup_object
+      - run: |
+          `recycle({fork_obj}) ! ANY';
+          return 0;
+
+  - name: fork_from_non_debug_verb_gets_error_value_in_forked_body
+    permission: wizard
+    steps:
+      - &fork_debug_make_non_debug_verb
+        run: |
+          obj = create($nothing);
+          add_property(obj, "result", {}, {player, "rw"});
+          add_verb(obj, {player, "x", "start"}, {"this", "none", "this"});
+          set_verb_code(obj, "start", {
+            "{delay} = args;",
+            "fork t (delay)",
+            "  try",
+            "    r = 1 + \"a\";",
+            "    this.result = {\"value\", toliteral(r)};",
+            "  except e (ANY)",
+            "    this.result = {\"raised\", toliteral(e[1])};",
+            "  endtry",
+            "endfork",
+            "return t;"
+          });
+          return obj;
+        capture: fork_obj
+      - run: |
+          {fork_obj}:start(0);
+          return verb_info({fork_obj}, "start")[2];
+        expect:
+          value: "x"
+      - run: "return {fork_obj}.result;"
+        expect:
+          value: ["value", "E_TYPE"]
+        poll_ms: 3000
+    cleanup: *fork_debug_cleanup_object
+
+  # The fork statement and set_verb_info() run in one task, so the forked task
+  # (delay 0) cannot start until the flag has been changed.
+  - name: fork_keeps_debug_flag_cleared_after_fork_statement
+    permission: wizard
+    steps:
+      - *fork_debug_make_debug_verb
+      - run: |
+          {fork_obj}:start(0);
+          set_verb_info({fork_obj}, "start", {player, "x", "start"});
+          return {{fork_obj}.result, verb_info({fork_obj}, "start")[2]};
+        expect:
+          value: [[], "x"]
+      - run: "return {fork_obj}.result;"
+        expect:
+          value: ["raised", "E_TYPE"]
+        poll_ms: 3000
+    cleanup: *fork_debug_cleanup_object
+
+  - name: fork_keeps_non_debug_flag_set_after_fork_statement
+    permission: wizard
+    steps:
+      - *fork_debug_make_non_debug_verb
+      - run: |
+          {fork_obj}:start(0);
+          set_verb_info({fork_obj}, "start", {player, "xd", "start"});
+          return {{fork_obj}.result, verb_info({fork_obj}, "start")[2]};
+        expect:
+          value: [[], "xd"]
+      - run: "return {fork_obj}.result;"
+        expect:
+          value: ["value", "E_TYPE"]
+        poll_ms: 3000
+    cleanup: *fork_debug_cleanup_object
+
+  - name: queued_fork_from_debug_verb_raises_after_checkpoint_restart
+    permission: wizard
+    steps:
+      - *fork_debug_make_debug_verb
+      - run: "return {fork_obj}:start(6);"
+        capture: fork_task
+      - &fork_debug_task_is_queued
+        run: |
+          ids = {};
+          for q in (queued_tasks())
+            ids = {@ids, q[1]};
+          endfor
+          return {typeof({fork_task}) == INT, {fork_task} in ids > 0};
+        expect:
+          value: [1, 1]
+      - &fork_debug_dump
+        run: "return dump_database();"
+        expect:
+          value: 0
+      - restart_server:
+          checkpoint_timeout_ms: 10000
+      - run: |
+          ids = {};
+          for q in (queued_tasks())
+            ids = {@ids, q[1]};
+          endfor
+          return {{fork_obj}.result, {fork_task} in ids > 0, verb_info({fork_obj}, "start")[2]};
+        expect:
+          value: [[], 1, "xd"]
+      - run: "return {fork_obj}.result;"
+        expect:
+          value: ["raised", "E_TYPE"]
+        poll_ms: 15000
+    cleanup: &fork_debug_cleanup_task_and_object
+      - run: |
+          `kill_task({fork_task}) ! ANY';
+          `recycle({fork_obj}) ! ANY';
+          return 0;
+
+  - name: queued_fork_from_non_debug_verb_raises_after_checkpoint_restart
+    permission: wizard
+    steps:
+      - *fork_debug_make_non_debug_verb
+      - run: "return {fork_obj}:start(6);"
+        capture: fork_task
+      - *fork_debug_task_is_queued
+      - *fork_debug_dump
+      - restart_server:
+          checkpoint_timeout_ms: 10000
+      - run: |
+          ids = {};
+          for q in (queued_tasks())
+            ids = {@ids, q[1]};
+          endfor
+          return {{fork_obj}.result, {fork_task} in ids > 0, verb_info({fork_obj}, "start")[2]};
+        expect:
+          value: [[], 1, "x"]
+      - run: "return {fork_obj}.result;"
+        expect:
+          value: ["raised", "E_TYPE"]
+        poll_ms: 15000
+    cleanup: *fork_debug_cleanup_task_and_object
+
+  - name: queued_fork_from_debug_verb_raises_after_flag_cleared_and_checkpoint_restart
+    permission: wizard
+    steps:
+      - *fork_debug_make_debug_verb
+      - run: |
+          t = {fork_obj}:start(6);
+          set_verb_info({fork_obj}, "start", {player, "x", "start"});
+          return t;
+        capture: fork_task
+      - *fork_debug_task_is_queued
+      - *fork_debug_dump
+      - restart_server:
+          checkpoint_timeout_ms: 10000
+      - run: |
+          ids = {};
+          for q in (queued_tasks())
+            ids = {@ids, q[1]};
+          endfor
+          return {{fork_obj}.result, {fork_task} in ids > 0, verb_info({fork_obj}, "start")[2]};
+        expect:
+          value: [[], 1, "x"]
+      - run: "return {fork_obj}.result;"
+        expect:
+          value: ["raised", "E_TYPE"]
+        poll_ms: 15000
+    cleanup: *fork_debug_cleanup_task_and_object
+
+  - name: queued_fork_from_non_debug_verb_raises_after_flag_set_and_checkpoint_restart
+    permission: wizard
+    steps:
+      - *fork_debug_make_non_debug_verb
+      - run: |
+          t = {fork_obj}:start(6);
+          set_verb_info({fork_obj}, "start", {player, "xd", "start"});
+          return t;
+        capture: fork_task
+      - *fork_debug_task_is_queued
+      - *fork_debug_dump
+      - restart_server:
+          checkpoint_timeout_ms: 10000
+      - run: |
+          ids = {};
+          for q in (queued_tasks())
+            ids = {@ids, q[1]};
+          endfor
+          return {{fork_obj}.result, {fork_task} in ids > 0, verb_info({fork_obj}, "start")[2]};
+        expect:
+          value: [[], 1, "xd"]
+      - run: "return {fork_obj}.result;"
+        expect:
+          value: ["raised", "E_TYPE"]
+        poll_ms: 15000
+    cleanup: *fork_debug_cleanup_task_and_object

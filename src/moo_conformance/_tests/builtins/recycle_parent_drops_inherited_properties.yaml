@@ -1,0 +1,73 @@
+name: recycle_parent_drops_inherited_properties
+description: >
+  Recycling an object reparents its children to its own parents, and a child
+  loses every property it inherited from the recycled object, including a slot
+  it never overrode. Reading, assigning or clearing that name on the child
+  afterwards raises E_PROPNF, and the child's own properties are untouched.
+
+requires:
+  builtins: [create, recycle, add_property, clear_property, property_info]
+
+tests:
+  - name: child_cannot_read_or_assign_property_of_recycled_parent
+    steps:
+      - run: |
+          p = create($nothing);
+          add_property(p, "inherited", 1, {player, "rw"});
+          c = create(p);
+          add_property(c, "own", 2, {player, "rw"});
+          return {p, c};
+        capture: objs
+        as: wizard
+      - run: |
+          {p, c} = {objs};
+          recycle(p);
+          return {`c.inherited ! ANY', `c.inherited = 5 ! ANY', `clear_property(c, "inherited") ! ANY', `property_info(c, "inherited") ! ANY', c.own, parents(c)};
+        as: wizard
+        expect:
+          value: [E_PROPNF, E_PROPNF, E_PROPNF, E_PROPNF, 2, []]
+      - run: |
+          {p, c} = {objs};
+          return {`c.inherited ! ANY', `c.inherited = 6 ! ANY', c.own};
+        as: wizard
+        expect:
+          value: [E_PROPNF, E_PROPNF, 2]
+    cleanup:
+      - run: |
+          for o in ({objs})
+            try
+              recycle(o);
+            except (ANY)
+            endtry
+          endfor
+        as: wizard
+
+  - name: grandchild_override_of_recycled_middle_property_is_dropped
+    steps:
+      - run: |
+          g = create($nothing);
+          add_property(g, "top", 10, {player, "rw"});
+          m = create(g);
+          add_property(m, "mid", 20, {player, "rw"});
+          k = create(m);
+          k.mid = 21;
+          k.top = 11;
+          return {g, m, k};
+        capture: objs
+        as: wizard
+      - run: |
+          {g, m, k} = {objs};
+          recycle(m);
+          return {parents(k) == {g}, `k.mid ! ANY', `k.mid = 22 ! ANY', k.top, `clear_property(k, "top") ! ANY', k.top};
+        as: wizard
+        expect:
+          value: [1, E_PROPNF, E_PROPNF, 11, 0, 10]
+    cleanup:
+      - run: |
+          for o in ({objs})
+            try
+              recycle(o);
+            except (ANY)
+            endtry
+          endfor
+        as: wizard

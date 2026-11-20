@@ -1,0 +1,126 @@
+name: suspended_try_computed_codes_checkpoint_restart
+description: >
+  Verifies that a task suspended while inside a try statement or catch
+  expression whose except codes are computed (not all error literals)
+  survives dump_database() and a managed server restart, and that once it
+  resumes the computed codes still select the handler. Computed codes are
+  evaluated before the protected body runs and are held by the suspended
+  frame, so the checkpointed task must carry them across the restart.
+requires:
+  builtins:
+    - dump_database
+    - queued_tasks
+    - kill_task
+    - add_property
+    - delete_property
+    - add_verb
+    - set_verb_code
+    - recycle
+    - suspend
+  config: [managed_server]
+tests:
+  - name: suspended_try_computed_codes_resume_after_checkpoint_restart
+    permission: wizard
+    steps:
+      - run: |
+          for p in ({"suspended_codes_log", "suspended_codes_tasks", "suspended_codes_obj"})
+            if (p in properties(#0))
+              delete_property(#0, p);
+            endif
+          endfor
+          o = create($nothing);
+          add_property(#0, "suspended_codes_obj", o, {player, "rw"});
+          add_property(#0, "suspended_codes_log", {}, {player, "rw"});
+          return o;
+        capture: obj
+      - verb_setup:
+          object: "{obj}"
+          name: "nap_div"
+          args: ["this", "none", "this"]
+          code: |
+            suspend(6);
+            return 1 / 0;
+        expect:
+          value: []
+      - verb_setup:
+          object: "{obj}"
+          name: "start"
+          args: ["this", "none", "this"]
+          code: |
+            tasks = {};
+            codes = {E_DIV};
+            fork t (0)
+              try
+                suspend(6);
+                x = 1 / 0;
+                #0.suspended_codes_log = {@#0.suspended_codes_log, "uncaught-splice"};
+              except e (E_PERM, @codes)
+                #0.suspended_codes_log = {@#0.suspended_codes_log, {"splice", e[1]}};
+              endtry
+            endfork
+            tasks = {@tasks, t};
+            fork t (0)
+              try
+                suspend(6);
+                x = {}[1];
+              except e (E_QUOTA, 0.0, E_RANGE, E_QUOTA)
+                #0.suspended_codes_log = {@#0.suspended_codes_log, {"mixed", e[1]}};
+              endtry
+            endfork
+            tasks = {@tasks, t};
+            fork t (0)
+              r = `this:nap_div() ! E_PERM, @codes => "handled"';
+              #0.suspended_codes_log = {@#0.suspended_codes_log, {"catch", r}};
+            endfork
+            tasks = {@tasks, t};
+            return tasks;
+        expect:
+          value: []
+      - run: |
+          tasks = {obj}:start();
+          add_property(#0, "suspended_codes_tasks", tasks, {player, "rw"});
+          return length(tasks);
+        expect:
+          value: 3
+      - wait: 500
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - restart_server:
+          checkpoint_timeout_ms: 10000
+      - run: |
+          ids = {};
+          for q in (queued_tasks())
+            ids = {@ids, q[1]};
+          endfor
+          found = 0;
+          for t in (#0.suspended_codes_tasks)
+            found = found + (t in ids > 0);
+          endfor
+          return {found, #0.suspended_codes_log};
+        expect:
+          value: [3, []]
+      - run: |
+          log = #0.suspended_codes_log;
+          return {length(log), {"splice", E_DIV} in log > 0, {"mixed", E_RANGE} in log > 0, {"catch", "handled"} in log > 0};
+        expect:
+          value: [3, 1, 1, 1]
+        poll_ms: 15000
+    cleanup:
+      - run: |
+          if ("suspended_codes_tasks" in properties(#0))
+            for t in (#0.suspended_codes_tasks)
+              `kill_task(t) ! ANY';
+            endfor
+            delete_property(#0, "suspended_codes_tasks");
+          endif
+          if ("suspended_codes_log" in properties(#0))
+            delete_property(#0, "suspended_codes_log");
+          endif
+          if ("suspended_codes_obj" in properties(#0))
+            if (valid(#0.suspended_codes_obj))
+              recycle(#0.suspended_codes_obj);
+            endif
+            delete_property(#0, "suspended_codes_obj");
+          endif
+          return 0;

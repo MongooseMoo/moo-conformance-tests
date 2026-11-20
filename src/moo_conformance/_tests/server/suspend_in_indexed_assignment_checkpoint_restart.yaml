@@ -1,0 +1,101 @@
+name: suspend_in_indexed_assignment_checkpoint_restart
+description: >
+  Verifies that tasks suspended while evaluating the index, range bound, or
+  value of an indexed assignment (to a list, map, or string variable, to a
+  nested list element, and to a property's value, including ranges that use
+  ^ and $) survive dump_database() and a managed server restart: each task
+  resumes after reload, suspend() returns 0, and the assignment completes
+  against the collection it held when it suspended.
+requires:
+  builtins:
+    - dump_database
+    - queued_tasks
+    - kill_task
+    - create
+    - recycle
+    - add_property
+    - add_verb
+    - set_verb_code
+    - suspend
+  config: [managed_server]
+tests:
+  - name: suspend_in_indexed_assignment_survives_checkpoint_restart
+    permission: wizard
+    steps:
+      - run: |
+          obj = create($nothing);
+          add_property(obj, "started", 0, {player, "rw"});
+          add_property(obj, "p", {1, 2}, {player, "rw"});
+          add_property(obj, "q", {1, 2}, {player, "rw"});
+          add_property(obj, "results", {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {player, "rw"});
+          bodies = {
+            {"n = {1, 2, 3};", "n[suspend(6) + 1] = 5;", "r = n;"},
+            {"n = {1, 2, 3};", "n[2] = suspend(6);", "r = n;"},
+            {"m = [1 -> 2];", "m[suspend(6)] = 5;", "r = m;"},
+            {"s = \"abc\";", "s[suspend(6) + 1..2] = \"x\";", "r = s;"},
+            {"n = {1, 2, 3};", "n[^..suspend(6) + 1] = {};", "r = n;"},
+            {"n = {1, 2, 3};", "n[2..{$, suspend(6)}[1]] = {};", "r = n;"},
+            {"l = {{1, 2}, {3, 4}};", "l[2][suspend(6) + 1] = 5;", "r = l;"},
+            {"l = {{1, 2, 3}, {3, 4}};", "l[1][^..suspend(6) + 1] = {9};", "r = l;"},
+            {"this.p[suspend(6) + 1] = 3;", "r = this.p;"},
+            {"this.q[suspend(6) + 1..$] = {3};", "r = this.q;"}
+          };
+          for i in [1..length(bodies)]
+            name = "run" + tostr(i);
+            add_verb(obj, {player, "xd", name}, {"this", "none", "this"});
+            set_verb_code(obj, name, {"this.started = this.started + 1;", @bodies[i], "this.results[" + tostr(i) + "] = r;"});
+          endfor
+          add_verb(obj, {player, "xd", "start"}, {"this", "none", "this"});
+          set_verb_code(obj, "start", {
+            "ids = {};",
+            "for i in [1..10]",
+            "  fork t (0)",
+            "    this:(\"run\" + tostr(i))();",
+            "  endfork",
+            "  ids = {@ids, t};",
+            "endfor",
+            "return ids;"
+          });
+          return obj;
+        capture: assign_obj
+      - run: "return {assign_obj}:start();"
+        capture: assign_tasks
+      - run: |
+          ids = {};
+          for q in (queued_tasks())
+            ids = {@ids, q[1]};
+          endfor
+          found = 0;
+          for t in ({assign_tasks})
+            found = found + (t in ids > 0);
+          endfor
+          return {{assign_obj}.started, found};
+        expect:
+          value: [10, 10]
+        poll_ms: 3000
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - restart_server:
+          checkpoint_timeout_ms: 10000
+      - run: "return {assign_obj}.results;"
+        expect:
+          value:
+            - [5, 2, 3]
+            - [1, 0, 3]
+            - {0: 5, 1: 2}
+            - "xc"
+            - [2, 3]
+            - [1]
+            - [[1, 2], [5, 4]]
+            - [[9, 2, 3], [3, 4]]
+            - [3, 2]
+            - [3]
+        poll_ms: 15000
+    cleanup:
+      - run: |
+          for t in ({assign_tasks})
+            `kill_task(t) ! ANY';
+          endfor
+          `recycle({assign_obj}) ! ANY';
+          return 0;

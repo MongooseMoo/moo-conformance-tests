@@ -1,0 +1,145 @@
+name: traceback_line_numbering
+description: >
+  A traceback frame's line number counts the verb's statements as its code
+  lists them, one statement per line, not the lines of the source text it was
+  programmed from. An empty statement takes no line, a blank line is not
+  counted, two statements on one source line are two lines, an expression
+  spread over several source lines is one line, and an `elseif` arm, `else`
+  and `except` arm each take one line.
+
+tests:
+  - name: empty_statements_take_no_line
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "v"}, {"this", "none", "this"});
+        set_verb_code(o, "v", {"x = 1;", ";", ";", "return 1/0;"});
+    statement: |
+      try
+        o:v();
+      except e (ANY)
+        return e[4][1][6];
+      endtry
+    expect:
+      value: 2
+    teardown:
+      code: "recycle(o);"
+
+  - name: blank_source_line_is_not_counted
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "v"}, {"this", "none", "this"});
+        set_verb_code(o, "v", {"x = 1;", "", "return 1/0;"});
+    statement: |
+      try
+        o:v();
+      except e (ANY)
+        return e[4][1][6];
+      endtry
+    expect:
+      value: 2
+    teardown:
+      code: "recycle(o);"
+
+  - name: two_statements_on_one_source_line
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "v"}, {"this", "none", "this"});
+        set_verb_code(o, "v", {"x = 1; return 1/0;"});
+    statement: |
+      try
+        o:v();
+      except e (ANY)
+        return e[4][1][6];
+      endtry
+    expect:
+      value: 2
+    teardown:
+      code: "recycle(o);"
+
+  - name: expression_over_several_source_lines_is_one_line
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "v"}, {"this", "none", "this"});
+        set_verb_code(o, "v", {"x = {1,", "2,", "1/0};"});
+    statement: |
+      try
+        o:v();
+      except e (ANY)
+        return e[4][1][6];
+      endtry
+    expect:
+      value: 1
+    teardown:
+      code: "recycle(o);"
+
+  - name: one_line_elseif_arm
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "v"}, {"this", "none", "this"});
+        set_verb_code(o, "v", {"if (0) elseif (1) return 1/0; endif"});
+    statement: |
+      try
+        o:v();
+      except e (ANY)
+        return e[4][1][6];
+      endtry
+    expect:
+      value: 3
+    teardown:
+      code: "recycle(o);"
+
+  - name: one_line_else_with_nested_if
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "v"}, {"this", "none", "this"});
+        set_verb_code(o, "v", {"if (0) else if (1) return 1/0; endif endif"});
+    statement: |
+      try
+        o:v();
+      except e (ANY)
+        return e[4][1][6];
+      endtry
+    expect:
+      value: 4
+    teardown:
+      code: "recycle(o);"
+
+  - name: except_codes_on_the_except_line
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "v"}, {"this", "none", "this"});
+        set_verb_code(o, "v", {"try x = 1; except (E_RANGE, 1/0) endtry"});
+    statement: |
+      try
+        o:v();
+      except e (ANY)
+        return e[4][1][6];
+      endtry
+    expect:
+      value: 3
+    teardown:
+      code: "recycle(o);"
+
+  - name: loop_body_after_blank_line
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "xd", "v"}, {"this", "none", "this"});
+        set_verb_code(o, "v", {"for x in ({1})", "", "y = 1/0;", "endfor"});
+    statement: |
+      try
+        o:v();
+      except e (ANY)
+        return e[4][1][6];
+      endtry
+    expect:
+      value: 2
+    teardown:
+      code: "recycle(o);"

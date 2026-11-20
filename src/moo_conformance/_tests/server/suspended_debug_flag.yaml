@@ -1,0 +1,307 @@
+name: suspended_debug_flag
+description: >
+  Verifies the d (debug) flag of a suspended task's frames. Each frame adds 1
+  to a string inside try/except after the suspend() returns: with debug on the
+  E_TYPE is raised and caught, with debug off it is the value of the
+  expression. While the server keeps running, a frame resumes with the d flag
+  of its verb. A suspended task saved in a checkpoint and loaded by a restarted
+  server resumes with debug on in every frame, whatever the d flag of each
+  frame's verb.
+requires:
+  builtins:
+    - dump_database
+    - queued_tasks
+    - kill_task
+    - suspend
+    - create
+    - recycle
+    - add_property
+    - add_verb
+    - set_verb_code
+    - verb_info
+  config: [managed_server]
+tests:
+  - name: suspended_debug_verb_raises_after_resume
+    permission: wizard
+    steps:
+      - &suspended_debug_make_debug_verb
+        run: |
+          obj = create($nothing);
+          add_property(obj, "stage", "", {player, "rw"});
+          add_property(obj, "result", {}, {player, "rw"});
+          add_verb(obj, {player, "xd", "start"}, {"this", "none", "this"});
+          set_verb_code(obj, "start", {
+            "{delay} = args;",
+            "fork t (0)",
+            "  this.stage = \"suspending\";",
+            "  suspend(delay);",
+            "  try",
+            "    r = 1 + \"a\";",
+            "    this.result = {\"value\", toliteral(r)};",
+            "  except e (ANY)",
+            "    this.result = {\"raised\", toliteral(e[1])};",
+            "  endtry",
+            "endfork",
+            "return t;"
+          });
+          return obj;
+        capture: suspended_obj
+      - run: |
+          {suspended_obj}:start(0);
+          return verb_info({suspended_obj}, "start")[2];
+        expect:
+          value: "xd"
+      - run: "return {suspended_obj}.result;"
+        expect:
+          value: ["raised", "E_TYPE"]
+        poll_ms: 3000
+    cleanup: &suspended_debug_cleanup_object
+      - run: |
+          `recycle({suspended_obj}) ! ANY';
+          return 0;
+
+  - name: suspended_non_debug_verb_gets_error_value_after_resume
+    permission: wizard
+    steps:
+      - &suspended_debug_make_non_debug_verb
+        run: |
+          obj = create($nothing);
+          add_property(obj, "stage", "", {player, "rw"});
+          add_property(obj, "result", {}, {player, "rw"});
+          add_verb(obj, {player, "x", "start"}, {"this", "none", "this"});
+          set_verb_code(obj, "start", {
+            "{delay} = args;",
+            "fork t (0)",
+            "  this.stage = \"suspending\";",
+            "  suspend(delay);",
+            "  try",
+            "    r = 1 + \"a\";",
+            "    this.result = {\"value\", toliteral(r)};",
+            "  except e (ANY)",
+            "    this.result = {\"raised\", toliteral(e[1])};",
+            "  endtry",
+            "endfork",
+            "return t;"
+          });
+          return obj;
+        capture: suspended_obj
+      - run: |
+          {suspended_obj}:start(0);
+          return verb_info({suspended_obj}, "start")[2];
+        expect:
+          value: "x"
+      - run: "return {suspended_obj}.result;"
+        expect:
+          value: ["value", "E_TYPE"]
+        poll_ms: 3000
+    cleanup: *suspended_debug_cleanup_object
+
+  - name: suspended_debug_verb_raises_after_checkpoint_restart
+    permission: wizard
+    steps:
+      - *suspended_debug_make_debug_verb
+      - run: "return {suspended_obj}:start(8);"
+        capture: suspended_task
+      - &suspended_debug_task_is_suspended
+        run: |
+          ids = {};
+          for q in (queued_tasks())
+            ids = {@ids, q[1]};
+          endfor
+          return {{suspended_obj}.stage, {suspended_task} in ids > 0};
+        expect:
+          value: ["suspending", 1]
+        poll_ms: 3000
+      - &suspended_debug_dump
+        run: "return dump_database();"
+        expect:
+          value: 0
+      - restart_server:
+          checkpoint_timeout_ms: 10000
+      - run: |
+          ids = {};
+          for q in (queued_tasks())
+            ids = {@ids, q[1]};
+          endfor
+          return {{suspended_obj}.result, {suspended_task} in ids > 0, verb_info({suspended_obj}, "start")[2]};
+        expect:
+          value: [[], 1, "xd"]
+      - run: "return {suspended_obj}.result;"
+        expect:
+          value: ["raised", "E_TYPE"]
+        poll_ms: 15000
+    cleanup: &suspended_debug_cleanup_task_and_object
+      - run: |
+          `kill_task({suspended_task}) ! ANY';
+          `recycle({suspended_obj}) ! ANY';
+          return 0;
+
+  - name: suspended_non_debug_verb_raises_after_checkpoint_restart
+    permission: wizard
+    steps:
+      - *suspended_debug_make_non_debug_verb
+      - run: "return {suspended_obj}:start(8);"
+        capture: suspended_task
+      - *suspended_debug_task_is_suspended
+      - *suspended_debug_dump
+      - restart_server:
+          checkpoint_timeout_ms: 10000
+      - run: |
+          ids = {};
+          for q in (queued_tasks())
+            ids = {@ids, q[1]};
+          endfor
+          return {{suspended_obj}.result, {suspended_task} in ids > 0, verb_info({suspended_obj}, "start")[2]};
+        expect:
+          value: [[], 1, "x"]
+      - run: "return {suspended_obj}.result;"
+        expect:
+          value: ["raised", "E_TYPE"]
+        poll_ms: 15000
+    cleanup: *suspended_debug_cleanup_task_and_object
+
+  # Two frames: the forked body of outer calls inner, and inner suspends. Each
+  # frame records its own result after the suspend() returns.
+  - name: suspended_non_debug_frame_under_debug_frame_keeps_each_flag_after_resume
+    permission: wizard
+    steps:
+      - &suspended_debug_make_debug_outer_non_debug_inner
+        run: |
+          obj = create($nothing);
+          add_property(obj, "stage", "", {player, "rw"});
+          add_property(obj, "inner_result", {}, {player, "rw"});
+          add_property(obj, "outer_result", {}, {player, "rw"});
+          add_verb(obj, {player, "xd", "outer"}, {"this", "none", "this"});
+          add_verb(obj, {player, "x", "inner"}, {"this", "none", "this"});
+          set_verb_code(obj, "outer", {
+            "{delay} = args;",
+            "fork t (0)",
+            "  this:inner(delay);",
+            "  try",
+            "    r = 1 + \"a\";",
+            "    this.outer_result = {\"value\", toliteral(r)};",
+            "  except e (ANY)",
+            "    this.outer_result = {\"raised\", toliteral(e[1])};",
+            "  endtry",
+            "endfork",
+            "return t;"
+          });
+          set_verb_code(obj, "inner", {
+            "{delay} = args;",
+            "this.stage = \"suspending\";",
+            "suspend(delay);",
+            "try",
+            "  r = 1 + \"a\";",
+            "  this.inner_result = {\"value\", toliteral(r)};",
+            "except e (ANY)",
+            "  this.inner_result = {\"raised\", toliteral(e[1])};",
+            "endtry"
+          });
+          return obj;
+        capture: suspended_obj
+      - run: |
+          {suspended_obj}:outer(0);
+          return {verb_info({suspended_obj}, "outer")[2], verb_info({suspended_obj}, "inner")[2]};
+        expect:
+          value: ["xd", "x"]
+      - run: "return {{suspended_obj}.inner_result, {suspended_obj}.outer_result};"
+        expect:
+          value: [["value", "E_TYPE"], ["raised", "E_TYPE"]]
+        poll_ms: 3000
+    cleanup: *suspended_debug_cleanup_object
+
+  - name: suspended_debug_frame_under_non_debug_frame_keeps_each_flag_after_resume
+    permission: wizard
+    steps:
+      - &suspended_debug_make_non_debug_outer_debug_inner
+        run: |
+          obj = create($nothing);
+          add_property(obj, "stage", "", {player, "rw"});
+          add_property(obj, "inner_result", {}, {player, "rw"});
+          add_property(obj, "outer_result", {}, {player, "rw"});
+          add_verb(obj, {player, "x", "outer"}, {"this", "none", "this"});
+          add_verb(obj, {player, "xd", "inner"}, {"this", "none", "this"});
+          set_verb_code(obj, "outer", {
+            "{delay} = args;",
+            "fork t (0)",
+            "  this:inner(delay);",
+            "  try",
+            "    r = 1 + \"a\";",
+            "    this.outer_result = {\"value\", toliteral(r)};",
+            "  except e (ANY)",
+            "    this.outer_result = {\"raised\", toliteral(e[1])};",
+            "  endtry",
+            "endfork",
+            "return t;"
+          });
+          set_verb_code(obj, "inner", {
+            "{delay} = args;",
+            "this.stage = \"suspending\";",
+            "suspend(delay);",
+            "try",
+            "  r = 1 + \"a\";",
+            "  this.inner_result = {\"value\", toliteral(r)};",
+            "except e (ANY)",
+            "  this.inner_result = {\"raised\", toliteral(e[1])};",
+            "endtry"
+          });
+          return obj;
+        capture: suspended_obj
+      - run: |
+          {suspended_obj}:outer(0);
+          return {verb_info({suspended_obj}, "outer")[2], verb_info({suspended_obj}, "inner")[2]};
+        expect:
+          value: ["x", "xd"]
+      - run: "return {{suspended_obj}.inner_result, {suspended_obj}.outer_result};"
+        expect:
+          value: [["raised", "E_TYPE"], ["value", "E_TYPE"]]
+        poll_ms: 3000
+    cleanup: *suspended_debug_cleanup_object
+
+  - name: suspended_non_debug_frame_under_debug_frame_both_raise_after_checkpoint_restart
+    permission: wizard
+    steps:
+      - *suspended_debug_make_debug_outer_non_debug_inner
+      - run: "return {suspended_obj}:outer(8);"
+        capture: suspended_task
+      - *suspended_debug_task_is_suspended
+      - *suspended_debug_dump
+      - restart_server:
+          checkpoint_timeout_ms: 10000
+      - run: |
+          ids = {};
+          for q in (queued_tasks())
+            ids = {@ids, q[1]};
+          endfor
+          return {{suspended_obj}.inner_result, {suspended_obj}.outer_result, {suspended_task} in ids > 0, verb_info({suspended_obj}, "outer")[2], verb_info({suspended_obj}, "inner")[2]};
+        expect:
+          value: [[], [], 1, "xd", "x"]
+      - run: "return {{suspended_obj}.inner_result, {suspended_obj}.outer_result};"
+        expect:
+          value: [["raised", "E_TYPE"], ["raised", "E_TYPE"]]
+        poll_ms: 15000
+    cleanup: *suspended_debug_cleanup_task_and_object
+
+  - name: suspended_debug_frame_under_non_debug_frame_both_raise_after_checkpoint_restart
+    permission: wizard
+    steps:
+      - *suspended_debug_make_non_debug_outer_debug_inner
+      - run: "return {suspended_obj}:outer(8);"
+        capture: suspended_task
+      - *suspended_debug_task_is_suspended
+      - *suspended_debug_dump
+      - restart_server:
+          checkpoint_timeout_ms: 10000
+      - run: |
+          ids = {};
+          for q in (queued_tasks())
+            ids = {@ids, q[1]};
+          endfor
+          return {{suspended_obj}.inner_result, {suspended_obj}.outer_result, {suspended_task} in ids > 0, verb_info({suspended_obj}, "outer")[2], verb_info({suspended_obj}, "inner")[2]};
+        expect:
+          value: [[], [], 1, "x", "xd"]
+      - run: "return {{suspended_obj}.inner_result, {suspended_obj}.outer_result};"
+        expect:
+          value: [["raised", "E_TYPE"], ["raised", "E_TYPE"]]
+        poll_ms: 15000
+    cleanup: *suspended_debug_cleanup_task_and_object

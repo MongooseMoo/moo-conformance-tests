@@ -1435,7 +1435,9 @@ class YamlTestRunner:
         data = b"".join(chunks)
         before_signature = file_snapshot_signature(before)
         after_signature = file_snapshot_signature(after)
-        if before_signature != after_signature or len(data) != after.st_size:
+        # Identity, size, and mtime show a write. ctime also moves when a server
+        # adds or drops a hard link to the finished file, which leaves the bytes alone.
+        if before_signature[:4] != after_signature[:4] or len(data) != after.st_size:
             raise AssertionError(
                 f"Test '{test_name}' assert_file: {display_path!r} changed while being read"
             )

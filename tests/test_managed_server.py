@@ -1050,6 +1050,37 @@ def test_assert_file_rejects_mutation_during_descriptor_read(monkeypatch, tmp_pa
         )
 
 
+def test_assert_file_accepts_link_count_change_during_read(monkeypatch, tmp_path: Path):
+    # Barn publishes a checkpoint by renaming it into place, then removes a
+    # recovery hard link to the same inode; unlink() changes st_ctime only.
+    server_dir = tmp_path / "server"
+    server_dir.mkdir()
+    output = server_dir / "output.db"
+    output.write_bytes(b"complete")
+    recovery_link = tmp_path / "recovery-next"
+    os.link(output, recovery_link)
+    runner = YamlTestRunner(Mock(), server_dir=str(server_dir))
+    real_read = os.read
+    unlinked = False
+
+    def unlinking_read(descriptor: int, size: int) -> bytes:
+        nonlocal unlinked
+        chunk = real_read(descriptor, size)
+        if chunk and not unlinked:
+            unlinked = True
+            time.sleep(0.02)  # step past the filesystem's coarse timestamp clock
+            os.unlink(recovery_link)
+        return chunk
+
+    monkeypatch.setattr("moo_conformance.runner.os.read", unlinking_read)
+
+    runner._execute_assert_file(
+        FileAssertion(path="output.db", contains="complete"),
+        "link-count-change",
+    )
+    assert unlinked
+
+
 def test_assert_file_rejects_symlink_swap_during_open(monkeypatch, tmp_path: Path):
     server_dir = tmp_path / "server"
     server_dir.mkdir()

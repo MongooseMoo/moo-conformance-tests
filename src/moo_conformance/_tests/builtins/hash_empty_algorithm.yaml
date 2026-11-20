@@ -1,0 +1,30 @@
+name: hash_empty_algorithm
+description: >
+  The hash and HMAC builtins reject an empty algorithm name with E_INVARG;
+  an empty string does not select a default algorithm.
+
+requires:
+  builtins:
+    - string_hash
+    - binary_hash
+    - value_hash
+    - string_hmac
+    - binary_hmac
+    - value_hmac
+
+tests:
+  - name: "{builtin}_empty_algorithm_invarg"
+    permission: wizard
+    table:
+      columns: [builtin, expr]
+      rows:
+        - [string_hash, 'string_hash("x", "")']
+        - [string_hash_flag, 'string_hash("x", "", 0)']
+        - [binary_hash, 'binary_hash("~22%%", "", 0)']
+        - [value_hash, 'value_hash(1, "", 1)']
+        - [string_hmac, 'string_hmac("x", "k", "")']
+        - [binary_hmac, 'binary_hmac("x", "k", "")']
+        - [value_hmac, 'value_hmac("x", "k", "")']
+    code: "{expr}"
+    expect:
+      error: E_INVARG

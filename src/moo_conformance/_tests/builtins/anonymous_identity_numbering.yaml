@@ -1,0 +1,39 @@
+name: anonymous_identity_numbering
+description: >
+  A live anonymous object has no object number. Creating one does not use up
+  the number the next create() returns, and reset_max_object() cannot make a
+  later create() take an existing anonymous object's identity.
+requires:
+  builtins: [create, recycle, reset_max_object, valid, max_object]
+
+tests:
+  - name: anonymous_create_takes_no_object_number
+    permission: wizard
+    statement: |
+      a = create($nothing);
+      b = create($nothing, 1);
+      c = create($nothing);
+      result = {toint(c) - toint(a), c == max_object()};
+      recycle(c);
+      recycle(a);
+      return result;
+    expect:
+      value: [1, 1]
+
+  - name: anonymous_created_after_reset_is_a_new_object
+    permission: wizard
+    statement: |
+      k = create($nothing);
+      h = create($nothing);
+      a = create($nothing, 1);
+      add_property(k, "ref", a, {player, "rw"});
+      a.name = "original";
+      recycle(h);
+      reset_max_object();
+      b = create($nothing, 1);
+      c = create($nothing, 1);
+      result = {valid(k.ref), k.ref.name, k.ref == b, k.ref == c, b == c};
+      recycle(k);
+      return result;
+    expect:
+      value: [1, "original", 0, 0, 0]

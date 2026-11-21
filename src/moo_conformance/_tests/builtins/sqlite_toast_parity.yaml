@@ -70,11 +70,39 @@ tests:
     permission: wizard
     statement: |
       db = sqlite_open(":memory:");
-      r = sqlite_query(db, "SELECT '#5', '12', '1.5', 'abc', ' 12', '1e3', '0x10', '#-1', '+7', ' 12 ', '12' || char(9), char(9) || '5', '99999999999999999999', NULL, '', '#', '#x'");
+      r = sqlite_query(db, "SELECT '#5', '12', '1.5', 'abc', ' 12', '1e3', '0x10', '#-1', '+7', ' 12 ', '12' || char(9), char(9) || '5', NULL, '', '#', '#x'");
       sqlite_close(db);
       return toliteral(r);
     expect:
-      value: '{{#5, 12, 1.5, "abc", 12, 1000.0, 16.0, #-1, 7, 12, "12	", 5, 9223372036854775807, "NULL", "", "#", "#x"}}'
+      value: '{{#5, 12, 1.5, "abc", 12, 1000.0, 16.0, #-1, 7, 12, "12	", 5, "NULL", "", "#", "#x"}}'
+
+  - name: sqlite_query_overflowing_integer_text_clamps_64bit
+    description: |
+      parse_number stores strtoimax's result in a MOO integer; strtoimax clamps
+      an out-of-range decimal to INTMAX_MAX.
+    permission: wizard
+    statement: |
+      db = sqlite_open(":memory:");
+      r = sqlite_query(db, "SELECT '99999999999999999999'");
+      sqlite_close(db);
+      return toliteral(r);
+    expect:
+      value: '{{9223372036854775807}}'
+    skip_if: "not feature.64bit"
+
+  - name: sqlite_query_overflowing_integer_text_clamps_32bit
+    description: |
+      On a 32-bit build the clamped INTMAX_MAX is narrowed to the 32-bit MOO
+      integer, which leaves -1.
+    permission: wizard
+    statement: |
+      db = sqlite_open(":memory:");
+      x = sqlite_query(db, "SELECT '99999999999999999999'")[1][1];
+      sqlite_close(db);
+      return x;
+    expect:
+      value: -1
+    skip_if: "feature.64bit"
 
   - name: sqlite_query_parses_infinity_spellings_as_floats
     permission: wizard

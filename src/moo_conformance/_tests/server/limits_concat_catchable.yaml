@@ -8,7 +8,7 @@ description: >
   traceback. With the option true the same growth raises a catchable E_QUOTA.
 
 requires:
-  builtins: [add_property, delete_property, load_server_options, listappend, tostr, add_verb, set_verb_code, create, recycle]
+  builtins: [add_property, delete_property, load_server_options, listappend, tostr, add_verb, set_verb_code, create, recycle, maphaskey, chr, value_hash, value_hmac, encode_base64, decode_base64, decode_binary, value_bytes]
 
 setup:
   permission: wizard
@@ -551,4 +551,376 @@ tests:
             recycle(#0.concat_abort_mark);
           endif
           #0.concat_abort_mark = 0;
+        as: wizard
+
+  - name: chr_past_string_limit_aborts_when_not_catchable
+    description: chr() building a string past max_string_concat aborts the task (make_space_pack).
+    steps:
+      - run: |
+          $server_options.max_concat_catchable = 0;
+          $server_options.max_string_concat = 1000000;
+          load_server_options();
+          return 1;
+        as: wizard
+      - run: |
+          l = {};
+          for i in [1..1500]
+            l = {@l, 65};
+          endfor
+          $server_options.max_string_concat = 1100;
+          load_server_options();
+          try
+            return {"returned", typeof(chr(l))};
+          except e (ANY)
+            return {"raised", e[1]};
+          endtry
+        as: wizard
+        expect:
+          match: "Task ran out of seconds"
+    cleanup:
+      - run: |
+          $server_options.max_concat_catchable = 0;
+          $server_options.max_string_concat = 1000000;
+          load_server_options();
+        as: wizard
+
+  - name: chr_past_string_limit_raises_when_catchable
+    description: With max_concat_catchable true, chr() building a string past max_string_concat raises E_QUOTA.
+    steps:
+      - run: |
+          $server_options.max_concat_catchable = 1;
+          $server_options.max_string_concat = 1000000;
+          load_server_options();
+          return 1;
+        as: wizard
+      - run: |
+          l = {};
+          for i in [1..1500]
+            l = {@l, 65};
+          endfor
+          $server_options.max_string_concat = 1100;
+          load_server_options();
+          try
+            return {"returned", typeof(chr(l))};
+          except e (ANY)
+            return {"raised", e[1]};
+          endtry
+        as: wizard
+        expect:
+          value: ["raised", "E_QUOTA"]
+    cleanup:
+      - run: |
+          $server_options.max_concat_catchable = 0;
+          $server_options.max_string_concat = 1000000;
+          load_server_options();
+        as: wizard
+
+  - name: value_hash_past_string_limit_aborts_when_not_catchable
+    description: value_hash() of a value whose literal passes max_string_concat aborts the task (make_space_pack).
+    steps:
+      - run: |
+          $server_options.max_concat_catchable = 0;
+          $server_options.max_string_concat = 1000000;
+          load_server_options();
+          return 1;
+        as: wizard
+      - run: |
+          l = {};
+          for i in [1..400]
+            l = {@l, i};
+          endfor
+          $server_options.max_string_concat = 1100;
+          load_server_options();
+          try
+            return {"returned", typeof(value_hash(l))};
+          except e (ANY)
+            return {"raised", e[1]};
+          endtry
+        as: wizard
+        expect:
+          match: "Task ran out of seconds"
+    cleanup:
+      - run: |
+          $server_options.max_concat_catchable = 0;
+          $server_options.max_string_concat = 1000000;
+          load_server_options();
+        as: wizard
+
+  - name: value_hash_past_string_limit_raises_when_catchable
+    description: With max_concat_catchable true, value_hash() of a value whose literal passes max_string_concat raises E_QUOTA.
+    steps:
+      - run: |
+          $server_options.max_concat_catchable = 1;
+          $server_options.max_string_concat = 1000000;
+          load_server_options();
+          return 1;
+        as: wizard
+      - run: |
+          l = {};
+          for i in [1..400]
+            l = {@l, i};
+          endfor
+          $server_options.max_string_concat = 1100;
+          load_server_options();
+          try
+            return {"returned", typeof(value_hash(l))};
+          except e (ANY)
+            return {"raised", e[1]};
+          endtry
+        as: wizard
+        expect:
+          value: ["raised", "E_QUOTA"]
+    cleanup:
+      - run: |
+          $server_options.max_concat_catchable = 0;
+          $server_options.max_string_concat = 1000000;
+          load_server_options();
+        as: wizard
+
+  - name: value_hmac_past_string_limit_aborts_when_not_catchable
+    description: value_hmac() of a value whose literal passes max_string_concat aborts the task (make_space_pack).
+    steps:
+      - run: |
+          $server_options.max_concat_catchable = 0;
+          $server_options.max_string_concat = 1000000;
+          load_server_options();
+          return 1;
+        as: wizard
+      - run: |
+          l = {};
+          for i in [1..400]
+            l = {@l, i};
+          endfor
+          $server_options.max_string_concat = 1100;
+          load_server_options();
+          try
+            return {"returned", typeof(value_hmac(l, "key"))};
+          except e (ANY)
+            return {"raised", e[1]};
+          endtry
+        as: wizard
+        expect:
+          match: "Task ran out of seconds"
+    cleanup:
+      - run: |
+          $server_options.max_concat_catchable = 0;
+          $server_options.max_string_concat = 1000000;
+          load_server_options();
+        as: wizard
+
+  - name: value_hmac_past_string_limit_raises_when_catchable
+    description: With max_concat_catchable true, value_hmac() of a value whose literal passes max_string_concat raises E_QUOTA.
+    steps:
+      - run: |
+          $server_options.max_concat_catchable = 1;
+          $server_options.max_string_concat = 1000000;
+          load_server_options();
+          return 1;
+        as: wizard
+      - run: |
+          l = {};
+          for i in [1..400]
+            l = {@l, i};
+          endfor
+          $server_options.max_string_concat = 1100;
+          load_server_options();
+          try
+            return {"returned", typeof(value_hmac(l, "key"))};
+          except e (ANY)
+            return {"raised", e[1]};
+          endtry
+        as: wizard
+        expect:
+          value: ["raised", "E_QUOTA"]
+    cleanup:
+      - run: |
+          $server_options.max_concat_catchable = 0;
+          $server_options.max_string_concat = 1000000;
+          load_server_options();
+        as: wizard
+
+  - name: encode_base64_past_string_limit_aborts_when_not_catchable
+    description: encode_base64() when (length / 3) * 4 passes max_string_concat + 1 aborts the task (make_space_pack).
+    steps:
+      - run: |
+          $server_options.max_concat_catchable = 0;
+          $server_options.max_string_concat = 1000000;
+          load_server_options();
+          return 1;
+        as: wizard
+      - run: |
+          s = "";
+          for i in [1..90]
+            s = s + "0123456789";
+          endfor
+          $server_options.max_string_concat = 1100;
+          load_server_options();
+          try
+            return {"returned", typeof(encode_base64(s))};
+          except e (ANY)
+            return {"raised", e[1]};
+          endtry
+        as: wizard
+        expect:
+          match: "Task ran out of seconds"
+    cleanup:
+      - run: |
+          $server_options.max_concat_catchable = 0;
+          $server_options.max_string_concat = 1000000;
+          load_server_options();
+        as: wizard
+
+  - name: encode_base64_past_string_limit_raises_when_catchable
+    description: With max_concat_catchable true, encode_base64() when (length / 3) * 4 passes max_string_concat + 1 raises E_QUOTA.
+    steps:
+      - run: |
+          $server_options.max_concat_catchable = 1;
+          $server_options.max_string_concat = 1000000;
+          load_server_options();
+          return 1;
+        as: wizard
+      - run: |
+          s = "";
+          for i in [1..90]
+            s = s + "0123456789";
+          endfor
+          $server_options.max_string_concat = 1100;
+          load_server_options();
+          try
+            return {"returned", typeof(encode_base64(s))};
+          except e (ANY)
+            return {"raised", e[1]};
+          endtry
+        as: wizard
+        expect:
+          value: ["raised", "E_QUOTA"]
+    cleanup:
+      - run: |
+          $server_options.max_concat_catchable = 0;
+          $server_options.max_string_concat = 1000000;
+          load_server_options();
+        as: wizard
+
+  - name: decode_base64_past_string_limit_aborts_when_not_catchable
+    description: decode_base64() when (length / 4) * 3 passes max_string_concat + 1 aborts the task (make_space_pack).
+    steps:
+      - run: |
+          $server_options.max_concat_catchable = 0;
+          $server_options.max_string_concat = 1000000;
+          load_server_options();
+          return 1;
+        as: wizard
+      - run: |
+          s = "";
+          for i in [1..400]
+            s = s + "QUFB";
+          endfor
+          $server_options.max_string_concat = 1100;
+          load_server_options();
+          try
+            return {"returned", typeof(decode_base64(s))};
+          except e (ANY)
+            return {"raised", e[1]};
+          endtry
+        as: wizard
+        expect:
+          match: "Task ran out of seconds"
+    cleanup:
+      - run: |
+          $server_options.max_concat_catchable = 0;
+          $server_options.max_string_concat = 1000000;
+          load_server_options();
+        as: wizard
+
+  - name: decode_base64_past_string_limit_raises_when_catchable
+    description: With max_concat_catchable true, decode_base64() when (length / 4) * 3 passes max_string_concat + 1 raises E_QUOTA.
+    steps:
+      - run: |
+          $server_options.max_concat_catchable = 1;
+          $server_options.max_string_concat = 1000000;
+          load_server_options();
+          return 1;
+        as: wizard
+      - run: |
+          s = "";
+          for i in [1..400]
+            s = s + "QUFB";
+          endfor
+          $server_options.max_string_concat = 1100;
+          load_server_options();
+          try
+            return {"returned", typeof(decode_base64(s))};
+          except e (ANY)
+            return {"raised", e[1]};
+          endtry
+        as: wizard
+        expect:
+          value: ["raised", "E_QUOTA"]
+    cleanup:
+      - run: |
+          $server_options.max_concat_catchable = 0;
+          $server_options.max_string_concat = 1000000;
+          load_server_options();
+        as: wizard
+
+  - name: builtin_list_result_at_list_limit_is_allowed
+    description: Toast's list builtins refuse only a result of more than max_list_value_bytes; decode_binary() returning exactly the limit succeeds.
+    steps:
+      - run: |
+          $server_options.max_concat_catchable = 1;
+          load_server_options();
+          return 1;
+        as: wizard
+      - run: |
+          s = "";
+          for i in [1..30]
+            s = s + "aaaaaaaaaa";
+          endfor
+          n = value_bytes(decode_binary(s, 1));
+          $server_options.max_list_value_bytes = n;
+          load_server_options();
+          at_limit = `decode_binary(s, 1) ! ANY';
+          $server_options.max_list_value_bytes = n - 1;
+          load_server_options();
+          over_limit = `decode_binary(s, 1) ! ANY';
+          return {typeof(at_limit) == LIST, over_limit};
+        as: wizard
+        expect:
+          value: [1, "E_QUOTA"]
+    cleanup:
+      - run: |
+          $server_options.max_concat_catchable = 0;
+          $server_options.max_list_value_bytes = 1000000;
+          load_server_options();
+        as: wizard
+
+  - name: list_splice_result_at_list_limit_is_allowed
+    description: Toast's interpreter refuses only a list of more than max_list_value_bytes; a splice building exactly the limit succeeds.
+    steps:
+      - run: |
+          $server_options.max_concat_catchable = 1;
+          load_server_options();
+          return 1;
+        as: wizard
+      - run: |
+          x = {};
+          for i in [1..200]
+            x = {@x, i};
+          endfor
+          n = value_bytes({@x, 1});
+          $server_options.max_list_value_bytes = n;
+          load_server_options();
+          at_limit = `{@x, 1} ! ANY';
+          $server_options.max_list_value_bytes = n - 1;
+          load_server_options();
+          over_limit = `{@x, 1} ! ANY';
+          return {typeof(at_limit) == LIST, over_limit};
+        as: wizard
+        expect:
+          value: [1, "E_QUOTA"]
+    cleanup:
+      - run: |
+          $server_options.max_concat_catchable = 0;
+          $server_options.max_list_value_bytes = 1000000;
+          load_server_options();
         as: wizard

@@ -79,6 +79,63 @@ def find_free_port() -> int:
     raise RuntimeError(f"No bindable TCP port outside the ephemeral range {low}-{high}")
 
 
+_TCP_STATES = {
+    "01": "ESTABLISHED", "02": "SYN_SENT", "03": "SYN_RECV", "04": "FIN_WAIT1",
+    "05": "FIN_WAIT2", "07": "CLOSE", "08": "CLOSE_WAIT", "09": "LAST_ACK",
+    "0A": "LISTEN", "0B": "CLOSING",
+}
+
+
+def describe_port_sockets(port: int) -> str:
+    """Name the sockets on local TCP ``port`` and the processes that own them.
+
+    Read from Linux /proc; "" where it is unavailable or nothing is on the
+    port. TIME_WAIT is left out: servers bind with SO_REUSEADDR, so it cannot
+    block them. A process another user owns is reported by uid only.
+    """
+    rows: list[tuple[str, str, str]] = []
+    for table in ("/proc/net/tcp", "/proc/net/tcp6"):
+        try:
+            lines = Path(table).read_text().splitlines()[1:]
+        except OSError:
+            continue
+        for line in lines:
+            fields = line.split()
+            state = _TCP_STATES.get(fields[3])
+            if state is not None and int(fields[1].rsplit(":", 1)[1], 16) == port:
+                rows.append((fields[9], state, fields[7]))
+    if not rows:
+        return ""
+    inodes = {inode for inode, _, _ in rows}
+    owners: dict[str, str] = {}
+    for pid_dir in Path("/proc").iterdir():
+        if not pid_dir.name.isdigit():
+            continue
+        try:
+            fds = os.listdir(pid_dir / "fd")
+        except OSError:
+            continue
+        for fd in fds:
+            try:
+                target = os.readlink(pid_dir / "fd" / fd)
+            except OSError:
+                continue
+            inode = target.removeprefix("socket:[").removesuffix("]")
+            if inode in inodes and inode not in owners:
+                try:
+                    command = (pid_dir / "cmdline").read_bytes()
+                except OSError:
+                    command = b""
+                owners[inode] = (
+                    f"pid {pid_dir.name}: "
+                    + command.replace(b"\0", b" ").decode(errors="replace").strip()
+                )
+    return "\n".join(
+        f"{state} uid {uid} {owners.get(inode, 'owner not readable')}"
+        for inode, state, uid in rows
+    )
+
+
 def file_snapshot_signature(info: os.stat_result) -> FileSnapshotSignature:
     """Return identity and mutation fields used by launch/test freshness gates."""
     return (
@@ -517,7 +574,7 @@ class ManagedServer:
         except subprocess.TimeoutExpired:
             return None
         return RestartCommandError(str(ManagedServerLifecycleError(
-            "Managed server exited after opening its port",
+            self._with_port_sockets("Managed server exited after opening its port"),
             returncode=returncode,
             log_path=self._log_path,
             log_tail=self._read_log_tail(),
@@ -676,7 +733,9 @@ class ManagedServer:
             # Check if process died
             if self._process is not None and self._process.poll() is not None:
                 raise self._record_lifecycle_failure(
-                    "Managed server exited before accepting connections",
+                    self._with_port_sockets(
+                        "Managed server exited before accepting connections"
+                    ),
                     returncode=self._process.returncode,
                 )
 
@@ -714,6 +773,13 @@ class ManagedServer:
                     "still hold the listening socket)"
                 )
             time.sleep(PORT_POLL_INTERVAL)
+
+    def _with_port_sockets(self, message: str) -> str:
+        """Append what holds the server port, so a failed bind names its holder."""
+        held = describe_port_sockets(self._port) if self._port is not None else ""
+        if not held:
+            return message
+        return f"{message}\nSockets on port {self._port} after the server exited:\n{held}"
 
     def _record_lifecycle_failure(
         self,

@@ -6,6 +6,7 @@ externally managed server (the existing behavior).
 """
 
 import os
+import random
 import shlex
 import shutil
 import signal
@@ -23,6 +24,116 @@ FileSnapshotSignature = tuple[int, int, int, int, int]
 
 # Pause between connection attempts while a started server opens its port.
 PORT_POLL_INTERVAL = 0.05
+
+# Where Linux publishes the port range it assigns to bind(0) and connect().
+EPHEMERAL_PORT_RANGE_PATH = "/proc/sys/net/ipv4/ip_local_port_range"
+
+
+def _ephemeral_port_range() -> tuple[int, int] | None:
+    """Return the kernel's automatic port range, or None where it is not published."""
+    try:
+        low, high = Path(EPHEMERAL_PORT_RANGE_PATH).read_text().split()
+        return int(low), int(high)
+    except (OSError, ValueError):
+        return None
+
+
+def port_is_bindable(port: int) -> bool:
+    """Whether a POSIX server could bind ``port`` now.
+
+    The probe is a wildcard bind with SO_REUSEADDR, as a POSIX server binds:
+    Linux refuses it while any address on the port is in use, and ignores
+    TIME_WAIT connections.
+    """
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        try:
+            s.bind(("", port))
+        except OSError:
+            return False
+        return True
+
+
+def find_free_port() -> int:
+    """Pick a TCP port that a server launched later will bind.
+
+    The harness does not hold the port until the server binds it. A port
+    from bind(0) lies in the kernel's ephemeral range, which the kernel hands
+    to any socket on the machine that binds port 0 or connects, so another
+    process could take it in that gap, or between a restart's old and new
+    server (barn CI job 136750729168: the restarted Barn failed to bind
+    43897 while another process's listener accepted on it). Where Linux
+    publishes that range, pick a port outside it, which only an explicit bind
+    of that number can take.
+    """
+    span = _ephemeral_port_range()
+    if span is None:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.bind(("", 0))
+            return s.getsockname()[1]
+    low, high = span
+    candidates = [*range(1024, low), *range(high + 1, 65536)]
+    for port in random.sample(candidates, len(candidates)):
+        if port_is_bindable(port):
+            return port
+    raise RuntimeError(f"No bindable TCP port outside the ephemeral range {low}-{high}")
+
+
+_TCP_STATES = {
+    "01": "ESTABLISHED", "02": "SYN_SENT", "03": "SYN_RECV", "04": "FIN_WAIT1",
+    "05": "FIN_WAIT2", "07": "CLOSE", "08": "CLOSE_WAIT", "09": "LAST_ACK",
+    "0A": "LISTEN", "0B": "CLOSING",
+}
+
+
+def describe_port_sockets(port: int) -> str:
+    """Name the sockets on local TCP ``port`` and the processes that own them.
+
+    Read from Linux /proc; "" where it is unavailable or nothing is on the
+    port. TIME_WAIT is left out: servers bind with SO_REUSEADDR, so it cannot
+    block them. A process another user owns is reported by uid only.
+    """
+    rows: list[tuple[str, str, str]] = []
+    for table in ("/proc/net/tcp", "/proc/net/tcp6"):
+        try:
+            lines = Path(table).read_text().splitlines()[1:]
+        except OSError:
+            continue
+        for line in lines:
+            fields = line.split()
+            state = _TCP_STATES.get(fields[3])
+            if state is not None and int(fields[1].rsplit(":", 1)[1], 16) == port:
+                rows.append((fields[9], state, fields[7]))
+    if not rows:
+        return ""
+    inodes = {inode for inode, _, _ in rows}
+    owners: dict[str, str] = {}
+    for pid_dir in Path("/proc").iterdir():
+        if not pid_dir.name.isdigit():
+            continue
+        try:
+            fds = os.listdir(pid_dir / "fd")
+        except OSError:
+            continue
+        for fd in fds:
+            try:
+                target = os.readlink(pid_dir / "fd" / fd)
+            except OSError:
+                continue
+            inode = target.removeprefix("socket:[").removesuffix("]")
+            if inode in inodes and inode not in owners:
+                try:
+                    command = (pid_dir / "cmdline").read_bytes()
+                except OSError:
+                    command = b""
+                owners[inode] = (
+                    f"pid {pid_dir.name}: "
+                    + command.replace(b"\0", b" ").decode(errors="replace").strip()
+                )
+    return "\n".join(
+        f"{state} uid {uid} {owners.get(inode, 'owner not readable')}"
+        for inode, state, uid in rows
+    )
 
 
 def file_snapshot_signature(info: os.stat_result) -> FileSnapshotSignature:
@@ -463,7 +574,7 @@ class ManagedServer:
         except subprocess.TimeoutExpired:
             return None
         return RestartCommandError(str(ManagedServerLifecycleError(
-            "Managed server exited after opening its port",
+            self._with_port_sockets("Managed server exited after opening its port"),
             returncode=returncode,
             log_path=self._log_path,
             log_tail=self._read_log_tail(),
@@ -591,9 +702,7 @@ class ManagedServer:
 
     def _find_free_port(self) -> int:
         """Find an available TCP port."""
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.bind(("", 0))
-            return s.getsockname()[1]
+        return find_free_port()
 
     def _install_exec_fixtures(self) -> None:
         """Install packaged exec() fixtures into the managed server directory."""
@@ -624,7 +733,9 @@ class ManagedServer:
             # Check if process died
             if self._process is not None and self._process.poll() is not None:
                 raise self._record_lifecycle_failure(
-                    "Managed server exited before accepting connections",
+                    self._with_port_sockets(
+                        "Managed server exited before accepting connections"
+                    ),
                     returncode=self._process.returncode,
                 )
 
@@ -644,24 +755,17 @@ class ManagedServer:
     def _wait_for_port_release(self, timeout: float = 30.0) -> None:
         """Poll until no socket is listening on the server port.
 
-        Only POSIX servers fork children that inherit the listener. The probe
-        is a wildcard bind with SO_REUSEADDR, as a POSIX server binds: Linux
-        refuses it while any address on the port is listening, and ignores
-        TIME_WAIT connections. Windows bind rules differ (SO_REUSEADDR there
-        can take over a live port), so the probe is not used on Windows.
+        Only POSIX servers fork children that inherit the listener. Windows
+        bind rules differ (SO_REUSEADDR there can take over a live port), so
+        the probe (port_is_bindable) is not used on Windows.
         """
         if self._port is None or os.name != "posix":
             return
         deadline = time.monotonic() + timeout
 
         while True:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                try:
-                    s.bind(("", self._port))
-                    return
-                except OSError:
-                    pass
+            if port_is_bindable(self._port):
+                return
             if time.monotonic() >= deadline:
                 raise self._record_lifecycle_failure(
                     f"Managed server port {self._port} was still bound {timeout}s "
@@ -669,6 +773,13 @@ class ManagedServer:
                     "still hold the listening socket)"
                 )
             time.sleep(PORT_POLL_INTERVAL)
+
+    def _with_port_sockets(self, message: str) -> str:
+        """Append what holds the server port, so a failed bind names its holder."""
+        held = describe_port_sockets(self._port) if self._port is not None else ""
+        if not held:
+            return message
+        return f"{message}\nSockets on port {self._port} after the server exited:\n{held}"
 
     def _record_lifecycle_failure(
         self,

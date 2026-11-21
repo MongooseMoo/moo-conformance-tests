@@ -1,0 +1,50 @@
+name: sqlite_execute_int_bind
+description: |
+  sqlite_execute binds a MOO INT parameter with sqlite3_bind_int, whose value
+  argument is a C int: on a 64-bit build the MOO integer is truncated to its
+  low 32 bits
+  (sqlite.cc sqlite_execute_thread_callback, case TYPE_INT).
+
+requires:
+  builtins:
+    - sqlite_open
+    - sqlite_close
+    - sqlite_query
+    - sqlite_execute
+
+tests:
+  - name: sqlite_execute_int_parameter_keeps_low_32_bits
+    permission: wizard
+    statement: |
+      db = sqlite_open(":memory:");
+      r = sqlite_execute(db, "SELECT ?, ?, ?, ?, ?", {2147483648, -2147483649, 9223372036854775807, 4294967301, -5});
+      sqlite_close(db);
+      return toliteral(r);
+    expect:
+      value: '{{-2147483648, 2147483647, -1, 5, -5}}'
+    skip_if: "not feature.64bit"
+
+  - name: sqlite_execute_int_parameter_is_stored_truncated
+    permission: wizard
+    statement: |
+      db = sqlite_open(":memory:");
+      sqlite_query(db, "CREATE TABLE t (a, b)");
+      sqlite_execute(db, "INSERT INTO t VALUES (?, ?)", {2147483648, "5"});
+      r = sqlite_query(db, "SELECT a, b, typeof(a), typeof(b) FROM t");
+      sqlite_close(db);
+      return toliteral(r);
+    expect:
+      value: '{{-2147483648, 5, "integer", "text"}}'
+    skip_if: "not feature.64bit"
+
+  - name: sqlite_execute_int_parameter_in_32bit_range_is_unchanged_32bit
+    description: A 32-bit MOO integer always fits the C int that sqlite3_bind_int takes.
+    permission: wizard
+    statement: |
+      db = sqlite_open(":memory:");
+      r = sqlite_execute(db, "SELECT ?, ?, ?", {2147483647, -2147483647, -5});
+      sqlite_close(db);
+      return r;
+    expect:
+      value: [[2147483647, -2147483647, -5]]
+    skip_if: "feature.64bit"

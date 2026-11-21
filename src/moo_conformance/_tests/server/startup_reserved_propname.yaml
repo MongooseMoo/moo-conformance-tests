@@ -1,0 +1,76 @@
+name: startup_reserved_propname
+description: >
+  A database can carry a property definition whose name is a built-in property
+  name (name, owner, programmer, wizard, r, w, f, a, location, last_move,
+  contents, in any case), though add_property refuses to create one. In the
+  fixture #2 defines "location" (value "kept", owner #3, perms "rc"). Loading
+  logs that the name is reserved. Every lookup by name finds the built-in
+  property first, so property_info and set_property_info raise E_PROPNF and
+  reads and writes reach the built-in location. Only properties(),
+  delete_property() and checkpoints see the definition, and a checkpoint keeps
+  it. The fixture is propdef_trailing_cr.db with its one #2 property
+  definition line "tail\r" replaced by "location".
+server_db: reserved_propname.db
+requires:
+  builtins:
+    - dump_database
+  config: [managed_server, server_dir, log_file, server_db_dir]
+tests:
+  - name: load_logs_reserved_name
+    steps:
+      - assert_log:
+          timeout_ms: 10000
+          contains: "DB_WARNING: Property #2.location has a reserved name"
+
+  - name: lookups_by_name_find_the_builtin_property
+    permission: wizard
+    steps:
+      - run: |
+          return {properties(#2), `property_info(#2, "location") ! ANY', `property_info(#2, "LOCATION") ! ANY', #2.location, #2.("location"), `is_clear_property(#2, "location") ! ANY', `clear_property(#2, "location") ! ANY', `(#2.location = 5) ! ANY', `(#2.("location") = 5) ! ANY', `add_property(#2, "location", 1, {#3, "r"}) ! ANY'};
+        expect:
+          value: [["location"], "E_PROPNF", "E_PROPNF", "#-1", "#-1", 0, "E_PERM", "E_PERM", "E_PERM", "E_INVARG"]
+      - run: |
+          return {`set_property_info(#2, "location", {#3, "r"}) ! ANY', `set_property_info(#2, "location", {#3, "r", "renamed"}) ! ANY', properties(#2)};
+        expect:
+          value: ["E_PROPNF", "E_PROPNF", ["location"]]
+      - run: |
+          c = create(#2);
+          r = {properties(c), `property_info(c, "location") ! ANY', `add_property(c, "location", 1, {#3, "r"}) ! ANY', `delete_property(c, "location") ! ANY', `clear_property(c, "location") ! ANY', `is_clear_property(c, "location") ! ANY', c.location};
+          recycle(c);
+          return r;
+        expect:
+          value: [[], "E_PROPNF", "E_INVARG", "E_PROPNF", "E_PERM", 0, "#-1"]
+
+  - name: only_ascii_letters_fold_in_builtin_names
+    description: >
+      Built-in property names match case-insensitively over ASCII letters only.
+      "wİzard" (LATIN CAPITAL LETTER I WITH DOT ABOVE) is an ordinary
+      property name, though Unicode case mapping lowers it to "wizard". The new name is counted, not shown, since
+      a server may filter non-ASCII bytes from output.
+    permission: wizard
+    steps:
+      - run: |
+          add_property(#2, "wİzard", 7, {#3, "rw"});
+          r = {#2.("wİzard"), #2.("wİzard") = 9, #2.("wİzard"), property_info(#2, "wİzard"), length(properties(#2))};
+          delete_property(#2, "wİzard");
+          return {@r, `(#2.("wİzard") = 1) ! ANY', #2.wizard, #2.programmer, properties(#2)};
+        expect:
+          value: [7, 9, 9, ["#3", "rw"], 2, "E_PROPNF", 0, 0, ["location"]]
+
+  - name: checkpoint_keeps_the_definition_and_delete_removes_it
+    permission: wizard
+    steps:
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+          wait_ms: 300
+      - run: |
+          return {properties(#2), `property_info(#2, "location") ! ANY', #2.location};
+        expect:
+          value: [["location"], "E_PROPNF", "#-1"]
+      - run: |
+          return {`delete_property(#2, "location") ! ANY', properties(#2), `delete_property(#2, "location") ! ANY', `add_property(#2, "location", 1, {#3, "r"}) ! ANY', properties(#2)};
+        expect:
+          value: [0, [], "E_PROPNF", "E_INVARG", []]

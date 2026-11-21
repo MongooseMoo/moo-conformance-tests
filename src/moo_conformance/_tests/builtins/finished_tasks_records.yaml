@@ -88,6 +88,10 @@ tests:
           return hits;
         expect:
           value: [[0, 1], [0, 0]]
+        # The forked task's resumed run is not ordered before this command
+        # (Toast's run_ready_tasks serves queued input before background tasks),
+        # so wait for its record rather than assume it is already written.
+        poll_ms: 10000
     cleanup:
       - run: recycle({obj})
 

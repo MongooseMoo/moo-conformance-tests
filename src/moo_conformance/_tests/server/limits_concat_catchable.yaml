@@ -490,3 +490,65 @@ tests:
           except (ANY)
           endtry
         as: wizard
+
+  - name: builtin_argument_list_past_list_limit_aborts_when_not_catchable
+    description: Toast builds builtin arguments as a list (OP_LIST_ADD_TAIL), so two arguments whose list passes max_list_value_bytes abort the task.
+    steps:
+      - run: |
+          $server_options.max_concat_catchable = 0;
+          $server_options.max_list_value_bytes = 1100;
+          load_server_options();
+          return 1;
+        as: wizard
+      - run: |
+          x = [];
+          for i in [1..200]
+            x[i] = i;
+          endfor
+          try
+            return {"returned", maphaskey(x, 1)};
+          except e (ANY)
+            return {"raised", e[1]};
+          endtry
+        as: wizard
+        expect:
+          match: "Task ran out of seconds"
+    cleanup:
+      - run: |
+          $server_options.max_list_value_bytes = 1000000;
+          load_server_options();
+        as: wizard
+
+  - name: argument_lists_past_list_limit_raise_when_catchable
+    description: With max_concat_catchable true a builtin or verb call whose argument list passes max_list_value_bytes raises E_QUOTA; a lone argument is never checked.
+    steps:
+      - run: |
+          o = create(#1);
+          add_verb(o, {player, "rxd", "take"}, {"this", "none", "this"});
+          set_verb_code(o, "take", {"return length(args);"});
+          #0.concat_abort_mark = o;
+          $server_options.max_concat_catchable = 1;
+          $server_options.max_list_value_bytes = 1100;
+          load_server_options();
+          return 1;
+        as: wizard
+      - run: |
+          o = #0.concat_abort_mark;
+          x = [];
+          for i in [1..200]
+            x[i] = i;
+          endfor
+          return {length(x), `maphaskey(x, 1) ! ANY', o:take(x), `o:take(x, 1) ! ANY'};
+        as: wizard
+        expect:
+          value: [200, "E_QUOTA", 1, "E_QUOTA"]
+    cleanup:
+      - run: |
+          $server_options.max_concat_catchable = 0;
+          $server_options.max_list_value_bytes = 1000000;
+          load_server_options();
+          if (typeof(#0.concat_abort_mark) == OBJ && valid(#0.concat_abort_mark))
+            recycle(#0.concat_abort_mark);
+          endif
+          #0.concat_abort_mark = 0;
+        as: wizard

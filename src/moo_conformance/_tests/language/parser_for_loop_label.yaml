@@ -1,0 +1,28 @@
+name: parser_for_loop_label
+description: A for loop takes no label; its grammar is "for ID in" or "for ID, ID in", so a name before the loop variables is a syntax error, while while loops do take an optional label
+tests:
+  - name: labeled_range_for_rejected
+    code: 'eval("for acc z in [1..3] endfor return 1;")'
+    expect:
+      value: [0, ["Line 1:  syntax error"]]
+  - name: labeled_collection_for_rejected
+    code: 'eval("for acc z in ({1}) endfor return 1;")'
+    expect:
+      value: [0, ["Line 1:  syntax error"]]
+  - name: labeled_two_variable_for_rejected
+    code: 'eval("for acc z, k in ({1}) endfor return 1;")'
+    expect:
+      value: [0, ["Line 1:  syntax error"]]
+  - name: labeled_for_with_raising_range_rejected
+    description: The labeled loop is rejected at compile time, before any range expression would be evaluated
+    code: 'eval("s = \"x\"; n = 64; for acc z in [s:foo(3)..n] endfor return n;")'
+    expect:
+      value: [0, ["Line 1:  syntax error"]]
+  - name: unlabeled_for_exits_by_variable_name
+    code: 'eval("t = 0; for z in [1..5] t = t + z; if (z == 3) break z; endif endfor return {t, z};")'
+    expect:
+      value: [1, [6, 3]]
+  - name: labeled_while_accepted
+    code: 'eval("n = 0; while acc (1) n = n + 1; if (n == 3) break acc; endif endwhile return n;")'
+    expect:
+      value: [1, 3]

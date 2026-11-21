@@ -190,6 +190,47 @@ def test_port_release_wait_fails_with_lifecycle_error_while_port_stays_bound():
         child_listener.close()
 
 
+def _publish_ephemeral_range(monkeypatch, tmp_path: Path, text: str) -> None:
+    port_range = tmp_path / "ip_local_port_range"
+    port_range.write_text(text, encoding="utf-8")
+    monkeypatch.setattr(
+        "moo_conformance.server.EPHEMERAL_PORT_RANGE_PATH", str(port_range), raising=False
+    )
+
+
+def test_managed_server_port_lies_outside_the_kernel_ephemeral_range(
+    monkeypatch, tmp_path: Path
+):
+    # The harness does not hold a picked port until the server binds it. In
+    # barn CI job 136750729168 a port from bind(0) was taken by another
+    # process between a restart's old and new server. The kernel hands its
+    # ephemeral range to every bind(0) and connect() on the machine.
+    _publish_ephemeral_range(monkeypatch, tmp_path, "1024\t65000\n")
+    baseline = tmp_path / "baseline.db"
+    baseline.write_text("baseline", encoding="utf-8")
+    monkeypatch.setattr(
+        "moo_conformance.server.subprocess.Popen", lambda *args, **kwargs: _FakeProcess()
+    )
+    monkeypatch.setattr(ManagedServer, "_wait_for_port", lambda self, timeout=30.0: None)
+
+    server = ManagedServer("fake-server {db} {port}", baseline)
+    server.start()
+    try:
+        assert 65000 < server.port <= 65535
+    finally:
+        server.stop()
+
+
+def test_allocate_port_step_port_lies_outside_the_kernel_ephemeral_range(
+    monkeypatch, tmp_path: Path
+):
+    # allocate_port (runner.py) captures a port a test's listen() binds later.
+    from moo_conformance.server import find_free_port
+
+    _publish_ephemeral_range(monkeypatch, tmp_path, "1024\t65000\n")
+    assert 65000 < find_free_port() <= 65535
+
+
 def test_restart_adopts_checkpoint_before_shutdown_can_overwrite_output(
     monkeypatch, tmp_path: Path
 ):

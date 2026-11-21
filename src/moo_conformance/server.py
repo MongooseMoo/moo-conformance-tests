@@ -6,6 +6,7 @@ externally managed server (the existing behavior).
 """
 
 import os
+import random
 import shlex
 import shutil
 import signal
@@ -23,6 +24,59 @@ FileSnapshotSignature = tuple[int, int, int, int, int]
 
 # Pause between connection attempts while a started server opens its port.
 PORT_POLL_INTERVAL = 0.05
+
+# Where Linux publishes the port range it assigns to bind(0) and connect().
+EPHEMERAL_PORT_RANGE_PATH = "/proc/sys/net/ipv4/ip_local_port_range"
+
+
+def _ephemeral_port_range() -> tuple[int, int] | None:
+    """Return the kernel's automatic port range, or None where it is not published."""
+    try:
+        low, high = Path(EPHEMERAL_PORT_RANGE_PATH).read_text().split()
+        return int(low), int(high)
+    except (OSError, ValueError):
+        return None
+
+
+def port_is_bindable(port: int) -> bool:
+    """Whether a POSIX server could bind ``port`` now.
+
+    The probe is a wildcard bind with SO_REUSEADDR, as a POSIX server binds:
+    Linux refuses it while any address on the port is in use, and ignores
+    TIME_WAIT connections.
+    """
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        try:
+            s.bind(("", port))
+        except OSError:
+            return False
+        return True
+
+
+def find_free_port() -> int:
+    """Pick a TCP port that a server launched later will bind.
+
+    The harness does not hold the port until the server binds it. A port
+    from bind(0) lies in the kernel's ephemeral range, which the kernel hands
+    to any socket on the machine that binds port 0 or connects, so another
+    process could take it in that gap, or between a restart's old and new
+    server (barn CI job 136750729168: the restarted Barn failed to bind
+    43897 while another process's listener accepted on it). Where Linux
+    publishes that range, pick a port outside it, which only an explicit bind
+    of that number can take.
+    """
+    span = _ephemeral_port_range()
+    if span is None:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.bind(("", 0))
+            return s.getsockname()[1]
+    low, high = span
+    candidates = [*range(1024, low), *range(high + 1, 65536)]
+    for port in random.sample(candidates, len(candidates)):
+        if port_is_bindable(port):
+            return port
+    raise RuntimeError(f"No bindable TCP port outside the ephemeral range {low}-{high}")
 
 
 def file_snapshot_signature(info: os.stat_result) -> FileSnapshotSignature:
@@ -591,9 +645,7 @@ class ManagedServer:
 
     def _find_free_port(self) -> int:
         """Find an available TCP port."""
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.bind(("", 0))
-            return s.getsockname()[1]
+        return find_free_port()
 
     def _install_exec_fixtures(self) -> None:
         """Install packaged exec() fixtures into the managed server directory."""
@@ -644,24 +696,17 @@ class ManagedServer:
     def _wait_for_port_release(self, timeout: float = 30.0) -> None:
         """Poll until no socket is listening on the server port.
 
-        Only POSIX servers fork children that inherit the listener. The probe
-        is a wildcard bind with SO_REUSEADDR, as a POSIX server binds: Linux
-        refuses it while any address on the port is listening, and ignores
-        TIME_WAIT connections. Windows bind rules differ (SO_REUSEADDR there
-        can take over a live port), so the probe is not used on Windows.
+        Only POSIX servers fork children that inherit the listener. Windows
+        bind rules differ (SO_REUSEADDR there can take over a live port), so
+        the probe (port_is_bindable) is not used on Windows.
         """
         if self._port is None or os.name != "posix":
             return
         deadline = time.monotonic() + timeout
 
         while True:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                try:
-                    s.bind(("", self._port))
-                    return
-                except OSError:
-                    pass
+            if port_is_bindable(self._port):
+                return
             if time.monotonic() >= deadline:
                 raise self._record_lifecycle_failure(
                     f"Managed server port {self._port} was still bound {timeout}s "

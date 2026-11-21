@@ -1,0 +1,53 @@
+name: recreate_checkpoint_reload
+description: >
+  recreate() accepts an object number that was recycled before a checkpoint and
+  read back from that checkpoint as a recycled slot after a restart.
+requires:
+  builtins:
+    - create
+    - recycle
+    - recreate
+    - valid
+    - parent
+    - children
+    - max_object
+    - dump_database
+    - add_property
+    - delete_property
+  config: [managed_server]
+tests:
+  - name: recreate_reuses_slot_recycled_before_checkpoint
+    permission: wizard
+    steps:
+      - run: |
+          try delete_property(#0, "recreate_reload_ids"); except (ANY) endtry
+          p = create($nothing);
+          o = create($nothing);
+          keep = create($nothing);
+          recycle(o);
+          add_property(#0, "recreate_reload_ids", {p, o, keep}, {player, ""});
+          return {valid(o), max_object() == keep};
+        expect:
+          value: [0, 1]
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - restart_server:
+          checkpoint_timeout_ms: 10000
+      - run: |
+          {p, o, keep} = #0.recreate_reload_ids;
+          before = {valid(o), o < max_object()};
+          r = recreate(o, p);
+          return {@before, r == o, valid(r), parent(r) == p, o in children(p), r.owner == player};
+        expect:
+          value: [0, 1, 1, 1, 1, 1, 1]
+    cleanup:
+      - run: |
+          ids = `#0.recreate_reload_ids ! ANY => {}';
+          for x in (typeof(ids) == LIST ? ids | {})
+            if (valid(x))
+              recycle(x);
+            endif
+          endfor
+          try delete_property(#0, "recreate_reload_ids"); except (ANY) endtry
+          return 0;

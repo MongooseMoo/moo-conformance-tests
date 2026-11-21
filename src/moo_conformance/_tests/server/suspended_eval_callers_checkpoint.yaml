@@ -1,0 +1,57 @@
+name: suspended_eval_callers_checkpoint
+description: >
+  Inside a program run by eval() or call_function("eval", ...), callers()
+  names the builtin entry below the eval activation by the builtin the
+  bytecode called (eval or call_function), then the calling verb, both before
+  the task suspends and after it resumes from the database the server wrote
+  (execute.cc OP_BI_FUNC_CALL records the called builtin on the eval
+  activation; write_activ saves its name).
+requires:
+  builtins: [create, recycle, add_property, delete_property, add_verb, set_verb_code, call_function, eval, callers, suspend, dump_database]
+  config: [managed_server]
+tests:
+  - name: suspended_{via}_callers_checkpoint_roundtrip
+    permission: wizard
+    timeout_ms: 30000
+    table:
+      columns: [via, call, name]
+      rows:
+        - [direct, 'eval(this.source)', eval]
+        - [call_function, 'call_function(\"eval\", this.source)', call_function]
+    steps:
+      - run: |
+          o = create($nothing);
+          add_property(#1, "conformance_suspended_eval_callers", o, {player, ""});
+          for name in ({"stack", "resumed_stack", "result"}) add_property(o, name, {}, {player, ""}); endfor
+          add_property(o, "source", "o = #1.conformance_suspended_eval_callers; for c in (callers()) o.stack = {@o.stack, c[2]}; endfor suspend(20); for c in (callers()) o.resumed_stack = {@o.resumed_stack, c[2]}; endfor return 73;", {player, ""});
+          add_verb(o, {player, "rxd", "start"}, {"this", "none", "this"});
+          errors = set_verb_code(o, "start", {"this.result = {call};"});
+          if (errors) raise(E_INVARG, "start compile failed", errors); endif
+          fork (0) o:start(); endfork
+          return 0;
+        expect:
+          value: 0
+      - wait: 500
+      - run: |
+          return #1.conformance_suspended_eval_callers.stack;
+        expect:
+          value: ["{name}", "start", ""]
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - wait: 8000
+      - restart_server:
+          wait_ms: 300
+          checkpoint_timeout_ms: 5000
+      - wait: 14000
+      - run: |
+          o = #1.conformance_suspended_eval_callers;
+          return {o.result, o.resumed_stack};
+        expect:
+          value: [[1, 73], ["{name}", "start", ""]]
+    cleanup:
+      - run: |
+          o = #1.conformance_suspended_eval_callers;
+          delete_property(#1, "conformance_suspended_eval_callers");
+          recycle(o);
+          return 0;

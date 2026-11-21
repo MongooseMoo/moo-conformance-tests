@@ -1,0 +1,187 @@
+name: call_function_callback_frames
+description: >
+  A verb that a builtin calls (move's accept, exitfunc and enterfunc,
+  create's and recreate's initialize, recycle's recycle and exitfunc, and the
+  code eval runs) sees the builtin frame below it named by the builtin the
+  bytecode called. Reached through call_function("name", ...), that frame is
+  named call_function, with the inner builtin's continuation pc as its line
+  (ToastStunt execute.cc OP_BI_FUNC_CALL records the called function's id,
+  bf_call_function passes the inner call package through, unwind_stack keeps
+  the id for the next callback, and make_stack_list and the traceback printer
+  name the frame by that id).
+requires:
+  builtins: [call_function, callers, task_stack, move, create, recreate, recycle, eval]
+tests:
+  - name: callers_in_{kind}_{via}
+    permission: wizard
+    table:
+      product:
+        - columns: [kind, fname, fargs, prep, pc]
+          rows: &kinds
+            - [move_accept, move, "a, w", 'w = create($nothing); a = create($nothing); add_verb(w, {player, "rxd", "accept"}, {"this", "none", "this"}); set_verb_code(w, "accept", {@body, "return 1;"}); objs = {a, w};', 2]
+            - [move_exitfunc, move, "a, #-1", 'w = create($nothing); a = create($nothing); move(a, w); add_verb(w, {player, "rxd", "exitfunc"}, {"this", "none", "this"}); set_verb_code(w, "exitfunc", body); objs = {a, w};', 3]
+            - [move_enterfunc, move, "a, w", 'w = create($nothing); a = create($nothing); add_verb(w, {player, "rxd", "enterfunc"}, {"this", "none", "this"}); set_verb_code(w, "enterfunc", body); objs = {a, w};', 4]
+            - [create_initialize, create, "p", 'p = create($nothing); add_verb(p, {player, "rxd", "initialize"}, {"this", "none", "this"}); set_verb_code(p, "initialize", body); objs = {p};', 2]
+            - [recreate_initialize, recreate, "slot, p", 'p = create($nothing); add_verb(p, {player, "rxd", "initialize"}, {"this", "none", "this"}); set_verb_code(p, "initialize", body); slot = create($nothing); recycle(slot); objs = {p};', 2]
+            - [recycle_recycle, recycle, "o", 'p = create($nothing); add_verb(p, {player, "rxd", "recycle"}, {"this", "none", "this"}); set_verb_code(p, "recycle", body); o = create(p); objs = {o, p};', 2]
+            - [recycle_exitfunc, recycle, "o", 'o = create($nothing); c = create($nothing); move(c, o); add_verb(o, {player, "rxd", "exitfunc"}, {"this", "none", "this"}); set_verb_code(o, "exitfunc", body); objs = {o, c};', 2]
+            - [eval_code, eval, "@body", 'objs = {};', 2]
+        - columns: [via, pre, mid]
+          rows:
+            - [direct, "", "("]
+            - [call_function, 'call_function("', '", ']
+    setup:
+      code: |
+        add_property(#0, "cf_seen", 0, {player, "rw"});
+    statement: |
+      body = {"#0.cf_seen = callers(1)[1];"};
+      {prep}
+      r = {pre}{fname}{mid}{fargs});
+      s = #0.cf_seen;
+      objs = {@objs, r};
+      for x in (objs)
+        if (typeof(x) == OBJ && valid(x))
+          while (verbs(x)) delete_verb(x, 1); endwhile
+        endif
+      endfor
+      for x in (objs)
+        if (typeof(x) == OBJ && valid(x))
+          recycle(x);
+        endif
+      endfor
+      expected = "{via}" == "direct" ? "{fname}" | "call_function";
+      return {s[2] == expected || s[2], s[6], s[1..5] == {#-1, s[2], #-1, #-1, player}};
+    expect:
+      value: [1, "{pc}", 1]
+    teardown:
+      code: |
+        delete_property(#0, "cf_seen");
+
+  - name: task_stack_of_task_suspended_in_{kind}_{via}
+    permission: wizard
+    table:
+      product:
+        - columns: [kind, fname, fargs, prep, pc]
+          rows: *kinds
+        - columns: [via, pre, mid]
+          rows:
+            - [direct, "", "("]
+            - [call_function, 'call_function("', '", ']
+    statement: |
+      body = {"suspend();"};
+      {prep}
+      fork t (0)
+        {pre}{fname}{mid}{fargs});
+      endfork
+      s = 0;
+      for i in [1..50]
+        s = `task_stack(t, 1) ! ANY';
+        if (typeof(s) == LIST)
+          break;
+        endif
+        suspend(0);
+      endfor
+      `kill_task(t) ! ANY';
+      for x in (objs)
+        if (typeof(x) == OBJ && valid(x))
+          while (verbs(x)) delete_verb(x, 1); endwhile
+        endif
+      endfor
+      for x in (objs)
+        if (typeof(x) == OBJ && valid(x))
+          recycle(x);
+        endif
+      endfor
+      expected = "{via}" == "direct" ? "{fname}" | "call_function";
+      return {s[2][2] == expected || s[2][2], s[2][6], s[2][1..5] == {#-1, s[2][2], #-1, #-1, player}};
+    expect:
+      value: [1, "{pc}", 1]
+
+  - name: traceback_of_error_in_{kind}_direct
+    table:
+      columns: [kind, fname, fargs, prep, pc]
+      rows: *kinds
+    steps:
+      - run: |
+          a = w = p = slot = o = c = 0;
+          body = {"raise(E_INVARG, \"cf-hook-boom\");"};
+          {prep}
+          add_property(#0, "cf_vars", {a, w, p, slot, o, c, objs, body}, {player, "rw"});
+          add_verb(player, {player, "xd", "cftb"}, {"any", "none", "none"});
+          set_verb_code(player, "cftb", {"{a, w, p, slot, o, c, objs, body} = #0.cf_vars;", "{fname}({fargs});"});
+          return 1;
+        as: wizard
+        expect: {value: 1}
+      - command: cftb
+        expect:
+          output:
+            contains: '... called from built-in function {fname}()'
+    cleanup: &traceback_cleanup
+      - run: |
+          `delete_verb(player, "cftb") ! ANY';
+          vars = `#0.cf_vars ! ANY => {}';
+          `delete_property(#0, "cf_vars") ! ANY';
+          objs = length(vars) >= 7 ? vars[7] | {};
+          for x in (objs)
+            if (typeof(x) == OBJ && valid(x))
+              while (verbs(x)) delete_verb(x, 1); endwhile
+            endif
+          endfor
+          for x in (objs)
+            if (typeof(x) == OBJ && valid(x))
+              recycle(x);
+            endif
+          endfor
+          return 1;
+        as: wizard
+
+  - name: traceback_of_error_in_{kind}_call_function
+    table:
+      columns: [kind, fname, fargs, prep, pc]
+      rows: *kinds
+    steps:
+      - run: |
+          a = w = p = slot = o = c = 0;
+          body = {"raise(E_INVARG, \"cf-hook-boom\");"};
+          {prep}
+          add_property(#0, "cf_vars", {a, w, p, slot, o, c, objs, body}, {player, "rw"});
+          add_verb(player, {player, "xd", "cftb"}, {"any", "none", "none"});
+          set_verb_code(player, "cftb", {"{a, w, p, slot, o, c, objs, body} = #0.cf_vars;", "call_function(\"{fname}\", {fargs});"});
+          return 1;
+        as: wizard
+        expect: {value: 1}
+      - command: cftb
+        expect:
+          output:
+            contains: '... called from built-in function call_function()'
+    cleanup: *traceback_cleanup
+
+  - name: callers_below_{via}_eval_activation
+    description: >
+      A verb that eval'd code calls sees the eval activation ({#-1, "",
+      programmer, #-1, player}) and, below it, the builtin entry for the call
+      that made it, then the frames of eval's caller (execute.cc
+      setup_activ_for_eval, make_stack_list).
+    permission: wizard
+    table:
+      columns: [via, call, name]
+      rows:
+        - [direct, 'eval("return #0.cf_obj:c();")', eval]
+        - [call_function, 'call_function("eval", "return #0.cf_obj:c();")', call_function]
+    setup:
+      code: |
+        o = create($nothing);
+        add_verb(o, {player, "rxd", "c"}, {"this", "none", "this"});
+        set_verb_code(o, "c", {"return callers();"});
+        add_property(#0, "cf_obj", o, {player, "r"});
+    statement: |
+      a = #0.cf_obj:c();
+      b = {call}[2];
+      return {b[2][2], b[1] == {#-1, "", player, #-1, player}, b[2] == {#-1, b[2][2], #-1, #-1, player}, b[3..$] == a};
+    expect:
+      value: ["{name}", 1, 1, 1]
+    teardown:
+      code: |
+        o = #0.cf_obj;
+        delete_property(#0, "cf_obj");
+        recycle(o);

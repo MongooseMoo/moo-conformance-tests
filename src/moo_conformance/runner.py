@@ -5,7 +5,6 @@ Executes test cases defined in YAML format against a MOO transport.
 
 import os
 import re
-import socket
 import stat
 import time
 from collections.abc import Callable, Iterator
@@ -33,6 +32,7 @@ from .server import (
     ManagedServerLifecycleError,
     RestartCommandError,
     file_snapshot_signature,
+    find_free_port,
     normalize_process_termination,
     snapshot_regular_files,
 )
@@ -620,9 +620,7 @@ class YamlTestRunner:
 
                 # Handle allocate_port step
                 if step.allocate_port:
-                    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                        s.bind(("127.0.0.1", 0))
-                        variables[step.allocate_port.capture] = s.getsockname()[1]
+                    variables[step.allocate_port.capture] = find_free_port()
                     continue
 
                 # Handle new_connection step

@@ -1,0 +1,58 @@
+name: startup_shadowed_propname_later_slot
+description: >
+  A database can give an object a property definition whose name an ancestor
+  also defines. In the fixture #3 defines "dup" and "later", and its child #4
+  defines "dup" again, so #4 carries three value slots in order: its own "dup"
+  ("own slot"), the "dup" slot inherited from #3 ("inherited slot"), and the
+  "later" slot inherited from #3 ("later slot"). Every slot keeps its value at
+  its position through dump_database() and a restart, repeated, so #4.later
+  reads its own value and never the shadowed "dup" slot's value.
+server_db: shadowed_propname_later_slot.db
+requires:
+  builtins:
+    - dump_database
+  config: [managed_server, server_dir, server_db_dir]
+tests:
+  - name: slot_after_shadowed_name_keeps_value_across_checkpoints
+    permission: wizard
+    steps:
+      - run: |
+          return {#4.dup, #4.later, property_info(#4, "later"), properties(#4), #3.dup, #3.later};
+        expect:
+          value: ["own slot", "later slot", ["#3", "rw"], ["dup"], "wizard slot", "wizard later"]
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+          wait_ms: 300
+      - run: |
+          return {#4.dup, #4.later, property_info(#4, "later"), properties(#4), #3.dup, #3.later};
+        expect:
+          value: ["own slot", "later slot", ["#3", "rw"], ["dup"], "wizard slot", "wizard later"]
+      - run: |
+          #4.dup = "own written";
+          #4.later = "later written";
+          return {#4.dup, #4.later};
+        expect:
+          value: ["own written", "later written"]
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+          wait_ms: 300
+      - run: |
+          return {#4.dup, #4.later, property_info(#4, "later"), #3.dup, #3.later};
+        expect:
+          value: ["own written", "later written", ["#3", "rw"], "wizard slot", "wizard later"]
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - wait: 1500
+      - restart_server:
+          wait_ms: 300
+      - run: |
+          return {#4.dup, #4.later, property_info(#4, "later"), #3.dup, #3.later};
+        expect:
+          value: ["own written", "later written", ["#3", "rw"], "wizard slot", "wizard later"]

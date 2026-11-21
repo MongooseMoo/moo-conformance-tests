@@ -1,0 +1,387 @@
+name: math_func_float_errors
+description: >
+  The float builtins ToastStunt defines with its MATH_FUNC macro (sqrt, cbrt,
+  sin, cos, tan, asin, acos, sinh, cosh, tanh, acosh, asinh, atanh, exp, log,
+  log10, ceil, floor) call the C library and map its result: a domain error
+  (EDOM) is E_INVARG; a range error (ERANGE) or a result outside the finite
+  float range is E_FLOAT; otherwise the float. Pins overflow, underflow,
+  poles, domain edges, subnormal arguments, large arguments and negative zero.
+  NaN and infinite arguments cannot be produced in MOO, so none appear here.
+
+requires:
+  builtins:
+    - sqrt
+    - cbrt
+    - sin
+    - cos
+    - tan
+    - asin
+    - acos
+    - sinh
+    - cosh
+    - tanh
+    - acosh
+    - asinh
+    - atanh
+    - exp
+    - log
+    - log10
+    - ceil
+    - floor
+    - toliteral
+
+tests:
+  - name: mathfunc_sqrt_negative_tiny_domain
+    code: "sqrt(-1e-300)"
+    expect:
+      error: E_INVARG
+
+  - name: mathfunc_sqrt_negative_zero_keeps_sign
+    code: "toliteral(sqrt(-0.0))"
+    expect:
+      value: "-0.0"
+
+  - name: mathfunc_sqrt_max_float
+    code: "sqrt(1.7976931348623157e308)"
+    expect:
+      value: 1.34078079299426e+154
+
+  - name: mathfunc_cbrt_near_709
+    code: "cbrt(709.79)"
+    expect:
+      value: 8.92024177054545
+
+  - name: mathfunc_cbrt_negative_745
+    code: "cbrt(-745.2)"
+    expect:
+      value: -9.06617884726421
+
+  - name: mathfunc_cbrt_negative_fraction
+    code: "cbrt(-0.3)"
+    expect:
+      value: -0.669432950082169
+
+  - name: mathfunc_cbrt_negative_zero_keeps_sign
+    code: "toliteral(cbrt(-0.0))"
+    expect:
+      value: "-0.0"
+
+  - name: mathfunc_sin_large_argument
+    code: "sin(1e22)"
+    expect:
+      value: -0.852200849767189
+
+  - name: mathfunc_sin_half
+    code: "sin(0.5)"
+    expect:
+      value: 0.479425538604203
+
+  - name: mathfunc_sin_negative_zero_keeps_sign
+    code: "toliteral(sin(-0.0))"
+    expect:
+      value: "-0.0"
+
+  - name: mathfunc_cos_large_argument
+    code: "cos(1e300)"
+    expect:
+      value: -0.575386111957549
+
+  - name: mathfunc_cos_half
+    code: "cos(0.5)"
+    expect:
+      value: 0.877582561890373
+
+  - name: mathfunc_tan_large_argument
+    code: "tan(1e300)"
+    expect:
+      value: 1.42144882387472
+
+  - name: mathfunc_tan_negative_zero_keeps_sign
+    code: "toliteral(tan(-0.0))"
+    expect:
+      value: "-0.0"
+
+  - name: mathfunc_asin_just_above_one_domain
+    code: "asin(1.0000000000000002)"
+    expect:
+      error: E_INVARG
+
+  - name: mathfunc_asin_half
+    code: "asin(0.5)"
+    expect:
+      value: 0.523598775598299
+
+  - name: mathfunc_asin_negative_zero_keeps_sign
+    code: "toliteral(asin(-0.0))"
+    expect:
+      value: "-0.0"
+
+  - name: mathfunc_acos_just_below_minus_one_domain
+    code: "acos(-1.0000000000000002)"
+    expect:
+      error: E_INVARG
+
+  - name: mathfunc_acos_half
+    code: "acos(0.5)"
+    expect:
+      value: 1.0471975511966
+
+  - name: mathfunc_sinh_overflow_large
+    code: "sinh(3e300)"
+    expect:
+      error: E_FLOAT
+
+  - name: mathfunc_sinh_overflow_negative_large
+    code: "sinh(-3e300)"
+    expect:
+      error: E_FLOAT
+
+  - name: mathfunc_sinh_overflow_just_past_threshold
+    code: "sinh(711.0)"
+    expect:
+      error: E_FLOAT
+
+  - name: mathfunc_sinh_overflow_max_float
+    code: "sinh(1.7976931348623157e308)"
+    expect:
+      error: E_FLOAT
+
+  - name: mathfunc_sinh_finite_below_overflow_threshold
+    code: "sinh(-710.4)"
+    expect:
+      value: -1.66636428328065e+308
+
+  - name: mathfunc_sinh_finite_above_exp_overflow
+    code: "sinh(709.78)"
+    expect:
+      value: 8.96411397197258e+307
+
+  - name: mathfunc_sinh_twenty_five
+    code: "sinh(25.0)"
+    expect:
+      value: 36002449668.6929
+
+  - name: mathfunc_sinh_small
+    code: "sinh(0.3)"
+    expect:
+      value: 0.304520293447143
+
+  - name: mathfunc_sinh_negative_zero_keeps_sign
+    code: "toliteral(sinh(-0.0))"
+    expect:
+      value: "-0.0"
+
+  - name: mathfunc_sinh_negative_subnormal
+    code: "toliteral(sinh(-1e-310))"
+    expect:
+      value: "-9.99999999999997e-311"
+
+  - name: mathfunc_cosh_overflow_large
+    code: "cosh(3e300)"
+    expect:
+      error: E_FLOAT
+
+  - name: mathfunc_cosh_overflow_negative_large
+    code: "cosh(-3e300)"
+    expect:
+      error: E_FLOAT
+
+  - name: mathfunc_cosh_overflow_just_past_threshold
+    code: "cosh(710.48)"
+    expect:
+      error: E_FLOAT
+
+  - name: mathfunc_cosh_overflow_negative_past_threshold
+    code: "cosh(-711.0)"
+    expect:
+      error: E_FLOAT
+
+  - name: mathfunc_cosh_finite_below_overflow_threshold
+    code: "cosh(710.4)"
+    expect:
+      value: 1.66636428328065e+308
+
+  - name: mathfunc_cosh_finite_above_exp_overflow
+    code: "cosh(709.78)"
+    expect:
+      value: 8.96411397197258e+307
+
+  - name: mathfunc_cosh_negative_twenty_five
+    code: "cosh(-25.0)"
+    expect:
+      value: 36002449668.6929
+
+  - name: mathfunc_cosh_small
+    code: "cosh(0.3)"
+    expect:
+      value: 1.04533851412886
+
+  - name: mathfunc_tanh_moderate
+    code: "tanh(1.6449653443646872)"
+    expect:
+      value: 0.928163508150118
+
+  - name: mathfunc_tanh_negative
+    code: "tanh(-2.5)"
+    expect:
+      value: -0.98661429815143
+
+  - name: mathfunc_tanh_negative_zero_keeps_sign
+    code: "toliteral(tanh(-0.0))"
+    expect:
+      value: "-0.0"
+
+  - name: mathfunc_acosh_just_below_one_domain
+    code: "acosh(0.9999999999999999)"
+    expect:
+      error: E_INVARG
+
+  - name: mathfunc_acosh_large
+    code: "acosh(1e10)"
+    expect:
+      value: 23.7189981105004
+
+  - name: mathfunc_acosh_one_and_half
+    code: "acosh(1.5)"
+    expect:
+      value: 0.962423650119207
+
+  - name: mathfunc_asinh_large
+    code: "asinh(1e10)"
+    expect:
+      value: 23.7189981105004
+
+  - name: mathfunc_asinh_negative_zero_keeps_sign
+    code: "toliteral(asinh(-0.0))"
+    expect:
+      value: "-0.0"
+
+  - name: mathfunc_atanh_minus_one_pole
+    code: "atanh(-1.0)"
+    expect:
+      error: E_FLOAT
+
+  - name: mathfunc_atanh_just_above_one_domain
+    code: "atanh(1.0000000000000002)"
+    expect:
+      error: E_INVARG
+
+  - name: mathfunc_atanh_negative
+    code: "atanh(-0.9)"
+    expect:
+      value: -1.47221948958322
+
+  - name: mathfunc_atanh_negative_zero_keeps_sign
+    code: "toliteral(atanh(-0.0))"
+    expect:
+      value: "-0.0"
+
+  - name: mathfunc_exp_overflow_just_past_threshold
+    code: "exp(710.0)"
+    expect:
+      error: E_FLOAT
+
+  - name: mathfunc_exp_underflow_to_zero
+    code: "exp(-746.0)"
+    expect:
+      error: E_FLOAT
+
+  - name: mathfunc_exp_smallest_subnormal_result
+    code: "exp(-745.0)"
+    expect:
+      value: 4.94065645841247e-324
+
+  - name: mathfunc_exp_near_smallest_normal
+    code: "exp(-709.0)"
+    expect:
+      value: 1.21678075062342e-308
+
+  - name: mathfunc_exp_negative_708_5
+    code: "exp(-708.5)"
+    expect:
+      value: 2.00613230533131e-308
+
+  - name: mathfunc_exp_near_overflow
+    code: "exp(709.78)"
+    expect:
+      value: 1.79282279439452e+308
+
+  - name: mathfunc_exp_seven_hundred
+    code: "exp(700.0)"
+    expect:
+      value: 1.014232054735e+304
+
+  - name: mathfunc_exp_large_132
+    code: "exp(132.78155163351704)"
+    expect:
+      value: 4.63762013563591e+57
+
+  - name: mathfunc_exp_large_398
+    code: "exp(398.88134969770834)"
+    expect:
+      value: 1.70596103654619e+173
+
+  - name: mathfunc_exp_large_450
+    code: "exp(450.7359251584104)"
+    expect:
+      value: 5.65099719667398e+195
+
+  - name: mathfunc_log_subnormal
+    code: "log(1e-310)"
+    expect:
+      value: -713.801378828154
+
+  - name: mathfunc_log_smallest_subnormal
+    code: "log(4.9e-324)"
+    expect:
+      value: -744.440071921381
+
+  - name: mathfunc_log_negative_zero_pole
+    code: "log(-0.0)"
+    expect:
+      error: E_FLOAT
+
+  - name: mathfunc_log_negative_subnormal_domain
+    code: "log(-1e-310)"
+    expect:
+      error: E_INVARG
+
+  - name: mathfunc_log10_subnormal
+    code: "log10(1e-310)"
+    expect:
+      value: -310.0
+
+  - name: mathfunc_log10_smallest_subnormal
+    code: "log10(4.9e-324)"
+    expect:
+      value: -323.306215343116
+
+  - name: mathfunc_log10_power_of_ten_below_normal
+    code: "log10(1e-308)"
+    expect:
+      value: -308.0
+
+  - name: mathfunc_log10_negative_zero_pole
+    code: "log10(-0.0)"
+    expect:
+      error: E_FLOAT
+
+  - name: mathfunc_ceil_negative_fraction_is_negative_zero
+    code: "toliteral(ceil(-0.5))"
+    expect:
+      value: "-0.0"
+
+  - name: mathfunc_ceil_large_negative
+    code: "ceil(-1.5e308)"
+    expect:
+      value: -1.5e+308
+
+  - name: mathfunc_floor_negative_zero_keeps_sign
+    code: "toliteral(floor(-0.0))"
+    expect:
+      value: "-0.0"
+
+  - name: mathfunc_floor_large
+    code: "floor(1.5e308)"
+    expect:
+      value: 1.5e+308

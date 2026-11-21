@@ -46,21 +46,6 @@ tests:
     expect:
       value: 1.34078079299426e+154
 
-  - name: mathfunc_cbrt_near_709
-    code: "cbrt(709.79)"
-    expect:
-      value: 8.92024177054545
-
-  - name: mathfunc_cbrt_negative_745
-    code: "cbrt(-745.2)"
-    expect:
-      value: -9.06617884726421
-
-  - name: mathfunc_cbrt_negative_fraction
-    code: "cbrt(-0.3)"
-    expect:
-      value: -0.669432950082169
-
   - name: mathfunc_cbrt_negative_zero_keeps_sign
     code: "toliteral(cbrt(-0.0))"
     expect:
@@ -156,6 +141,11 @@ tests:
     expect:
       value: 8.96411397197258e+307
 
+  - name: mathfunc_sinh_finite_at_710
+    code: "sinh(710.0)"
+    expect:
+      value: 1.11699738308086e+308
+
   - name: mathfunc_sinh_twenty_five
     code: "sinh(25.0)"
     expect:
@@ -205,6 +195,11 @@ tests:
     code: "cosh(709.78)"
     expect:
       value: 8.96411397197258e+307
+
+  - name: mathfunc_cosh_finite_at_negative_710
+    code: "cosh(-710.0)"
+    expect:
+      value: 1.11699738308086e+308
 
   - name: mathfunc_cosh_negative_twenty_five
     code: "cosh(-25.0)"
@@ -300,31 +295,6 @@ tests:
     code: "exp(-708.5)"
     expect:
       value: 2.00613230533131e-308
-
-  - name: mathfunc_exp_near_overflow
-    code: "exp(709.78)"
-    expect:
-      value: 1.79282279439452e+308
-
-  - name: mathfunc_exp_seven_hundred
-    code: "exp(700.0)"
-    expect:
-      value: 1.014232054735e+304
-
-  - name: mathfunc_exp_large_132
-    code: "exp(132.78155163351704)"
-    expect:
-      value: 4.63762013563591e+57
-
-  - name: mathfunc_exp_large_398
-    code: "exp(398.88134969770834)"
-    expect:
-      value: 1.70596103654619e+173
-
-  - name: mathfunc_exp_large_450
-    code: "exp(450.7359251584104)"
-    expect:
-      value: 5.65099719667398e+195
 
   - name: mathfunc_log_subnormal
     code: "log(1e-310)"

@@ -14,10 +14,18 @@ description: >
 requires:
   builtins: [add_property, delete_property, load_server_options, add_verb, set_verb_code, create, recycle, equal, value_bytes]
 
+# Suite teardowns do not run between files, so an earlier file's limit
+# properties (server/limits.yaml sets them to 1000000) can still be defined.
+# The setup removes them first: these tests need the defaults.
 setup:
   permission: wizard
   code: |
+    delete_property($server_options, "max_string_concat");
+    delete_property($server_options, "max_list_value_bytes");
+    delete_property($server_options, "max_map_value_bytes");
+    delete_property($server_options, "max_concat_catchable");
     add_property($server_options, "max_concat_catchable", 0, {player, "r"});
+    load_server_options();
     add_property(#0, "arglist_mark", 0, {player, "rw"});
     add_property(#0, "arglist_s", "", {player, "rw"});
     add_property(#0, "arglist_t", "", {player, "rw"});

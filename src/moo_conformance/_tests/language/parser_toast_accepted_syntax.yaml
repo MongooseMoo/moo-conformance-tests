@@ -1,0 +1,164 @@
+name: parser_toast_accepted_syntax
+description: >
+  Source forms the MOO lexer and grammar accept that a strict reading of the
+  language might reject: `expr.:name' names the colon-prefixed property
+  ":name", form feed and vertical tab separate tokens, and a byte above 127
+  outside a string literal or comment ends the program text.
+requires:
+  builtins:
+    - add_property
+    - add_verb
+    - chr
+    - create
+    - delete_property
+    - eval
+    - recycle
+    - set_verb_code
+    - verb_code
+tests:
+  - name: colon_property_reads_prefixed_property_of_waif_class
+    permission: wizard
+    statement: |
+      class = create($waif);
+      add_property(class, ":foo", 5, {player, "r"});
+      result = {class.:foo, class.(":foo")};
+      recycle(class);
+      return result;
+    expect:
+      value: [5, 5]
+
+  - name: colon_property_assignment_writes_prefixed_property
+    permission: wizard
+    statement: |
+      class = create($waif);
+      add_property(class, ":foo", 5, {player, "rw"});
+      x = class.:foo = 7;
+      result = {x, class.:foo, class.(":foo")};
+      recycle(class);
+      return result;
+    expect:
+      value: [7, 7, 7]
+
+  - name: colon_property_on_waif_value_prepends_a_second_colon
+    permission: wizard
+    statement: |
+      class = create($waif);
+      add_property(class, ":foo", 5, {player, "r"});
+      w = class:new();
+      missing = `w.:foo ! ANY';
+      add_property(class, "::foo", 9, {player, "r"});
+      w = class:new();
+      result = {w.foo, missing, w.:foo};
+      recycle(class);
+      return result;
+    expect:
+      value: [5, E_PROPNF, 9]
+
+  - name: colon_property_on_plain_object
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      missing = {`o.:foo ! ANY', `#0.:foo ! ANY'};
+      add_property(o, ":bar", 3, {player, "rw"});
+      o.:bar = 4;
+      result = {@missing, o.:bar, o.(":bar")};
+      recycle(o);
+      return result;
+    expect:
+      value: [E_PROPNF, E_PROPNF, 4, 4]
+
+  - name: colon_property_on_non_object_value
+    permission: wizard
+    statement: |
+      a = 1;
+      result = {`a.:b ! ANY', `(a.:b = 3) ! ANY'};
+      return result;
+    expect:
+      value: [E_TYPE, E_TYPE]
+
+  - name: colon_property_separate_tokens
+    permission: wizard
+    statement: |
+      class = create($waif);
+      add_property(class, ":foo", 5, {player, "r"});
+      add_property(#0, "zz_colon_class", class, {player, "r"});
+      result = eval("return $zz_colon_class . : foo;");
+      delete_property(#0, "zz_colon_class");
+      recycle(class);
+      return result;
+    expect:
+      value: [1, 5]
+
+  - name: colon_property_keyword_name_is_syntax_error
+    permission: wizard
+    statement: |
+      return eval("return #0.:if;");
+    expect:
+      value: [0, ["Line 1:  syntax error"]]
+
+  - name: colon_property_verb_code_round_trip
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+      source = {"x = #0.:foo;", "x.:bar = x.:baz;", "return o.:qux.:quux;"};
+      first_errors = set_verb_code(o, "probe", source);
+      canonical = verb_code(o, "probe");
+      second_errors = set_verb_code(o, "probe", canonical);
+      result = {first_errors, canonical, second_errors, verb_code(o, "probe") == canonical};
+      recycle(o);
+      return result;
+    expect:
+      value:
+        - []
+        - ['x = #0.(":foo");', 'x.(":bar") = x.(":baz");', 'return o.(":qux").(":quux");']
+        - []
+        - 1
+
+  - name: vertical_tab_and_form_feed_separate_tokens
+    permission: wizard
+    statement: |
+      return {eval("return" + chr(11) + "4;"), eval("return" + chr(12) + "5;")};
+    expect:
+      value: [[1, 4], [1, 5]]
+
+  - name: high_byte_ends_program_text
+    permission: wizard
+    statement: |
+      return {eval("x = 1; " + chr(195, 169) + " = 2; return x;"),
+              eval("return 5;" + chr(195, 169)),
+              eval(chr(195, 169) + " = 1; return " + chr(195, 169) + ";"),
+              eval("x = 1;" + chr(195) + "y = 2; return x;"),
+              eval("return 6;" + chr(128) + "return 7;"),
+              eval("return 8;" + chr(255) + "return 9;")};
+    expect:
+      value: [[1, 0], [1, 5], [1, 0], [1, 0], [1, 6], [1, 8]]
+
+  - name: high_byte_inside_expression_is_end_of_input
+    permission: wizard
+    statement: |
+      return eval("return 1 +" + chr(200) + " 2;");
+    expect:
+      value: [0, ["Line 1:  syntax error"]]
+
+  - name: high_byte_ends_program_on_later_line
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      add_verb(o, {player, "xd", "probe"}, {"this", "none", "this"});
+      bad = set_verb_code(o, "probe", {"x = 1;", "y = " + chr(195, 169) + ";"});
+      good = set_verb_code(o, "probe", {"x = 1;", "return x; " + chr(195, 169) + " = 2;", "return 3;"});
+      result = {bad, good, verb_code(o, "probe"), o:probe()};
+      recycle(o);
+      return result;
+    expect:
+      value: [["Line 2:  syntax error"], [], ["x = 1;", "return x;"], 1]
+
+  - name: high_byte_kept_in_string_and_comment
+    permission: wizard
+    statement: |
+      s = eval("return \"a" + chr(195, 169) + "b\";");
+      c = eval("/* " + chr(195, 169) + " */ return 3;");
+      return {s[1], s[2] == "a" + chr(195, 169) + "b", c};
+    expect:
+      value: [1, 1, [1, 3]]

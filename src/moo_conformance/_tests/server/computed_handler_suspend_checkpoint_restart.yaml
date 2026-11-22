@@ -1,0 +1,82 @@
+name: computed_handler_suspend_checkpoint_restart
+description: >
+  Catch defaults and except clauses with computed error codes can suspend
+  after handling an error. After a checkpoint restart, both tasks remain
+  queued and can finish using the supplied resume value.
+
+requires:
+  builtins:
+    - add_property
+    - add_verb
+    - set_verb_code
+    - create
+    - dump_database
+    - suspend
+    - resume
+    - queued_tasks
+  config: [managed_server]
+
+tests:
+  - name: computed_handlers_resume_after_checkpoint_restart
+    permission: wizard
+    steps:
+      - restart_server: {reset_db: true}
+      - run: |
+          obj = create($nothing);
+          add_property(obj, "catch_result", {}, {player, "rw"});
+          add_property(obj, "try_result", {}, {player, "rw"});
+          add_property(obj, "catch_ready", 0, {player, "rw"});
+          add_property(obj, "try_ready", 0, {player, "rw"});
+          return obj;
+        capture: obj
+      - verb_setup:
+          object: "{obj}"
+          name: start
+          args: ["this", "none", "this"]
+          code: |
+            fork catch_id (0)
+              this.catch_result = `1 / 0 ! E_DIV, "unused" => {(this.catch_ready = 1), suspend()}';
+            endfork
+            fork try_id (0)
+              try
+                1 / 0;
+              except err (E_DIV, "unused")
+                this.try_ready = 1;
+                this.try_result = {err[1], suspend()};
+              endtry
+            endfork
+            return {catch_id, try_id};
+        expect:
+          value: []
+      - run: "return {obj}:start();"
+        capture: tasks
+      - run: "return {obj}.catch_ready + {obj}.try_ready;"
+        expect:
+          value: 2
+        poll_ms: 5000
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - restart_server:
+          checkpoint_timeout_ms: 10000
+      - run: |
+          ids = {};
+          for q in (queued_tasks())
+            ids = {@ids, q[1]};
+          endfor
+          tasks = {tasks};
+          return {tasks[1] in ids > 0, tasks[2] in ids > 0, {obj}.catch_result, {obj}.try_result};
+        expect:
+          value: [1, 1, [], []]
+      - run: |
+          tasks = {tasks};
+          return {resume(tasks[1], 10), resume(tasks[2], 20)};
+        expect:
+          value: [0, 0]
+      - run: |
+          obj = {obj};
+          return {obj.catch_result, obj.try_result == {E_DIV, 20}};
+        expect:
+          value: [[1, 10], 1]
+        poll_ms: 5000
+      - restart_server: {reset_db: true}

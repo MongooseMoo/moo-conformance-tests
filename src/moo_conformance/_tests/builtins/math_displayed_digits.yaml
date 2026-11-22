@@ -1,0 +1,228 @@
+name: math_displayed_digits
+description: >
+  Displayed digits (tostr, 15 significant digits) of exp, sin, cos, tan,
+  asin, acos, log, log10, sinh and cosh on ordinary arguments. Each expected
+  value was observed on the stock WSL Toast oracle, and Toast's double is
+  the correctly rounded one: e^x, sin x, ... computed with mpmath at 300 and
+  600 bits round to it, and the exact value lies within 0.2 ulp of it, so
+  a C library accurate to better than 0.7 ulp returns the same double.
+
+requires:
+  builtins:
+    - exp
+    - sin
+    - cos
+    - tan
+    - asin
+    - acos
+    - log
+    - log10
+    - sinh
+    - cosh
+    - tostr
+
+tests:
+  - name: exp_digits_neg322_95841334865287
+    code: "tostr(exp(-322.95841334865287))"
+    expect:
+      value: "5.50735660756797e-141"
+
+  - name: exp_digits_neg598_6806734537115
+    code: "tostr(exp(-598.6806734537115))"
+    expect:
+      value: "9.9148716587174e-261"
+
+  - name: exp_digits_neg134_34234324087822
+    code: "tostr(exp(-134.34234324087822))"
+    expect:
+      value: "4.52753320931185e-59"
+
+  - name: exp_digits_neg178_96494010450704
+    code: "tostr(exp(-178.96494010450704))"
+    expect:
+      value: "1.8902274183999e-78"
+
+  - name: exp_digits_neg12_84444862268856
+    code: "tostr(exp(-12.84444862268856))"
+    expect:
+      value: "2.64074727357116e-06"
+
+  - name: exp_digits_neg18_622409908750456
+    code: "tostr(exp(-18.622409908750456))"
+    expect:
+      value: "8.17316255982385e-09"
+
+  - name: exp_digits_neg0_9622271539060037
+    code: "tostr(exp(-0.9622271539060037))"
+    expect:
+      value: "0.38204107349937"
+
+  - name: exp_digits_7_659375779420884
+    code: "tostr(exp(7.659375779420884))"
+    expect:
+      value: "2120.43339721446"
+
+  - name: exp_digits_11_318830341179705
+    code: "tostr(exp(11.318830341179705))"
+    expect:
+      value: "82357.9558532959"
+
+  - name: exp_digits_120_12792919810693
+    code: "tostr(exp(120.12792919810693))"
+    expect:
+      value: "1.48216574954239e+52"
+
+  - name: exp_digits_207_74975713924744
+    code: "tostr(exp(207.74975713924744))"
+    expect:
+      value: "1.67715477234378e+90"
+
+  - name: exp_digits_538_6582307741542
+    code: "tostr(exp(538.6582307741542))"
+    expect:
+      value: "8.63569423823798e+233"
+
+  - name: exp_digits_562_7794154308103
+    code: "tostr(exp(562.7794154308103))"
+    expect:
+      value: "2.58222838241943e+244"
+
+  - name: exp_digits_700_8626057677002
+    code: "tostr(exp(700.8626057677002))"
+    expect:
+      value: "2.40304695689538e+304"
+
+  - name: exp_digits_705_8183068241128
+    code: "tostr(exp(705.8183068241128))"
+    expect:
+      value: "3.41189674866035e+306"
+
+  - name: exp_digits_700_0
+    code: "tostr(exp(700.0))"
+    expect:
+      value: "1.014232054735e+304"
+
+  - name: exp_digits_709_5
+    code: "tostr(exp(709.5))"
+    expect:
+      value: "1.35498631931463e+308"
+
+  - name: exp_digits_132_78155163351704
+    code: "tostr(exp(132.78155163351704))"
+    expect:
+      value: "4.63762013563591e+57"
+
+  - name: sin_digits_7_405140529333977
+    code: "tostr(sin(7.405140529333977))"
+    expect:
+      value: "0.900950577111391"
+
+  - name: sin_digits_2_966031003316594
+    code: "tostr(sin(2.966031003316594))"
+    expect:
+      value: "0.174661182032826"
+
+  - name: sin_digits_751781_0274685805
+    code: "tostr(sin(751781.0274685805))"
+    expect:
+      value: "-0.865955217950078"
+
+  - name: sin_digits_942476_1445136773
+    code: "tostr(sin(942476.1445136773))"
+    expect:
+      value: "-0.996740123872636"
+
+  - name: cos_digits_8_668309748995181
+    code: "tostr(cos(8.668309748995181))"
+    expect:
+      value: "-0.727264609704512"
+
+  - name: cos_digits_neg5_671152257207124
+    code: "tostr(cos(-5.671152257207124))"
+    expect:
+      value: "0.818481656552024"
+
+  - name: cos_digits_237252_40808553924
+    code: "tostr(cos(237252.40808553924))"
+    expect:
+      value: "0.784371823465442"
+
+  - name: cos_digits_408146_23531458667
+    code: "tostr(cos(408146.23531458667))"
+    expect:
+      value: "-0.99834952277039"
+
+  - name: tan_digits_neg6_702735260561836
+    code: "tostr(tan(-6.702735260561836))"
+    expect:
+      value: "-0.446032856631972"
+
+  - name: tan_digits_8_646903198783825
+    code: "tostr(tan(8.646903198783825))"
+    expect:
+      value: "-0.985065275327555"
+
+  - name: asin_digits_0_44944995006845345
+    code: "tostr(asin(0.44944995006845345))"
+    expect:
+      value: "0.466149496889286"
+
+  - name: asin_digits_0_35801588061661294
+    code: "tostr(asin(0.35801588061661294))"
+    expect:
+      value: "0.366142053331566"
+
+  - name: acos_digits_0_9590465067197478
+    code: "tostr(acos(0.9590465067197478))"
+    expect:
+      value: "0.287179798171003"
+
+  - name: acos_digits_neg0_6268937139439581
+    code: "tostr(acos(-0.6268937139439581))"
+    expect:
+      value: "2.24835611792283"
+
+  - name: log_digits_6_8636em319
+    code: "tostr(log(6.8636e-319))"
+    expect:
+      value: "-732.598411216162"
+
+  - name: log10_digits_1_667788347949235em225
+    code: "tostr(log10(1.667788347949235e-225))"
+    expect:
+      value: "-224.777859064699"
+
+  - name: log10_digits_1_8753230047684222em178
+    code: "tostr(log10(1.8753230047684222e-178))"
+    expect:
+      value: "-177.726923918813"
+
+  - name: log10_digits_2_198882705569011e245
+    code: "tostr(log10(2.198882705569011e+245))"
+    expect:
+      value: "245.342202063521"
+
+  - name: log10_digits_7_32660804890131
+    code: "tostr(log10(7.32660804890131))"
+    expect:
+      value: "0.864902958735343"
+
+  - name: sinh_digits_414_89320728054224
+    code: "tostr(sinh(414.89320728054224))"
+    expect:
+      value: "7.67009080312837e+179"
+
+  - name: sinh_digits_114_62214492417922
+    code: "tostr(sinh(114.62214492417922))"
+    expect:
+      value: "3.01116843225665e+49"
+
+  - name: cosh_digits_neg214_59305413386585
+    code: "tostr(cosh(-214.59305413386585))"
+    expect:
+      value: "7.86229381514443e+92"
+
+  - name: cosh_digits_neg132_01295318932364
+    code: "tostr(cosh(-132.01295318932364))"
+    expect:
+      value: "1.07514518481585e+57"

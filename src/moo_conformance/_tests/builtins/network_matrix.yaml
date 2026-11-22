@@ -149,6 +149,48 @@ tests:
           return 1;
         as: wizard
 
+  - name: boot_player_makes_connection_gone_within_the_booting_task
+    description: boot_player marks the connection disconnected at the call (server.cc boot_player sets disconnect_me), so the same task's connection builtins treat it as gone with no wait.
+    skip_if: "not option.OUTBOUND_NETWORK"
+    permission: wizard
+    steps:
+      - allocate_port:
+          capture: listener_port
+      - run: |
+          return listen(#0, {listener_port}, ["ipv6" -> 0, "print-messages" -> 0]);
+        capture: port
+        expect:
+          type: int
+      - run: |
+          return open_network_connection("127.0.0.1", {listener_port}, ["ipv6" -> 0, "listener" -> #0]);
+        capture: conn
+        expect:
+          type: obj
+      - run: |
+          c = {conn};
+          result = {(c in connected_players(1)) > 0, typeof(connection_info(c)) == MAP, typeof(connection_name(c)) == STR};
+          boot_player(c);
+          result = {@result, !(c in connected_players(1))};
+          for name in ({"connection_info", "connected_seconds", "idle_seconds", "connection_name", "connection_name_lookup", "connection_options"})
+            result = {@result, `call_function(name, c) ! E_INVARG => "gone"' == "gone"};
+          endfor
+          result = {@result, `set_connection_option(c, "binary", 1) ! E_INVARG => "gone"' == "gone"};
+          return result;
+        expect:
+          value: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    cleanup:
+      - run: |
+          try
+            boot_player({conn});
+          except (ANY)
+          endtry
+          try
+            unlisten({listener_port}, 0);
+          except (ANY)
+          endtry
+          return 1;
+        as: wizard
+
   - name: open_network_connection_ipv6_option_rejects_ipv4_numeric_host
     description: The ipv6 option switches address-family lookup instead of silently falling back to IPv4.
     skip_if: "not option.OUTBOUND_NETWORK"

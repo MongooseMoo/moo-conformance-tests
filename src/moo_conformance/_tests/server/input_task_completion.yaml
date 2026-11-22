@@ -115,3 +115,57 @@ tests:
             try delete_property(#0, p); except (ANY) endtry
           endfor
           return 0;
+
+  - name: native_command_suffix_precedes_output_after_suspend
+    description: Toast do_command_task sends the output suffix after the command's first run returns or suspends, before the suspended task can resume, so output printed after suspend(0) follows the suffix.
+    permission: wizard
+    steps:
+      - allocate_port:
+          capture: port
+      - run: |
+          for p in ({"sbr_handler", "sbr_player", "sbr_port"})
+            add_property(#0, p, 0, {player, "rw"});
+          endfor
+          handler = create($nothing);
+          pl = create($nothing);
+          set_player_flag(pl, 1);
+          #0.sbr_handler = handler;
+          #0.sbr_player = pl;
+          #0.sbr_port = {port};
+          add_verb(handler, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(handler, "do_login_command", {"return #0.sbr_player;"});
+          add_verb(pl, {player, "rxd", "work"}, {"none", "none", "none"});
+          set_verb_code(pl, "work", {"notify(player, \"before\");", "suspend(0);", "notify(player, \"after\");"});
+          return listen(handler, {port}, ["print-messages" -> 0]);
+        expect:
+          type: int
+      - new_connection:
+          capture: client
+          port: "{port}"
+      - send:
+          connection: client
+          text: connect anything
+      - wait: 300
+      - send:
+          connection: client
+          text: OUTPUTPREFIX ==START==
+      - send:
+          connection: client
+          text: OUTPUTSUFFIX ==END==
+      - send:
+          connection: client
+          text: work
+        expect:
+          output:
+            exact: ["==START==", before, "==END==", after]
+      - close_connection: client
+    cleanup:
+      - run: |
+          try unlisten(#0.sbr_port); except (ANY) endtry
+          try boot_player(#0.sbr_player); except (ANY) endtry
+          try recycle(#0.sbr_player); except (ANY) endtry
+          try recycle(#0.sbr_handler); except (ANY) endtry
+          for p in ({"sbr_handler", "sbr_player", "sbr_port"})
+            try delete_property(#0, p); except (ANY) endtry
+          endfor
+          return 0;

@@ -1,0 +1,359 @@
+name: sqlite_toast_parity
+description: |
+  Result shapes of the SQLite builtins as ToastStunt's sqlite.cc produces them:
+  handle numbering, column values converted from SQLite's text form, parameter
+  binding, statement splitting, open options, limits, interrupt and REGEXP.
+  Results are compared as toliteral() strings so value types are exact.
+
+requires:
+  builtins:
+    - sqlite_open
+    - sqlite_close
+    - sqlite_handles
+    - sqlite_info
+    - sqlite_query
+    - sqlite_execute
+    - sqlite_limit
+    - sqlite_interrupt
+    - encode_binary
+
+tests:
+  - name: sqlite_handles_restart_at_one_after_every_handle_closes
+    description: |
+      next_sqlite_handle is reset to 1 when the last connection closes
+      (sqlite.cc deallocate_handle), and is not reset while any handle stays open.
+    permission: wizard
+    statement: |
+      for x in (sqlite_handles())
+        sqlite_close(x);
+      endfor
+      a = sqlite_open(":memory:");
+      sqlite_close(a);
+      b = sqlite_open(":memory:");
+      c = sqlite_open(":memory:");
+      sqlite_close(b);
+      d = sqlite_open(":memory:");
+      sqlite_close(c);
+      sqlite_close(d);
+      e = sqlite_open(":memory:");
+      sqlite_close(e);
+      return {a, b, c, d, e};
+    expect:
+      value: [1, 1, 2, 3, 1]
+
+  - name: sqlite_handles_lists_newest_handle_first
+    description: sqlite_handles() walks Toast's unordered_map of connections.
+    permission: wizard
+    statement: |
+      for x in (sqlite_handles())
+        sqlite_close(x);
+      endfor
+      a = sqlite_open(":memory:");
+      b = sqlite_open(":memory:");
+      c = sqlite_open(":memory:");
+      first = sqlite_handles();
+      sqlite_close(b);
+      d = sqlite_open(":memory:");
+      second = sqlite_handles();
+      for x in (sqlite_handles())
+        sqlite_close(x);
+      endfor
+      return {first, second};
+    expect:
+      value: [[3, 2, 1], [4, 3, 1]]
+
+  - name: sqlite_query_parses_column_text_into_moo_values
+    description: |
+      Every column arrives as text and goes through string_to_moo_type: "#N"
+      becomes an object, then parse_number (strtoimax), then parse_float
+      (strtod); trailing blanks are allowed, other trailing text is not.
+    permission: wizard
+    statement: |
+      db = sqlite_open(":memory:");
+      r = sqlite_query(db, "SELECT '#5', '12', '1.5', 'abc', ' 12', '1e3', '0x10', '#-1', '+7', ' 12 ', '12' || char(9), char(9) || '5', NULL, '', '#', '#x'");
+      sqlite_close(db);
+      return toliteral(r);
+    expect:
+      value: '{{#5, 12, 1.5, "abc", 12, 1000.0, 16.0, #-1, 7, 12, "12	", 5, "NULL", "", "#", "#x"}}'
+
+  - name: sqlite_query_overflowing_integer_text_clamps_64bit
+    description: |
+      parse_number stores strtoimax's result in a MOO integer; strtoimax clamps
+      an out-of-range decimal to INTMAX_MAX.
+    permission: wizard
+    statement: |
+      db = sqlite_open(":memory:");
+      r = sqlite_query(db, "SELECT '99999999999999999999'");
+      sqlite_close(db);
+      return toliteral(r);
+    expect:
+      value: '{{9223372036854775807}}'
+    skip_if: "not feature.64bit"
+
+  - name: sqlite_query_overflowing_integer_text_clamps_32bit
+    description: |
+      On a 32-bit build the clamped INTMAX_MAX is narrowed to the 32-bit MOO
+      integer, which leaves -1.
+    permission: wizard
+    statement: |
+      db = sqlite_open(":memory:");
+      x = sqlite_query(db, "SELECT '99999999999999999999'")[1][1];
+      sqlite_close(db);
+      return x;
+    expect:
+      value: -1
+    skip_if: "feature.64bit"
+
+  - name: sqlite_query_parses_infinity_spellings_as_floats
+    permission: wizard
+    statement: |
+      db = sqlite_open(":memory:");
+      r = sqlite_query(db, "SELECT 'inf', '-Infinity', '1e999', 1e300 * 1e10, -1e300 * 1e10");
+      sqlite_close(db);
+      return toliteral(r);
+    expect:
+      value: '{{inf.0, -inf.0, inf.0, inf.0, -inf.0}}'
+
+  - name: sqlite_execute_converts_columns_like_query
+    permission: wizard
+    statement: |
+      db = sqlite_open(":memory:");
+      r = sqlite_execute(db, "SELECT ?, ?, ?, '0x10', NULL, 2.0 * 3", {"#7", " 3", "1e2"});
+      sqlite_close(db);
+      return toliteral(r);
+    expect:
+      value: '{{#7, 3, 100.0, 16.0, "NULL", 6.0}}'
+
+  - name: sqlite_real_columns_use_sqlite_fifteen_digit_text
+    description: |
+      A REAL column is read back through SQLite's 15-significant-digit text, so
+      0.1 + 0.2 computed or bound in SQLite returns MOO 0.3.
+    permission: wizard
+    statement: |
+      db = sqlite_open(":memory:");
+      x = sqlite_query(db, "SELECT 0.1 + 0.2")[1][1];
+      y = sqlite_execute(db, "SELECT ?", {0.1 + 0.2})[1][1];
+      sqlite_close(db);
+      return {x == 0.3, y == 0.3, x == 0.1 + 0.2, y == 0.1 + 0.2, typeof(x) == FLOAT, typeof(y) == FLOAT};
+    expect:
+      value: [1, 1, 0, 0, 1, 1]
+
+  - name: sqlite_infinity_prints_as_inf_point_zero
+    permission: wizard
+    statement: |
+      db = sqlite_open(":memory:");
+      x = sqlite_query(db, "SELECT 1e300 * 1e10")[1][1];
+      y = sqlite_query(db, "SELECT -1e300 * 1e10")[1][1];
+      sqlite_close(db);
+      return {typeof(x) == FLOAT, toliteral(x), tostr(x), toliteral(y), tostr(y), x > 1e308};
+    expect:
+      value: [1, "inf.0", "inf.0", "-inf.0", "-inf.0", 1]
+
+  - name: sqlite_execute_binds_only_str_int_float_obj
+    description: |
+      sqlite_execute_thread_callback binds STR, INT, FLOAT and OBJ (as "#N"
+      text); any other MOO type leaves its parameter unbound, which is NULL.
+    permission: wizard
+    statement: |
+      db = sqlite_open(":memory:");
+      r = sqlite_execute(db, "SELECT typeof(?), typeof(?), typeof(?), typeof(?), typeof(?), typeof(?), typeof(?), ?", {E_PERM, {1}, ["a" -> 1], #5, "s", 1, 1.5, #5});
+      sqlite_close(db);
+      return toliteral(r);
+    expect:
+      value: '{{"null", "null", "null", "text", "text", "integer", "real", #5}}'
+
+  - name: sqlite_execute_extra_parameters_are_ignored
+    permission: wizard
+    statement: |
+      db = sqlite_open(":memory:");
+      r = sqlite_execute(db, "SELECT ?", {1, 2, 3});
+      sqlite_close(db);
+      return toliteral(r);
+    expect:
+      value: '{{1}}'
+
+  - name: sqlite_limit_float_category_is_invarg
+    description: A category that is neither INT nor STR leaves category -1, which is E_INVARG.
+    permission: wizard
+    statement: |
+      db = sqlite_open(":memory:");
+      r = {`sqlite_limit(db, 1.5, 0) ! ANY', `sqlite_limit(db, {}, 0) ! ANY', `sqlite_limit(db, 1.5, "x") ! ANY'};
+      sqlite_close(db);
+      return r;
+    expect:
+      value: [E_INVARG, E_INVARG, E_TYPE]
+
+  - name: sqlite_limit_reports_linked_library_defaults
+    permission: wizard
+    statement: |
+      db = sqlite_open(":memory:");
+      r = {};
+      for c in [0..11]
+        r = {@r, sqlite_limit(db, c, -1)};
+      endfor
+      sqlite_close(db);
+      return r;
+    expect:
+      value: [1000000000, 1000000000, 2000, 1000, 500, 250000000, 127, 10, 50000, 250000, 1000, 0]
+
+  - name: sqlite_limit_clamps_to_the_hard_limit
+    permission: wizard
+    statement: |
+      db = sqlite_open(":memory:");
+      sqlite_limit(db, "LIMIT_VARIABLE_NUMBER", 300000);
+      sqlite_limit(db, "LIMIT_WORKER_THREADS", 100);
+      sqlite_limit(db, "LIMIT_LENGTH", 0);
+      sqlite_limit(db, "LIMIT_COLUMN", 0);
+      r = {sqlite_limit(db, 9, -1), sqlite_limit(db, 11, -1), sqlite_limit(db, 0, -1), sqlite_limit(db, 2, -1)};
+      sqlite_close(db);
+      return r;
+    expect:
+      value: [250000, 8, 1, 0]
+
+  - name: sqlite_limit_length_applies_to_the_connection
+    permission: wizard
+    statement: |
+      db = sqlite_open(":memory:");
+      sqlite_limit(db, "LIMIT_LENGTH", 3);
+      r = {sqlite_query(db, "SELECT 'abcdef'"), sqlite_query(db, "SELECT 'abc'"), sqlite_query(db, "SELECT 'ab' AS x"), sqlite_execute(db, "SELECT ?", {"abcdef"}), sqlite_execute(db, "SELECT ? AS x", {"ab"})};
+      sqlite_close(db);
+      return r;
+    expect:
+      value: ["string or blob too big", "string or blob too big", [["ab"]], [["NULL"]], [["ab"]]]
+
+  - name: sqlite_limit_function_arg_applies_to_the_connection
+    permission: wizard
+    statement: |
+      db = sqlite_open(":memory:");
+      args = "1";
+      for i in [2..128]
+        args = args + ", 1";
+      endfor
+      r = sqlite_query(db, "SELECT max(" + args + ")");
+      sqlite_close(db);
+      return r;
+    expect:
+      value: "too many arguments on function max"
+
+  - name: sqlite_open_options_zero_returns_strings
+    description: |
+      The second sqlite_open argument replaces the option bits (PARSE_TYPES 2,
+      PARSE_OBJECTS 4, SANITIZE_STRINGS 8). Without PARSE_TYPES every column
+      is the raw text and NULL is the empty string.
+    permission: wizard
+    statement: |
+      db = sqlite_open(":memory:", 0);
+      info = sqlite_info(db);
+      q = sqlite_query(db, "SELECT 5, '#3', 1.5, NULL");
+      e = sqlite_execute(db, "SELECT ?, NULL", {7});
+      sqlite_close(db);
+      return toliteral({info["parse_types"], info["parse_objects"], info["sanitize_strings"], q, e});
+    expect:
+      value: '{0, 0, 0, {{"5", "#3", "1.5", ""}}, {{"7", ""}}}'
+
+  - name: sqlite_open_options_select_parsing_and_sanitizing
+    permission: wizard
+    statement: |
+      types_only = sqlite_open(":memory:", 2);
+      objects_only = sqlite_open(":memory:", 4);
+      all = sqlite_open(":memory:", 14);
+      r = {};
+      for db in ({types_only, objects_only, all})
+        info = sqlite_info(db);
+        q = sqlite_query(db, "SELECT 5, '#3', 'a' || char(10) || 'b'");
+        e = sqlite_execute(db, "SELECT 'c' || char(10) || 'd'", {});
+        r = {@r, {info["parse_types"], info["parse_objects"], info["sanitize_strings"], q[1][1], q[1][2], encode_binary(q[1][3]), encode_binary(e[1][1])}};
+        sqlite_close(db);
+      endfor
+      return toliteral(r);
+    expect:
+      value: '{{1, 0, 0, 5, "#3", "a~0Ab", "c~0Ad"}, {0, 1, 0, "5", "#3", "a~0Ab", "c~0Ad"}, {1, 1, 1, 5, #3, "a~09b", "c~09d"}}'
+
+  - name: sqlite_interrupt_while_idle_does_not_affect_next_statement
+    description: sqlite3_interrupt with no statement running is cleared when the next statement starts.
+    permission: wizard
+    statement: |
+      db = sqlite_open(":memory:");
+      sqlite_interrupt(db);
+      r = sqlite_query(db, "SELECT 1");
+      sqlite_interrupt(db);
+      e = sqlite_execute(db, "SELECT 2", {});
+      sqlite_close(db);
+      return toliteral({r, e});
+    expect:
+      value: '{{{1}}, {{2}}}'
+
+  - name: sqlite_execute_runs_only_the_first_statement
+    description: sqlite3_prepare_v2 compiles the first statement and the tail is ignored.
+    permission: wizard
+    statement: |
+      db = sqlite_open(":memory:");
+      sqlite_query(db, "CREATE TABLE t (a, b)");
+      r1 = sqlite_execute(db, "INSERT INTO t VALUES (1, 2); INSERT INTO t VALUES (3, 4)", {});
+      r2 = sqlite_execute(db, "INSERT INTO t VALUES (5, 6); this is not sql", {});
+      r3 = sqlite_query(db, "SELECT a FROM t ORDER BY a");
+      sqlite_close(db);
+      return toliteral({r1, r2, r3});
+    expect:
+      value: '{{}, {}, {{1}, {5}}}'
+
+  - name: sqlite_returning_rows_come_back_from_query_and_execute
+    permission: wizard
+    statement: |
+      db = sqlite_open(":memory:");
+      sqlite_query(db, "CREATE TABLE t (a, b)");
+      r1 = sqlite_query(db, "INSERT INTO t VALUES (1, 2) RETURNING a");
+      r2 = sqlite_execute(db, "INSERT INTO t VALUES (3, 4) RETURNING b", {});
+      r3 = sqlite_query(db, "  insert into t values (5, 6) returning a, b");
+      sqlite_close(db);
+      return toliteral({r1, r2, r3});
+    expect:
+      value: '{{{1}}, {{4}}, {{5, 6}}}'
+
+  - name: sqlite_query_runs_every_statement_and_collects_all_rows
+    description: sqlite3_exec runs each statement in turn and calls back for every row.
+    permission: wizard
+    statement: |
+      db = sqlite_open(":memory:");
+      r1 = sqlite_query(db, "SELECT 1; SELECT 2");
+      r2 = sqlite_query(db, "CREATE TABLE t (a); INSERT INTO t VALUES (7); SELECT a FROM t; SELECT 8, 9");
+      r3 = sqlite_query(db, "SELECT 1; SELEC 2");
+      r4 = sqlite_query(db, "SELECT 1 AS x; SELECT 2 AS y", 1);
+      sqlite_close(db);
+      return toliteral({r1, r2, r3, r4});
+    expect:
+      value: '{{{1}, {2}}, {{7}, {8, 9}}, "near \"SELEC\": syntax error", {{{"x", 1}}, {{"y", 2}}}}'
+
+  - name: sqlite_execute_empty_statement_is_not_an_error_string
+    description: |
+      sqlite3_prepare_v2 of empty text yields no statement; sqlite3_step on it
+      fails and sqlite3_errmsg reports "not an error".
+    permission: wizard
+    statement: |
+      db = sqlite_open(":memory:");
+      r = {sqlite_execute(db, "", {}), sqlite_execute(db, "  -- comment", {1}), sqlite_query(db, ""), sqlite_query(db, " ; ")};
+      sqlite_close(db);
+      return toliteral(r);
+    expect:
+      value: '{"not an error", "not an error", {}, {}}'
+
+  - name: sqlite_regexp_function_uses_pcre
+    description: sqlite_open registers REGEXP(pattern, string) backed by PCRE2.
+    permission: wizard
+    statement: |
+      db = sqlite_open(":memory:");
+      r = {sqlite_query(db, "SELECT 'x' REGEXP 'x', 'abc' REGEXP '^b', 'abc' REGEXP 'b', 'ABC' REGEXP 'b', 'a1' REGEXP '\\d', 12 REGEXP '^1'"), sqlite_query(db, "SELECT 'x' REGEXP NULL"), sqlite_query(db, "SELECT NULL REGEXP 'x'"), sqlite_execute(db, "SELECT ? REGEXP ?", {"hello", "l+"})};
+      sqlite_close(db);
+      return toliteral(r);
+    expect:
+      value: '{{{1, 0, 1, 0, 1, 1}}, "SQLite REGEXP called with invalid pattern.", "SQLite REGEXP called with invalid string.", {{1}}}'
+
+  - name: sqlite_blob_columns_stop_at_nul
+    permission: wizard
+    statement: |
+      db = sqlite_open(":memory:");
+      r = {sqlite_query(db, "SELECT x'4142', x'610062'"), sqlite_execute(db, "SELECT x'610062'", {})};
+      sqlite_close(db);
+      return toliteral(r);
+    expect:
+      value: '{{{"AB", "a"}}, {{"a"}}}'

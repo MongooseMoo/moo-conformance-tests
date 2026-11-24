@@ -1,0 +1,107 @@
+name: collection_assignment_base_reassigned
+description: >
+  Index and range assignment whose index, range bound or right-hand side
+  assigns the base variable. MOO pushes the base variable's value before it
+  evaluates any index, bound or value (code_gen.cc push_lvalue, EXPR_ASGN),
+  updates that pushed value, and stores the result into the variable last. So
+  an operand that assigns the base neither changes which value is updated nor
+  survives the assignment: the result is the original value with the one
+  element or range replaced. From MongooseMoo/barn issue 1124.
+
+requires:
+  builtins:
+    - toliteral
+
+tests:
+  - name: range_start_assigning_base_bounds_against_original_value
+    description: >
+      The issue 1124 form. The range is checked against the pushed list
+      {1, 2, 3, 4}, not the integer the start bound assigned, so a start of
+      22 raises E_RANGE.
+    statement: |
+      l = {1, l = 2, 3, 4};
+      return `l[l = 22..3] = {"x"} ! ANY';
+    expect:
+      value: E_RANGE
+
+  - name: range_start_assigning_base_updates_original_list
+    statement: |
+      l = {1, 2, 3, 4};
+      l[l = 2..3] = {"x"};
+      return l;
+    expect:
+      value: [1, "x", 4]
+
+  - name: index_assigning_base_updates_original_list
+    statement: |
+      l = {1, 2, 3};
+      l[l = 2] = 9;
+      return l;
+    expect:
+      value: [1, 9, 3]
+
+  - name: string_range_start_assigning_base_updates_original_string
+    statement: |
+      l = "abcd";
+      l[l = 2..3] = "x";
+      return l;
+    expect:
+      value: "axd"
+
+  - name: value_assigning_base_is_overwritten
+    statement: |
+      l = {1, 2, 3};
+      l[2] = (l = 5);
+      return l;
+    expect:
+      value: [1, 5, 3]
+
+  - name: value_index_assigning_base_is_overwritten
+    statement: |
+      l = {1, 2, 3};
+      l[1] = (l[2] = 7);
+      return l;
+    expect:
+      value: [7, 2, 3]
+
+  - name: nested_index_assigning_base_updates_original_list
+    statement: |
+      l = {{1, 2}, {3, 4}};
+      l[1][l = 2] = 9;
+      return l;
+    expect:
+      value: [[1, 9], [3, 4]]
+
+  - name: nested_range_assigning_base_updates_original_list
+    statement: |
+      l = {{1, 2, 3}, 4};
+      l[1][l = 2..3] = {"y"};
+      return l;
+    expect:
+      value: [[1, "y"], 4]
+
+  - name: dollar_measures_original_base
+    description: $ is the length of the pushed list, before the index assigns the base
+    statement: |
+      l = {1, 2, 3};
+      l[$ - (l = 1)] = 0;
+      return l;
+    expect:
+      value: [1, 0, 3]
+
+  - name: map_key_assigning_base_updates_original_map
+    statement: |
+      l = ["a" -> 1];
+      l[(l = 3) && "b"] = 2;
+      return toliteral(l);
+    expect:
+      value: '["a" -> 1, "b" -> 2]'
+
+  - name: index_assigning_base_in_other_case_updates_original_list
+    description: Variable names are case-insensitive; L is the same variable as l
+    statement: |
+      l = {1, 2, 3};
+      l[L = 2] = 4;
+      return L;
+    expect:
+      value: [1, 4, 3]

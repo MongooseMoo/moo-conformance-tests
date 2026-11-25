@@ -1,0 +1,30 @@
+name: string_search_wide_offsets
+description: String searches interpret the low 32 bits of the offset as a signed integer.
+
+requires:
+  builtins:
+    - index
+    - rindex
+  features:
+    - 64bit
+
+tests:
+  - name: index_wide_offset_wraps_to_negative
+    code: 'index("b", "x", 0, 9223372036854775807)'
+    expect:
+      error: E_INVARG
+
+  - name: index_wide_offset_wraps_to_zero
+    code: 'index("abcabc", "abc", 0, -4294967296)'
+    expect:
+      value: 1
+
+  - name: rindex_wide_offset_wraps_to_negative
+    code: 'rindex("abcabc", "abc", 0, 4294967295)'
+    expect:
+      value: 1
+
+  - name: rindex_wide_offset_wraps_to_zero
+    code: 'rindex("abcabc", "abc", 0, 4294967296)'
+    expect:
+      value: 4

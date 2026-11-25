@@ -1,0 +1,18 @@
+name: clear_property_invalid_object
+description: clear_property raises E_INVARG for invalid object numbers.
+
+requires:
+  builtins: [clear_property]
+
+tests:
+  - name: clear_property_invalid_object_nothing
+    permission: wizard
+    code: 'clear_property(#-1, "x")'
+    expect:
+      error: E_INVARG
+
+  - name: clear_property_invalid_object_never_created
+    permission: wizard
+    code: 'clear_property(#12345, "x")'
+    expect:
+      error: E_INVARG

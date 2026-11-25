@@ -166,6 +166,7 @@ jobs:
           ref: ${{ github.workflow_sha }}
           path: controller
           persist-credentials: false
+          submodules: true
 
       - name: Check out candidate conformance data
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

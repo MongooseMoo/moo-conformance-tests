@@ -1,0 +1,332 @@
+name: limits_argument_list
+description: >
+  ToastStunt builds the arguments of a builtin call, verb call or pass() as a
+  list (code_gen.cc generate_arg_list: OP_MAKE_SINGLETON_LIST for the first
+  argument, OP_LIST_ADD_TAIL for each later one, OP_CHECK_LIST_FOR_SPLICE /
+  OP_LIST_APPEND for splices). OP_LIST_ADD_TAIL and OP_LIST_APPEND keep the
+  list only while value_bytes(list) <= max_list_value_bytes; otherwise
+  PUSH_ERROR_UNLESS_QUOTA(E_QUOTA) raises E_QUOTA when max_concat_catchable
+  is true and aborts the task as out of seconds when it is not. These tests
+  pin that at the default limit (64537861 bytes) with two strings whose
+  argument list takes exactly the limit or one byte more, and pin when the
+  check runs relative to evaluating later arguments.
+
+requires:
+  builtins: [add_property, delete_property, load_server_options, add_verb, set_verb_code, create, recycle, equal, value_bytes]
+
+# Suite teardowns do not run between files, so an earlier file's limit
+# properties (server/limits.yaml sets them to 1000000) can still be defined.
+# The setup removes them first: these tests need the defaults.
+setup:
+  permission: wizard
+  code: |
+    delete_property($server_options, "max_string_concat");
+    delete_property($server_options, "max_list_value_bytes");
+    delete_property($server_options, "max_map_value_bytes");
+    delete_property($server_options, "max_concat_catchable");
+    add_property($server_options, "max_concat_catchable", 0, {player, "r"});
+    load_server_options();
+    add_property(#0, "arglist_mark", 0, {player, "rw"});
+    add_property(#0, "arglist_s", "", {player, "rw"});
+    add_property(#0, "arglist_t", "", {player, "rw"});
+    add_property(#0, "arglist_parent", create(#1), {player, "rw"});
+    add_property(#0, "arglist_child", create(#0.arglist_parent), {player, "rw"});
+    add_verb(#0.arglist_parent, {player, "rxd", "take"}, {"this", "none", "this"});
+    set_verb_code(#0.arglist_parent, "take", {"return length(args);"});
+    add_verb(#0.arglist_child, {player, "rxd", "take"}, {"this", "none", "this"});
+    set_verb_code(#0.arglist_child, "take", {"if (args[1])", "return pass(#0.arglist_t, #0.arglist_t);", "endif", "return pass(#0.arglist_s, #0.arglist_t);"});
+    add_verb(#0.arglist_parent, {player, "rxd", "build"}, {"this", "none", "this"});
+    set_verb_code(#0.arglist_parent, "build", {"x = \"x\";", "for i in [1..25]", "x = x + x;", "endfor", "#0.arglist_s = x[1..32268897];", "#0.arglist_t = #0.arglist_s + \"x\";", "return {length(#0.arglist_s), length(#0.arglist_t)};"});
+    #0.arglist_parent:build();
+
+teardown:
+  permission: wizard
+  code: |
+    delete_property($server_options, "max_concat_catchable");
+    delete_property($server_options, "max_list_value_bytes");
+    load_server_options();
+    recycle(#0.arglist_child);
+    recycle(#0.arglist_parent);
+    delete_property(#0, "arglist_child");
+    delete_property(#0, "arglist_parent");
+    delete_property(#0, "arglist_s");
+    delete_property(#0, "arglist_t");
+    delete_property(#0, "arglist_mark");
+
+tests:
+  - name: default_limit_argument_lists_at_and_past_limit_when_catchable
+    description: >
+      At the default max_list_value_bytes, {s, t} takes exactly 64537861
+      bytes and is allowed; {t, t} takes one byte more and raises E_QUOTA for
+      a builtin call, a verb call and pass().
+    steps:
+      - run: |
+          $server_options.max_concat_catchable = 1;
+          load_server_options();
+          return 1;
+        as: wizard
+      - run: |
+          s = #0.arglist_s;
+          t = #0.arglist_t;
+          p = #0.arglist_parent;
+          c = #0.arglist_child;
+          return {length(s), value_bytes({s, t}), equal(s, t), `equal(t, t) ! ANY', p:take(s, t), `p:take(t, t) ! ANY', c:take(0), `c:take(1) ! ANY'};
+        as: wizard
+        expect:
+          value: [32268897, 64537861, 0, "E_QUOTA", 2, "E_QUOTA", 2, "E_QUOTA"]
+    cleanup:
+      - run: |
+          $server_options.max_concat_catchable = 0;
+          load_server_options();
+        as: wizard
+
+  - name: default_limit_builtin_argument_list_past_limit_aborts
+    description: >
+      With max_concat_catchable false a builtin call whose argument list is one
+      byte past the default limit aborts the task; at the limit it runs.
+    steps:
+      - run: |
+          s = #0.arglist_s;
+          t = #0.arglist_t;
+          #0.arglist_mark = {"started"};
+          #0.arglist_mark = {"under", equal(s, t)};
+          try
+            equal(t, t);
+            #0.arglist_mark = "completed";
+          except (ANY)
+            #0.arglist_mark = "caught";
+          endtry
+          return #0.arglist_mark;
+        as: wizard
+        expect:
+          match: "Task ran out of seconds"
+      - run: "return #0.arglist_mark;"
+        as: wizard
+        expect:
+          value: ["under", 0]
+
+  - name: default_limit_verb_argument_list_past_limit_aborts
+    description: >
+      With max_concat_catchable false a verb call whose argument list is one
+      byte past the default limit aborts the task; at the limit it runs.
+    steps:
+      - run: |
+          s = #0.arglist_s;
+          t = #0.arglist_t;
+          p = #0.arglist_parent;
+          #0.arglist_mark = {"started"};
+          #0.arglist_mark = {"under", p:take(s, t)};
+          try
+            p:take(t, t);
+            #0.arglist_mark = "completed";
+          except (ANY)
+            #0.arglist_mark = "caught";
+          endtry
+          return #0.arglist_mark;
+        as: wizard
+        expect:
+          match: "Task ran out of seconds"
+      - run: "return #0.arglist_mark;"
+        as: wizard
+        expect:
+          value: ["under", 2]
+
+  - name: default_limit_pass_argument_list_past_limit_aborts
+    description: >
+      With max_concat_catchable false a pass() whose argument list is one byte
+      past the default limit aborts the task; at the limit it runs.
+    steps:
+      - run: |
+          c = #0.arglist_child;
+          #0.arglist_mark = {"started"};
+          #0.arglist_mark = {"under", c:take(0)};
+          try
+            c:take(1);
+            #0.arglist_mark = "completed";
+          except (ANY)
+            #0.arglist_mark = "caught";
+          endtry
+          return #0.arglist_mark;
+        as: wizard
+        expect:
+          match: "Task ran out of seconds"
+      - run: "return #0.arglist_mark;"
+        as: wizard
+        expect:
+          value: ["under", 2]
+
+  - name: later_arguments_are_not_evaluated_after_the_list_passes_the_limit
+    description: >
+      In a verb with the d flag the check runs as each argument joins the list,
+      so an argument after the one that takes the list past the limit is never
+      evaluated: its side effect does not happen and its error is not raised.
+    steps:
+      - run: |
+          add_property($server_options, "max_list_value_bytes", 1100, {player, "r"});
+          $server_options.max_concat_catchable = 1;
+          load_server_options();
+          #0.arglist_mark = 0;
+          return 1;
+        as: wizard
+      - run: |
+          x = "";
+          for i in [1..600]
+            x = x + "x";
+          endfor
+          p = #0.arglist_parent;
+          return {`equal(x, x, #0.arglist_mark = "builtin") ! ANY', `p:take(x, x, #0.arglist_mark = "verb") ! ANY', `equal(x, x, 1 / 0) ! ANY', `p:take(x, x, 1 / 0) ! ANY', #0.arglist_mark};
+        as: wizard
+        expect:
+          value: ["E_QUOTA", "E_QUOTA", "E_QUOTA", "E_QUOTA", 0]
+    cleanup:
+      - run: |
+          delete_property($server_options, "max_list_value_bytes");
+          $server_options.max_concat_catchable = 0;
+          load_server_options();
+          #0.arglist_mark = 0;
+        as: wizard
+
+  - name: pass_later_arguments_are_not_evaluated_after_the_list_passes_the_limit
+    description: The same order for pass() in a verb with the d flag.
+    steps:
+      - run: |
+          p = #0.arglist_parent;
+          c = #0.arglist_child;
+          add_verb(p, {player, "rxd", "passmark"}, {"this", "none", "this"});
+          set_verb_code(p, "passmark", {"return length(args);"});
+          add_verb(c, {player, "rxd", "passmark"}, {"this", "none", "this"});
+          set_verb_code(c, "passmark", {"x = args[1];", "return {`pass(x, x, #0.arglist_mark = \"pass\") ! ANY', `pass(x, x, 1 / 0) ! ANY'};"});
+          add_property($server_options, "max_list_value_bytes", 1100, {player, "r"});
+          $server_options.max_concat_catchable = 1;
+          load_server_options();
+          #0.arglist_mark = 0;
+          return 1;
+        as: wizard
+      - run: |
+          x = "";
+          for i in [1..600]
+            x = x + "x";
+          endfor
+          return {#0.arglist_child:passmark(x), #0.arglist_mark};
+        as: wizard
+        expect:
+          value: [["E_QUOTA", "E_QUOTA"], 0]
+    cleanup:
+      - run: |
+          delete_property($server_options, "max_list_value_bytes");
+          $server_options.max_concat_catchable = 0;
+          load_server_options();
+          #0.arglist_mark = 0;
+          delete_verb(#0.arglist_child, "passmark");
+          delete_verb(#0.arglist_parent, "passmark");
+        as: wizard
+
+  - name: argument_list_past_limit_in_verb_without_debug_flag
+    description: >
+      In a verb without the d flag the refused list becomes the value E_QUOTA,
+      the remaining arguments are still evaluated, and the call itself is then
+      given a non-list argument list.
+    steps:
+      - run: |
+          p = #0.arglist_parent;
+          c = #0.arglist_child;
+          add_verb(p, {player, "rx", "nod"}, {"this", "none", "this"});
+          set_verb_code(p, "nod", {"x = args[1];", "return {equal(x, x), this:take(x, x), equal(x, x, #0.arglist_mark = \"evaluated\"), #0.arglist_mark, equal(x, x, 1 / 0)};"});
+          add_verb(p, {player, "rxd", "nodpass"}, {"this", "none", "this"});
+          set_verb_code(p, "nodpass", {"return length(args);"});
+          add_verb(c, {player, "rx", "nodpass"}, {"this", "none", "this"});
+          set_verb_code(c, "nodpass", {"x = args[1];", "return pass(x, x);"});
+          add_property($server_options, "max_list_value_bytes", 1100, {player, "r"});
+          $server_options.max_concat_catchable = 1;
+          load_server_options();
+          #0.arglist_mark = 0;
+          return 1;
+        as: wizard
+      - run: |
+          x = "";
+          for i in [1..600]
+            x = x + "x";
+          endfor
+          return {#0.arglist_parent:nod(x), #0.arglist_child:nodpass(x)};
+        as: wizard
+        expect:
+          value: [["E_TYPE", "E_TYPE", "E_TYPE", "evaluated", "E_TYPE"], "E_TYPE"]
+    cleanup:
+      - run: |
+          delete_property($server_options, "max_list_value_bytes");
+          $server_options.max_concat_catchable = 0;
+          load_server_options();
+          #0.arglist_mark = 0;
+          delete_verb(#0.arglist_child, "nodpass");
+          delete_verb(#0.arglist_parent, "nodpass");
+          delete_verb(#0.arglist_parent, "nod");
+        as: wizard
+
+  - name: lone_spliced_list_past_limit_is_not_checked
+    description: >
+      A call whose only argument is one splice is given the spliced list
+      without a size check (OP_CHECK_LIST_FOR_SPLICE), even when that list is
+      past the limit; splicing it after another argument is checked.
+    steps:
+      - run: |
+          p = #0.arglist_parent;
+          c = #0.arglist_child;
+          add_verb(p, {player, "rxd", "spl"}, {"this", "none", "this"});
+          set_verb_code(p, "spl", {"return length(args);"});
+          add_verb(c, {player, "rxd", "spl"}, {"this", "none", "this"});
+          set_verb_code(c, "spl", {"return {pass(@args), `pass(1, @args) ! ANY'};"});
+          x = "";
+          for i in [1..600]
+            x = x + "x";
+          endfor
+          #0.arglist_mark = {x, x};
+          add_property($server_options, "max_list_value_bytes", 1100, {player, "r"});
+          $server_options.max_concat_catchable = 1;
+          load_server_options();
+          return value_bytes(#0.arglist_mark);
+        as: wizard
+        expect:
+          value: 1266
+      - run: |
+          big = #0.arglist_mark;
+          return {equal(@big), #0.arglist_parent:spl(@big), #0.arglist_child:spl(@big), `equal(1, @big) ! ANY', `#0.arglist_parent:spl(1, @big) ! ANY'};
+        as: wizard
+        expect:
+          value: [1, 2, [2, "E_QUOTA"], "E_QUOTA", "E_QUOTA"]
+    cleanup:
+      - run: |
+          delete_property($server_options, "max_list_value_bytes");
+          $server_options.max_concat_catchable = 0;
+          load_server_options();
+          #0.arglist_mark = 0;
+          delete_verb(#0.arglist_child, "spl");
+          delete_verb(#0.arglist_parent, "spl");
+        as: wizard
+
+  - name: one_element_list_past_limit_is_not_checked
+    description: >
+      The first element of a list literal or argument list becomes a singleton
+      list (OP_MAKE_SINGLETON_LIST) without a size check, so a one-element list
+      past the limit is built; adding a second element is checked.
+    steps:
+      - run: |
+          add_property($server_options, "max_list_value_bytes", 1100, {player, "r"});
+          $server_options.max_concat_catchable = 1;
+          load_server_options();
+          return 1;
+        as: wizard
+      - run: |
+          x = "";
+          for i in [1..1500]
+            x = x + "x";
+          endfor
+          return {length({x}), value_bytes({x}), `{x, 1} ! ANY', `{1, x} ! ANY', #0.arglist_parent:take(x)};
+        as: wizard
+        expect:
+          value: [1, 1549, "E_QUOTA", "E_QUOTA", 1]
+    cleanup:
+      - run: |
+          delete_property($server_options, "max_list_value_bytes");
+          $server_options.max_concat_catchable = 0;
+          load_server_options();
+        as: wizard

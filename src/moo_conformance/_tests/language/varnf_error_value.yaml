@@ -1,0 +1,23 @@
+name: varnf_error_value
+tests:
+  - name: varnf_error_value_for_unbound_read
+    description: A caught unbound-variable read reports the missing variable in the error value.
+    statement: |
+      try
+        retur / 0;
+      except e (E_VARNF)
+        return {e[2], e[3]};
+      endtry
+    expect:
+      value: ["Variable not found: retur", ["#-1", "retur"]]
+
+  - name: varnf_error_value_for_unbound_indexed_assignment
+    description: Indexed assignment through an unbound variable reports the base variable in the error value.
+    statement: |
+      try
+        missing_base[1] = 2;
+      except e (E_VARNF)
+        return e[3];
+      endtry
+    expect:
+      value: ["#-1", "missing_base"]

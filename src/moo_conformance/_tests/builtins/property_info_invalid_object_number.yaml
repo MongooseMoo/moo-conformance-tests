@@ -1,0 +1,26 @@
+name: property_info_invalid_object_number
+description: >
+  property_info() raises E_INVARG for any object that is not valid, whatever
+  its number: negative sentinels such as #-1, other negative numbers, and
+  never-created numbers, for both built-in and ordinary property names.
+
+requires:
+  builtins:
+    - property_info
+
+tests:
+  - name: property_info_invalid_object_{kind}
+    permission: wizard
+    table:
+      columns: [kind, expr]
+      rows:
+        - [nothing_tab_name, 'property_info(#-1, "be\t")']
+        - [nothing_builtin_name, 'property_info(#-1, "name")']
+        - [nothing_missing_name, 'property_info(#-1, "no_such_prop")']
+        - [failed_match, 'property_info(#-2, "name")']
+        - [ambiguous_match, 'property_info(#-3, "no_such_prop")']
+        - [large_negative, 'property_info(#-12345, "name")']
+        - [never_created, 'property_info(#999999, "name")']
+    code: "{expr}"
+    expect:
+      error: E_INVARG

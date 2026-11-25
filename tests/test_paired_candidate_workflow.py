@@ -552,6 +552,21 @@ def test_each_toast_profile_stages_admission_before_complete_packaged_surface() 
     assert "--fail-on-unexpected-skip" in packaged
 
 
+def test_toast_failed_attempt_upload_cannot_shadow_a_retry_report() -> None:
+    workflow = load_workflow(TOAST_WORKFLOW_PATH)
+    upload = steps_by_name(workflow, "full-suite")["Upload Toast conformance evidence"]
+    assert upload["if"] == "always()"
+    assert upload["with"]["name"] == (
+        "${{ job.status == 'success' && 'toast-conformance' || "
+        "format('failed-toast-conformance-attempt-{0}', github.run_attempt) }}-"
+        "${{ matrix.profile }}"
+    )
+    download = steps_by_name(workflow, "execution-ledger")[
+        "Download every Toast profile report"
+    ]
+    assert download["with"]["pattern"] == "toast-conformance-*"
+
+
 def test_toast_generated_state_stays_outside_candidate_anchor() -> None:
     workflow = load_workflow(TOAST_WORKFLOW_PATH)
     steps = steps_by_name(workflow, "full-suite")

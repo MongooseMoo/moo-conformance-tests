@@ -727,6 +727,7 @@ def test_paired_candidate_checkout_is_data_only_and_inventory_is_trusted() -> No
         "ref": "${{ github.workflow_sha }}",
         "path": "controller",
         "persist-credentials": "false",
+        "submodules": "true",
     }
     candidate = steps["Check out candidate conformance data"]["with"]
     assert candidate["ref"] == "${{ needs.validate-inputs.outputs.conformance_sha }}"

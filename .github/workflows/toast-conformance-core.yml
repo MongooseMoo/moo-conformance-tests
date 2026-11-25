@@ -505,7 +505,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: toast-conformance-${{ matrix.profile }}
+          # A failed attempt must retain its diagnostics without sharing a ledger report name.
+          name: ${{ job.status == 'success' && 'toast-conformance' || format('failed-toast-conformance-attempt-{0}', github.run_attempt) }}-${{ matrix.profile }}
           path: ${{ env.REPORTS_DIR }}
           if-no-files-found: error
           retention-days: 14

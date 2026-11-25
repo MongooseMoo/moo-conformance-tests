@@ -1,0 +1,83 @@
+name: pcre_cache_stats
+description: >
+  pcre_cache_stats() reports the process-wide compiled-pattern cache that
+  pcre_match() fills: one {pattern, hits} list per cached pattern. A fresh
+  server has an empty cache. The first pcre_match() of a pattern adds it with 0
+  hits and each later match of the same pattern with the same case option adds
+  one hit; the case-sensitive and case-insensitive compiles of one pattern are
+  separate entries. pcre_replace() does not use the cache, and a pattern that
+  fails to compile is not cached. The cache holds 20 patterns; a miss on a full
+  cache evicts the pattern with the fewest hits before compiling, even when the
+  new pattern then fails to compile. Entry order is unspecified, so these tests
+  check membership and length, never position, except for single-entry caches.
+  Non-wizard callers get E_PERM (pcre.yaml pcre_cache_stats_permission).
+requires:
+  config: [managed_server]
+  builtins: [pcre_cache_stats, pcre_match, pcre_replace]
+
+tests:
+  - name: pcre_cache_stats_counts_hits_per_pattern_and_case
+    steps:
+      - restart_server: {reset_db: true}
+      - run: |
+          s0 = pcre_cache_stats();
+          pcre_match("abc", "b");
+          s1 = pcre_cache_stats();
+          pcre_match("abc", "b");
+          pcre_match("xbx", "b");
+          s2 = pcre_cache_stats();
+          pcre_match("abc", "b", 1);
+          s3 = pcre_cache_stats();
+          return {s0, s1, s2, length(s3), {"b", 2} in s3 != 0, {"b", 0} in s3 != 0};
+        as: wizard
+        expect: {value: [[], [["b", 0]], [["b", 2]], 2, 1, 1]}
+      - restart_server: {reset_db: true}
+
+  - name: pcre_cache_stats_only_successful_pcre_match_compiles
+    steps:
+      - restart_server: {reset_db: true}
+      - run: |
+          r = pcre_replace("abc", "s/b/x/");
+          bad = `pcre_match("abc", "(") ! E_INVARG => E_INVARG';
+          empty_pattern = `pcre_match("", "") ! E_INVARG => E_INVARG';
+          s0 = pcre_cache_stats();
+          empty_subject = pcre_match("", "q");
+          return {r, bad, empty_pattern, s0, empty_subject, pcre_cache_stats()};
+        as: wizard
+        expect: {value: ["axc", E_INVARG, E_INVARG, [], [], [["q", 0]]]}
+      - restart_server: {reset_db: true}
+
+  - name: pcre_cache_stats_full_cache_evicts_fewest_hits
+    steps:
+      - restart_server: {reset_db: true}
+      - run: |
+          for i in [1..20]
+            pcre_match("x", tostr("p", i));
+          endfor
+          for i in [2..20]
+            pcre_match("x", tostr("p", i));
+          endfor
+          full = pcre_cache_stats();
+          pcre_match("x", "new");
+          s = pcre_cache_stats();
+          return {length(full), length(s), {"p1", 0} in s, {"new", 0} in s != 0, {"p2", 1} in s != 0, {"p20", 1} in s != 0};
+        as: wizard
+        expect: {value: [20, 20, 0, 1, 1, 1]}
+      - restart_server: {reset_db: true}
+
+  - name: pcre_cache_stats_failed_compile_still_evicts_on_full_cache
+    steps:
+      - restart_server: {reset_db: true}
+      - run: |
+          for i in [1..20]
+            pcre_match("x", tostr("p", i));
+          endfor
+          for i in [2..20]
+            pcre_match("x", tostr("p", i));
+          endfor
+          bad = `pcre_match("x", "(") ! E_INVARG => E_INVARG';
+          s = pcre_cache_stats();
+          return {bad, length(s), {"p1", 0} in s, {"p2", 1} in s != 0};
+        as: wizard
+        expect: {value: [E_INVARG, 19, 0, 1]}
+      - restart_server: {reset_db: true}

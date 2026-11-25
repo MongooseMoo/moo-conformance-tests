@@ -1,0 +1,59 @@
+name: match_trailing_percent
+description: >
+  '%' is the MOO regex escape character. A pattern that ends in a lone '%'
+  has nothing for the escape to quote, so the pattern fails to compile and
+  match() and rmatch() raise E_INVARG, whatever the subject. A quoted '%'
+  ("%%") at the end of a pattern is a literal '%' and still compiles.
+  From MongooseMoo/barn#1167 (issue #1152). Expected values captured from the
+  WSL ToastStunt oracle (build-release, stock).
+
+requires:
+  builtins:
+    - match
+    - rmatch
+
+tests:
+  - name: match_lone_percent_raises_invarg
+    code: 'match("x", "%")'
+    expect:
+      error: E_INVARG
+
+  - name: match_lone_percent_empty_subject_raises_invarg
+    code: 'match("", "%")'
+    expect:
+      error: E_INVARG
+
+  - name: match_trailing_percent_after_literal_raises_invarg
+    code: 'match("a%", "a%")'
+    expect:
+      error: E_INVARG
+
+  - name: match_odd_percent_run_raises_invarg
+    code: 'match("a%", "%%%")'
+    expect:
+      error: E_INVARG
+
+  - name: rmatch_lone_percent_raises_invarg
+    code: 'rmatch("x", "%")'
+    expect:
+      error: E_INVARG
+
+  - name: rmatch_trailing_percent_after_literal_raises_invarg
+    code: 'rmatch("a%", "a%")'
+    expect:
+      error: E_INVARG
+
+  - name: rmatch_odd_percent_run_raises_invarg
+    code: 'rmatch("a%", "%%%")'
+    expect:
+      error: E_INVARG
+
+  - name: match_trailing_quoted_percent_is_literal
+    code: 'match("a%", "a%%")'
+    expect:
+      value: [1, 2, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "a%"]
+
+  - name: rmatch_trailing_quoted_percent_is_literal
+    code: 'rmatch("%a%", "%%")'
+    expect:
+      value: [3, 3, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "%a%"]

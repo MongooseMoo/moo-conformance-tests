@@ -1,0 +1,52 @@
+name: parse_json_mode
+description: >
+  parse_json()'s optional second argument names the mode. Only
+  "common-subset" and "embedded-types" are accepted, compared without regard
+  to case. Any other string raises E_INVARG before the document is parsed, so
+  even a valid document fails; a string merely containing "embedded" does not
+  select embedded-types mode.
+
+requires:
+  builtins:
+    - parse_json
+
+tests:
+  - name: parse_json_mode_common_subset_mixed_case
+    code: 'parse_json("\"#1|obj\"", "CoMmOn-SuBsEt")'
+    expect:
+      value: "#1|obj"
+
+  - name: parse_json_mode_embedded_types_upper_case
+    code: 'parse_json("\"#1|obj\"", "EMBEDDED-TYPES")'
+    expect:
+      value: "#1"
+
+  - name: parse_json_mode_single_letter_is_invarg
+    code: 'parse_json("1", "x")'
+    expect:
+      error: E_INVARG
+
+  - name: parse_json_mode_empty_is_invarg
+    code: 'parse_json("1", "")'
+    expect:
+      error: E_INVARG
+
+  - name: parse_json_mode_unknown_word_is_invarg
+    code: 'parse_json("1", "pretty")'
+    expect:
+      error: E_INVARG
+
+  - name: parse_json_mode_embedded_prefix_is_invarg
+    code: 'parse_json("1", "embedded")'
+    expect:
+      error: E_INVARG
+
+  - name: parse_json_mode_containing_embedded_types_is_invarg
+    code: 'parse_json("\"#1|obj\"", "not-embedded-types")'
+    expect:
+      error: E_INVARG
+
+  - name: parse_json_mode_trailing_space_is_invarg
+    code: 'parse_json("1", "common-subset ")'
+    expect:
+      error: E_INVARG

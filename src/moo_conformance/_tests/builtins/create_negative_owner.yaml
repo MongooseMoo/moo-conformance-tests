@@ -1,0 +1,19 @@
+name: create_negative_owner
+description: An explicit object owner below $nothing is invalid regardless of the anonymous flag.
+requires:
+  builtins:
+    - create
+
+tests:
+  - name: create_rejects_negative_object_owner_{case}
+    permission: wizard
+    table:
+      columns: [case, arguments]
+      rows:
+        - [ambiguous_match, '#0, #-2']
+        - [failed_match, '#0, #-3']
+        - [numbered_flag, '#0, #-2, 0']
+        - [anonymous_flag, '#0, #-2, 1']
+    code: "create({arguments})"
+    expect:
+      error: E_INVARG

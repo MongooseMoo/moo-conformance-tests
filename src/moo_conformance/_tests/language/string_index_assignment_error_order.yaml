@@ -1,0 +1,55 @@
+name: string_index_assignment_error_order
+description: >
+  Assigning into a single string index (execute.cc OP_INDEXSET) raises E_TYPE
+  when the index is not an integer or the value is not a string, before it
+  checks the index range. Only then does an out-of-range index raise E_RANGE,
+  and last a string value whose length is not 1 raises E_INVARG.
+
+tests:
+  - name: non_string_value_raises_e_type_before_range
+    statement: |
+      r = {};
+      s = "%$a";
+      r = {@r, `s[9223372036854775807] = #0 ! ANY'};
+      r = {@r, `s[5] = #0 ! ANY'};
+      r = {@r, `s[0] = #0 ! ANY'};
+      r = {@r, `s[1] = #0 ! ANY'};
+      s = "abc";
+      r = {@r, `s[5] = 1 ! ANY'};
+      r = {@r, `s[-1] = 1.5 ! ANY'};
+      r = {@r, `s[4] = {"x"} ! ANY'};
+      return {r, s};
+    expect:
+      value: [[E_TYPE, E_TYPE, E_TYPE, E_TYPE, E_TYPE, E_TYPE, E_TYPE], "abc"]
+
+  - name: nested_string_index_non_string_value_raises_e_type
+    statement: |
+      l = {"abc"};
+      return {`l[1][5] = #0 ! ANY', `l[1][2] = #0 ! ANY', l};
+    expect:
+      value: [E_TYPE, E_TYPE, ["abc"]]
+
+  - name: string_value_out_of_range_raises_e_range_before_length
+    statement: |
+      s = "%$a";
+      r = {`s[5] = "x" ! ANY', `s[0] = "x" ! ANY'};
+      s = "abc";
+      r = {@r, `s[5] = "xy" ! ANY', `s[0] = "" ! ANY'};
+      return {r, s};
+    expect:
+      value: [[E_RANGE, E_RANGE, E_RANGE, E_RANGE], "abc"]
+
+  - name: in_range_wrong_length_string_raises_e_invarg
+    statement: |
+      s = "abc";
+      return {`s[2] = "xy" ! ANY', `s[2] = "" ! ANY', s};
+    expect:
+      value: [E_INVARG, E_INVARG, "abc"]
+
+  - name: in_range_single_character_assigns
+    statement: |
+      s = "abc";
+      s[2] = "X";
+      return s;
+    expect:
+      value: "aXc"

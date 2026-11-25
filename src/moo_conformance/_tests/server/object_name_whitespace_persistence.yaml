@@ -1,0 +1,30 @@
+name: object_name_whitespace_persistence
+description: Object names keep their spaces across a database checkpoint and managed restart.
+requires:
+  builtins: [create, dump_database, recycle]
+  config: [managed_server]
+tests:
+  - name: object_name_whitespace_survives_checkpoint_restart
+    permission: wizard
+    steps:
+      - run: "return create(#1);"
+        capture: all_spaces
+      - run: "return create(#1);"
+        capture: padded
+      - run: |
+          {all_spaces}.name = "   ";
+          {padded}.name = " a ";
+          return {{all_spaces}.name, {padded}.name};
+        expect:
+          value: ["   ", " a "]
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - restart_server:
+          checkpoint_timeout_ms: 10000
+      - run: "return {{all_spaces}.name, {padded}.name};"
+        expect:
+          value: ["   ", " a "]
+    cleanup:
+      - run: "return recycle({padded});"
+      - run: "return recycle({all_spaces});"

@@ -1,0 +1,101 @@
+name: match_misplaced_dollar
+description: >
+  In a MOO regex pattern, an unescaped '$' outside a bracket class is the
+  end-of-string anchor and is accepted only at the very end of the pattern or
+  immediately before "%|" or "%)". Anywhere else the pattern is invalid and
+  match() / rmatch() raise E_INVARG. An escaped "%$" and a '$' inside a
+  bracket class remain literal characters. From MongooseMoo/barn#1164.
+
+requires:
+  builtins:
+    - match
+    - rmatch
+
+tests:
+  # ===========================================================================
+  # Misplaced '$' -> E_INVARG
+  # ===========================================================================
+
+  - name: match_dollar_mid_pattern_is_invalid
+    code: 'match("ab", "a$b")'
+    expect:
+      error: E_INVARG
+
+  - name: rmatch_dollar_mid_pattern_is_invalid
+    code: 'rmatch("ab", "a$b")'
+    expect:
+      error: E_INVARG
+
+  - name: match_leading_dollar_is_invalid
+    code: 'match("x", "$b")'
+    expect:
+      error: E_INVARG
+
+  - name: rmatch_leading_dollar_is_invalid
+    code: 'rmatch("x", "$b")'
+    expect:
+      error: E_INVARG
+
+  - name: match_double_trailing_dollar_is_invalid
+    code: 'match("a", "a$$")'
+    expect:
+      error: E_INVARG
+
+  - name: rmatch_double_trailing_dollar_is_invalid
+    code: 'rmatch("a", "a$$")'
+    expect:
+      error: E_INVARG
+
+  - name: match_dollar_before_escaped_percent_is_invalid
+    code: 'match("a", "a$%%")'
+    expect:
+      error: E_INVARG
+
+  - name: match_dollar_before_escaped_space_is_invalid
+    code: 'match("$$ b", "e\t% $b")'
+    expect:
+      error: E_INVARG
+
+  # ===========================================================================
+  # Accepted '$' positions
+  # ===========================================================================
+
+  - name: match_trailing_dollar_anchors
+    code: 'match("a", "a$")'
+    expect:
+      value: [1, 1, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "a"]
+
+  - name: rmatch_trailing_dollar_anchors
+    code: 'rmatch("a", "a$")'
+    expect:
+      value: [1, 1, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "a"]
+
+  - name: match_lone_dollar_is_valid
+    code: 'typeof(match("a", "$"))'
+    expect:
+      value: 4
+
+  - name: match_dollar_before_alternation_is_valid
+    code: 'match("a", "a$%|b")'
+    expect:
+      value: [1, 1, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "a"]
+
+  - name: rmatch_dollar_before_alternation_is_valid
+    code: 'rmatch("a", "a$%|b")'
+    expect:
+      value: [1, 1, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "a"]
+
+  - name: match_dollar_before_group_close_is_valid
+    code: 'match("a", "%(a$%)")'
+    expect:
+      value: [1, 1, [[1, 1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "a"]
+
+  - name: match_escaped_dollar_mid_pattern_is_literal
+    code: 'match("x$b", "%$b")'
+    expect:
+      value: [2, 3, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "x$b"]
+
+  - name: match_dollar_in_bracket_class_is_literal
+    code: 'match("a$", "[$]")'
+    expect:
+      value: [2, 2, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "a$"]

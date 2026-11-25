@@ -1,0 +1,52 @@
+name: move_position_low_32_bits
+description: >
+  move(what, where, position) keeps the position argument in a C int, so only
+  the low 32 bits of a wider integer count. 2^63 reads as 0 (append, so the
+  later recursion check is what fails), 2^32 - 1 reads as -1 (E_INVARG), and
+  2^32 + 1 reads as 1 (insert at the front of the contents).
+
+requires:
+  builtins:
+    - move
+    - create
+    - recycle
+
+tests:
+  - name: move_position_two_pow_63_wraps_to_zero
+    permission: wizard
+    statement: |
+      o = create($nothing);
+      r = `move(o, o, -9223372036854775807 - 1) ! ANY';
+      recycle(o);
+      return r;
+    expect:
+      value: E_RECMOVE
+
+  - name: move_position_two_pow_32_minus_one_wraps_to_negative
+    permission: wizard
+    statement: |
+      room = create($nothing);
+      o = create($nothing);
+      r = `move(o, room, 4294967295) ! ANY';
+      loc = o.location;
+      recycle(o);
+      recycle(room);
+      return {r, loc == $nothing};
+    expect:
+      value: [E_INVARG, 1]
+
+  - name: move_position_two_pow_32_plus_one_inserts_at_front
+    permission: wizard
+    statement: |
+      room = create($nothing);
+      a = create($nothing);
+      b = create($nothing);
+      move(a, room);
+      move(b, room, 4294967297);
+      result = room.contents == {b, a};
+      recycle(a);
+      recycle(b);
+      recycle(room);
+      return result;
+    expect:
+      value: 1

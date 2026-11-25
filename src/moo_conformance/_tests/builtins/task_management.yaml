@@ -605,6 +605,63 @@ tests:
     expect:
       value: E_PERM
 
+  - name: kill_task_removes_forked_task_from_callers_queued_tasks
+    description: |
+      A task killed while it waits to start is gone from queued_tasks() at
+      once, in the same task that killed it (tasks.cc kill_task removes it from
+      its queue before returning).
+    permission: wizard
+    statement: |
+      ids = {};
+      for n in [1..2]
+        fork t (5)
+          return;
+        endfork
+        ids = {@ids, t};
+      endfor
+      kill_task(ids[1]);
+      queued = {};
+      for entry in (queued_tasks())
+        if (entry[1] in ids)
+          queued = {@queued, entry[1]};
+        endif
+      endfor
+      kill_task(ids[2]);
+      return queued == {ids[2]};
+    expect:
+      value: 1
+
+  - name: kill_task_removes_suspended_task_from_callers_queued_tasks
+    description: |
+      A task killed while suspended is gone from queued_tasks() at once, in
+      the same task that killed it.
+    permission: wizard
+    statement: |
+      ids = {};
+      for n in [1..2]
+        fork t (0)
+          suspend(5);
+        endfork
+        ids = {@ids, t};
+      endfor
+      for i in [1..50]
+        if (typeof(`task_stack(ids[2]) ! ANY') == LIST)
+          break;
+        endif
+        suspend(0);
+      endfor
+      kill_task(ids[1]);
+      queued = {};
+      for entry in (queued_tasks())
+        if (entry[1] in ids)
+          queued = {@queued, entry[1]};
+        endif
+      endfor
+      kill_task(ids[2]);
+      return queued == {ids[2]};
+    expect:
+      value: 1
+
   # ===================================================================
   # suspend() -- error cases and suspend(0) only
   # ===================================================================

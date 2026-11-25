@@ -1,0 +1,25 @@
+name: objects::chparents_type_precedence
+requires:
+  builtins: [chparents, create, parents, recycle]
+tests:
+  - name: chparents_type_precedence_before_self_parent
+    description: A non-object after a self-parent raises E_TYPE and leaves the parents unchanged.
+    permission: wizard
+    statement: |
+      obj = create($object);
+      try
+        original_parents = parents(obj);
+        result = `chparents(obj, {obj, 3e+300}) ! ANY';
+        return {result, parents(obj) == original_parents};
+      finally
+        recycle(obj);
+      endtry
+    expect:
+      value: [E_TYPE, 1]
+
+  - name: chparents_type_precedence_before_invalid_target
+    description: A non-object parent raises E_TYPE even when the target is invalid.
+    permission: wizard
+    code: "chparents(#-5, {1})"
+    expect:
+      error: E_TYPE

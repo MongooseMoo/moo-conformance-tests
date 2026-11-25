@@ -1,0 +1,60 @@
+name: pcre_empty_match_resume
+description: >
+  With find_all, pcre_match() starts each pass at the end of the previous
+  match, and only while that offset is short of the subject's end. It never
+  steps past an empty match. An empty match before the end of the subject
+  therefore matches again at the same place on every pass until the iteration
+  limit raises E_MAXREC. No pass starts at the end of the subject, so a match
+  that ends there is the last one. From MongooseMoo/barn#1161 (nightly fuzz
+  issue #1143).
+
+requires:
+  builtins:
+    - pcre_match
+
+tests:
+  - name: pcre_empty_match_resume_word_boundary_raises
+    description: "Shape from the fuzz report: an empty \\b match before the end repeats until E_MAXREC"
+    statement: |
+      try
+        return length(pcre_match("\"\ta%ea", "\\b"));
+      except e (ANY)
+        return {e[1] == E_MAXREC, e[2]};
+      endtry
+    expect:
+      value: [1, "Too many iterations of matching loop: 1000"]
+
+  - name: pcre_empty_match_resume_star_at_start_raises
+    description: "x* matches empty at offset 0 of \"ab\" and repeats there until E_MAXREC"
+    statement: |
+      try
+        return length(pcre_match("ab", "x*"));
+      except e (ANY)
+        return {e[1] == E_MAXREC, e[2]};
+      endtry
+    expect:
+      value: [1, "Too many iterations of matching loop: 1000"]
+
+  - name: pcre_empty_match_resume_find_all_off_single_match
+    description: "Without find_all the first empty match is returned alone"
+    statement: |
+      r = pcre_match("ab", "x*", 0, 0);
+      return {length(r), r[1]["0"]["match"], r[1]["0"]["position"]};
+    expect:
+      value: [1, "", [1, 0]]
+
+  - name: pcre_empty_match_resume_match_to_end_is_last
+    description: "a* consumes all of \"aa\"; no further pass starts at the end"
+    statement: |
+      r = pcre_match("aa", "a*");
+      return {length(r), r[1]["0"]["match"]};
+    expect:
+      value: [1, "aa"]
+
+  - name: pcre_empty_match_resume_dollar_single_match
+    description: "$ matches empty at the end; that match is the only one"
+    statement: |
+      r = pcre_match("ab", "$");
+      return {length(r), r[1]["0"]["match"]};
+    expect:
+      value: [1, ""]

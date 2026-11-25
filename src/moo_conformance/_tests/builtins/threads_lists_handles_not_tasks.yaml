@@ -1,0 +1,44 @@
+name: threads_lists_handles_not_tasks
+description: >
+  threads() lists background-thread handles, not tasks. A task that is merely
+  running, waiting in the fork queue, or suspended holds no background handle,
+  so its task id does not appear in threads().
+
+requires:
+  builtins:
+    - threads
+
+tests:
+  - name: threads_omits_running_task
+    description: The running eval task itself is not listed by threads().
+    permission: wizard
+    statement: |
+      return task_id() in threads();
+    expect:
+      value: 0
+
+  - name: threads_omits_queued_forked_task
+    description: A forked task waiting in the queue is not listed by threads().
+    permission: wizard
+    statement: |
+      fork id (60)
+      endfork
+      listed = id in threads();
+      kill_task(id);
+      return listed;
+    expect:
+      value: 0
+
+  - name: threads_omits_suspended_task
+    description: A task suspended with suspend() is not listed by threads().
+    permission: wizard
+    statement: |
+      fork id (0)
+        suspend(60);
+      endfork
+      suspend(0);
+      listed = id in threads();
+      kill_task(id);
+      return listed;
+    expect:
+      value: 0

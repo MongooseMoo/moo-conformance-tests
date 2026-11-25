@@ -1,0 +1,210 @@
+name: unassigned_collection_assignment
+description: >
+  Index and range assignment whose base variable was never assigned. Toast's
+  code generator (code_gen.cc EXPR_ASGN, push_lvalue) pushes the base variable
+  before it generates any index, range bound or right-hand side, and pushing an
+  unassigned variable raises E_VARNF ("Variable not found: <name>"). So the
+  error comes first: no index, bound, ^, $ or right-hand side runs, and an error
+  those would raise is never reached. A property base reads its object
+  expression first, with the same result.
+
+requires:
+  builtins:
+    - toliteral
+
+tests:
+  # ===========================================================================
+  # The three reported forms
+  # ===========================================================================
+
+  - name: unassigned_index_assignment_raises_varnf
+    statement: |
+      return `y[1] = 1 ! ANY';
+    expect:
+      value: E_VARNF
+
+  - name: unassigned_range_assignment_raises_varnf
+    statement: |
+      return `y[1..2] = 1 ! ANY';
+    expect:
+      value: E_VARNF
+
+  - name: unassigned_index_assignment_with_bad_index_raises_varnf
+    description: The index would raise E_TYPE; the base is read first
+    statement: |
+      return `y[~""] = 1 ! ANY';
+    expect:
+      value: E_VARNF
+
+  # ===========================================================================
+  # Nothing after the base runs
+  # ===========================================================================
+
+  - name: unassigned_index_assignment_runs_neither_index_nor_value
+    statement: |
+      log = {};
+      r = `y[(log = {@log, "index"}) && 1] = (log = {@log, "value"}) && 1 ! ANY';
+      return {toliteral(r), log};
+    expect:
+      value: ["E_VARNF", []]
+
+  - name: unassigned_range_assignment_runs_neither_bound_nor_value
+    statement: |
+      log = {};
+      r = `y[(log = {@log, "start"}) && 1..(log = {@log, "end"}) && 1] = (log = {@log, "value"}) && {1} ! ANY';
+      return {toliteral(r), log};
+    expect:
+      value: ["E_VARNF", []]
+
+  - name: unassigned_index_assignment_index_error_not_reached
+    statement: |
+      return `y[1 / 0] = 1 ! ANY';
+    expect:
+      value: E_VARNF
+
+  - name: unassigned_index_assignment_value_error_not_reached
+    statement: |
+      return `y[1] = 1 / 0 ! ANY';
+    expect:
+      value: E_VARNF
+
+  - name: unassigned_range_assignment_bound_error_not_reached
+    statement: |
+      return `y[1..1 / 0] = {1} ! ANY';
+    expect:
+      value: E_VARNF
+
+  - name: unassigned_index_assignment_names_the_base_not_the_index
+    description: With both the base and the index variable unassigned, the error names the base
+    statement: |
+      try
+        y[x] = 1;
+      except e (ANY)
+        return {toliteral(e[1]), e[2]};
+      endtry
+    expect:
+      value: ["E_VARNF", "Variable not found: y"]
+
+  - name: unassigned_range_assignment_names_the_base_not_the_bound
+    statement: |
+      try
+        y[x..z] = {1};
+      except e (ANY)
+        return {toliteral(e[1]), e[2]};
+      endtry
+    expect:
+      value: ["E_VARNF", "Variable not found: y"]
+
+  # ===========================================================================
+  # ^ and $ in the target
+  # ===========================================================================
+
+  - name: unassigned_index_assignment_dollar
+    statement: |
+      return `y[$] = 1 ! ANY';
+    expect:
+      value: E_VARNF
+
+  - name: unassigned_range_assignment_caret_to_dollar
+    statement: |
+      return `y[^..$] = {1} ! ANY';
+    expect:
+      value: E_VARNF
+
+  - name: unassigned_range_assignment_dollar_after_failing_start
+    statement: |
+      return `y[1 / 0..$] = {1} ! ANY';
+    expect:
+      value: E_VARNF
+
+  # ===========================================================================
+  # Nested targets
+  # ===========================================================================
+
+  - name: unassigned_nested_index_assignment
+    statement: |
+      return `y[1][2] = 1 ! ANY';
+    expect:
+      value: E_VARNF
+
+  - name: unassigned_nested_index_assignment_outer_index_not_run
+    statement: |
+      log = {};
+      r = `y[(log = {@log, "outer"}) && 1][(log = {@log, "inner"}) && 2] = (log = {@log, "value"}) && 1 ! ANY';
+      return {toliteral(r), log};
+    expect:
+      value: ["E_VARNF", []]
+
+  - name: unassigned_nested_index_assignment_outer_index_error_not_reached
+    statement: |
+      return `y[1 / 0][2] = 1 ! ANY';
+    expect:
+      value: E_VARNF
+
+  - name: unassigned_nested_range_assignment
+    statement: |
+      log = {};
+      r = `y[(log = {@log, "index"}) && 1][(log = {@log, "start"}) && 1..2] = {} ! ANY';
+      return {toliteral(r), log};
+    expect:
+      value: ["E_VARNF", []]
+
+  - name: unassigned_nested_range_assignment_index_error_not_reached
+    statement: |
+      return `y[1 / 0][1..2] = {} ! ANY';
+    expect:
+      value: E_VARNF
+
+  # ===========================================================================
+  # Property bases read the object first
+  # ===========================================================================
+
+  - name: unassigned_property_index_assignment
+    statement: |
+      log = {};
+      r = `y.x[(log = {@log, "index"}) && 1] = (log = {@log, "value"}) && 1 ! ANY';
+      return {toliteral(r), log};
+    expect:
+      value: ["E_VARNF", []]
+
+  - name: unassigned_dynamic_property_index_assignment
+    statement: |
+      return `y.(1 / 0)[1] = 1 ! ANY';
+    expect:
+      value: E_VARNF
+
+  - name: unassigned_index_then_property_assignment
+    statement: |
+      log = {};
+      r = `y[(log = {@log, "index"}) && 1].x = (log = {@log, "value"}) && 1 ! ANY';
+      return {toliteral(r), log};
+    expect:
+      value: ["E_VARNF", []]
+
+  - name: unassigned_property_assignment
+    statement: |
+      return `y.x = 1 / 0 ! ANY';
+    expect:
+      value: E_VARNF
+
+  # ===========================================================================
+  # Controls: an assigned base keeps the index-then-value order
+  # ===========================================================================
+
+  - name: assigned_index_assignment_runs_index_then_value
+    statement: |
+      y = {0};
+      log = {};
+      y[(log = {@log, "index"}) && 1] = (log = {@log, "value"}) && 5;
+      return {y, log};
+    expect:
+      value: [[5], ["index", "value"]]
+
+  - name: assigned_range_assignment_runs_start_end_then_value
+    statement: |
+      y = {0, 0};
+      log = {};
+      y[(log = {@log, "start"}) && 1..(log = {@log, "end"}) && 2] = (log = {@log, "value"}) && {7};
+      return {y, log};
+    expect:
+      value: [[7], ["start", "end", "value"]]

@@ -1,0 +1,14 @@
+name: match_multiline
+description: Opening anchors at the start of a line.
+
+requires:
+  builtins: [chr, match]
+
+tests:
+  - name: match_caret_after_newline
+    permission: wizard
+    statement: |
+      hit = match("a" + chr(10) + "b", "^b");
+      return {hit ? hit[1..2] | hit, match("ab", "^b")};
+    expect:
+      value: [[3, 3], []]

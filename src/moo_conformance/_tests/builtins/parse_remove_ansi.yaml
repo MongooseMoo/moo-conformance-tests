@@ -33,6 +33,15 @@ tests:
     expect:
       value: "hello world"
 
+  - name: parse_ansi_random_foreground_palette
+    statement: |
+      palette = {parse_ansi("[red]"), parse_ansi("[green]"),
+                 parse_ansi("[yellow]"), parse_ansi("[blue]"),
+                 parse_ansi("[purple]")};
+      return (parse_ansi("[random]") in palette) > 0;
+    expect:
+      value: 1
+
   - name: parse_ansi_null_tag_removed
     description: "[null] tag is replaced with empty string"
     code: 'parse_ansi("[null]text")'
@@ -65,6 +74,11 @@ tests:
     code: 'remove_ansi("hello world")'
     expect:
       value: "hello world"
+
+  - name: remove_ansi_preserves_expanded_escape
+    code: 'remove_ansi(parse_ansi("[red]") + "hello[normal]") == parse_ansi("[red]hello")'
+    expect:
+      value: 1
 
   - name: remove_ansi_all_foreground_colors
     code: 'remove_ansi("[red][green][yellow][blue][purple][cyan][magenta][white][black][gray][grey]text")'

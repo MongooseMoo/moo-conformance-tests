@@ -1,0 +1,50 @@
+name: nested_assignment_through_string
+description: >
+  A string used as an intermediate collection in an indexed or range
+  assignment raises E_TYPE before its index is checked. Accessing a string
+  character still works in a read or at the final level of a write.
+
+tests:
+  - name: index_assignment_through_string
+    statement: |
+      s = "abc";
+      s[1][1] = "z";
+    expect:
+      error: E_TYPE
+
+  - name: range_assignment_through_string
+    statement: |
+      s = "abc";
+      s[1][1..0] = "z";
+    expect:
+      error: E_TYPE
+
+  - name: range_assignment_through_string_out_of_bounds
+    statement: |
+      s = "Root Class";
+      s[174][3..0] = 3;
+    expect:
+      error: E_TYPE
+
+  - name: index_assignment_through_string_inside_list
+    statement: |
+      l = {"abc"};
+      l[1][1][1] = "z";
+    expect:
+      error: E_TYPE
+
+  - name: index_assignment_with_string_at_final_level
+    statement: |
+      l = {"abc"};
+      l[1][1] = "z";
+      return {l, l[1][1]};
+    expect:
+      value: [["zbc"], "z"]
+
+  - name: range_assignment_with_string_at_final_level
+    statement: |
+      l = {"abc"};
+      l[1][1..0] = "z";
+      return l;
+    expect:
+      value: ["zabc"]

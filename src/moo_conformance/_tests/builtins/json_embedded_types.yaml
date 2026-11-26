@@ -1,0 +1,27 @@
+name: json_embedded_types
+description: Embedded JSON type suffixes and string round trips.
+
+requires:
+  builtins: [generate_json, parse_json, typeof]
+
+tests:
+  - name: parse_json_embedded_nondigit_numbers_are_zero
+    statement: |
+      integer = parse_json("\"abc|int\"", "embedded-types");
+      fraction = parse_json("\"abc|float\"", "embedded-types");
+      return {typeof(integer) == INT, integer, typeof(fraction) == FLOAT, fraction};
+    expect:
+      value: [1, 0, 1, 0.0]
+
+  - name: parse_json_embedded_boolean
+    statement: |
+      yes = parse_json("\"true|bool\"", "embedded-types");
+      no = parse_json("\"false|bool\"", "embedded-types");
+      return {typeof(yes) == BOOL, yes == true, typeof(no) == BOOL, no == false};
+    expect:
+      value: [1, 1, 1, 1]
+
+  - name: roundtrip_embedded_json_type_suffix_as_text
+    code: 'parse_json(generate_json("42|int", "embedded-types"), "embedded-types")'
+    expect:
+      value: "42|int"

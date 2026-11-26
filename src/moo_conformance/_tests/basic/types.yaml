@@ -422,6 +422,12 @@ tests:
     expect:
       value: -3.14
 
+  - name: tofloat_hexadecimal_string
+    code: 'tofloat("0x1p2")'
+    expect:
+      type: float
+      value: 4.0
+
   - name: tofloat_no_args
     code: "tofloat()"
     expect:
@@ -445,6 +451,11 @@ tests:
     code: 'toobj("#5")'
     expect:
       value: "#5"
+
+  - name: toobj_accepts_space_after_hash
+    code: 'toobj("# 7")'
+    expect:
+      value: "#7"
 
   - name: toobj_from_float
     code: "toobj(3.0)"

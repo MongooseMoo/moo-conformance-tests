@@ -5,11 +5,13 @@ requires:
   builtins: [generate_json, parse_json, typeof]
 
 tests:
-  - name: parse_json_embedded_nondigit_int_is_zero
-    code: 'parse_json("\"abc|int\"", "embedded-types")'
+  - name: parse_json_embedded_nondigit_numbers_are_zero
+    statement: |
+      integer = parse_json("\"abc|int\"", "embedded-types");
+      fraction = parse_json("\"abc|float\"", "embedded-types");
+      return {typeof(integer) == INT, integer, typeof(fraction) == FLOAT, fraction};
     expect:
-      type: int
-      value: 0
+      value: [1, 0, 1, 0.0]
 
   - name: parse_json_embedded_boolean
     statement: |

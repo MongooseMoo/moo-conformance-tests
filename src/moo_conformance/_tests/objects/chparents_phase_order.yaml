@@ -5,7 +5,7 @@ description: >
   over the whole list (E_RECMOVE), and only then duplicate parents (E_INVARG).
   A failed call leaves the parents unchanged.
 requires:
-  builtins: [chparents, create, parents, recycle, valid]
+  builtins: [chparent, chparents, create, parents, recycle, valid]
 tests:
   - name: chparents_self_after_duplicate_is_recmove
     description: A self-parent later in the list wins over an earlier duplicate.
@@ -72,5 +72,12 @@ tests:
     description: A programmer who does not control the target gets E_PERM even for a self-parent.
     permission: programmer
     code: "`chparents(#0, {#0}) ! ANY'"
+    expect:
+      value: E_PERM
+
+  - name: chparent_permission_before_recursion
+    description: Single-parent changes check the same permission before recursion.
+    permission: programmer
+    code: "`chparent(#0, #0) ! ANY'"
     expect:
       value: E_PERM

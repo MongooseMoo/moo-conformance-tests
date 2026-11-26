@@ -1,0 +1,56 @@
+name: prelogin_http
+description: An anonymous listener connection can receive a binary HTTP request in its login hook.
+
+requires:
+  builtins: [create, add_property, add_verb, set_verb_code, listen, unlisten, recycle, set_connection_option, read_http]
+
+tests:
+  - name: read_http_in_login_hook_preserves_request_line_endings
+    steps:
+      - allocate_port:
+          capture: listener_port
+      - run: |
+          handler = create($nothing);
+          add_property(handler, "ready", 0, {player, "rw"});
+          add_property(handler, "request", {}, {player, "rw"});
+          add_verb(handler, {player, "rxd", "do_blank_command"}, {"this", "none", "this"});
+          set_verb_code(handler, "do_blank_command", {"return 1;"});
+          add_verb(handler, {player, "rxd", "do_login_command"}, {"this", "none", "this"});
+          set_verb_code(handler, "do_login_command", {
+            "set_connection_option(player, \"hold-input\", 1);",
+            "set_connection_option(player, \"binary\", 1);",
+            "this.ready = 1;",
+            "request = read_http(\"request\", player);",
+            "this.request = {player < #0, request[\"method\"], request[\"uri\"], request[\"headers\"][\"Host\"]};",
+            "return 0;"
+          });
+          listen(handler, {listener_port}, ["print-messages" -> 0]);
+          return handler;
+        capture: handler
+        as: wizard
+      - new_connection:
+          capture: client
+          port: "{listener_port}"
+      - run: "return {handler}.ready;"
+        as: wizard
+        poll_ms: 5000
+        expect:
+          value: 1
+      # GET / HTTP/1.1\r\nHost: localhost\r\n\r\n
+      - send_bytes:
+          connection: client
+          hex: "474554202f20485454502f312e310d0a486f73743a206c6f63616c686f73740d0a0d0a"
+      - run: "return {handler}.request;"
+        as: wizard
+        poll_ms: 5000
+        expect:
+          value: [1, "GET", "/", "localhost"]
+      - close_connection: client
+    cleanup:
+      - run: |
+          try
+            unlisten({listener_port});
+          finally
+            recycle({handler});
+          endtry
+        as: wizard

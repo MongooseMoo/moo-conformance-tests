@@ -428,6 +428,37 @@ tests:
     expect:
       value: left
 
+  - name: audit_callable_and_pass_search_first_parent_ancestry
+    description: A callable verb on the first parent's parent takes precedence over one on the second parent.
+    permission: wizard
+    statement: |
+      deep = create($nothing);
+      left = create(deep);
+      right = create($nothing);
+      child = create({left, right});
+      try
+        add_verb(deep, {player, "xd", "auditparentorder"}, {"this", "none", "this"});
+        set_verb_code(deep, 1, {"return \"deep\";"});
+        add_verb(right, {player, "xd", "auditparentorder"}, {"this", "none", "this"});
+        set_verb_code(right, 1, {"return \"right\";"});
+        direct = child:auditparentorder();
+        chparents(child, {right, left});
+        reversed = child:auditparentorder();
+        chparents(child, {left, right});
+        add_verb(child, {player, "xd", "auditparentorder"}, {"this", "none", "this"});
+        set_verb_code(child, 1, {"return pass();"});
+        delegated = child:auditparentorder();
+        chparents(child, {right, left});
+        return {direct, reversed, delegated, child:auditparentorder()};
+      finally
+        recycle(child);
+        recycle(right);
+        recycle(left);
+        recycle(deep);
+      endtry
+    expect:
+      value: [deep, right, deep, right]
+
   - name: audit_command_context_nested_call
     description: Nested verb calls from command-dispatched verbs inherit command variables.
     steps:

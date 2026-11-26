@@ -9,7 +9,6 @@ requires:
   - task_stack
   features:
   - exec_support
-  - forking
   - tasks
 tests:
 - name: exec_fails_for_non_wizards
@@ -19,29 +18,74 @@ tests:
     error: E_PERM
 - name: exec_fails_for_nonexistent_executables
   permission: wizard
-  code: exec({"test_does_not_exist"})
+  statement: |
+    try
+      exec({"no-such-program"});
+    except e (E_INVARG)
+      return e[1..3];
+    endtry
   expect:
-    error: E_INVARG
+    value: [E_INVARG, "Does not exist", 0]
 - name: exec_fails_for_absolute_paths
   permission: wizard
-  code: exec({"/test_io"})
+  statement: |
+    try
+      exec({"/test_io"});
+    except e (E_INVARG)
+      return e[1..3];
+    endtry
   expect:
-    error: E_INVARG
+    value: [E_INVARG, "Invalid path", 0]
 - name: exec_fails_for_dot_slash_paths
   permission: wizard
-  code: exec({"./test_io"})
+  statement: |
+    try
+      exec({"./test_io"});
+    except e (E_INVARG)
+      return e[1..3];
+    endtry
   expect:
-    error: E_INVARG
+    value: [E_INVARG, "Invalid path", 0]
 - name: exec_fails_for_parent_dir_paths
   permission: wizard
-  code: exec({"../test_io"})
+  statement: |
+    try
+      exec({"../test_io"});
+    except e (E_INVARG)
+      return e[1..3];
+    endtry
   expect:
-    error: E_INVARG
+    value: [E_INVARG, "Invalid path", 0]
 - name: exec_fails_for_path_traversal
   permission: wizard
-  code: exec({"foo/../../test_io"})
+  statement: |
+    try
+      exec({"foo/../../test_io"});
+    except e (E_INVARG)
+      return e[1..3];
+    endtry
   expect:
-    error: E_INVARG
+    value: [E_INVARG, "Invalid path", 0]
+- name: exec_fails_for_empty_program_name
+  permission: wizard
+  statement: |
+    try
+      exec({""});
+    except e (E_INVARG)
+      return e[1..3];
+    endtry
+  expect:
+    value: [E_INVARG, "Invalid path", 0]
+- name: exec_fails_for_directory
+  permission: wizard
+  statement: |
+    try
+      exec({"."});
+    except e (E_INVARG)
+      return e[1..3];
+    endtry
+  expect:
+    value: [E_INVARG, "Is not a file", 0]
 - name: exec_io_works
   permission: wizard
   code: exec({"test_io"}, "Hello, world!")
@@ -80,6 +124,7 @@ tests:
   expect:
     error: E_INVARG
 - name: queued_tasks_shows_suspended_exec
+  skip_if: not feature.forking
   permission: wizard
   statement: |
     fork go (0)
@@ -100,18 +145,21 @@ tests:
   expect:
     value: 1
 - name: kill_task_works_on_suspended_exec
+  skip_if: not feature.forking
   permission: wizard
   statement: "fork go (0)\n  exec({\"sleep\", \"1\"});\nendfork\nsuspend(0.1);\n\
     result = kill_task(go);\nreturn result;\n"
   expect:
     value: 0
 - name: kill_task_fails_on_already_killed
+  skip_if: not feature.forking
   permission: wizard
   statement: "fork go (0)\n  exec({\"sleep\", \"1\"});\nendfork\nsuspend(0.1);\n\
     kill_task(go);\nreturn kill_task(go);\n"
   expect:
     error: E_INVARG
 - name: resume_fails_on_suspended_exec
+  skip_if: not feature.forking
   permission: wizard
   statement: "fork go (0)\n  exec({\"sleep\", \"1\"});\nendfork\nsuspend(0.1);\n\
     try\n  resume(go);\nexcept e (E_INVARG)\n  kill_task(go);\n  return e[1];\nendtry\n\
@@ -119,6 +167,7 @@ tests:
   expect:
     value: E_INVARG
 - name: suspended_exec_task_stack_matches_suspended_task
+  skip_if: not feature.forking
   permission: wizard
   statement: "fork go1 (0)\n  suspend(1);\nendfork\nfork go2 (0)\n  exec({\"sleep\"\
     , \"1\"});\nendfork\nsuspend(0.1);\nstack1 = task_stack(go1);\nstack2 = task_stack(go2);\n\
@@ -127,6 +176,7 @@ tests:
   expect:
     value: 1
 - name: multiple_simultaneous_execs_work
+  skip_if: not feature.forking
   permission: wizard
   statement: |
     task_ids = {};

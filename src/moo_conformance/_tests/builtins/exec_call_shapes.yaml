@@ -10,6 +10,11 @@ requires:
 tests:
   - name: exec_three_arguments_rejects_missing_command
     permission: wizard
-    code: 'exec({"test_does_not_exist"}, "", {})'
+    statement: |
+      try
+        exec({"no-such-program"}, "", {});
+      except e (E_INVARG)
+        return e[1..3];
+      endtry
     expect:
-      error: E_INVARG
+      value: [E_INVARG, "Does not exist", 0]

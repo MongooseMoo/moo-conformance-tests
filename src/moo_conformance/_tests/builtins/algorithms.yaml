@@ -63,9 +63,14 @@ tests:
       value: "Zm9vYmFy"
 
   - name: encode_base64_bad_binary_string
-    code: 'encode_base64("~00~#!~00")'
+    statement: |
+      try
+        encode_base64("~00~#!~00");
+      except e (E_INVARG)
+        return e[1..3];
+      endtry
     expect:
-      error: E_INVARG
+      value: [E_INVARG, "Invalid binary string", "~00~#!~00"]
 
   - name: encode_base64_length_one_char
     code: 'length(encode_base64("a"))'
@@ -117,9 +122,14 @@ tests:
       value: "p85EjtJMFmH28gFVWjK8sCnsAoZ2zZsF5jbzLnZ4PPDRRUDH2vPHwKpDHtLQA10h9wzJGfCCZ3bkGToC8H74vsxqJ0bCw7gckR9-9_VQ2Q7Y1onahrWV4GYMSpIBK4quLn87iA"
 
   - name: encode_base64_url_safe_bad_binary
-    code: 'encode_base64("~00~#!~00", 1)'
+    statement: |
+      try
+        encode_base64("~00~#!~00", 1);
+      except e (E_INVARG)
+        return e[1..3];
+      endtry
     expect:
-      error: E_INVARG
+      value: [E_INVARG, "Invalid binary string", "~00~#!~00"]
 
   - name: encode_base64_url_safe_foobar_binary
     code: 'encode_base64("~66~6f~6f~62~61~72", 1)'
@@ -159,19 +169,34 @@ tests:
       value: "~FF"
 
   - name: decode_base64_bad_chars
-    code: 'decode_base64("@@@@")'
+    statement: |
+      try
+        decode_base64("@@@@");
+      except e (E_INVARG)
+        return e[1..3];
+      endtry
     expect:
-      error: E_INVARG
+      value: [E_INVARG, "Invalid character in encoded data", "@@@@"]
 
   - name: decode_base64_not_binary_string
-    code: 'decode_base64("~5A~6D~39~76~59~6D~46~79")'
+    statement: |
+      try
+        decode_base64("~5A~6D~39~76~59~6D~46~79");
+      except e (E_INVARG)
+        return e[1..3];
+      endtry
     expect:
-      error: E_INVARG
+      value: [E_INVARG, "Invalid character in encoded data", "~5A~6D~39~76~59~6D~46~79"]
 
   - name: decode_base64_padding_required_standard
-    code: 'decode_base64("dGVzdA")'
+    statement: |
+      try
+        decode_base64("dGVzdA");
+      except e (E_INVARG)
+        return e[1..3];
+      endtry
     expect:
-      error: E_INVARG
+      value: [E_INVARG, "Invalid length", "dGVzdA"]
 
   - name: decode_base64_padding_optional_url_safe
     code: 'decode_base64("dGVzdA", 1)'
@@ -179,19 +204,34 @@ tests:
       value: "test"
 
   - name: decode_base64_embedded_padding
-    code: 'decode_base64("dGV=zdA=")'
+    statement: |
+      try
+        decode_base64("dGV=zdA=");
+      except e (E_INVARG)
+        return e[1..3];
+      endtry
     expect:
-      error: E_INVARG
+      value: [E_INVARG, "Pad character in encoded data", "dGV=zdA="]
 
   - name: decode_base64_too_much_padding
-    code: 'decode_base64("dGVzd===")'
+    statement: |
+      try
+        decode_base64("dGVzd===");
+      except e (E_INVARG)
+        return e[1..3];
+      endtry
     expect:
-      error: E_INVARG
+      value: [E_INVARG, "Too many pad characters", "dGVzd==="]
 
   - name: decode_base64_min_length
-    code: 'decode_base64("A===")'
+    statement: |
+      try
+        decode_base64("A===");
+      except e (E_INVARG)
+        return e[1..3];
+      endtry
     expect:
-      error: E_INVARG
+      value: [E_INVARG, "Too many pad characters", "A==="]
   - name: decode_base64_binary_fb
     code: 'decode_base64("+w==")'
     expect:
@@ -223,14 +263,24 @@ tests:
       value: "test"
 
   - name: decode_base64_url_safe_single_char_error
-    code: 'decode_base64("A", 1)'
+    statement: |
+      try
+        decode_base64("A", 1);
+      except e (E_INVARG)
+        return e[1..3];
+      endtry
     expect:
-      error: E_INVARG
+      value: [E_INVARG, "Invalid length", "A"]
 
   - name: decode_base64_url_safe_bad_chars
-    code: 'decode_base64("@@@@", 1)'
+    statement: |
+      try
+        decode_base64("@@@@", 1);
+      except e (E_INVARG)
+        return e[1..3];
+      endtry
     expect:
-      error: E_INVARG
+      value: [E_INVARG, "Invalid character in encoded data", "@@@@"]
 
   - name: decode_base64_length_one_char
     code: 'length(decode_base64("YQ=="))'
@@ -283,19 +333,34 @@ tests:
       value: "test"
 
   - name: decode_base64_url_safe_not_binary_string
-    code: 'decode_base64("~5A~6D~39~76~59~6D~46~79", 1)'
+    statement: |
+      try
+        decode_base64("~5A~6D~39~76~59~6D~46~79", 1);
+      except e (E_INVARG)
+        return e[1..3];
+      endtry
     expect:
-      error: E_INVARG
+      value: [E_INVARG, "Invalid character in encoded data", "~5A~6D~39~76~59~6D~46~79"]
 
   - name: decode_base64_url_safe_embedded_padding
-    code: 'decode_base64("dGV=zdA=", 1)'
+    statement: |
+      try
+        decode_base64("dGV=zdA=", 1);
+      except e (E_INVARG)
+        return e[1..3];
+      endtry
     expect:
-      error: E_INVARG
+      value: [E_INVARG, "Pad character in encoded data", "dGV=zdA="]
 
   - name: decode_base64_url_safe_too_much_padding
-    code: 'decode_base64("dGVzd===", 1)'
+    statement: |
+      try
+        decode_base64("dGVzd===", 1);
+      except e (E_INVARG)
+        return e[1..3];
+      endtry
     expect:
-      error: E_INVARG
+      value: [E_INVARG, "Too many pad characters", "dGVzd==="]
 
 
   # Hashing - string_hash

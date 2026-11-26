@@ -1,5 +1,5 @@
 name: exec
-description: Tests for exec() builtin - external process execution
+description: Forked task inspection and control during exec().
 requires:
   builtins:
   - exec
@@ -12,73 +12,6 @@ requires:
   - forking
   - tasks
 tests:
-- name: exec_fails_for_non_wizards
-  permission: programmer
-  code: exec({"foobar"})
-  expect:
-    error: E_PERM
-- name: exec_fails_for_nonexistent_executables
-  permission: wizard
-  code: exec({"test_does_not_exist"})
-  expect:
-    error: E_INVARG
-- name: exec_fails_for_absolute_paths
-  permission: wizard
-  code: exec({"/test_io"})
-  expect:
-    error: E_INVARG
-- name: exec_fails_for_dot_slash_paths
-  permission: wizard
-  code: exec({"./test_io"})
-  expect:
-    error: E_INVARG
-- name: exec_fails_for_parent_dir_paths
-  permission: wizard
-  code: exec({"../test_io"})
-  expect:
-    error: E_INVARG
-- name: exec_fails_for_path_traversal
-  permission: wizard
-  code: exec({"foo/../../test_io"})
-  expect:
-    error: E_INVARG
-- name: exec_io_works
-  permission: wizard
-  code: exec({"test_io"}, "Hello, world!")
-  expect:
-    value:
-    - 0
-    - Hello, world!
-    - Hello, world!
-- name: exec_args_works
-  permission: wizard
-  code: exec({"test_args", "one", "two", "three"}, "")
-  expect:
-    value:
-    - 0
-    - one two three
-    - ''
-- name: exec_exit_status_works
-  permission: wizard
-  code: exec({"test_exit_status", "2"}, "")
-  expect:
-    value:
-    - 2
-    - ''
-    - ''
-- name: exec_with_sleep_works
-  permission: wizard
-  code: exec({"test_with_sleep"}, "")
-  expect:
-    value:
-    - 0
-    - 1~0A2~0A3~0A
-    - ''
-- name: exec_rejects_invalid_binary_string
-  permission: wizard
-  code: exec({"test_io"}, "1~ZZ23~0A")
-  expect:
-    error: E_INVARG
 - name: queued_tasks_shows_suspended_exec
   permission: wizard
   statement: |

@@ -43,6 +43,23 @@ tests:
     expect:
       value: [1, 3, [[0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1], [0, -1]], "FooBar"]
 
+  - name: match_word_begin_rejects_word_end
+    code: '{match("!a", "%<a")[1..2], match("a!", "a%<")}'
+    expect:
+      value: [[2, 2], []]
+
+  - name: match_capture_backreference
+    statement: |
+      hit = match("aa", "%(a%)%1", 1);
+      return {hit ? {hit[1..2], hit[3][1]} | hit, match("ab", "%(a%)%1", 1)};
+    expect:
+      value: [[[1, 2], [1, 1]], []]
+
+  - name: match_misplaced_caret_is_invalid
+    code: 'match("abc", "a^b")'
+    expect:
+      error: E_INVARG
+
   - name: match_case_sensitive
     code: 'match("FooBar", "foo", 1)'
     expect:

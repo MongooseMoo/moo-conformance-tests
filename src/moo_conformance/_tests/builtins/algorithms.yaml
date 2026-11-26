@@ -362,6 +362,21 @@ tests:
     expect:
       value: [E_INVARG, "Too many pad characters", "dGVzd==="]
 
+  - name: decode_base64_url_safe_ignores_incomplete_final_block
+    code: 'decode_base64("YWJjZ", 1)'
+    expect:
+      value: "abc"
+
+  - name: decode_base64_url_safe_pads_one_digit_final_block
+    code: 'decode_base64("YWJjZ=", 1)'
+    expect:
+      value: "abce"
+
+  - name: decode_base64_url_safe_decodes_final_padding_block
+    code: 'decode_base64("YWJj==", 1)'
+    expect:
+      value: "abcm"
+
 
   # Hashing - string_hash
   - name: string_hash_abc_md5

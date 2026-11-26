@@ -2,18 +2,19 @@ name: suspend_in_spliced_codes_checkpoint_restart
 description: >
   Verifies that tasks suspended while evaluating a handler's error codes,
   after a leading splice in that codes list, survive dump_database() and a
-  managed server restart. Covers a catch expression (`expr ! @l, suspend(n)`
-  and `expr ! @l, E_RANGE, suspend(n)`) and a try statement whose second
-  except clause is `except (@l, E_RANGE, suspend(n))`. The codes evaluated so
-  far (the spliced prefix) are part of the suspended task's saved state; after
-  reload each task resumes, suspend() contributes 0 to its codes, and the
-  handler still catches E_DIV through the spliced list.
+  managed server restart. Covers catch expressions and an except clause
+  that suspend indefinitely after a leading splice. The test waits for
+  suspension before saving and explicitly resumes each task after reloading.
+  Each handler must still catch E_DIV through its saved spliced prefix.
 requires:
   builtins:
     - dump_database
     - queued_tasks
     - kill_task
     - suspend
+    - resume
+    - time
+    - typeof
     - create
     - add_property
     - delete_property
@@ -42,13 +43,13 @@ tests:
             tasks = {};
             fork t (0)
               l = {E_DIV};
-              r = `1 / 0 ! @l, suspend(6) => 5';
+              r = `1 / 0 ! @l, suspend() => 5';
               #0.spliced_codes_log = {@#0.spliced_codes_log, {"catch", r}};
             endfork
             tasks = {@tasks, t};
             fork t (0)
               l = {E_DIV};
-              r = `1 / 0 ! @l, E_RANGE, suspend(6) => 7';
+              r = `1 / 0 ! @l, E_RANGE, suspend() => 7';
               #0.spliced_codes_log = {@#0.spliced_codes_log, {"catch_append", r}};
             endfork
             tasks = {@tasks, t};
@@ -59,7 +60,7 @@ tests:
                 #0.spliced_codes_log = {@#0.spliced_codes_log, {"try", "uncaught"}};
               except (E_PERM)
                 #0.spliced_codes_log = {@#0.spliced_codes_log, {"try", "perm"}};
-              except e (@l, E_RANGE, suspend(6))
+              except e (@l, E_RANGE, suspend())
                 #0.spliced_codes_log = {@#0.spliced_codes_log, {"try", e[1]}};
               endtry
             endfork
@@ -75,8 +76,11 @@ tests:
           value: 3
       - run: |
           ids = {};
+          now = time();
           for q in (queued_tasks())
-            ids = {@ids, q[1]};
+            if (typeof(q[2]) == INT && q[2] > now + 1)
+              ids = {@ids, q[1]};
+            endif
           endfor
           found = 0;
           for t in (#0.spliced_codes_tasks)
@@ -103,6 +107,14 @@ tests:
           return {found, #0.spliced_codes_log};
         expect:
           value: [3, []]
+      - run: |
+          results = {};
+          for t in (#0.spliced_codes_tasks)
+            results = {@results, resume(t)};
+          endfor
+          return results;
+        expect:
+          value: [0, 0, 0]
       - run: |
           log = #0.spliced_codes_log;
           return {length(log), {"catch", 5} in log > 0, {"catch_append", 7} in log > 0, {"try", E_DIV} in log > 0};

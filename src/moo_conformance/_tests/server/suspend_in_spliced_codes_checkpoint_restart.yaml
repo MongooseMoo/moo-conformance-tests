@@ -1,0 +1,129 @@
+name: suspend_in_spliced_codes_checkpoint_restart
+description: >
+  Verifies that tasks suspended while evaluating a handler's error codes,
+  after a leading splice in that codes list, survive dump_database() and a
+  managed server restart. Covers a catch expression (`expr ! @l, suspend(n)`
+  and `expr ! @l, E_RANGE, suspend(n)`) and a try statement whose second
+  except clause is `except (@l, E_RANGE, suspend(n))`. The codes evaluated so
+  far (the spliced prefix) are part of the suspended task's saved state; after
+  reload each task resumes, suspend() contributes 0 to its codes, and the
+  handler still catches E_DIV through the spliced list.
+requires:
+  builtins:
+    - dump_database
+    - queued_tasks
+    - kill_task
+    - suspend
+    - create
+    - add_property
+    - delete_property
+    - recycle
+  config: [managed_server]
+tests:
+  - name: suspend_in_spliced_codes_resumes_after_checkpoint_restart
+    permission: wizard
+    steps:
+      - run: |
+          for p in ({"spliced_codes_log", "spliced_codes_tasks", "spliced_codes_obj"})
+            if (p in properties(#0))
+              delete_property(#0, p);
+            endif
+          endfor
+          o = create($nothing);
+          add_property(#0, "spliced_codes_obj", o, {player, "rw"});
+          add_property(#0, "spliced_codes_log", {}, {player, "rw"});
+          return o;
+        capture: obj
+      - verb_setup:
+          object: "{obj}"
+          name: "start"
+          args: ["this", "none", "this"]
+          code: |
+            tasks = {};
+            fork t (0)
+              l = {E_DIV};
+              r = `1 / 0 ! @l, suspend(6) => 5';
+              #0.spliced_codes_log = {@#0.spliced_codes_log, {"catch", r}};
+            endfork
+            tasks = {@tasks, t};
+            fork t (0)
+              l = {E_DIV};
+              r = `1 / 0 ! @l, E_RANGE, suspend(6) => 7';
+              #0.spliced_codes_log = {@#0.spliced_codes_log, {"catch_append", r}};
+            endfork
+            tasks = {@tasks, t};
+            fork t (0)
+              l = {E_DIV};
+              try
+                1 / 0;
+                #0.spliced_codes_log = {@#0.spliced_codes_log, {"try", "uncaught"}};
+              except (E_PERM)
+                #0.spliced_codes_log = {@#0.spliced_codes_log, {"try", "perm"}};
+              except e (@l, E_RANGE, suspend(6))
+                #0.spliced_codes_log = {@#0.spliced_codes_log, {"try", e[1]}};
+              endtry
+            endfork
+            tasks = {@tasks, t};
+            return tasks;
+        expect:
+          value: []
+      - run: |
+          tasks = {obj}:start();
+          add_property(#0, "spliced_codes_tasks", tasks, {player, "rw"});
+          return length(tasks);
+        expect:
+          value: 3
+      - run: |
+          ids = {};
+          for q in (queued_tasks())
+            ids = {@ids, q[1]};
+          endfor
+          found = 0;
+          for t in (#0.spliced_codes_tasks)
+            found = found + (t in ids > 0);
+          endfor
+          return {found, #0.spliced_codes_log};
+        expect:
+          value: [3, []]
+        poll_ms: 3000
+      - run: "return dump_database();"
+        expect:
+          value: 0
+      - restart_server:
+          checkpoint_timeout_ms: 10000
+      - run: |
+          ids = {};
+          for q in (queued_tasks())
+            ids = {@ids, q[1]};
+          endfor
+          found = 0;
+          for t in (#0.spliced_codes_tasks)
+            found = found + (t in ids > 0);
+          endfor
+          return {found, #0.spliced_codes_log};
+        expect:
+          value: [3, []]
+      - run: |
+          log = #0.spliced_codes_log;
+          return {length(log), {"catch", 5} in log > 0, {"catch_append", 7} in log > 0, {"try", E_DIV} in log > 0};
+        expect:
+          value: [3, 1, 1, 1]
+        poll_ms: 15000
+    cleanup:
+      - run: |
+          if ("spliced_codes_tasks" in properties(#0))
+            for t in (#0.spliced_codes_tasks)
+              `kill_task(t) ! ANY';
+            endfor
+            delete_property(#0, "spliced_codes_tasks");
+          endif
+          if ("spliced_codes_log" in properties(#0))
+            delete_property(#0, "spliced_codes_log");
+          endif
+          if ("spliced_codes_obj" in properties(#0))
+            if (valid(#0.spliced_codes_obj))
+              recycle(#0.spliced_codes_obj);
+            endif
+            delete_property(#0, "spliced_codes_obj");
+          endif
+          return 0;

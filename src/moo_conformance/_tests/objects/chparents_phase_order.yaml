@@ -1,0 +1,76 @@
+name: objects::chparents_phase_order
+description: >
+  chparents() checks its arguments in whole-list phases: the target and every
+  parent must be valid (E_INVARG), then permission (E_PERM), then recursion
+  over the whole list (E_RECMOVE), and only then duplicate parents (E_INVARG).
+  A failed call leaves the parents unchanged.
+requires:
+  builtins: [chparents, create, parents, recycle, valid]
+tests:
+  - name: chparents_self_after_duplicate_is_recmove
+    description: A self-parent later in the list wins over an earlier duplicate.
+    permission: wizard
+    statement: |
+      p = create($object);
+      o = create($object);
+      try
+        original = parents(o);
+        result = `chparents(o, {p, p, o, o}) ! ANY';
+        return {result, parents(o) == original};
+      finally
+        recycle(o);
+        recycle(p);
+      endtry
+    expect:
+      value: [E_RECMOVE, 1]
+
+  - name: chparents_descendant_after_duplicate_is_recmove
+    description: A descendant parent wins over a duplicate of that parent.
+    permission: wizard
+    statement: |
+      o = create($object);
+      c = create(o);
+      try
+        original = parents(o);
+        result = `chparents(o, {c, c}) ! ANY';
+        return {result, parents(o) == original};
+      finally
+        recycle(c);
+        recycle(o);
+      endtry
+    expect:
+      value: [E_RECMOVE, 1]
+
+  - name: chparents_invalid_parent_after_self_is_invarg
+    description: An invalid parent later in the list wins over an earlier self-parent.
+    permission: wizard
+    statement: |
+      o = create($object);
+      gone = create($object);
+      recycle(gone);
+      try
+        original = parents(o);
+        result = `chparents(o, {o, gone}) ! ANY';
+        return {result, parents(o) == original};
+      finally
+        recycle(o);
+      endtry
+    expect:
+      value: [E_INVARG, 1]
+
+  - name: chparents_invalid_target_is_invarg
+    description: A recycled target object raises E_INVARG, not E_INVIND.
+    permission: wizard
+    statement: |
+      gone = create($object);
+      recycle(gone);
+      return `chparents(gone, {$object}) ! ANY';
+    expect:
+      value: E_INVARG
+
+  - name: chparents_permission_before_recursion
+    description: A programmer who does not control the target gets E_PERM even for a self-parent.
+    permission: programmer
+    code: "`chparents(#0, {#0}) ! ANY'"
+    expect:
+      value: E_PERM

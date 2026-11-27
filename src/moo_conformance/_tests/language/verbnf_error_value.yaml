@@ -1,0 +1,46 @@
+name: verbnf_error_value
+tests:
+  - name: verbnf_error_value_for_missing_verb_call
+    description: >
+      A verb call to a missing verb raises E_VERBNF whose message names the
+      receiver and verb ("Verb not found: <obj>:<verb>()") and whose value is
+      {receiver, verb name}.
+    statement: |
+      try
+        #0:conformance_no_such_verb();
+      except e (ANY)
+        return e[1..3];
+      endtry
+      return "noerr";
+    expect:
+      value: [E_VERBNF, "Verb not found: #0:conformance_no_such_verb()", ["#0", "conformance_no_such_verb"]]
+
+  - name: verbnf_error_value_for_computed_verb_name
+    description: >
+      A computed verb name is inserted into the E_VERBNF message verbatim (not
+      quoted or escaped), and the value carries the name as a string.
+    statement: |
+      try
+        v = "x\"y";
+        #0:(v)(1, 2);
+      except e (ANY)
+        return e[1..3];
+      endtry
+      return "noerr";
+    expect:
+      value: [E_VERBNF, "Verb not found: #0:x\"y()", ["#0", "x\"y"]]
+
+  - name: verbnf_error_value_repeated_call_site
+    description: Each failed call from the same call site carries its own {receiver, verb} value.
+    statement: |
+      r = {};
+      for i in [1..2]
+        try
+          #0:conformance_nope();
+        except e (ANY)
+          r = {@r, e[3]};
+        endtry
+      endfor
+      return r;
+    expect:
+      value: [["#0", "conformance_nope"], ["#0", "conformance_nope"]]

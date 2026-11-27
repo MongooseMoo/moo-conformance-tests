@@ -1,0 +1,73 @@
+name: arity_error_ranged_bounds
+description: >
+  A builtin called with the wrong number of arguments raises E_ARGS whose
+  message names the registered arity. When the minimum and maximum differ
+  the message reads "expected MIN-MAX"; a variadic maximum prints as -1,
+  giving "expected MIN--1". Fixed-arity builtins read "expected N".
+  Expectations are stock WSL Toast behavior (MongooseMoo/barn#1215).
+
+tests:
+  - name: ranged_builtin_too_few_args_names_bounds
+    steps:
+      - run: |
+          try
+            listinsert({});
+          except e (ANY)
+            return {e[1], e[2]};
+          endtry
+          return "noerr";
+        as: wizard
+        expect:
+          value: [E_ARGS, "Incorrect number of arguments (expected 2-3; got 1)"]
+
+  - name: ranged_builtin_too_many_args_names_bounds
+    steps:
+      - run: |
+          try
+            listinsert({}, 1, 1, 1);
+          except e (ANY)
+            return {e[1], e[2]};
+          endtry
+          return "noerr";
+        as: wizard
+        expect:
+          value: [E_ARGS, "Incorrect number of arguments (expected 2-3; got 4)"]
+
+  - name: notify_too_few_args_names_bounds
+    steps:
+      - run: |
+          try
+            notify(player);
+          except e (ANY)
+            return {e[1], e[2]};
+          endtry
+          return "noerr";
+        as: wizard
+        expect:
+          value: [E_ARGS, "Incorrect number of arguments (expected 2-4; got 1)"]
+
+  - name: variadic_builtin_max_prints_as_minus_one
+    steps:
+      - run: |
+          try
+            call_function();
+          except e (ANY)
+            return {e[1], e[2]};
+          endtry
+          return "noerr";
+        as: wizard
+        expect:
+          value: [E_ARGS, "Incorrect number of arguments (expected 1--1; got 0)"]
+
+  - name: fixed_arity_builtin_names_single_count
+    steps:
+      - run: |
+          try
+            typeof();
+          except e (ANY)
+            return {e[1], e[2]};
+          endtry
+          return "noerr";
+        as: wizard
+        expect:
+          value: [E_ARGS, "Incorrect number of arguments (expected 1; got 0)"]

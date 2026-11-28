@@ -1,0 +1,49 @@
+name: atan_two_arg_underflow
+description: >
+  Two-argument atan(y, x) calls the C library atan2 and raises E_FLOAT when
+  it reports a range error: a nonzero y whose result underflows to zero.
+  A subnormal (nonzero) result, a zero y and a negative x (result pi) are
+  ordinary floats. The separate atan2() builtin returns the zero instead of
+  raising.
+
+requires:
+  builtins:
+    - atan
+    - atan2
+    - toliteral
+
+tests:
+  - name: atan_two_arg_underflow_to_zero
+    code: "atan(1e-300, 1e300)"
+    expect:
+      error: E_FLOAT
+
+  - name: atan_two_arg_negative_underflow_to_zero
+    code: "atan(-1e-300, 1e300)"
+    expect:
+      error: E_FLOAT
+
+  - name: atan_two_arg_subnormal_quotient_underflow
+    code: "atan(9.99999999999997e-311, 3e300)"
+    expect:
+      error: E_FLOAT
+
+  - name: atan_two_arg_subnormal_result
+    code: "toliteral(atan(1e-300, 1e10))"
+    expect:
+      value: "9.99999999999997e-311"
+
+  - name: atan_two_arg_zero_y
+    code: "toliteral(atan(0.0, 5.0))"
+    expect:
+      value: "0.0"
+
+  - name: atan_two_arg_negative_x_is_pi
+    code: "atan(1e-310, -1e300)"
+    expect:
+      value: 3.14159265358979
+
+  - name: atan2_underflow_returns_zero
+    code: "toliteral(atan2(1e-300, 1e300))"
+    expect:
+      value: "0.0"

@@ -1,0 +1,108 @@
+name: thread_pool_invarg_messages
+description: >
+  thread_pool() raises each E_INVARG with its own message and the offending
+  argument as the value. The pool name is checked before the function name,
+  the function before the thread count, and the thread count is read as a
+  C int. None of these calls reaches a successful INIT, so the background
+  pool is never changed.
+
+requires:
+  builtins:
+    - thread_pool
+
+tests:
+  - name: thread_pool_bad_pool_message_and_value
+    description: An unknown pool raises "Invalid thread pool" with the pool name as the value.
+    permission: wizard
+    statement: |
+      try
+        return thread_pool("%\\", "");
+      except e (E_INVARG)
+        return {e[1], e[2], e[3]};
+      endtry
+    expect:
+      value: [E_INVARG, "Invalid thread pool", ""]
+
+  - name: thread_pool_pool_checked_before_function
+    description: When both the function and the pool are wrong, the pool error wins.
+    permission: wizard
+    statement: |
+      try
+        return thread_pool("FOO", "x");
+      except e (E_INVARG)
+        return {e[1], e[2], e[3]};
+      endtry
+    expect:
+      value: [E_INVARG, "Invalid thread pool", "x"]
+
+  - name: thread_pool_pool_name_is_case_sensitive
+    description: Lowercase "main" is not the MAIN pool.
+    permission: wizard
+    statement: |
+      try
+        return thread_pool("INIT", "main");
+      except e (E_INVARG)
+        return {e[1], e[2], e[3]};
+      endtry
+    expect:
+      value: [E_INVARG, "Invalid thread pool", "main"]
+
+  - name: thread_pool_bad_function_message_and_value
+    description: An unknown function on MAIN raises "Invalid function" with the function name as the value.
+    permission: wizard
+    statement: |
+      try
+        return thread_pool("FOO", "MAIN");
+      except e (E_INVARG)
+        return {e[1], e[2], e[3]};
+      endtry
+    expect:
+      value: [E_INVARG, "Invalid function", "FOO"]
+
+  - name: thread_pool_function_checked_before_count
+    description: A bad function is reported even when the thread count is also negative.
+    permission: wizard
+    statement: |
+      try
+        return thread_pool("FOO", "MAIN", -3);
+      except e (E_INVARG)
+        return {e[1], e[2], e[3]};
+      endtry
+    expect:
+      value: [E_INVARG, "Invalid function", "FOO"]
+
+  - name: thread_pool_negative_count_message_and_value
+    description: A negative INIT count raises "Invalid number of threads" with the count as the value.
+    permission: wizard
+    statement: |
+      try
+        return thread_pool("INIT", "MAIN", -3);
+      except e (E_INVARG)
+        return {e[1], e[2], e[3]};
+      endtry
+    expect:
+      value: [E_INVARG, "Invalid number of threads", -3]
+
+  - name: thread_pool_count_truncated_to_c_int_minus_one
+    description: 4294967295 is read as the C int -1 and rejected with -1 as the value.
+    permission: wizard
+    statement: |
+      try
+        return thread_pool("INIT", "MAIN", 4294967295);
+      except e (E_INVARG)
+        return {e[1], e[2], e[3]};
+      endtry
+    expect:
+      value: [E_INVARG, "Invalid number of threads", -1]
+
+  - name: thread_pool_count_truncated_to_c_int_min
+    description: 2147483648 is read as the C int -2147483648 and rejected with that value.
+    permission: wizard
+    statement: |
+      try
+        return thread_pool("INIT", "MAIN", 2147483648);
+      except e (E_INVARG)
+        return {e[1], e[2], e[3]};
+      endtry
+    expect:
+      value: [E_INVARG, "Invalid number of threads", -2147483648]

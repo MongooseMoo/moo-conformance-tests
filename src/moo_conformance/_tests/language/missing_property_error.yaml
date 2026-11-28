@@ -1,0 +1,38 @@
+name: missing_property_error
+description: Missing object properties report the receiver and name in the caught exception.
+
+tests:
+  - name: numbered_property_read_reports_receiver_and_name
+    permission: wizard
+    statement: |
+      try
+        return #1.conformance_missing_property;
+      except e (E_PROPNF)
+        return {e[2], e[3] == {#1, "conformance_missing_property"}};
+      endtry
+    expect:
+      value: ["Property not found: #1.conformance_missing_property", 1]
+
+  - name: numbered_property_assignment_reports_receiver_and_name
+    permission: wizard
+    statement: |
+      try
+        #1.("conformance_missing_property") = 5;
+      except e (E_PROPNF)
+        return {e[2], e[3] == {#1, "conformance_missing_property"}};
+      endtry
+      return 0;
+    expect:
+      value: ["Property not found: #1.conformance_missing_property", 1]
+
+  - name: anonymous_property_read_reports_receiver_and_name
+    permission: wizard
+    statement: |
+      object = create($nothing, 1);
+      try
+        return object.conformance_missing_property;
+      except e (E_PROPNF)
+        return {e[2], e[3] == {object, "conformance_missing_property"}};
+      endtry
+    expect:
+      value: ["Property not found: *anonymous*.conformance_missing_property", 1]

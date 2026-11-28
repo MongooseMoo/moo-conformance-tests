@@ -1,0 +1,47 @@
+name: queued_tasks_waiting_variables
+description: A queued task's variables reflect its current wait.
+requires:
+  builtins: [queued_tasks, read, suspend, task_id, kill_task, create, add_property, recycle]
+
+tests:
+  - name: queued_variables_follow_task_from_read_to_suspend
+    permission: wizard
+    steps:
+      - run: |
+          holder = create($nothing);
+          add_property(holder, "tid", 0, {player, "rw"});
+          return holder;
+        capture: holder
+      - new_connection:
+          capture: worker
+      - send:
+          connection: worker
+          text: "connect Wizard"
+      - send:
+          connection: worker
+          text: '; {holder}.tid = task_id(); marker = "reading"; marker = read(player); suspend();'
+      - run: |
+          for row in (queued_tasks(1))
+            if (row[1] == {holder}.tid)
+              return row[11]["marker"];
+            endif
+          endfor
+        expect:
+          value: "reading"
+        poll_ms: 3000
+      - send:
+          connection: worker
+          text: "now suspended"
+      - run: |
+          for row in (queued_tasks(1))
+            if (row[1] == {holder}.tid)
+              return row[11]["marker"];
+            endif
+          endfor
+        expect:
+          value: "now suspended"
+        poll_ms: 3000
+    cleanup:
+      - run: |
+          `kill_task({holder}.tid) ! E_INVARG';
+          recycle({holder});

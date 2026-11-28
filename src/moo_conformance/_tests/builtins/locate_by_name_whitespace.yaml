@@ -1,0 +1,31 @@
+name: locate_by_name_whitespace
+description: Empty searches match valid objects and spaces participate in substring matching.
+
+requires:
+  builtins: [locate_by_name, create, recycle]
+
+tests:
+  - name: locate_by_name_empty_needle_matches_valid_objects
+    permission: wizard
+    code: '(#0 in locate_by_name("")) > 0 && (player in locate_by_name("", 1)) > 0'
+    expect:
+      value: 1
+
+  - name: locate_by_name_preserves_spaces_in_needles_and_names
+    permission: wizard
+    steps:
+      - run: "create($nothing)"
+        capture: obj
+      - run: '{obj}.name = " LocateWhitespaceProbe "'
+      - run: '({obj} in locate_by_name(" ")) > 0'
+        expect:
+          value: 1
+      - run: '({obj} in locate_by_name(" LocateWhitespaceProbe ", 1)) > 0'
+        expect:
+          value: 1
+      - run: '({obj} in locate_by_name("  LocateWhitespaceProbe")) > 0'
+        expect:
+          value: 0
+    cleanup:
+      - run: "recycle({obj})"
+        as: wizard

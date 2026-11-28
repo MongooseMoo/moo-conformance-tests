@@ -1267,10 +1267,10 @@ tests:
           endtry
           #0.audit_timeout_option_saved = {option_exists, option_saved};
           try
-            add_property($server_options, "connect_timeout", 3, {player, "r"});
+            add_property($server_options, "connect_timeout", 4, {player, "r"});
           except (E_INVARG)
           endtry
-          $server_options.connect_timeout = 3;
+          $server_options.connect_timeout = 4;
           old_hook_exists = 1;
           try
             old_hook_info = verb_info(#0, "user_disconnected");
@@ -1297,7 +1297,7 @@ tests:
         as: wizard
       - new_connection:
           capture: conn1
-      - wait: 1500
+      - wait: 2800
       - run: "return #0.audit_timeout_seen == {};"
         as: wizard
         expect:
@@ -1305,12 +1305,14 @@ tests:
       - send:
           connection: conn1
           text: "timeout-reset-probe"
-      - wait: 2500
-      - run: "return #0.audit_timeout_seen == {};"
+      # Cross the original 5-second upper bound while keeping the probe's
+      # 500 ms silent-read window inside the renewed 4-second lower bound.
+      - wait: 2700
+      - run: "return length(#0.audit_timeout_seen) == 0;"
         as: wizard
         expect:
           value: 1
-      - wait: 2000
+      - wait: 2500
       - run: |
           seen = #0.audit_timeout_seen;
           if (length(seen) != 1)

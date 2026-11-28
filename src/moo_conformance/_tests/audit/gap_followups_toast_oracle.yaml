@@ -855,12 +855,12 @@ tests:
             suspend(0);
             #0.audit_task_local_value = task_local();
           endfork
-          suspend(0);
-          suspend(0);
-          return #0.audit_task_local_value;
+        as: wizard
+      - run: 'return #0.audit_task_local_value;'
         as: wizard
         expect:
           value: {}
+        poll_ms: 10000
     cleanup:
       - run: 'delete_property(#0, "audit_task_local_value");'
         as: wizard

@@ -1,0 +1,25 @@
+name: pcre_comment_groups
+description: Opening parentheses inside PCRE comments do not count as capture groups.
+
+requires:
+  builtins:
+    - pcre_match
+    - pcre_replace
+
+tests:
+  - name: pcre_comment_groups_without_capture
+    code: 'mapkeys(pcre_match("ab", "(?#(x(y)b")[1])'
+    expect:
+      value: ["0"]
+
+  - name: pcre_comment_groups_before_capture
+    statement: |
+      m = pcre_match("ab", "(?#(x(y)(b)")[1];
+      return {mapkeys(m), m["1"]["match"]};
+    expect:
+      value: [["0", "1"], "b"]
+
+  - name: pcre_comment_groups_replacement
+    code: 'pcre_replace("ab", "s/(?#(x(y)(b)/[$1]/")'
+    expect:
+      value: "a[b]"

@@ -1,0 +1,99 @@
+name: add_type_mismatch_error
+description: >
+  An addition whose operands cannot be added raises E_TYPE carrying a
+  "Type mismatch (expected ...; got ...)" message and the value
+  {{expected runtime type codes}, got type code}. The left operand usually
+  names the expected type; a string on the right names string unless the
+  left is a number; two non-addable operands list integer, float or string.
+  Expected runtime codes carry the complex-type flag (string is 130).
+
+tests:
+  - name: add_string_list
+    statement: |
+      try
+        "ARGSTR:" + {};
+      except e (ANY)
+        return e[1..3];
+      endtry
+    expect:
+      value: [E_TYPE, "Type mismatch (expected string; got list)", [[130], 4]]
+
+  - name: add_string_integer
+    statement: |
+      try
+        "a" + 1;
+      except e (ANY)
+        return e[1..3];
+      endtry
+    expect:
+      value: [E_TYPE, "Type mismatch (expected string; got integer)", [[130], 0]]
+
+  - name: add_integer_string
+    statement: |
+      try
+        1 + "a";
+      except e (ANY)
+        return e[1..3];
+      endtry
+    expect:
+      value: [E_TYPE, "Type mismatch (expected integer; got string)", [[0], 2]]
+
+  - name: add_object_string
+    statement: |
+      try
+        #1 + "a";
+      except e (ANY)
+        return e[1..3];
+      endtry
+    expect:
+      value: [E_TYPE, "Type mismatch (expected string; got object)", [[130], 1]]
+
+  - name: add_integer_float
+    statement: |
+      try
+        1 + 1.0;
+      except e (ANY)
+        return e[1..3];
+      endtry
+    expect:
+      value: [E_TYPE, "Type mismatch (expected integer; got float)", [[0], 9]]
+
+  - name: add_float_object
+    statement: |
+      try
+        1.0 + #1;
+      except e (ANY)
+        return e[1..3];
+      endtry
+    expect:
+      value: [E_TYPE, "Type mismatch (expected float; got object)", [[9], 1]]
+
+  - name: add_object_integer
+    statement: |
+      try
+        #1 + 1;
+      except e (ANY)
+        return e[1..3];
+      endtry
+    expect:
+      value: [E_TYPE, "Type mismatch (expected integer; got object)", [[0], 1]]
+
+  - name: add_map_float
+    statement: |
+      try
+        [] + 1.5;
+      except e (ANY)
+        return e[1..3];
+      endtry
+    expect:
+      value: [E_TYPE, "Type mismatch (expected float; got map)", [[9], 10]]
+
+  - name: add_object_object
+    statement: |
+      try
+        #1 + #2;
+      except e (ANY)
+        return e[1..3];
+      endtry
+    expect:
+      value: [E_TYPE, "Type mismatch (expected integer, float or string; got object)", [[0, 9, 130], 1]]

@@ -1,0 +1,42 @@
+name: raise_default_message
+description: >
+  When raise() is called with only a code, the caught exception's message
+  (element 2) is the code formatted as tostr() would format it: strings are
+  used raw, lists become "{list}", maps "[map]", and errors use their
+  descriptive message.
+
+requires:
+  builtins:
+    - raise
+
+tests:
+  - name: raise_default_message_for_{code_kind}
+    permission: wizard
+    table:
+      columns: [code_kind, code_expr, message]
+      rows:
+        - [int, "42", "42"]
+        - [float, "1.5", "1.5"]
+        - [obj, "#5", "#5"]
+        - [str, '"a \"b\" \\ c"', 'a "b" \ c']
+        - [list, '{1, "x"}', "{list}"]
+        - [empty_list, "{}", "{list}"]
+        - [map, '[1.5 -> "a"]', "[map]"]
+        - [bool, "true", "true"]
+        - [err, "E_PERM", "Permission denied"]
+    statement: "try\n  raise({code_expr});\nexcept e (ANY)\n  return e[2];\nendtry\n"
+    expect:
+      value: "{message}"
+
+  - name: raise_default_message_equals_tostr_of_{code_kind}
+    permission: wizard
+    table:
+      columns: [code_kind, code_expr]
+      rows:
+        - [list, '{1, {2}, "x"}']
+        - [map, '["k" -> {1}]']
+        - [str, '"plain"']
+        - [obj, "#-1"]
+    statement: "c = {code_expr};\ntry\n  raise(c);\nexcept e (ANY)\n  return e[2] == tostr(c);\nendtry\n"
+    expect:
+      value: 1
